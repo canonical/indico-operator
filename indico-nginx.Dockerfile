@@ -27,6 +27,6 @@ RUN apt update \
     && apt install -y nginx
 
 COPY --from=0 /opt/indico/web/static /opt/indico/web/static
-COPY etc/nginx/indico.conf /etc/nginx/conf.d/default.conf
+COPY files/etc/nginx/indico.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 8080

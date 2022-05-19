@@ -29,7 +29,7 @@ RUN ${INDICO_VIRTUALENV}/bin/indico setup create-symlinks /opt/indico \
     && ${INDICO_VIRTUALENV}/bin/indico setup create-logging-config /opt/indico/etc \
     && chgrp -R indico /opt/indico
 
-COPY etc/indico/indico.conf /opt/indico/etc/
-COPY etc/indico/uwsgi.ini /etc/
+COPY files/etc/indico/indico.conf /opt/indico/etc/
+COPY files/etc/indico/uwsgi.ini /etc/
 
 EXPOSE 8081
