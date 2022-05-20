@@ -2,7 +2,8 @@
 
 ## Description
 
-TODO: Describe your charm in a few paragraphs of Markdown
+A Juju charm deploying and managing Indico on Kubernetes, configurable to use a PostgreSQL and Redis backend.
+
 
 ## Usage
 
