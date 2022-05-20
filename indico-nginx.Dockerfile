@@ -26,7 +26,9 @@ RUN addgroup --gid ${nginx_gid} nginx \
 RUN apt update \
     && apt install -y nginx
 
-COPY --from=0 /opt/indico/web/static /opt/indico/web/static
-COPY files/etc/nginx/indico.conf /etc/nginx/conf.d/default.conf
+COPY --from=0 /opt/indico/web/static /srv/indico/web/static
+COPY files/etc/nginx/nginx.conf /etc/nginx/nginx.conf
+
+RUN chown -R nginx:nginx /srv/indico/web/
 
 EXPOSE 8080
