@@ -1,104 +1,235 @@
 #!/usr/bin/env python3
-# Copyright 2022 arturo
-# See LICENSE file for licensing details.
-#
-# Learn more at: https://juju.is/docs/sdk
 
-"""Charm the service.
-
-Refer to the following post for a quick-start guide that will help you
-develop a new k8s charm using the Operator Framework:
-
-    https://discourse.charmhub.io/t/4208
-"""
-
+# Copyright 2022 Canonical Ltd.
+# Licensed under the GPLv3, see LICENCE file for details.
+from urllib.parse import urlparse
+import os
+import ops.lib
+from charms.redis_k8s.v0.redis import (
+    RedisRelationCharmEvents,
+    RedisRequires,
+)
+from charms.nginx_ingress_integrator.v0.ingress import IngressRequires
+from ops.charm import (
+    CharmBase,
+)
+from ops.framework import (
+    StoredState,
+)
+from ops.main import main
+from ops.model import (
+    ActiveStatus,
+    MaintenanceStatus,
+    WaitingStatus,
+)
 import logging
 
-from ops.charm import CharmBase
-from ops.framework import StoredState
-from ops.main import main
-from ops.model import ActiveStatus
+pgsql = ops.lib.use("pgsql", 1, "postgresql-charmers@lists.launchpad.net")
 
-logger = logging.getLogger(__name__)
+DATABASE_NAME = 'indico'
+
+logger = logging.getLogger()
 
 
 class IndicoOperatorCharm(CharmBase):
-    """Charm the service."""
 
     _stored = StoredState()
+    on = RedisRelationCharmEvents()
 
     def __init__(self, *args):
         super().__init__(*args)
-        self.framework.observe(self.on.httpbin_pebble_ready, self._on_httpbin_pebble_ready)
+
+        self.framework.observe(self.on.start, self._on_config_changed)
         self.framework.observe(self.on.config_changed, self._on_config_changed)
-        self.framework.observe(self.on.fortune_action, self._on_fortune_action)
-        self._stored.set_default(things=[])
+        self.framework.observe(self.on.leader_elected, self._on_config_changed)
+        self.framework.observe(self.on.indico_pebble_ready, self._on_pebble_ready)
+        self.framework.observe(self.on.indico_celery_pebble_ready, self._on_pebble_ready)
+        self.framework.observe(self.on.indico_nginx_pebble_ready, self._on_pebble_ready)
 
-    def _on_httpbin_pebble_ready(self, event):
-        """Define and start a workload using the Pebble API.
+        self._stored.set_default(
+            db_conn_str=None,
+            db_uri=None,
+            db_ro_uris=[],
+            redis_relation={},
+            pebble_statuses={
+                'indico': False,
+                'indico-nginx': False,
+                'indico-celery': False,
+            },
+            secret_key=repr(os.urandom(32)),
+        )
 
-        TEMPLATE-TODO: change this example to suit your needs.
-        You'll need to specify the right entrypoint and environment
-        configuration for your specific workload. Tip: you can see the
-        standard entrypoint of an existing container using docker inspect
+        self.db = pgsql.PostgreSQLClient(self, 'db')
+        self.framework.observe(self.db.on.database_relation_joined, self._on_database_relation_joined)
+        self.framework.observe(self.db.on.master_changed, self._on_master_changed)
 
-        Learn more about Pebble layers at https://github.com/canonical/pebble
-        """
-        # Get a reference the container attribute on the PebbleReadyEvent
-        container = event.workload
-        # Define an initial Pebble layer configuration
-        pebble_layer = {
-            "summary": "httpbin layer",
-            "description": "pebble config layer for httpbin",
-            "services": {
-                "httpbin": {
-                    "override": "replace",
-                    "summary": "httpbin",
-                    "command": "gunicorn -b 0.0.0.0:80 httpbin:app -k gevent",
-                    "startup": "enabled",
-                    "environment": {"thing": self.model.config["thing"]},
-                }
+        self.redis = RedisRequires(self, self._stored)
+        self.framework.observe(self.on.redis_relation_updated, self._on_config_changed)
+
+        self.ingress = IngressRequires(self, self._make_ingress_config())
+
+    def _on_database_relation_joined(self, event: pgsql.DatabaseRelationJoinedEvent):
+        """Handle db-relation-joined."""
+        if self.model.unit.is_leader():
+            # Provide requirements to the PostgreSQL server.
+            event.database = DATABASE_NAME
+            event.extensions = ['unaccent:public', 'pg_trgm:public']
+        elif event.database != DATABASE_NAME:
+            # Leader has not yet set requirements. Defer, incase this unit
+            # becomes leader and needs to perform that operation.
+            event.defer()
+            return
+
+    def _on_master_changed(self, event: pgsql.MasterChangedEvent):
+        """Handle changes in the primary database unit."""
+        if event.database != DATABASE_NAME:
+            # Leader has not yet set requirements. Wait until next
+            # event, or risk connecting to an incorrect database.
+            return
+
+        self._stored.db_conn_str = None if event.master is None else event.master.conn_str
+        self._stored.db_uri = None if event.master is None else event.master.uri
+
+        if event.master is None:
+            return
+
+        self._on_config_changed(event)
+
+    def _are_pebble_instances_ready(self):
+        return all(self._stored.pebble_statuses.values())
+
+    def _make_ingress_config(self):
+        """Return ingress configuration."""
+        logger.error(self._get_external_hostname())
+        return {
+            'service-hostname': self._get_external_hostname(),
+            'service-name': self.app.name,
+            'service-port': 8080,
+        }
+
+    def _get_external_hostname(self):
+        """Extract and return hostname from site_url"""
+        site_url = self.config["site_url"]
+        parsed = urlparse(site_url)
+        return parsed.hostname
+
+    def _are_relations_ready(self, event):
+        """Handle the on pebble ready event for Indico."""
+        if not self._stored.redis_relation:
+            self.unit.status = WaitingStatus('Waiting for redis relation')
+            event.defer()
+            return False
+
+        if not self._stored.db_uri:
+            self.unit.status = WaitingStatus('Waiting for database relation')
+            event.defer()
+            return False
+
+        return True
+
+    def _on_pebble_ready(self, event):
+        """Handle the on pebble ready event for the containers."""
+        if self._are_relations_ready(event):
+            self._config_pebble(event.workload)
+
+    def _config_pebble(self, container):
+        """Apply pebble changes."""
+        pebble_config = self._get_pebble_config(container.name)
+        self.unit.status = MaintenanceStatus('Adding {} layer to pebble'.format(container.name))
+        container.add_layer(container.name, pebble_config, combine=True)
+        self.unit.status = MaintenanceStatus('Starting {} container'.format(container.name))
+        container.pebble.replan_services()
+        self._stored.pebble_statuses[container.name] = True
+        if self._are_pebble_instances_ready():
+            self.unit.status = ActiveStatus()
+        else:
+            self.unit.status = WaitingStatus('Waiting for pebble')
+
+    def _get_pebble_config(self, container_name):
+        """Generate pebble config."""
+        indico_env_config = self._get_indico_env_config()
+        configuration = {
+            'indico': {
+                "summary": "Indico layer",
+                "description": "Indico layer",
+                "services": {
+                    "indico": {
+                        "override": "replace",
+                        "summary": "Indico service",
+                        "command": "/srv/indico/.venv/bin/uwsgi --ini /etc/uwsgi.ini",
+                        "startup": "enabled",
+                        "environment": indico_env_config,
+                    },
+                },
+            },
+            'indico-celery': {
+                "summary": "Indico celery layer",
+                "description": "Indico celery layer",
+                "services": {
+                    "indico-celery": {
+                        "override": "replace",
+                        "summary": "Indico celery",
+                        "command": "/srv/indico/.venv/bin/indico celery worker -B --uid 2000",
+                        "startup": "enabled",
+                        "environment": indico_env_config,
+                    },
+                },
+            },
+            'indico-nginx': {
+                "summary": "Indico nginx layer",
+                "description": "Indico nginx layer",
+                "services": {
+                    "indico-nginx": {
+                        "override": "replace",
+                        "summary": "Nginx service",
+                        "command": "nginx",
+                        "startup": "enabled",
+                    },
+                },
             },
         }
-        # Add initial Pebble config layer using the Pebble API
-        container.add_layer("httpbin", pebble_layer, combine=True)
-        # Autostart any services that were defined with startup: enabled
-        container.autostart()
-        # Learn more about statuses in the SDK docs:
-        # https://juju.is/docs/sdk/constructs#heading--statuses
-        self.unit.status = ActiveStatus()
+        return configuration[container_name]
 
-    def _on_config_changed(self, _):
-        """Just an example to show how to deal with changed configuration.
+    def _get_indico_env_config(self):
+        """Return an envConfig with some core configuration."""
+        redis_hostname = ""
+        redis_port = ""
+        for redis_unit in self._stored.redis_relation:
+            redis_hostname = self._stored.redis_relation[redis_unit]["hostname"]
+            redis_port = self._stored.redis_relation[redis_unit]["port"]
 
-        TEMPLATE-TODO: change this example to suit your needs.
-        If you don't need to handle config, you can remove this method,
-        the hook created in __init__.py for it, the corresponding test,
-        and the config.py file.
+        env_config = {
+            'INDICO_DB_URI': self._stored.db_uri,
+            'CELERY_BROKER': 'redis://{host}:{port}'.format(host=redis_hostname, port=redis_port),
+            'SECRET_KEY': self._stored.secret_key,
+            'SERVICE_HOSTNAME': self._get_external_hostname(),
+            'SERVICE_PORT': 8081,
+            'REDIS_CACHE_URL': '',
+            'SMTP_SERVER': self.config["smtp_server"],
+            'SMTP_PORT': self.config["smtp_port"],
+            'SMTP_LOGIN': self.config["smtp_login"],
+            'SMTP_PASSWORD': self.config["smtp_password"],
+            'SMTP_USE_TLS': self.config["smtp_use_tls"],
+            'INDICO_SUPPORT_EMAIL': self.config["indico_support_email"],
+            'INDICO_PUBLIC_SUPPORT_EMAIL': self.config["indico_public_support_email"],
+            'INDICO_NO_REPLY_EMAIL': self.config["indico_no_reply_email"],
+        }
+        return env_config
 
-        Learn more about config at https://juju.is/docs/sdk/config
-        """
-        current = self.config["thing"]
-        if current not in self._stored.things:
-            logger.debug("found a new thing: %r", current)
-            self._stored.things.append(current)
+    def _on_config_changed(self, event):
+        """Handle changes in configuration."""
+        if self._are_relations_ready(event):
+            if not self._are_pebble_instances_ready():
+                self.unit.status = WaitingStatus('Waiting for pebble')
+                event.defer()
+                return
 
-    def _on_fortune_action(self, event):
-        """Just an example to show how to receive actions.
-
-        TEMPLATE-TODO: change this example to suit your needs.
-        If you don't need to handle actions, you can remove this method,
-        the hook created in __init__.py for it, the corresponding test,
-        and the actions.py file.
-
-        Learn more about actions at https://juju.is/docs/sdk/actions
-        """
-        fail = event.params["fail"]
-        if fail:
-            event.fail(fail)
-        else:
-            event.set_results({"fortune": "A bug in the code is worth two in the documentation."})
+            self.model.unit.status = MaintenanceStatus('Configuring pod')
+            for container_name in self.model.unit.containers:
+                self._config_pebble(self.unit.get_container(container_name))
+            self.ingress.update_config(self._make_ingress_config())
+            self.model.unit.status = ActiveStatus()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main(IndicoOperatorCharm)
