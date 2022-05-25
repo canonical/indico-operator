@@ -116,6 +116,7 @@ class TestCharm(unittest.TestCase):
         initial_plan = self.harness.get_container_pebble_plan("indico-celery")
         self.assertEqual(initial_plan.to_yaml(), "{}\n")
         # Set relation data
+        self.maxDiff = None
         self.harness.charm._stored.db_uri = 'db-uri'
         self.harness.charm._stored.redis_relation = {1: {'hostname': 'redis-host', 'port': 1010}}
 
@@ -241,8 +242,7 @@ class TestCharm(unittest.TestCase):
         updated_plan = self.harness.get_container_pebble_plan("indico-celery").to_dict()
         self.assertEqual(expected_plan, updated_plan)
 
-        self.assertEqual('indico.local', self.harness.charm.ingress.config_dict['service-hostname'])
-        self.assertEqual(8080, self.harness.charm.ingress.config_dict['service-port'])
+        self.assertEqual('example.local', self.harness.charm.ingress.config_dict['service-hostname'])
 
     def test_config_changed_when_pebble_not_ready(self):
         # Set relation data
