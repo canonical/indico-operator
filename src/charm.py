@@ -100,7 +100,6 @@ class IndicoOperatorCharm(CharmBase):
 
     def _make_ingress_config(self):
         """Return ingress configuration."""
-        logger.error(self._get_external_hostname())
         return {
             'service-hostname': self._get_external_hostname(),
             'service-name': self.app.name,
@@ -110,8 +109,7 @@ class IndicoOperatorCharm(CharmBase):
     def _get_external_hostname(self):
         """Extract and return hostname from site_url"""
         site_url = self.config["site_url"]
-        parsed = urlparse(site_url)
-        return parsed.hostname
+        return urlparse(site_url).hostname
 
     def _are_relations_ready(self, event):
         """Handle the on pebble ready event for Indico."""
@@ -204,7 +202,7 @@ class IndicoOperatorCharm(CharmBase):
             'SECRET_KEY': self._stored.secret_key,
             'SERVICE_HOSTNAME': self._get_external_hostname(),
             'SERVICE_PORT': 8081,
-            'REDIS_CACHE_URL': '',
+            'REDIS_CACHE_URL': 'redis://{host}:{port}'.format(host=redis_hostname, port=redis_port),
             'SMTP_SERVER': self.config["smtp_server"],
             'SMTP_PORT': self.config["smtp_port"],
             'SMTP_LOGIN': self.config["smtp_login"],

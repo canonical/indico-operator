@@ -90,7 +90,7 @@ class TestCharm(unittest.TestCase):
                         'SECRET_KEY': self.harness.charm._stored.secret_key,
                         'SERVICE_HOSTNAME': None,
                         'SERVICE_PORT': 8081,
-                        'REDIS_CACHE_URL': '',
+                        'REDIS_CACHE_URL': 'redis://redis-host:1010',
                         'SMTP_SERVER': '',
                         'SMTP_PORT': 25,
                         'SMTP_LOGIN': '',
@@ -132,7 +132,7 @@ class TestCharm(unittest.TestCase):
                         'SECRET_KEY': self.harness.charm._stored.secret_key,
                         'SERVICE_HOSTNAME': None,
                         'SERVICE_PORT': 8081,
-                        'REDIS_CACHE_URL': '',
+                        'REDIS_CACHE_URL': 'redis://redis-host:1010',
                         'SMTP_SERVER': '',
                         'SMTP_PORT': 25,
                         'SMTP_LOGIN': '',
@@ -158,6 +158,9 @@ class TestCharm(unittest.TestCase):
         # Set relation data
         self.harness.charm._stored.db_uri = 'db-uri'
         self.harness.charm._stored.redis_relation = {1: {'hostname': 'redis-host', 'port': 1010}}
+        self.harness.disable_hooks()
+        self.harness.set_leader(True)
+        self.harness.enable_hooks()
 
         container = self.harness.model.unit.get_container("indico")
         self.harness.charm.on.indico_pebble_ready.emit(container)
@@ -165,7 +168,19 @@ class TestCharm(unittest.TestCase):
         self.harness.charm.on.indico_celery_pebble_ready.emit(container)
         container = self.harness.model.unit.get_container("indico-nginx")
         self.harness.charm.on.indico_nginx_pebble_ready.emit(container)
-        self.harness.update_config({"indico_support_email": "example@email.local"})
+        self.harness.update_config(
+            {
+                "indico_support_email": "example@email.local",
+                "indico_public_support_email": "public@email.local",
+                "indico_no_reply_email": "noreply@email.local",
+                "site_url": "http://indico.local",
+                "smtp_server": "localhost",
+                "smtp_port": 8025,
+                "smtp_login": "user",
+                "smtp_password": "pass",
+                "smtp_use_tls": False,
+            }
+        )
 
         expected_plan = {
             "services": {
@@ -178,17 +193,17 @@ class TestCharm(unittest.TestCase):
                         'INDICO_DB_URI': 'db-uri',
                         'CELERY_BROKER': 'redis://redis-host:1010',
                         'SECRET_KEY': self.harness.charm._stored.secret_key,
-                        'SERVICE_HOSTNAME': None,
+                        'SERVICE_HOSTNAME': "indico.local",
                         'SERVICE_PORT': 8081,
-                        'REDIS_CACHE_URL': '',
-                        'SMTP_SERVER': '',
-                        'SMTP_PORT': 25,
-                        'SMTP_LOGIN': '',
-                        'SMTP_PASSWORD': '',
-                        'SMTP_USE_TLS': True,
+                        'REDIS_CACHE_URL': 'redis://redis-host:1010',
+                        'SMTP_SERVER': 'localhost',
+                        'SMTP_PORT': 8025,
+                        'SMTP_LOGIN': 'user',
+                        'SMTP_PASSWORD': 'pass',
+                        'SMTP_USE_TLS': False,
                         'INDICO_SUPPORT_EMAIL': 'example@email.local',
-                        'INDICO_PUBLIC_SUPPORT_EMAIL': 'support@mydomain.local',
-                        'INDICO_NO_REPLY_EMAIL': 'noreply@mydomain.local',
+                        'INDICO_PUBLIC_SUPPORT_EMAIL': 'public@email.local',
+                        'INDICO_NO_REPLY_EMAIL': 'noreply@email.local',
                     },
                 },
             },
@@ -207,17 +222,17 @@ class TestCharm(unittest.TestCase):
                         'INDICO_DB_URI': 'db-uri',
                         'CELERY_BROKER': 'redis://redis-host:1010',
                         'SECRET_KEY': self.harness.charm._stored.secret_key,
-                        'SERVICE_HOSTNAME': None,
+                        'SERVICE_HOSTNAME': "indico.local",
                         'SERVICE_PORT': 8081,
-                        'REDIS_CACHE_URL': '',
-                        'SMTP_SERVER': '',
-                        'SMTP_PORT': 25,
-                        'SMTP_LOGIN': '',
-                        'SMTP_PASSWORD': '',
-                        'SMTP_USE_TLS': True,
+                        'REDIS_CACHE_URL': 'redis://redis-host:1010',
+                        'SMTP_SERVER': 'localhost',
+                        'SMTP_PORT': 8025,
+                        'SMTP_LOGIN': 'user',
+                        'SMTP_PASSWORD': 'pass',
+                        'SMTP_USE_TLS': False,
                         'INDICO_SUPPORT_EMAIL': 'example@email.local',
-                        'INDICO_PUBLIC_SUPPORT_EMAIL': 'support@mydomain.local',
-                        'INDICO_NO_REPLY_EMAIL': 'noreply@mydomain.local',
+                        'INDICO_PUBLIC_SUPPORT_EMAIL': 'public@email.local',
+                        'INDICO_NO_REPLY_EMAIL': 'noreply@email.local',
                     },
                 },
             },
@@ -226,12 +241,8 @@ class TestCharm(unittest.TestCase):
         updated_plan = self.harness.get_container_pebble_plan("indico-celery").to_dict()
         self.assertEqual(expected_plan, updated_plan)
 
-        self.assertIsNone(self.harness.charm.ingress.config_dict['service-hostname'])
-        self.harness.disable_hooks()
-        self.harness.set_leader(True)
-        self.harness.enable_hooks()
-        self.harness.update_config({"site_url": "http://indico.local"})
         self.assertEqual('indico.local', self.harness.charm.ingress.config_dict['service-hostname'])
+        self.assertEqual(8080, self.harness.charm.ingress.config_dict['service-port'])
 
     def test_config_changed_when_pebble_not_ready(self):
         # Set relation data
