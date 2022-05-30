@@ -9,7 +9,6 @@ from charms.redis_k8s.v0.redis import (
     RedisRelationCharmEvents,
     RedisRequires,
 )
-from charms.nginx_ingress_integrator.v0.ingress import IngressRequires
 from ops.charm import (
     CharmBase,
 )
@@ -22,13 +21,10 @@ from ops.model import (
     MaintenanceStatus,
     WaitingStatus,
 )
-import logging
+
+DATABASE_NAME = 'postgres'
 
 pgsql = ops.lib.use("pgsql", 1, "postgresql-charmers@lists.launchpad.net")
-
-DATABASE_NAME = 'indico'
-
-logger = logging.getLogger()
 
 
 class IndicoOperatorCharm(CharmBase):
@@ -66,14 +62,12 @@ class IndicoOperatorCharm(CharmBase):
         self.redis = RedisRequires(self, self._stored)
         self.framework.observe(self.on.redis_relation_updated, self._on_config_changed)
 
-        self.ingress = IngressRequires(self, self._make_ingress_config())
-
     def _on_database_relation_joined(self, event: pgsql.DatabaseRelationJoinedEvent):
         """Handle db-relation-joined."""
         if self.model.unit.is_leader():
             # Provide requirements to the PostgreSQL server.
             event.database = DATABASE_NAME
-            event.extensions = ['unaccent:public', 'pg_trgm:public']
+            event.extensions = ['pg_trgm:public', 'unaccent:public']
         elif event.database != DATABASE_NAME:
             # Leader has not yet set requirements. Defer, incase this unit
             # becomes leader and needs to perform that operation.
@@ -97,14 +91,6 @@ class IndicoOperatorCharm(CharmBase):
 
     def _are_pebble_instances_ready(self):
         return all(self._stored.pebble_statuses.values())
-
-    def _make_ingress_config(self):
-        """Return ingress configuration."""
-        return {
-            'service-hostname': self._get_external_hostname(),
-            'service-name': self.app.name,
-            'service-port': 8080,
-        }
 
     def _get_external_hostname(self):
         """Extract and return hostname from site_url"""
@@ -154,8 +140,9 @@ class IndicoOperatorCharm(CharmBase):
                     "indico": {
                         "override": "replace",
                         "summary": "Indico service",
-                        "command": "/srv/indico/.venv/bin/uwsgi --ini /etc/uwsgi.ini",
+                        "command": "/srv/indico/start-indico.sh",
                         "startup": "enabled",
+                        "user": "indico",
                         "environment": indico_env_config,
                     },
                 },
@@ -169,6 +156,7 @@ class IndicoOperatorCharm(CharmBase):
                         "summary": "Indico celery",
                         "command": "/srv/indico/.venv/bin/indico celery worker -B --uid 2000",
                         "startup": "enabled",
+                        "user": "indico",
                         "environment": indico_env_config,
                     },
                 },
@@ -225,7 +213,6 @@ class IndicoOperatorCharm(CharmBase):
             self.model.unit.status = MaintenanceStatus('Configuring pod')
             for container_name in self.model.unit.containers:
                 self._config_pebble(self.unit.get_container(container_name))
-            self.ingress.update_config(self._make_ingress_config())
             self.model.unit.status = ActiveStatus()
 
 

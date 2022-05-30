@@ -26,10 +26,13 @@ RUN pip install virtualenv \
     && ${pip} install indico-plugins
 
 RUN ${INDICO_VIRTUALENV}/bin/indico setup create-symlinks /srv/indico \
-    && ${INDICO_VIRTUALENV}/bin/indico setup create-logging-config /etc \
-    && chgrp -R indico /srv/indico
+    && ${INDICO_VIRTUALENV}/bin/indico setup create-logging-config /etc
 
+COPY files/start-indico.sh /srv/indico/
 COPY files/etc/indico/indico.conf /srv/indico/etc/
 COPY files/etc/indico/uwsgi.ini /etc/
+
+RUN chmod +x /srv/indico/start-indico.sh \
+    && chown -R indico:indico /srv/indico
 
 EXPOSE 8081

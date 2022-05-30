@@ -82,8 +82,9 @@ class TestCharm(unittest.TestCase):
                 "indico": {
                     "override": "replace",
                     "summary": "Indico service",
-                    "command": "/srv/indico/.venv/bin/uwsgi --ini /etc/uwsgi.ini",
+                    "command": "/srv/indico/start-indico.sh",
                     "startup": "enabled",
+                    "user": "indico",
                     "environment": {
                         'INDICO_DB_URI': 'db-uri',
                         'CELERY_BROKER': 'redis://redis-host:1010',
@@ -127,6 +128,7 @@ class TestCharm(unittest.TestCase):
                     "summary": "Indico celery",
                     "command": "/srv/indico/.venv/bin/indico celery worker -B --uid 2000",
                     "startup": "enabled",
+                    "user": "indico",
                     "environment": {
                         'INDICO_DB_URI': 'db-uri',
                         'CELERY_BROKER': 'redis://redis-host:1010',
@@ -188,8 +190,9 @@ class TestCharm(unittest.TestCase):
                 "indico": {
                     "override": "replace",
                     "summary": "Indico service",
-                    "command": "/srv/indico/.venv/bin/uwsgi --ini /etc/uwsgi.ini",
+                    "command": "/srv/indico/start-indico.sh",
                     "startup": "enabled",
+                    "user": "indico",
                     "environment": {
                         'INDICO_DB_URI': 'db-uri',
                         'CELERY_BROKER': 'redis://redis-host:1010',
@@ -219,6 +222,7 @@ class TestCharm(unittest.TestCase):
                     "summary": "Indico celery",
                     "command": "/srv/indico/.venv/bin/indico celery worker -B --uid 2000",
                     "startup": "enabled",
+                    "user": "indico",
                     "environment": {
                         'INDICO_DB_URI': 'db-uri',
                         'CELERY_BROKER': 'redis://redis-host:1010',
@@ -241,8 +245,6 @@ class TestCharm(unittest.TestCase):
 
         updated_plan = self.harness.get_container_pebble_plan("indico-celery").to_dict()
         self.assertEqual(expected_plan, updated_plan)
-
-        self.assertEqual('example.local', self.harness.charm.ingress.config_dict['service-hostname'])
 
     def test_config_changed_when_pebble_not_ready(self):
         # Set relation data
