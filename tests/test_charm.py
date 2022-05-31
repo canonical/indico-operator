@@ -30,21 +30,9 @@ class TestCharm(unittest.TestCase):
         self.harness.charm._stored.db_uri = 'db-uri'
         self.harness.charm._stored.redis_relation = {1: {'hostname': 'redis-host', 'port': 1010}}
 
-        expected_plan = {
-            "services": {
-                "indico-nginx": {
-                    "override": "replace",
-                    "summary": "Nginx service",
-                    "command": "nginx",
-                    "startup": "enabled",
-                },
-            },
-        }
-
         container = self.harness.model.unit.get_container("indico-nginx")
         self.harness.charm.on.indico_nginx_pebble_ready.emit(container)
-        updated_plan = self.harness.get_container_pebble_plan("indico-nginx").to_dict()
-        self.assertEqual(expected_plan, updated_plan)
+
         service = self.harness.model.unit.get_container("indico-nginx").get_service("indico-nginx")
         self.assertTrue(service.is_running())
         self.assertEqual(self.harness.model.unit.status, WaitingStatus('Waiting for pebble'))
@@ -71,38 +59,26 @@ class TestCharm(unittest.TestCase):
         self.harness.charm._stored.db_uri = 'db-uri'
         self.harness.charm._stored.redis_relation = {1: {'hostname': 'redis-host', 'port': 1010}}
 
-        expected_plan = {
-            "services": {
-                "indico": {
-                    "override": "replace",
-                    "summary": "Indico service",
-                    "command": "/srv/indico/start-indico.sh",
-                    "startup": "enabled",
-                    "user": "indico",
-                    "environment": {
-                        'INDICO_DB_URI': 'db-uri',
-                        'CELERY_BROKER': 'redis://redis-host:1010',
-                        'SECRET_KEY': self.harness.charm._stored.secret_key,
-                        'SERVICE_HOSTNAME': "indico.local",
-                        'SERVICE_PORT': 8081,
-                        'REDIS_CACHE_URL': 'redis://redis-host:1010',
-                        'SMTP_SERVER': '',
-                        'SMTP_PORT': 25,
-                        'SMTP_LOGIN': '',
-                        'SMTP_PASSWORD': '',
-                        'SMTP_USE_TLS': True,
-                        'INDICO_SUPPORT_EMAIL': 'support-tech@mydomain.local',
-                        'INDICO_PUBLIC_SUPPORT_EMAIL': 'support@mydomain.local',
-                        'INDICO_NO_REPLY_EMAIL': 'noreply@mydomain.local',
-                    },
-                },
-            },
-        }
-
         container = self.harness.model.unit.get_container("indico")
         self.harness.charm.on.indico_pebble_ready.emit(container)
         updated_plan = self.harness.get_container_pebble_plan("indico").to_dict()
-        self.assertEqual(expected_plan, updated_plan)
+        updated_plan_env = updated_plan["services"]["indico"]["environment"]
+
+        self.assertEqual('db-uri', updated_plan_env["INDICO_DB_URI"])
+        self.assertEqual('redis://redis-host:1010', updated_plan_env["CELERY_BROKER"])
+        self.assertEqual(self.harness.charm._stored.secret_key, updated_plan_env["SECRET_KEY"])
+        self.assertEqual('indico.local', updated_plan_env["SERVICE_HOSTNAME"])
+        self.assertEqual(8081, updated_plan_env["SERVICE_PORT"])
+        self.assertEqual('redis://redis-host:1010', updated_plan_env["REDIS_CACHE_URL"])
+        self.assertEqual('support-tech@mydomain.local', updated_plan_env["INDICO_SUPPORT_EMAIL"])
+        self.assertEqual('support@mydomain.local', updated_plan_env["INDICO_PUBLIC_SUPPORT_EMAIL"])
+        self.assertEqual('noreply@mydomain.local', updated_plan_env["INDICO_NO_REPLY_EMAIL"])
+        self.assertEqual('', updated_plan_env["SMTP_SERVER"])
+        self.assertEqual(25, updated_plan_env["SMTP_PORT"])
+        self.assertEqual('', updated_plan_env["SMTP_LOGIN"])
+        self.assertEqual('', updated_plan_env["SMTP_PASSWORD"])
+        self.assertTrue(updated_plan_env["SMTP_USE_TLS"])
+
         service = self.harness.model.unit.get_container("indico").get_service("indico")
         self.assertTrue(service.is_running())
         self.assertEqual(self.harness.model.unit.status, WaitingStatus('Waiting for pebble'))
@@ -115,38 +91,26 @@ class TestCharm(unittest.TestCase):
         self.harness.charm._stored.db_uri = 'db-uri'
         self.harness.charm._stored.redis_relation = {1: {'hostname': 'redis-host', 'port': 1010}}
 
-        expected_plan = {
-            "services": {
-                "indico-celery": {
-                    "override": "replace",
-                    "summary": "Indico celery",
-                    "command": "/srv/indico/.venv/bin/indico celery worker -B --uid 2000",
-                    "startup": "enabled",
-                    "user": "indico",
-                    "environment": {
-                        'INDICO_DB_URI': 'db-uri',
-                        'CELERY_BROKER': 'redis://redis-host:1010',
-                        'SECRET_KEY': self.harness.charm._stored.secret_key,
-                        'SERVICE_HOSTNAME': "indico.local",
-                        'SERVICE_PORT': 8081,
-                        'REDIS_CACHE_URL': 'redis://redis-host:1010',
-                        'SMTP_SERVER': '',
-                        'SMTP_PORT': 25,
-                        'SMTP_LOGIN': '',
-                        'SMTP_PASSWORD': '',
-                        'SMTP_USE_TLS': True,
-                        'INDICO_SUPPORT_EMAIL': 'support-tech@mydomain.local',
-                        'INDICO_PUBLIC_SUPPORT_EMAIL': 'support@mydomain.local',
-                        'INDICO_NO_REPLY_EMAIL': 'noreply@mydomain.local',
-                    },
-                },
-            },
-        }
-
         container = self.harness.model.unit.get_container("indico-celery")
         self.harness.charm.on.indico_celery_pebble_ready.emit(container)
         updated_plan = self.harness.get_container_pebble_plan("indico-celery").to_dict()
-        self.assertEqual(expected_plan, updated_plan)
+        updated_plan_env = updated_plan["services"]["indico-celery"]["environment"]
+
+        self.assertEqual('db-uri', updated_plan_env["INDICO_DB_URI"])
+        self.assertEqual('redis://redis-host:1010', updated_plan_env["CELERY_BROKER"])
+        self.assertEqual(self.harness.charm._stored.secret_key, updated_plan_env["SECRET_KEY"])
+        self.assertEqual('indico.local', updated_plan_env["SERVICE_HOSTNAME"])
+        self.assertEqual(8081, updated_plan_env["SERVICE_PORT"])
+        self.assertEqual('redis://redis-host:1010', updated_plan_env["REDIS_CACHE_URL"])
+        self.assertEqual('support-tech@mydomain.local', updated_plan_env["INDICO_SUPPORT_EMAIL"])
+        self.assertEqual('support@mydomain.local', updated_plan_env["INDICO_PUBLIC_SUPPORT_EMAIL"])
+        self.assertEqual('noreply@mydomain.local', updated_plan_env["INDICO_NO_REPLY_EMAIL"])
+        self.assertEqual('', updated_plan_env["SMTP_SERVER"])
+        self.assertEqual(25, updated_plan_env["SMTP_PORT"])
+        self.assertEqual('', updated_plan_env["SMTP_LOGIN"])
+        self.assertEqual('', updated_plan_env["SMTP_PASSWORD"])
+        self.assertTrue(updated_plan_env["SMTP_USE_TLS"])
+
         service = self.harness.model.unit.get_container("indico-celery").get_service("indico-celery")
         self.assertTrue(service.is_running())
         self.assertEqual(self.harness.model.unit.status, WaitingStatus('Waiting for pebble'))
@@ -179,66 +143,31 @@ class TestCharm(unittest.TestCase):
             }
         )
 
-        expected_plan = {
-            "services": {
-                "indico": {
-                    "override": "replace",
-                    "summary": "Indico service",
-                    "command": "/srv/indico/start-indico.sh",
-                    "startup": "enabled",
-                    "user": "indico",
-                    "environment": {
-                        'INDICO_DB_URI': 'db-uri',
-                        'CELERY_BROKER': 'redis://redis-host:1010',
-                        'SECRET_KEY': self.harness.charm._stored.secret_key,
-                        'SERVICE_HOSTNAME': "example.local",
-                        'SERVICE_PORT': 8081,
-                        'REDIS_CACHE_URL': 'redis://redis-host:1010',
-                        'SMTP_SERVER': 'localhost',
-                        'SMTP_PORT': 8025,
-                        'SMTP_LOGIN': 'user',
-                        'SMTP_PASSWORD': 'pass',
-                        'SMTP_USE_TLS': False,
-                        'INDICO_SUPPORT_EMAIL': 'example@email.local',
-                        'INDICO_PUBLIC_SUPPORT_EMAIL': 'public@email.local',
-                        'INDICO_NO_REPLY_EMAIL': 'noreply@email.local',
-                    },
-                },
-            },
-        }
         updated_plan = self.harness.get_container_pebble_plan("indico").to_dict()
-        self.assertEqual(expected_plan, updated_plan)
+        updated_plan_env = updated_plan["services"]["indico"]["environment"]
 
-        expected_plan = {
-            "services": {
-                "indico-celery": {
-                    "override": "replace",
-                    "summary": "Indico celery",
-                    "command": "/srv/indico/.venv/bin/indico celery worker -B --uid 2000",
-                    "startup": "enabled",
-                    "user": "indico",
-                    "environment": {
-                        'INDICO_DB_URI': 'db-uri',
-                        'CELERY_BROKER': 'redis://redis-host:1010',
-                        'SECRET_KEY': self.harness.charm._stored.secret_key,
-                        'SERVICE_HOSTNAME': "example.local",
-                        'SERVICE_PORT': 8081,
-                        'REDIS_CACHE_URL': 'redis://redis-host:1010',
-                        'SMTP_SERVER': 'localhost',
-                        'SMTP_PORT': 8025,
-                        'SMTP_LOGIN': 'user',
-                        'SMTP_PASSWORD': 'pass',
-                        'SMTP_USE_TLS': False,
-                        'INDICO_SUPPORT_EMAIL': 'example@email.local',
-                        'INDICO_PUBLIC_SUPPORT_EMAIL': 'public@email.local',
-                        'INDICO_NO_REPLY_EMAIL': 'noreply@email.local',
-                    },
-                },
-            },
-        }
+        self.assertEqual('example.local', updated_plan_env["SERVICE_HOSTNAME"])
+        self.assertEqual('example@email.local', updated_plan_env["INDICO_SUPPORT_EMAIL"])
+        self.assertEqual('public@email.local', updated_plan_env["INDICO_PUBLIC_SUPPORT_EMAIL"])
+        self.assertEqual('noreply@email.local', updated_plan_env["INDICO_NO_REPLY_EMAIL"])
+        self.assertEqual('localhost', updated_plan_env["SMTP_SERVER"])
+        self.assertEqual(8025, updated_plan_env["SMTP_PORT"])
+        self.assertEqual('user', updated_plan_env["SMTP_LOGIN"])
+        self.assertEqual('pass', updated_plan_env["SMTP_PASSWORD"])
+        self.assertFalse(updated_plan_env["SMTP_USE_TLS"])
 
         updated_plan = self.harness.get_container_pebble_plan("indico-celery").to_dict()
-        self.assertEqual(expected_plan, updated_plan)
+        updated_plan_env = updated_plan["services"]["indico-celery"]["environment"]
+
+        self.assertEqual('example.local', updated_plan_env["SERVICE_HOSTNAME"])
+        self.assertEqual('example@email.local', updated_plan_env["INDICO_SUPPORT_EMAIL"])
+        self.assertEqual('public@email.local', updated_plan_env["INDICO_PUBLIC_SUPPORT_EMAIL"])
+        self.assertEqual('noreply@email.local', updated_plan_env["INDICO_NO_REPLY_EMAIL"])
+        self.assertEqual('localhost', updated_plan_env["SMTP_SERVER"])
+        self.assertEqual(8025, updated_plan_env["SMTP_PORT"])
+        self.assertEqual('user', updated_plan_env["SMTP_LOGIN"])
+        self.assertEqual('pass', updated_plan_env["SMTP_PASSWORD"])
+        self.assertFalse(updated_plan_env["SMTP_USE_TLS"])
 
         self.harness.disable_hooks()
         self.harness.set_leader(True)
