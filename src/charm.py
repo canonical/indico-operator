@@ -21,8 +21,10 @@ from ops.model import (
     MaintenanceStatus,
     WaitingStatus,
 )
+from charms.nginx_ingress_integrator.v0.ingress import IngressRequires
 
 DATABASE_NAME = 'postgres'
+PORT = 8080
 
 pgsql = ops.lib.use("pgsql", 1, "postgresql-charmers@lists.launchpad.net")
 
@@ -35,7 +37,6 @@ class IndicoOperatorCharm(CharmBase):
     def __init__(self, *args):
         super().__init__(*args)
 
-        self.framework.observe(self.on.start, self._on_config_changed)
         self.framework.observe(self.on.config_changed, self._on_config_changed)
         self.framework.observe(self.on.leader_elected, self._on_config_changed)
         self.framework.observe(self.on.indico_pebble_ready, self._on_pebble_ready)
@@ -61,6 +62,8 @@ class IndicoOperatorCharm(CharmBase):
 
         self.redis = RedisRequires(self, self._stored)
         self.framework.observe(self.on.redis_relation_updated, self._on_config_changed)
+
+        self.ingress = IngressRequires(self, self._make_ingress_config())
 
     def _on_database_relation_joined(self, event: pgsql.DatabaseRelationJoinedEvent):
         """Handle db-relation-joined."""
@@ -88,6 +91,14 @@ class IndicoOperatorCharm(CharmBase):
             return
 
         self._on_config_changed(event)
+
+    def _make_ingress_config(self):
+        """Return ingress configuration."""
+        return {
+            'service-hostname': self._get_external_hostname(),
+            'service-name': self.app.name,
+            'service-port': 8080,
+        }
 
     def _are_pebble_instances_ready(self):
         return all(self._stored.pebble_statuses.values())
@@ -213,6 +224,7 @@ class IndicoOperatorCharm(CharmBase):
             self.model.unit.status = MaintenanceStatus('Configuring pod')
             for container_name in self.model.unit.containers:
                 self._config_pebble(self.unit.get_container(container_name))
+            self.ingress.update_config(self._make_ingress_config())
             self.model.unit.status = ActiveStatus()
 
 

@@ -22,12 +22,6 @@ class TestCharm(unittest.TestCase):
             redis_relation_id, "redis/0", {"something": "just to trigger rel-changed event"}
         )
         self.assertEqual(self.harness.model.unit.status, WaitingStatus('Waiting for database relation'))
-        # db_relation_id = self.harness.add_relation('db', 'postgresql')
-        # self.harness.add_relation_unit(db_relation_id, "postgresql/0")
-        # self.harness.update_relation_data(
-        #     redis_relation_id, "postgresql/0", {"something": "just to trigger rel-changed event"}
-        # )
-        # self.assertEqual(self.harness.model.unit.status, WaitingStatus('Waiting for pebble'))
 
     def test_indico_nginx_pebble_ready(self):
         initial_plan = self.harness.get_container_pebble_plan("indico-nginx")
@@ -245,6 +239,12 @@ class TestCharm(unittest.TestCase):
 
         updated_plan = self.harness.get_container_pebble_plan("indico-celery").to_dict()
         self.assertEqual(expected_plan, updated_plan)
+
+        self.harness.disable_hooks()
+        self.harness.set_leader(True)
+        self.harness.enable_hooks()
+        self.harness.update_config({"site_url": "http://example.local"})
+        self.assertEqual('example.local', self.harness.charm.ingress.config_dict['service-hostname'])
 
     def test_config_changed_when_pebble_not_ready(self):
         # Set relation data
