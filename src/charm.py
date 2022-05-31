@@ -48,13 +48,14 @@ class IndicoOperatorCharm(CharmBase):
             db_uri=None,
             db_ro_uris=[],
             redis_relation={},
-            pebble_statuses={
-                'indico': False,
-                'indico-nginx': False,
-                'indico-celery': False,
-            },
             secret_key=repr(os.urandom(32)),
         )
+
+        self.pebble_statuses = {
+            'indico': False,
+            'indico-nginx': False,
+            'indico-celery': False,
+        }
 
         self.db = pgsql.PostgreSQLClient(self, 'db')
         self.framework.observe(self.db.on.database_relation_joined, self._on_database_relation_joined)
@@ -101,7 +102,7 @@ class IndicoOperatorCharm(CharmBase):
         }
 
     def _are_pebble_instances_ready(self):
-        return all(self._stored.pebble_statuses.values())
+        return all(self.pebble_statuses.values())
 
     def _get_external_hostname(self):
         """Extract and return hostname from site_url"""
@@ -134,7 +135,7 @@ class IndicoOperatorCharm(CharmBase):
         container.add_layer(container.name, pebble_config, combine=True)
         self.unit.status = MaintenanceStatus('Starting {} container'.format(container.name))
         container.pebble.replan_services()
-        self._stored.pebble_statuses[container.name] = True
+        self.pebble_statuses[container.name] = True
         if self._are_pebble_instances_ready():
             self.unit.status = ActiveStatus()
         else:
