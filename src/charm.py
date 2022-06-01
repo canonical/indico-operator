@@ -112,12 +112,7 @@ class IndicoOperatorCharm(CharmBase):
     def _get_external_port(self):
         """Extract and return hostname from site_url"""
         site_url = self.config["site_url"]
-        if urlparse(site_url).port:
-            return urlparse(site_url).port
-        elif urlparse(site_url).scheme == 'http':
-            return 80
-        else:
-            return 443
+        return urlparse(site_url).port
 
     def _are_relations_ready(self, event):
         """Handle the on pebble ready event for Indico."""
