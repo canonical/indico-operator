@@ -211,7 +211,7 @@ class IndicoOperatorCharm(CharmBase):
             'CELERY_BROKER': 'redis://{host}:{port}'.format(host=redis_hostname, port=redis_port),
             'SECRET_KEY': self._stored.secret_key,
             'SERVICE_HOSTNAME': self._get_external_hostname(),
-            'SERVICE_SCHEMA': self._get_external_scheme(),
+            'SERVICE_SCHEME': self._get_external_scheme(),
             'SERVICE_PORT': self._get_external_port(),
             'REDIS_CACHE_URL': 'redis://{host}:{port}'.format(host=redis_hostname, port=redis_port),
             'SMTP_SERVER': self.config["smtp_server"],

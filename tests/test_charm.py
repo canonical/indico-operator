@@ -168,7 +168,7 @@ class TestCharm(unittest.TestCase):
         self.assertEqual('public@email.local', updated_plan_env["INDICO_PUBLIC_SUPPORT_EMAIL"])
         self.assertEqual('noreply@email.local', updated_plan_env["INDICO_NO_REPLY_EMAIL"])
         self.assertEqual('example.local', updated_plan_env["SERVICE_HOSTNAME"])
-        self.assertEqual('http', updated_plan_env["SERVICE_SCHEME"])
+        self.assertEqual('https', updated_plan_env["SERVICE_SCHEME"])
         self.assertEqual(8080, updated_plan_env["SERVICE_PORT"])
         self.assertEqual('localhost', updated_plan_env["SMTP_SERVER"])
         self.assertEqual(8025, updated_plan_env["SMTP_PORT"])
