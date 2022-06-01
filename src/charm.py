@@ -109,8 +109,13 @@ class IndicoOperatorCharm(CharmBase):
         site_url = self.config["site_url"]
         return urlparse(site_url).hostname
 
+    def _get_external_scheme(self):
+        """Extract and return schema from site_url"""
+        site_url = self.config["site_url"]
+        return urlparse(site_url).scheme
+
     def _get_external_port(self):
-        """Extract and return hostname from site_url"""
+        """Extract and return port from site_url"""
         site_url = self.config["site_url"]
         return urlparse(site_url).port
 
@@ -206,6 +211,7 @@ class IndicoOperatorCharm(CharmBase):
             'CELERY_BROKER': 'redis://{host}:{port}'.format(host=redis_hostname, port=redis_port),
             'SECRET_KEY': self._stored.secret_key,
             'SERVICE_HOSTNAME': self._get_external_hostname(),
+            'SERVICE_SCHEMA': self._get_external_scheme(),
             'SERVICE_PORT': self._get_external_port(),
             'REDIS_CACHE_URL': 'redis://{host}:{port}'.format(host=redis_hostname, port=redis_port),
             'SMTP_SERVER': self.config["smtp_server"],

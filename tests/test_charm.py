@@ -100,6 +100,7 @@ class TestCharm(unittest.TestCase):
         self.assertEqual('redis://redis-host:1010', updated_plan_env["CELERY_BROKER"])
         self.assertEqual(self.harness.charm._stored.secret_key, updated_plan_env["SECRET_KEY"])
         self.assertEqual('indico.local', updated_plan_env["SERVICE_HOSTNAME"])
+        self.assertEqual('http', updated_plan_env["SERVICE_SCHEME"])
         self.assertIsNone(updated_plan_env["SERVICE_PORT"])
         self.assertEqual('redis://redis-host:1010', updated_plan_env["REDIS_CACHE_URL"])
         self.assertEqual('support-tech@mydomain.local', updated_plan_env["INDICO_SUPPORT_EMAIL"])
@@ -134,7 +135,7 @@ class TestCharm(unittest.TestCase):
                 "indico_support_email": "example@email.local",
                 "indico_public_support_email": "public@email.local",
                 "indico_no_reply_email": "noreply@email.local",
-                "site_url": "http://example.local:8080",
+                "site_url": "https://example.local:8080",
                 "smtp_server": "localhost",
                 "smtp_port": 8025,
                 "smtp_login": "user",
@@ -151,6 +152,7 @@ class TestCharm(unittest.TestCase):
         self.assertEqual('public@email.local', updated_plan_env["INDICO_PUBLIC_SUPPORT_EMAIL"])
         self.assertEqual('noreply@email.local', updated_plan_env["INDICO_NO_REPLY_EMAIL"])
         self.assertEqual('example.local', updated_plan_env["SERVICE_HOSTNAME"])
+        self.assertEqual('https', updated_plan_env["SERVICE_SCHEME"])
         self.assertEqual(8080, updated_plan_env["SERVICE_PORT"])
         self.assertEqual('localhost', updated_plan_env["SMTP_SERVER"])
         self.assertEqual(8025, updated_plan_env["SMTP_PORT"])
@@ -166,6 +168,7 @@ class TestCharm(unittest.TestCase):
         self.assertEqual('public@email.local', updated_plan_env["INDICO_PUBLIC_SUPPORT_EMAIL"])
         self.assertEqual('noreply@email.local', updated_plan_env["INDICO_NO_REPLY_EMAIL"])
         self.assertEqual('example.local', updated_plan_env["SERVICE_HOSTNAME"])
+        self.assertEqual('http', updated_plan_env["SERVICE_SCHEME"])
         self.assertEqual(8080, updated_plan_env["SERVICE_PORT"])
         self.assertEqual('localhost', updated_plan_env["SMTP_SERVER"])
         self.assertEqual(8025, updated_plan_env["SMTP_PORT"])
