@@ -109,6 +109,16 @@ class IndicoOperatorCharm(CharmBase):
         site_url = self.config["site_url"]
         return urlparse(site_url).hostname
 
+    def _get_external_port(self):
+        """Extract and return hostname from site_url"""
+        site_url = self.config["site_url"]
+        if urlparse(site_url).port:
+            return urlparse(site_url).port
+        elif urlparse(site_url).scheme == 'http':
+            return 80
+        else:
+            return 443
+
     def _are_relations_ready(self, event):
         """Handle the on pebble ready event for Indico."""
         if not self._stored.redis_relation:
@@ -201,7 +211,7 @@ class IndicoOperatorCharm(CharmBase):
             'CELERY_BROKER': 'redis://{host}:{port}'.format(host=redis_hostname, port=redis_port),
             'SECRET_KEY': self._stored.secret_key,
             'SERVICE_HOSTNAME': self._get_external_hostname(),
-            'SERVICE_PORT': 8081,
+            'SERVICE_PORT': self._get_external_port(),
             'REDIS_CACHE_URL': 'redis://{host}:{port}'.format(host=redis_hostname, port=redis_port),
             'SMTP_SERVER': self.config["smtp_server"],
             'SMTP_PORT': self.config["smtp_port"],

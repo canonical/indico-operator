@@ -68,7 +68,7 @@ class TestCharm(unittest.TestCase):
         self.assertEqual('redis://redis-host:1010', updated_plan_env["CELERY_BROKER"])
         self.assertEqual(self.harness.charm._stored.secret_key, updated_plan_env["SECRET_KEY"])
         self.assertEqual('indico.local', updated_plan_env["SERVICE_HOSTNAME"])
-        self.assertEqual(8081, updated_plan_env["SERVICE_PORT"])
+        self.assertEqual(80, updated_plan_env["SERVICE_PORT"])
         self.assertEqual('redis://redis-host:1010', updated_plan_env["REDIS_CACHE_URL"])
         self.assertEqual('support-tech@mydomain.local', updated_plan_env["INDICO_SUPPORT_EMAIL"])
         self.assertEqual('support@mydomain.local', updated_plan_env["INDICO_PUBLIC_SUPPORT_EMAIL"])
@@ -100,7 +100,7 @@ class TestCharm(unittest.TestCase):
         self.assertEqual('redis://redis-host:1010', updated_plan_env["CELERY_BROKER"])
         self.assertEqual(self.harness.charm._stored.secret_key, updated_plan_env["SECRET_KEY"])
         self.assertEqual('indico.local', updated_plan_env["SERVICE_HOSTNAME"])
-        self.assertEqual(8081, updated_plan_env["SERVICE_PORT"])
+        self.assertEqual(80, updated_plan_env["SERVICE_PORT"])
         self.assertEqual('redis://redis-host:1010', updated_plan_env["REDIS_CACHE_URL"])
         self.assertEqual('support-tech@mydomain.local', updated_plan_env["INDICO_SUPPORT_EMAIL"])
         self.assertEqual('support@mydomain.local', updated_plan_env["INDICO_PUBLIC_SUPPORT_EMAIL"])
@@ -134,7 +134,7 @@ class TestCharm(unittest.TestCase):
                 "indico_support_email": "example@email.local",
                 "indico_public_support_email": "public@email.local",
                 "indico_no_reply_email": "noreply@email.local",
-                "site_url": "http://example.local",
+                "site_url": "http://example.local:8080",
                 "smtp_server": "localhost",
                 "smtp_port": 8025,
                 "smtp_login": "user",
@@ -150,6 +150,8 @@ class TestCharm(unittest.TestCase):
         self.assertEqual('example@email.local', updated_plan_env["INDICO_SUPPORT_EMAIL"])
         self.assertEqual('public@email.local', updated_plan_env["INDICO_PUBLIC_SUPPORT_EMAIL"])
         self.assertEqual('noreply@email.local', updated_plan_env["INDICO_NO_REPLY_EMAIL"])
+        self.assertEqual('example.local', updated_plan_env["SERVICE_HOSTNAME"])
+        self.assertEqual(8080, updated_plan_env["SERVICE_PORT"])
         self.assertEqual('localhost', updated_plan_env["SMTP_SERVER"])
         self.assertEqual(8025, updated_plan_env["SMTP_PORT"])
         self.assertEqual('user', updated_plan_env["SMTP_LOGIN"])
@@ -163,6 +165,8 @@ class TestCharm(unittest.TestCase):
         self.assertEqual('example@email.local', updated_plan_env["INDICO_SUPPORT_EMAIL"])
         self.assertEqual('public@email.local', updated_plan_env["INDICO_PUBLIC_SUPPORT_EMAIL"])
         self.assertEqual('noreply@email.local', updated_plan_env["INDICO_NO_REPLY_EMAIL"])
+        self.assertEqual('example.local', updated_plan_env["SERVICE_HOSTNAME"])
+        self.assertEqual(8080, updated_plan_env["SERVICE_PORT"])
         self.assertEqual('localhost', updated_plan_env["SMTP_SERVER"])
         self.assertEqual(8025, updated_plan_env["SMTP_PORT"])
         self.assertEqual('user', updated_plan_env["SMTP_LOGIN"])
@@ -172,7 +176,7 @@ class TestCharm(unittest.TestCase):
         self.harness.disable_hooks()
         self.harness.set_leader(True)
         self.harness.enable_hooks()
-        self.harness.update_config({"site_url": "http://example.local"})
+        self.harness.update_config({"site_url": "https://example.local"})
         self.assertEqual('example.local', self.harness.charm.ingress.config_dict['service-hostname'])
 
     def test_config_changed_when_pebble_not_ready(self):
