@@ -3,7 +3,7 @@ display-name: Indico
 summary: Indico web application.
 docs: https://docs.getindico.io/en/stable/
 maintainers:
-  - launchpad.net/~canonical-is-sre
+  - launchpad.net/~canonical-is-devops
 description: |
   Indico is a tool that allows you to manage complex conferences, workshops and meetings.
   https://getindico.io/
