@@ -1,6 +1,0 @@
--r requirements.txt
-coverage
-flake8
-mock
-pytest
-pytest-cov
