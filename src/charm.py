@@ -58,7 +58,8 @@ class IndicoOperatorCharm(CharmBase):
         }
 
         self.db = pgsql.PostgreSQLClient(self, 'db')
-        self.framework.observe(self.db.on.database_relation_joined, self._on_database_relation_joined)
+        self.framework.observe(self.db.on.database_relation_joined,
+                               self._on_database_relation_joined)
         self.framework.observe(self.db.on.master_changed, self._on_master_changed)
 
         self.redis = RedisRequires(self, self._stored)
@@ -213,7 +214,8 @@ class IndicoOperatorCharm(CharmBase):
             'SERVICE_HOSTNAME': self._get_external_hostname(),
             'SERVICE_SCHEME': self._get_external_scheme(),
             'SERVICE_PORT': self._get_external_port(),
-            'REDIS_CACHE_URL': 'redis://{host}:{port}'.format(host=redis_hostname, port=redis_port),
+            'REDIS_CACHE_URL': 'redis://{host}:{port}'.format(host=redis_hostname,
+                                                              port=redis_port),
             'SMTP_SERVER': self.config["smtp_server"],
             'SMTP_PORT': self.config["smtp_port"],
             'SMTP_LOGIN': self.config["smtp_login"],

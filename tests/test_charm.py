@@ -15,13 +15,15 @@ class TestCharm(unittest.TestCase):
 
     def test_missing_relations(self):
         self.harness.update_config({"site_url": "foo"})
-        self.assertEqual(self.harness.model.unit.status, WaitingStatus('Waiting for redis relation'))
+        self.assertEqual(self.harness.model.unit.status,
+                         WaitingStatus('Waiting for redis relation'))
         redis_relation_id = self.harness.add_relation('redis', self.harness.charm.app.name)
         self.harness.add_relation_unit(redis_relation_id, "redis/0")
         self.harness.update_relation_data(
             redis_relation_id, "redis/0", {"something": "just to trigger rel-changed event"}
         )
-        self.assertEqual(self.harness.model.unit.status, WaitingStatus('Waiting for database relation'))
+        self.assertEqual(self.harness.model.unit.status,
+                         WaitingStatus('Waiting for database relation'))
 
     def test_indico_nginx_pebble_ready(self):
         initial_plan = self.harness.get_container_pebble_plan("indico-nginx")
@@ -112,7 +114,8 @@ class TestCharm(unittest.TestCase):
         self.assertEqual('', updated_plan_env["SMTP_PASSWORD"])
         self.assertTrue(updated_plan_env["SMTP_USE_TLS"])
 
-        service = self.harness.model.unit.get_container("indico-celery").get_service("indico-celery")
+        service = self.harness.model.unit.get_container("indico-celery")\
+            .get_service("indico-celery")
         self.assertTrue(service.is_running())
         self.assertEqual(self.harness.model.unit.status, WaitingStatus('Waiting for pebble'))
 
@@ -180,7 +183,8 @@ class TestCharm(unittest.TestCase):
         self.harness.set_leader(True)
         self.harness.enable_hooks()
         self.harness.update_config({"site_url": "https://example.local"})
-        self.assertEqual('example.local', self.harness.charm.ingress.config_dict['service-hostname'])
+        self.assertEqual('example.local',
+                         self.harness.charm.ingress.config_dict['service-hostname'])
 
     def test_config_changed_when_pebble_not_ready(self):
         # Set relation data

@@ -38,6 +38,3 @@ options:
     type: boolean
     description: If enabled, STARTTLS will be used to use an encrypted SMTP connection.
     default: true
-
-
-
