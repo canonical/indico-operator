@@ -1,7 +1,7 @@
 name: indico
 display-name: Indico
 summary: Indico web application.
-docs: https://docs.getindico.io/en/stable/
+docs:
 maintainers:
   - launchpad.net/~canonical-is-devops
 description: |
