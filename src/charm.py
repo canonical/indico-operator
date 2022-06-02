@@ -48,6 +48,7 @@ class IndicoOperatorCharm(CharmBase):
             db_uri=None,
             db_ro_uris=[],
             redis_relation={},
+            # This key would need to be shared across instances to support horizontal scalability
             secret_key=repr(os.urandom(32)),
         )
 
