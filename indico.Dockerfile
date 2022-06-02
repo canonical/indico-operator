@@ -40,5 +40,6 @@ COPY files/etc/nginx/nginx.conf /etc/nginx/nginx.conf
 
 RUN chmod +x /srv/indico/start-indico.sh \
     && chown -R indico:indico /srv/indico \
-    && chown -R nginx:nginx /srv/indico/static/
+    && chown -R nginx:nginx /srv/indico/static/ \
+    && chmod 755 /srv/indico
 
