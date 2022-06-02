@@ -11,15 +11,15 @@ To deploy into a Juju K8s model:
 
     juju deploy postgresql-k8s
     juju deploy redis-k8s
-    juju deploy indico-k8s
-    juju relate indico-k8s redis-k8s
-    juju relate indico-k8s postgresql-k8s:db
+    juju deploy indico
+    juju relate indico redis-k8s
+    juju relate indico postgresql-k8s:db
 
 The charm supports the `ingress` relation, which can be used with
 [nginx-ingress-integrator](https://charmhub.io/nginx-ingress-integrator/)
 
     juju deploy nginx-ingress-integrator
-    juju relate indico-k8s:ingress nginx-ingress-integrator:ingress
+    juju relate indico:ingress nginx-ingress-integrator:ingress
 
 
 ## Contributing
