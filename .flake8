@@ -6,5 +6,5 @@ exclude:
   .git
   build
   dist
-  lib
+  lib/charms
   *.egg_info
