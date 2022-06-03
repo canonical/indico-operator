@@ -193,7 +193,7 @@ class IndicoOperatorCharm(CharmBase):
                     "indico-nginx": {
                         "override": "replace",
                         "summary": "Nginx service",
-                        "command": "nginx",
+                        "command": "/usr/sbin/nginx",
                         "startup": "enabled",
                     },
                 },
