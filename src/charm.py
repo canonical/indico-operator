@@ -104,6 +104,7 @@ class IndicoOperatorCharm(CharmBase):
         }
 
     def _are_pebble_instances_ready(self):
+        """Check if all pebble instances are ready."""
         return all(self.pebble_statuses.values())
 
     def _get_external_hostname(self):
