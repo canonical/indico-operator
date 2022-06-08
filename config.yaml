@@ -17,7 +17,7 @@ options:
   site_url:
     type: string
     description: URL through which Indico is accessed by users.
-    default: 'http://indico.local'
+    default: 'http://indico'
   smtp_server:
     type: string
     description: The hostname of the SMTP server used for sending emails.
