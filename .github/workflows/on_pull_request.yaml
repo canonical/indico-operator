@@ -1,0 +1,23 @@
+name: Test and publish
+
+# On pull_request, we:
+# * always publish to charmhub at latest/edge/branchname
+# * always run tests
+
+on:
+  pull_request:
+
+jobs:
+
+  tests:
+    name: Run Tests
+    uses: ./.github/workflows/ci.yaml
+    secrets:
+      charmhub-token: "${{ secrets.CHARMHUB_TOKEN }}"
+
+  publish-charm:
+    name: Publish Charm
+    uses: ./.github/workflows/publish.yaml
+    needs: tests
+    secrets:
+      charmhub-token: "${{ secrets.CHARMHUB_TOKEN }}"

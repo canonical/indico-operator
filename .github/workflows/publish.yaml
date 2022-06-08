@@ -1,0 +1,27 @@
+name: Publish
+
+on:
+  workflow_call:
+    secrets:
+      charmhub-token:
+        required: true
+
+jobs:
+
+  publish-charm:
+    name: Publish Charm
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Select charmhub channel
+        uses: canonical/charming-actions/channel@1.0.3
+        id: channel
+      - name: Upload charm to charmhub
+        uses: canonical/charming-actions/upload-charm@1.0.3
+        with:
+          credentials: "${{ secrets.charmhub-token }}"
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          channel: "${{ steps.channel.outputs.name }}"

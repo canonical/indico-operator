@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  workflow_call:
+    secrets:
+      charmhub-token:
+        required: true
+
+jobs:
+  lib-check:
+    name: Check libraries
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Check libs
+        uses: canonical/charming-actions/check-libraries@1.0.3
+        with:
+          credentials: "${{ secrets.charmhub-token }}"
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install dependencies
+        run: python3 -m pip install tox
+      - name: Run linters
+        run: tox -e lint
+  unit-test:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install dependencies
+        run: python3 -m pip install tox
+      - name: Run tests
+        run: tox -e unit
