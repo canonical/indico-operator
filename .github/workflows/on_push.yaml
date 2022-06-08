@@ -18,7 +18,7 @@ jobs:
 
   tests:
     name: Run Tests
-    uses: ./.github/workflows/integrate.yaml
+    uses: ./.github/workflows/ci.yaml
     secrets:
       charmhub-token: "${{ secrets.CHARMCRAFT_CREDENTIALS }}"
 
