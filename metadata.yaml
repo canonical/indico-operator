@@ -1,23 +1,34 @@
-# Copyright 2022 arturo
-# See LICENSE file for licensing details.
-
-# For a complete list of supported options, see:
-# https://juju.is/docs/sdk/metadata-reference
-name: indico-operator
-display-name: |
-  TEMPLATE-TODO: fill out a display name for the Charmcraft store
+name: indico
+display-name: Indico
+summary: Indico web application.
+docs:
+maintainers:
+  - launchpad.net/~canonical-is-devops
 description: |
-  TEMPLATE-TODO: fill out the charm's description
-summary: |
-  TEMPLATE-TODO: fill out the charm's summary
-
-# TEMPLATE-TODO: replace with containers for your workload (delete for non-k8s)
+  Indico is a tool that allows you to manage complex conferences, workshops and meetings.
+  https://getindico.io/
 containers:
-  httpbin:
-    resource: httpbin-image
+  indico:
+    resource: indico-image
+  indico-nginx:
+    resource: indico-nginx-image
+  indico-celery:
+    resource: indico-image
 
-# TEMPLATE-TODO: each container defined above must specify an oci-image resource
 resources:
-  httpbin-image:
+  indico-image:
     type: oci-image
-    description: OCI image for httpbin (kennethreitz/httpbin)
+    description: Docker image for Indico web app to run
+  indico-nginx-image:
+    type: oci-image
+    description: Docker image for Nginx to run
+
+requires:
+  redis:
+    interface: redis
+  db:
+    interface: pgsql
+    limit: 1
+  ingress:
+    interface: ingress
+    limit: 1

@@ -7,16 +7,20 @@ A Juju charm deploying and managing Indico on Kubernetes, configurable to use a 
 
 ## Usage
 
-TODO: Provide high-level usage, such as required config or relations
+To deploy into a Juju K8s model:
 
+    juju deploy postgresql-k8s
+    juju deploy redis-k8s
+    juju deploy indico
+    juju relate indico redis-k8s
+    juju relate indico postgresql-k8s:db
 
-## Relations
+The charm supports the `ingress` relation, which can be used with
+[nginx-ingress-integrator](https://charmhub.io/nginx-ingress-integrator/)
 
-TODO: Provide any relations which are provided or required by your charm
+    juju deploy nginx-ingress-integrator
+    juju relate indico:ingress nginx-ingress-integrator:ingress
 
-## OCI Images
-
-TODO: Include a link to the default image your charm uses
 
 ## Contributing
 
