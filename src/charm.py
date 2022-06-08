@@ -15,7 +15,7 @@ from ops.framework import StoredState
 from ops.main import main
 from ops.model import ActiveStatus, MaintenanceStatus, WaitingStatus
 
-# Using postres db to workaround the issue https://bugs.launchpad.net/charm-k8s-postgresql/+bug/1977940
+# Using postres db to workaround issue https://bugs.launchpad.net/charm-k8s-postgresql/+bug/1977940
 DATABASE_NAME = "postgres"
 PORT = 8080
 
@@ -110,7 +110,7 @@ class IndicoOperatorCharm(CharmBase):
     def _get_external_scheme(self):
         """Extract and return schema from site_url."""
         site_url = self.config["site_url"]
-        return urlparse(site_url).scheme if site_url else 'http'
+        return urlparse(site_url).scheme if site_url else "http"
 
     def _get_external_port(self):
         """Extract and return port from site_url."""
