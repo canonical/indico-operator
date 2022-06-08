@@ -23,6 +23,7 @@ from ops.model import (
 )
 from charms.nginx_ingress_integrator.v0.ingress import IngressRequires
 
+# Using postres db to workaround the issue https://bugs.launchpad.net/charm-k8s-postgresql/+bug/1977940
 DATABASE_NAME = 'postgres'
 PORT = 8080
 
