@@ -11,17 +11,14 @@ containers:
   indico:
     resource: indico-image
   indico-nginx:
-    resource: indico-nginx-image
+    resource: indico-image
   indico-celery:
     resource: indico-image
 
 resources:
   indico-image:
     type: oci-image
-    description: Docker image for Indico web app to run
-  indico-nginx-image:
-    type: oci-image
-    description: Docker image for Nginx to run
+    description: Docker image for Indico
 
 requires:
   redis:
