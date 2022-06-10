@@ -19,6 +19,7 @@ resources:
   indico-image:
     type: oci-image
     description: Docker image for Indico
+    auto-fetch: true
 
 requires:
   redis:
