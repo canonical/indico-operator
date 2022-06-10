@@ -25,3 +25,4 @@ jobs:
           credentials: "${{ secrets.charmhub-token }}"
           github-token: "${{ secrets.GITHUB_TOKEN }}"
           channel: "${{ steps.channel.outputs.name }}"
+          upload-image: false
