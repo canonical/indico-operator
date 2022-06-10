@@ -3,5 +3,6 @@ build/
 *.charm
 
 .coverage
+.tox
 __pycache__/
 *.py[cod]
