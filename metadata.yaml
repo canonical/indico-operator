@@ -20,6 +20,7 @@ resources:
     type: oci-image
     description: Docker image for Indico
     auto-fetch: true
+    upstream-source: 'registry.jujucharms.com/charm/e7cgxprwp5telxhlb24qmbxuoi9a5e3m40iv/indico-image@sha256:c40b5291a0346132d1f6ed5a38f92fafdefd7da64655742881729a8cbaf6a807'
 
 requires:
   redis:
