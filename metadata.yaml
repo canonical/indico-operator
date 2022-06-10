@@ -1,7 +1,7 @@
 name: indico
 display-name: Indico
 summary: Indico web application.
-docs:
+docs: https://discourse.charmhub.io/t/indico-docs-index/6552
 maintainers:
   - launchpad.net/~canonical-is-devops
 description: |
