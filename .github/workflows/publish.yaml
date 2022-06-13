@@ -13,9 +13,9 @@ jobs:
         run: |
           sudo snap install docker
       - name: Checkout
-          uses: actions/checkout@v2
-          with:
-            fetch-depth: 0
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: Publish image
         env:
           CHARMCRAFT_AUTH: ${{ secrets.charmhub-token }}
