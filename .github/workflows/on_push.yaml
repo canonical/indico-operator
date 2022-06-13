@@ -26,6 +26,6 @@ jobs:
   publish-charm:
     name: Publish Charm
     needs: tests
-    uses: ./.github/workflows/publish.yaml
+    uses: ./.github/workflows/release.yaml
     secrets:
       charmhub-token: "${{ secrets.CHARMCRAFT_CREDENTIALS }}"
