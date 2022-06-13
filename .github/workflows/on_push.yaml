@@ -23,7 +23,7 @@ jobs:
       charmhub-token: "${{ secrets.CHARMCRAFT_CREDENTIALS }}"
 
   release-charm-to-edge:
-    name: Publish Charm
+    name: Publish Charm To Edge
     needs: tests
     uses: ./.github/workflows/release.yaml
     secrets:
