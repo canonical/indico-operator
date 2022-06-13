@@ -13,7 +13,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo snap install docker
-          sudo snap install charmcraft
+          sudo snap install charmcraft --classic
       - name: Checkout
         uses: actions/checkout@v2
         with:
