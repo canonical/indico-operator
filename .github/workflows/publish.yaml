@@ -10,21 +10,21 @@ jobs:
   publish-indico-image:
     runs-on: ubuntu-latest
       steps:
-          - name: Install dependencies
-            run: |
-              sudo snap install docker
-              sudo snap install charmcraft --classic
-              - name: Checkout
-                uses: actions/checkout@v2
-                with:
-                  fetch-depth: 0
-              - name: Publish image
-                env:
-                  CHARMCRAFT_AUTH: ${{ secrets.charmhub-token }}
-                run: |
-                  docker build . -t indico:latest -f indico.Dockerfile
-                  SHA=$(docker image ls -q indico:latest)
-                  charmcraft upload-resource indico indico-image --image=$SHA
+        - name: Install dependencies
+          run: |
+            sudo snap install docker
+            sudo snap install charmcraft --classic
+            - name: Checkout
+              uses: actions/checkout@v2
+              with:
+                fetch-depth: 0
+            - name: Publish image
+              env:
+                CHARMCRAFT_AUTH: ${{ secrets.charmhub-token }}
+              run: |
+                docker build . -t indico:latest -f indico.Dockerfile
+                SHA=$(docker image ls -q indico:latest)
+                charmcraft upload-resource indico indico-image --image=$SHA
   publish-nginx-image:
     runs-on: ubuntu-latest
     steps:
