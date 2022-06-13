@@ -15,7 +15,7 @@ jobs:
           sudo snap install docker
           sudo snap install charmcraft --classic
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Publish image
@@ -33,7 +33,7 @@ jobs:
           sudo snap install docker
           sudo snap install charmcraft --classic
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Publish image
@@ -48,7 +48,7 @@ jobs:
     needs: [publish-indico-image, publish-nginx-image]
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Select charmhub channel
