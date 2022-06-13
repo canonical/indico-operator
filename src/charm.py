@@ -15,7 +15,6 @@ from ops.framework import StoredState
 from ops.main import main
 from ops.model import ActiveStatus, MaintenanceStatus, WaitingStatus
 
-# Using postres db to workaround issue https://bugs.launchpad.net/charm-k8s-postgresql/+bug/1977940
 DATABASE_NAME = "indico"
 PORT = 8080
 
