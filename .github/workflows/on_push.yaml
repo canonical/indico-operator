@@ -20,11 +20,11 @@ jobs:
     name: Run Tests
     uses: ./.github/workflows/ci.yaml
     secrets:
-      charmhub-token: "${{ secrets.CHARMCRAFT_CREDENTIALS }}"
+      charmhub-token: "${{ secrets.CHARMHUB_TOKEN }}"
 
   publish-charm-to-edge:
     name: Publish Charm To Edge
     uses: ./.github/workflows/publish.yaml
     needs: tests
     secrets:
-      charmhub-token: "${{ secrets.CHARMCRAFT_CREDENTIALS }}"
+      charmhub-token: "${{ secrets.CHARMHUB_TOKEN }}"
