@@ -2,8 +2,9 @@ FROM ubuntu:jammy
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Python 3.9 is the only version supported by indico at the moment. Meaning it has to be installed from the PPA
-# deadsnakes/ppa
+# Python 3.9 is the only version supported by indico at the moment (see
+# https://github.com/indico/indico/issues/5364). Install from the PPA
+# deadsnakes/ppa until this is addressed.
 RUN apt update \
     && apt install -y software-properties-common \
     && add-apt-repository ppa:deadsnakes/ppa -y \
