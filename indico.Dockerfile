@@ -9,8 +9,7 @@ RUN apt update \
     && apt install -y software-properties-common \
     && add-apt-repository ppa:deadsnakes/ppa -y \
     && apt update \
-    && apt install -y gcc gettext libpq-dev postgresql-client python3.9 python3-apt python3.9-dev python3.9-distutils \
-    python3-pip texlive-xetex
+    && apt install -y libpq-dev python3.9 python3.9-dev python3.9-distutils python3-pip
 
 
 ENV INDICO_VIRTUALENV="/srv/indico/.venv"
@@ -20,9 +19,7 @@ RUN ["/bin/bash", "-c", "mkdir -p --mode=775 /srv/indico/{etc,tmp,log,cache,arch
 RUN pip install virtualenv \
     && virtualenv --python=/usr/bin/python3.9 ${INDICO_VIRTUALENV} \
     && ${pip} install --upgrade pip setuptools \
-    && ${pip} install uwsgi \
-    && ${pip} install indico \
-    && ${pip} install indico-plugins
+    && ${pip} install indico indico-plugins uwsgi
 
 FROM ubuntu:jammy
 

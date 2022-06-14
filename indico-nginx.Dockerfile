@@ -9,20 +9,16 @@ RUN apt update \
     && apt install -y software-properties-common \
     && add-apt-repository ppa:deadsnakes/ppa -y \
     && apt update \
-    && apt install -y gcc gettext libpq-dev postgresql-client python3.9 python3-apt python3.9-dev python3.9-distutils \
-    python3-pip texlive-xetex
+    && apt install -y libpq-dev python3.9 python3.9-dev python3.9-distutils python3-pip
 
 
-ENV INDICO_VIRTUALENV="/srv/indico/.venv" INDICO_CONFIG="/srv/indico/etc/indico.conf"
+ENV INDICO_VIRTUALENV="/srv/indico/.venv"
 ENV pip="${INDICO_VIRTUALENV}/bin/pip"
 
-RUN ["/bin/bash", "-c", "mkdir -p --mode=775 /srv/indico/{etc,tmp,log,cache,archive,custom}"]
-RUN pip install virtualenv \
+RUN pip install --prefer-binary virtualenv \
     && virtualenv --python=/usr/bin/python3.9 ${INDICO_VIRTUALENV} \
-    && ${pip} install --upgrade pip setuptools \
-    && ${pip} install indico \
-    && ${pip} install indico-plugins
-
+    && ${pip} install --prefer-binary --upgrade pip setuptools \
+    && ${pip} install --prefer-binary indico indico-plugins
 
 FROM ubuntu:jammy
 
