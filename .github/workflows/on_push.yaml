@@ -22,10 +22,9 @@ jobs:
     secrets:
       charmhub-token: "${{ secrets.CHARMCRAFT_CREDENTIALS }}"
 
-  # publish runs in series with tests, and only publishes if tests passes
-  publish-charm:
-    name: Publish Charm
+  release-charm-to-edge:
+    name: Publish Charm To Edge
     needs: tests
-    uses: ./.github/workflows/publish.yaml
+    uses: ./.github/workflows/release.yaml
     secrets:
       charmhub-token: "${{ secrets.CHARMCRAFT_CREDENTIALS }}"
