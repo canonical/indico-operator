@@ -14,10 +14,3 @@ jobs:
     uses: ./.github/workflows/ci.yaml
     secrets:
       charmhub-token: "${{ secrets.CHARMHUB_TOKEN }}"
-
-  publish-charm:
-    name: Publish Charm
-    uses: ./.github/workflows/publish.yaml
-    needs: tests
-    secrets:
-      charmhub-token: "${{ secrets.CHARMHUB_TOKEN }}"
