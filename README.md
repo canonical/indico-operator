@@ -1,4 +1,4 @@
-# indico-operator
+# Indico Operator
 
 ## Description
 
@@ -16,14 +16,10 @@ To deploy into a Juju K8s model:
     juju relate indico postgresql-k8s:db
 
 The charm supports the `ingress` relation, which can be used with
-[nginx-ingress-integrator](https://charmhub.io/nginx-ingress-integrator/)
+[nginx-ingress-integrator](https://charmhub.io/nginx-ingress-integrator/).
 
     juju deploy nginx-ingress-integrator
     juju relate indico:ingress nginx-ingress-integrator:ingress
 
 
-## Contributing
-
-Please see the [Juju SDK docs](https://juju.is/docs/sdk) for guidelines
-on enhancements to this charm following best practice guidelines, and
-`CONTRIBUTING.md` for developer guidance.
+For further details, [see here](https://charmhub.io/indico/docs).
