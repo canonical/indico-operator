@@ -11,15 +11,7 @@ RUN apt update \
     && apt update \
     && apt install -y libpq-dev python3.9 python3.9-dev python3.9-distutils python3-pip
 
-
-ENV INDICO_VIRTUALENV="/srv/indico/.venv"
-ENV pip="${INDICO_VIRTUALENV}/bin/pip"
-
-RUN ["/bin/bash", "-c", "mkdir -p --mode=775 /srv/indico/{etc,tmp,log,cache,archive,custom}"]
-RUN pip install virtualenv \
-    && virtualenv --python=/usr/bin/python3.9 ${INDICO_VIRTUALENV} \
-    && ${pip} install --upgrade pip setuptools \
-    && ${pip} install indico indico-plugins uwsgi
+RUN python3.9 -m pip install --prefer-binary indico indico-plugins uwsgi
 
 FROM ubuntu:jammy
 
@@ -29,7 +21,8 @@ ARG indico_uid=2000
 RUN addgroup --gid ${indico_gid} indico \
     && adduser --system --gid ${indico_gid} --uid ${indico_uid} --home /srv/indico --disabled-login indico
 
-ENV DEBIAN_FRONTEND=noninteractive
+ENV DEBIAN_FRONTEND=noninteractive \
+    INDICO_CONFIG="/srv/indico/etc/indico.conf"
 
 RUN apt update \
     && apt install -y software-properties-common \
@@ -37,12 +30,12 @@ RUN apt update \
     && apt update \
     && apt install -y gettext postgresql-client python3.9 python3.9-dev texlive-xetex
 
-ENV INDICO_VIRTUALENV="/srv/indico/.venv" INDICO_CONFIG="/srv/indico/etc/indico.conf"
+COPY --from=0 /usr/local/bin /usr/local/bin
+COPY --from=0 /usr/local/lib/python3.9/dist-packages /usr/local/lib/python3.9/dist-packages
 
-COPY --from=0 /srv/indico /srv/indico
-
-RUN ${INDICO_VIRTUALENV}/bin/indico setup create-symlinks /srv/indico \
-    && ${INDICO_VIRTUALENV}/bin/indico setup create-logging-config /etc
+RUN ["/bin/bash", "-c", "mkdir -p --mode=775 /srv/indico/{etc,tmp,log,cache,archive,custom}"]
+RUN /usr/local/bin/indico setup create-symlinks /srv/indico \
+    && /usr/local/bin/indico setup create-logging-config /etc
 
 COPY files/start-indico.sh /srv/indico/
 COPY files/etc/indico/indico.conf /srv/indico/etc/

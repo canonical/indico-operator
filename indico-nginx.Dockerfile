@@ -11,14 +11,7 @@ RUN apt update \
     && apt update \
     && apt install -y libpq-dev python3.9 python3.9-dev python3.9-distutils python3-pip
 
-
-ENV INDICO_VIRTUALENV="/srv/indico/.venv"
-ENV pip="${INDICO_VIRTUALENV}/bin/pip"
-
-RUN pip install --prefer-binary virtualenv \
-    && virtualenv --python=/usr/bin/python3.9 ${INDICO_VIRTUALENV} \
-    && ${pip} install --prefer-binary --upgrade pip setuptools \
-    && ${pip} install --prefer-binary indico indico-plugins
+RUN python3.9 -m pip install --prefer-binary indico indico-plugins
 
 FROM ubuntu:jammy
 
@@ -28,12 +21,10 @@ ARG nginx_uid=2001
 RUN addgroup --gid ${nginx_gid} nginx \
     && adduser --system --gid ${nginx_gid} --uid ${nginx_uid} --no-create-home --disabled-login nginx
 
-ENV DEBIAN_FRONTEND=noninteractive
-
 RUN apt update \
     && apt install -y nginx
 
-COPY --from=0 /srv/indico/.venv/lib/python3.9/site-packages/indico/web/static /srv/indico/static
+COPY --from=0 /usr/local/lib/python3.9/dist-packages/indico/web/static /srv/indico/static
 
 COPY files/etc/nginx/nginx.conf /etc/nginx/nginx.conf
 
