@@ -2,5 +2,5 @@
 
 set -e
 
-/srv/indico/.venv/bin/indico db prepare
-/srv/indico/.venv/bin/uwsgi --ini /etc/uwsgi.ini
+/usr/local/bin/indico db prepare
+/usr/local/bin/uwsgi --ini /etc/uwsgi.ini

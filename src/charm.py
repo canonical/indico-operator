@@ -173,7 +173,7 @@ class IndicoOperatorCharm(CharmBase):
                     "indico-celery": {
                         "override": "replace",
                         "summary": "Indico celery",
-                        "command": "/srv/indico/.venv/bin/indico celery worker -B --uid 2000",
+                        "command": "/usr/local/bin/indico celery worker -B --uid 2000",
                         "startup": "enabled",
                         "user": "indico",
                         "environment": indico_env_config,
