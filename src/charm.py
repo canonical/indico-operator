@@ -134,6 +134,8 @@ class IndicoOperatorCharm(CharmBase):
         """Handle the on pebble ready event for the containers."""
         if self._are_relations_ready(event):
             self._config_pebble(event.workload)
+        else:
+            event.defer()
 
     def _config_pebble(self, container):
         """Apply pebble changes."""
