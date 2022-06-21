@@ -9,7 +9,7 @@ RUN apt update \
     && apt install -y software-properties-common \
     && add-apt-repository ppa:deadsnakes/ppa -y \
     && apt update \
-    && apt install -y gettext git postgresql-client libpq-dev python3.9 python3.9-dev python3.9-distutils python3-pip texlive-xetex
+    && apt install -y gettext git libpq-dev postgresql-client python3.9 python3.9-dev python3.9-distutils python3-pip texlive-xetex
 
 RUN python3.9 -m pip install --prefer-binary indico indico-plugins uwsgi
 
