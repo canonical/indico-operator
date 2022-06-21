@@ -11,7 +11,7 @@ RUN apt update \
     && apt update \
     && apt install -y gettext git postgresql-client libpq-dev python3.9 python3.9-dev python3.9-distutils python3-pip texlive-xetex
 
-RUN python3.9 -m pip install --prefer-binary indico indico-plugins jupyter uwsgi
+RUN python3.9 -m pip install --prefer-binary indico indico-plugins uwsgi
 
 ARG indico_gid=2000
 ARG indico_uid=2000
