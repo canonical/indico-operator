@@ -268,9 +268,7 @@ class IndicoOperatorCharm(CharmBase):
         """Clone the remote repository with the customization changes."""
         current_remote_url = self._get_current_customization_url()
         if current_remote_url != self.config["customization_sources_url"]:
-            logging.debug(
-                "Removing old contents from directory {}".format(INDICO_CUSTOMIZATION_DIR)
-            )
+            logging.debug("Removing old contents from directory %s", INDICO_CUSTOMIZATION_DIR)
             indico_container = self.unit.get_container("indico")
             process = indico_container.exec(
                 ["rm", "-rf", "./*"],
@@ -280,9 +278,8 @@ class IndicoOperatorCharm(CharmBase):
             process.wait_output()
             if self.config["customization_sources_url"]:
                 logging.debug(
-                    "New URL repo for customization {}. Cloning contents".format(
-                        self.config["customization_sources_url"]
-                    )
+                    "New URL repo for customization %s. Cloning contents",
+                    self.config["customization_sources_url"],
                 )
                 process = indico_container.exec(
                     ["git", "clone", self.config["customization_sources_url"], "."],
@@ -294,9 +291,7 @@ class IndicoOperatorCharm(CharmBase):
     def _refresh_customization_changes(self, _):
         """Pull changes from the remote repository."""
         if self.config["customization_sources_url"]:
-            logging.debug(
-                "Pulling changes from {}".format(self.config["customization_sources_url"])
-            )
+            logging.debug("Pulling changes from %s", self.config["customization_sources_url"])
             process = self.unit.get_container("indico").exec(
                 ["git", "pull"],
                 working_dir=INDICO_CUSTOMIZATION_DIR,
