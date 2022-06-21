@@ -2,6 +2,10 @@
 # See LICENSE file for licensing details.
 
 options:
+  indico_extra_plugins:
+    type: string
+    description: Comma separated list of prepacked plugins to be enabled.
+    default: ''
   indico_no_reply_email:
     type: string
     description: Email address used when sending emails to users to which they should not reply.

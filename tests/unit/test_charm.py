@@ -86,6 +86,7 @@ class TestCharm(unittest.TestCase):
         self.assertEqual("", updated_plan_env["SMTP_PASSWORD"])
         self.assertTrue(updated_plan_env["SMTP_USE_TLS"])
         self.assertFalse(updated_plan_env["CUSTOMIZATION_DEBUG"])
+        self.assertEqual("", updated_plan_env["INDICO_EXTRA_PLUGINS"])
 
         service = self.harness.model.unit.get_container("indico").get_service("indico")
         self.assertTrue(service.is_running())
@@ -120,6 +121,7 @@ class TestCharm(unittest.TestCase):
         self.assertEqual("", updated_plan_env["SMTP_PASSWORD"])
         self.assertTrue(updated_plan_env["SMTP_USE_TLS"])
         self.assertFalse(updated_plan_env["CUSTOMIZATION_DEBUG"])
+        self.assertEqual("", updated_plan_env["INDICO_EXTRA_PLUGINS"])
 
         service = self.harness.model.unit.get_container("indico-celery").get_service(
             "indico-celery"
@@ -159,6 +161,7 @@ class TestCharm(unittest.TestCase):
                     "smtp_use_tls": False,
                     "customization_debug": True,
                     "customization_sources_url": "https://example.com/custom",
+                    "indico_extra_plugins": "storage_s3",
                 }
             )
 
@@ -178,6 +181,7 @@ class TestCharm(unittest.TestCase):
         self.assertEqual("pass", updated_plan_env["SMTP_PASSWORD"])
         self.assertFalse(updated_plan_env["SMTP_USE_TLS"])
         self.assertTrue(updated_plan_env["CUSTOMIZATION_DEBUG"])
+        self.assertEqual("storage_s3", updated_plan_env["INDICO_EXTRA_PLUGINS"])
 
         updated_plan = self.harness.get_container_pebble_plan("indico-celery").to_dict()
         updated_plan_env = updated_plan["services"]["indico-celery"]["environment"]
@@ -195,6 +199,7 @@ class TestCharm(unittest.TestCase):
         self.assertEqual("pass", updated_plan_env["SMTP_PASSWORD"])
         self.assertFalse(updated_plan_env["SMTP_USE_TLS"])
         self.assertTrue(updated_plan_env["CUSTOMIZATION_DEBUG"])
+        self.assertEqual("storage_s3", updated_plan_env["INDICO_EXTRA_PLUGINS"])
 
         self.harness.disable_hooks()
         self.harness.set_leader(True)
