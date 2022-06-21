@@ -43,13 +43,12 @@ class IndicoOperatorCharm(CharmBase):
             redis_relation={},
             # This key would need to be shared across instances to support horizontal scalability
             secret_key=repr(os.urandom(32)),
+            pebble_statuses={
+                "indico": False,
+                "indico-nginx": False,
+                "indico-celery": False,
+            },
         )
-
-        self.pebble_statuses = {
-            "indico": False,
-            "indico-nginx": False,
-            "indico-celery": False,
-        }
 
         self.db = pgsql.PostgreSQLClient(self, "db")
         self.framework.observe(
@@ -99,7 +98,7 @@ class IndicoOperatorCharm(CharmBase):
 
     def _are_pebble_instances_ready(self):
         """Check if all pebble instances are ready."""
-        return all(self.pebble_statuses.values())
+        return all(self._stored.pebble_statuses.values())
 
     def _get_external_hostname(self):
         """Extract and return hostname from site_url."""
@@ -144,7 +143,7 @@ class IndicoOperatorCharm(CharmBase):
         container.add_layer(container.name, pebble_config, combine=True)
         self.unit.status = MaintenanceStatus("Starting {} container".format(container.name))
         container.pebble.replan_services()
-        self.pebble_statuses[container.name] = True
+        self._stored.pebble_statuses[container.name] = True
         if self._are_pebble_instances_ready():
             self.unit.status = ActiveStatus()
         else:
