@@ -19,7 +19,6 @@ from ops.pebble import ExecError
 
 DATABASE_NAME = "indico"
 PORT = 8080
-CUSTOMIZATION_REFRESH_INTERVAL = 30
 INDICO_CUSTOMIZATION_DIR = "/srv/indico/custom"
 
 pgsql = ops.lib.use("pgsql", 1, "postgresql-charmers@lists.launchpad.net")
@@ -145,7 +144,6 @@ class IndicoOperatorCharm(CharmBase):
 
     def _config_pebble(self, container):
         """Apply pebble changes."""
-        logging.debug("Configuring pebble for container {}".format(container.name))
         pebble_config = self._get_pebble_config(container.name)
         self.unit.status = MaintenanceStatus("Adding {} layer to pebble".format(container.name))
         container.add_layer(container.name, pebble_config, combine=True)
@@ -213,24 +211,24 @@ class IndicoOperatorCharm(CharmBase):
             redis_port = self._stored.redis_relation[redis_unit]["port"]
 
         env_config = {
-            "INDICO_DB_URI": self._stored.db_uri,
             "CELERY_BROKER": "redis://{host}:{port}".format(host=redis_hostname, port=redis_port),
-            "SECRET_KEY": self._stored.secret_key,
-            "SERVICE_HOSTNAME": self._get_external_hostname(),
-            "SERVICE_SCHEME": self._get_external_scheme(),
-            "SERVICE_PORT": self._get_external_port(),
+            "CUSTOMIZATION_DEBUG": self.config["customization_debug"],
+            "INDICO_DB_URI": self._stored.db_uri,
+            "INDICO_NO_REPLY_EMAIL": self.config["indico_no_reply_email"],
+            "INDICO_PUBLIC_SUPPORT_EMAIL": self.config["indico_public_support_email"],
+            "INDICO_SUPPORT_EMAIL": self.config["indico_support_email"],
             "REDIS_CACHE_URL": "redis://{host}:{port}".format(
                 host=redis_hostname, port=redis_port
             ),
-            "SMTP_SERVER": self.config["smtp_server"],
-            "SMTP_PORT": self.config["smtp_port"],
+            "SECRET_KEY": self._stored.secret_key,
+            "SERVICE_HOSTNAME": self._get_external_hostname(),
+            "SERVICE_PORT": self._get_external_port(),
+            "SERVICE_SCHEME": self._get_external_scheme(),
             "SMTP_LOGIN": self.config["smtp_login"],
             "SMTP_PASSWORD": self.config["smtp_password"],
+            "SMTP_PORT": self.config["smtp_port"],
+            "SMTP_SERVER": self.config["smtp_server"],
             "SMTP_USE_TLS": self.config["smtp_use_tls"],
-            "INDICO_SUPPORT_EMAIL": self.config["indico_support_email"],
-            "INDICO_PUBLIC_SUPPORT_EMAIL": self.config["indico_public_support_email"],
-            "INDICO_NO_REPLY_EMAIL": self.config["indico_no_reply_email"],
-            "CUSTOMIZATION_DEBUG": self.config["customization_debug"],
         }
         return env_config
 
