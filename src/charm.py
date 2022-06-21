@@ -4,6 +4,7 @@
 # Licensed under the GPLv3, see LICENCE file for details.
 
 """Charm for Indico on kubernetes."""
+import logging
 import os
 from urllib.parse import urlparse
 
@@ -14,9 +15,12 @@ from ops.charm import CharmBase
 from ops.framework import StoredState
 from ops.main import main
 from ops.model import ActiveStatus, MaintenanceStatus, WaitingStatus
+from ops.pebble import ExecError
 
 DATABASE_NAME = "indico"
 PORT = 8080
+CUSTOMIZATION_REFRESH_INTERVAL = 30
+INDICO_CUSTOMIZATION_DIR = "/srv/indico/custom"
 
 pgsql = ops.lib.use("pgsql", 1, "postgresql-charmers@lists.launchpad.net")
 
@@ -35,6 +39,9 @@ class IndicoOperatorCharm(CharmBase):
         self.framework.observe(self.on.indico_pebble_ready, self._on_pebble_ready)
         self.framework.observe(self.on.indico_celery_pebble_ready, self._on_pebble_ready)
         self.framework.observe(self.on.indico_nginx_pebble_ready, self._on_pebble_ready)
+        self.framework.observe(
+            self.on.refresh_customization_changes_action, self._refresh_customization_changes
+        )
 
         self._stored.set_default(
             db_conn_str=None,
@@ -138,6 +145,7 @@ class IndicoOperatorCharm(CharmBase):
 
     def _config_pebble(self, container):
         """Apply pebble changes."""
+        logging.debug("Configuring pebble for container {}".format(container.name))
         pebble_config = self._get_pebble_config(container.name)
         self.unit.status = MaintenanceStatus("Adding {} layer to pebble".format(container.name))
         container.add_layer(container.name, pebble_config, combine=True)
@@ -222,6 +230,7 @@ class IndicoOperatorCharm(CharmBase):
             "INDICO_SUPPORT_EMAIL": self.config["indico_support_email"],
             "INDICO_PUBLIC_SUPPORT_EMAIL": self.config["indico_public_support_email"],
             "INDICO_NO_REPLY_EMAIL": self.config["indico_no_reply_email"],
+            "CUSTOMIZATION_DEBUG": self.config["customization_debug"],
         }
         return env_config
 
@@ -236,8 +245,66 @@ class IndicoOperatorCharm(CharmBase):
             self.model.unit.status = MaintenanceStatus("Configuring pod")
             for container_name in self.model.unit.containers:
                 self._config_pebble(self.unit.get_container(container_name))
+
+            self._download_customization_changes()
             self.ingress.update_config(self._make_ingress_config())
             self.model.unit.status = ActiveStatus()
+
+    def _get_current_customization_url(self):
+        """Get the current remote repository for the customization changes."""
+        indico_container = self.unit.get_container("indico")
+        process = indico_container.exec(
+            ["git", "config", "--get", "remote.origin.url"],
+            working_dir=INDICO_CUSTOMIZATION_DIR,
+            user="indico",
+        )
+        remote_url = ""
+        try:
+            remote_url, _ = process.wait_output()
+        except ExecError as ex:
+            logging.debug(ex)
+            pass
+        return remote_url
+
+    def _download_customization_changes(self):
+        """Clone the remote repository with the customization changes."""
+        current_remote_url = self._get_current_customization_url()
+        if current_remote_url != self.config["customization_sources_url"]:
+            logging.debug(
+                "Removing old contents from directory {}".format(INDICO_CUSTOMIZATION_DIR)
+            )
+            indico_container = self.unit.get_container("indico")
+            process = indico_container.exec(
+                ["rm", "-rf", "./*"],
+                working_dir=INDICO_CUSTOMIZATION_DIR,
+                user="indico",
+            )
+            process.wait_output()
+            if self.config["customization_sources_url"]:
+                logging.debug(
+                    "New URL repo for customization {}. Cloning contents".format(
+                        self.config["customization_sources_url"]
+                    )
+                )
+                process = indico_container.exec(
+                    ["git", "clone", self.config["customization_sources_url"], "."],
+                    working_dir=INDICO_CUSTOMIZATION_DIR,
+                    user="indico",
+                )
+                process.wait_output()
+
+    def _refresh_customization_changes(self, _):
+        """Pull changes from the remote repository."""
+        if self.config["customization_sources_url"]:
+            logging.debug(
+                "Pulling changes from {}".format(self.config["customization_sources_url"])
+            )
+            process = self.unit.get_container("indico").exec(
+                ["git", "pull"],
+                working_dir=INDICO_CUSTOMIZATION_DIR,
+                user="indico",
+            )
+            process.wait_output()
 
 
 if __name__ == "__main__":

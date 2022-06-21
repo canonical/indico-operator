@@ -2,8 +2,9 @@
 # See LICENSE file for licensing details.
 
 import unittest
+from unittest.mock import MagicMock, patch
 
-from ops.model import ActiveStatus, WaitingStatus
+from ops.model import ActiveStatus, Container, WaitingStatus
 from ops.testing import Harness
 
 from charm import IndicoOperatorCharm
@@ -84,6 +85,7 @@ class TestCharm(unittest.TestCase):
         self.assertEqual("", updated_plan_env["SMTP_LOGIN"])
         self.assertEqual("", updated_plan_env["SMTP_PASSWORD"])
         self.assertTrue(updated_plan_env["SMTP_USE_TLS"])
+        self.assertFalse(updated_plan_env["CUSTOMIZATION_DEBUG"])
 
         service = self.harness.model.unit.get_container("indico").get_service("indico")
         self.assertTrue(service.is_running())
@@ -117,6 +119,7 @@ class TestCharm(unittest.TestCase):
         self.assertEqual("", updated_plan_env["SMTP_LOGIN"])
         self.assertEqual("", updated_plan_env["SMTP_PASSWORD"])
         self.assertTrue(updated_plan_env["SMTP_USE_TLS"])
+        self.assertFalse(updated_plan_env["CUSTOMIZATION_DEBUG"])
 
         service = self.harness.model.unit.get_container("indico-celery").get_service(
             "indico-celery"
@@ -138,19 +141,26 @@ class TestCharm(unittest.TestCase):
         self.harness.charm.on.indico_celery_pebble_ready.emit(container)
         container = self.harness.model.unit.get_container("indico-nginx")
         self.harness.charm.on.indico_nginx_pebble_ready.emit(container)
-        self.harness.update_config(
-            {
-                "indico_support_email": "example@email.local",
-                "indico_public_support_email": "public@email.local",
-                "indico_no_reply_email": "noreply@email.local",
-                "site_url": "https://example.local:8080",
-                "smtp_server": "localhost",
-                "smtp_port": 8025,
-                "smtp_login": "user",
-                "smtp_password": "pass",
-                "smtp_use_tls": False,
-            }
-        )
+
+        class MockExecProcess(object):
+            wait_output = MagicMock(return_value=("", None))
+
+        with patch.object(Container, "exec", return_value=MockExecProcess()):
+            self.harness.update_config(
+                {
+                    "indico_support_email": "example@email.local",
+                    "indico_public_support_email": "public@email.local",
+                    "indico_no_reply_email": "noreply@email.local",
+                    "site_url": "https://example.local:8080",
+                    "smtp_server": "localhost",
+                    "smtp_port": 8025,
+                    "smtp_login": "user",
+                    "smtp_password": "pass",
+                    "smtp_use_tls": False,
+                    "customization_debug": True,
+                    "customization_sources_url": "https://example.com/custom",
+                }
+            )
 
         updated_plan = self.harness.get_container_pebble_plan("indico").to_dict()
         updated_plan_env = updated_plan["services"]["indico"]["environment"]
@@ -167,6 +177,7 @@ class TestCharm(unittest.TestCase):
         self.assertEqual("user", updated_plan_env["SMTP_LOGIN"])
         self.assertEqual("pass", updated_plan_env["SMTP_PASSWORD"])
         self.assertFalse(updated_plan_env["SMTP_USE_TLS"])
+        self.assertTrue(updated_plan_env["CUSTOMIZATION_DEBUG"])
 
         updated_plan = self.harness.get_container_pebble_plan("indico-celery").to_dict()
         updated_plan_env = updated_plan["services"]["indico-celery"]["environment"]
@@ -183,11 +194,14 @@ class TestCharm(unittest.TestCase):
         self.assertEqual("user", updated_plan_env["SMTP_LOGIN"])
         self.assertEqual("pass", updated_plan_env["SMTP_PASSWORD"])
         self.assertFalse(updated_plan_env["SMTP_USE_TLS"])
+        self.assertTrue(updated_plan_env["CUSTOMIZATION_DEBUG"])
 
         self.harness.disable_hooks()
         self.harness.set_leader(True)
         self.harness.enable_hooks()
-        self.harness.update_config({"site_url": "https://example.local"})
+
+        with patch.object(Container, "exec", return_value=MockExecProcess()):
+            self.harness.update_config({"site_url": "https://example.local"})
         self.assertEqual(
             "example.local", self.harness.charm.ingress.config_dict["service-hostname"]
         )

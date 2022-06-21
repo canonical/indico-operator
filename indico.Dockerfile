@@ -28,7 +28,7 @@ RUN apt update \
     && apt install -y software-properties-common \
     && add-apt-repository ppa:deadsnakes/ppa -y \
     && apt update \
-    && apt install -y gettext postgresql-client python3.9 python3.9-dev texlive-xetex
+    && apt install -y gettext git postgresql-client python3.9 python3.9-dev texlive-xetex
 
 COPY --from=0 /usr/local/bin /usr/local/bin
 COPY --from=0 /usr/local/lib/python3.9/dist-packages /usr/local/lib/python3.9/dist-packages

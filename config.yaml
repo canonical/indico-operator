@@ -38,3 +38,11 @@ options:
     type: boolean
     description: If enabled, STARTTLS will be used to use an encrypted SMTP connection.
     default: true
+  customization_sources_url:
+    type: string
+    description: URL for the git repository containing the customization files
+    default: ''
+  customization_debug:
+    type: boolean
+    description: Enable debug for custom templates
+    default: false
