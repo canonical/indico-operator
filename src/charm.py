@@ -276,24 +276,12 @@ class IndicoOperatorCharm(CharmBase):
                 ["rm", "-rf", INDICO_CUSTOMIZATION_DIR],
                 user="indico",
             )
-            out, err = process.wait_output()
-            logging.debug(out)
-            logging.debug(err)
+            process.wait_output()
             process = indico_container.exec(
                 ["mkdir", INDICO_CUSTOMIZATION_DIR],
                 user="indico",
             )
-            out, err = process.wait_output()
-            logging.debug(out)
-            logging.debug(err)
-            process = indico_container.exec(
-                ["ls", "-la"],
-                working_dir=INDICO_CUSTOMIZATION_DIR,
-                user="indico",
-            )
-            out, err = process.wait_output()
-            logging.debug(out)
-            logging.debug(err)
+            process.wait_output()
             if self.config["customization_sources_url"]:
                 logging.debug(
                     "New URL repo for customization %s. Cloning contents",
