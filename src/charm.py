@@ -121,26 +121,24 @@ class IndicoOperatorCharm(CharmBase):
         site_url = self.config["site_url"]
         return urlparse(site_url).port
 
-    def _are_relations_ready(self, event):
+    def _are_relations_ready(self):
         """Handle the on pebble ready event for Indico."""
         if not self._stored.redis_relation:
             self.unit.status = WaitingStatus("Waiting for redis relation")
-            event.defer()
             return False
 
         if not self._stored.db_uri:
             self.unit.status = WaitingStatus("Waiting for database relation")
-            event.defer()
             return False
 
         return True
 
     def _on_pebble_ready(self, event):
         """Handle the on pebble ready event for the containers."""
-        if self._are_relations_ready(event):
-            self._config_pebble(event.workload)
-        else:
+        if not self._are_relations_ready():
             event.defer()
+            return
+        self._config_pebble(event.workload)
 
     def _config_pebble(self, container):
         """Apply pebble changes."""
@@ -234,7 +232,7 @@ class IndicoOperatorCharm(CharmBase):
 
     def _on_config_changed(self, event):
         """Handle changes in configuration."""
-        if self._are_relations_ready(event):
+        if self._are_relations_ready():
             if not self._are_pebble_instances_ready():
                 self.unit.status = WaitingStatus("Waiting for pebble")
                 event.defer()
@@ -262,20 +260,40 @@ class IndicoOperatorCharm(CharmBase):
         except ExecError as ex:
             logging.debug(ex)
             pass
-        return remote_url
+        return remote_url.rstrip()
 
     def _download_customization_changes(self):
         """Clone the remote repository with the customization changes."""
         current_remote_url = self._get_current_customization_url()
         if current_remote_url != self.config["customization_sources_url"]:
-            logging.debug("Removing old contents from directory %s", INDICO_CUSTOMIZATION_DIR)
+            logging.debug(
+                "Removing old contents from directory %s. Previous repository: '%s'",
+                INDICO_CUSTOMIZATION_DIR,
+                current_remote_url,
+            )
             indico_container = self.unit.get_container("indico")
             process = indico_container.exec(
-                ["rm", "-rf", "./*"],
+                ["rm", "-rf", INDICO_CUSTOMIZATION_DIR],
+                user="indico",
+            )
+            out, err = process.wait_output()
+            logging.debug(out)
+            logging.debug(err)
+            process = indico_container.exec(
+                ["mkdir", INDICO_CUSTOMIZATION_DIR],
+                user="indico",
+            )
+            out, err = process.wait_output()
+            logging.debug(out)
+            logging.debug(err)
+            process = indico_container.exec(
+                ["ls", "-la"],
                 working_dir=INDICO_CUSTOMIZATION_DIR,
                 user="indico",
             )
-            process.wait_output()
+            out, err = process.wait_output()
+            logging.debug(out)
+            logging.debug(err)
             if self.config["customization_sources_url"]:
                 logging.debug(
                     "New URL repo for customization %s. Cloning contents",
