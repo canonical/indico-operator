@@ -121,24 +121,24 @@ class IndicoOperatorCharm(CharmBase):
         site_url = self.config["site_url"]
         return urlparse(site_url).port
 
-    def _are_relations_ready(self):
+    def _are_relations_ready(self, event):
         """Handle the on pebble ready event for Indico."""
         if not self._stored.redis_relation:
             self.unit.status = WaitingStatus("Waiting for redis relation")
+            event.defer()
             return False
 
         if not self._stored.db_uri:
             self.unit.status = WaitingStatus("Waiting for database relation")
+            event.defer()
             return False
 
         return True
 
     def _on_pebble_ready(self, event):
         """Handle the on pebble ready event for the containers."""
-        if not self._are_relations_ready():
-            event.defer()
-            return
-        self._config_pebble(event.workload)
+        if self._are_relations_ready(event):
+            self._config_pebble(event.workload)
 
     def _config_pebble(self, container):
         """Apply pebble changes."""
@@ -232,7 +232,7 @@ class IndicoOperatorCharm(CharmBase):
 
     def _on_config_changed(self, event):
         """Handle changes in configuration."""
-        if self._are_relations_ready():
+        if self._are_relations_ready(event):
             if not self._are_pebble_instances_ready():
                 self.unit.status = WaitingStatus("Waiting for pebble")
                 event.defer()
