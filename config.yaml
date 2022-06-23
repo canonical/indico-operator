@@ -2,9 +2,13 @@
 # See LICENSE file for licensing details.
 
 options:
-  indico_extra_plugins:
+  customization_debug:
+    type: boolean
+    description: Enable debug for custom templates
+    default: false
+  customization_sources_url:
     type: string
-    description: Comma separated list of prepacked plugins to be enabled.
+    description: URL for the git repository containing the customization files
     default: ''
   indico_no_reply_email:
     type: string
@@ -22,14 +26,6 @@ options:
     type: string
     description: URL through which Indico is accessed by users.
     default: ''
-  smtp_server:
-    type: string
-    description: The hostname of the SMTP server used for sending emails.
-    default: ''
-  smtp_port:
-    type: int
-    description: The port of the SMTP server used for sending emails.
-    default: 25
   smtp_login:
     type: string
     description: The username to send if the SMTP server requires authentication.
@@ -38,15 +34,20 @@ options:
     type: string
     description: The password to send if the SMTP server requires authentication.
     default: ''
+  smtp_port:
+    type: int
+    description: The port of the SMTP server used for sending emails.
+    default: 25
+  smtp_server:
+    type: string
+    description: The hostname of the SMTP server used for sending emails.
+    default: ''
   smtp_use_tls:
     type: boolean
     description: If enabled, STARTTLS will be used to use an encrypted SMTP connection.
     default: true
-  customization_sources_url:
+  s3_storage:
     type: string
-    description: URL for the git repository containing the customization files
+    description: If present, parameters to connect to the S3 storage following the format 's3:bucket=my-indico-test-bucket,access_key=12345,secret_key=topsecret'
     default: ''
-  customization_debug:
-    type: boolean
-    description: Enable debug for custom templates
-    default: false
+

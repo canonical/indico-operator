@@ -86,7 +86,7 @@ class TestCharm(unittest.TestCase):
         self.assertEqual("", updated_plan_env["SMTP_PASSWORD"])
         self.assertTrue(updated_plan_env["SMTP_USE_TLS"])
         self.assertFalse(updated_plan_env["CUSTOMIZATION_DEBUG"])
-        self.assertEqual("", updated_plan_env["INDICO_EXTRA_PLUGINS"])
+        self.assertEqual("fs:/srv/indico/archive", updated_plan_env["STORAGE_DICT"]["default"])
 
         service = self.harness.model.unit.get_container("indico").get_service("indico")
         self.assertTrue(service.is_running())
@@ -121,7 +121,7 @@ class TestCharm(unittest.TestCase):
         self.assertEqual("", updated_plan_env["SMTP_PASSWORD"])
         self.assertTrue(updated_plan_env["SMTP_USE_TLS"])
         self.assertFalse(updated_plan_env["CUSTOMIZATION_DEBUG"])
-        self.assertEqual("", updated_plan_env["INDICO_EXTRA_PLUGINS"])
+        self.assertEqual("fs:/srv/indico/archive", updated_plan_env["STORAGE_DICT"]["default"])
 
         service = self.harness.model.unit.get_container("indico-celery").get_service(
             "indico-celery"
@@ -161,7 +161,7 @@ class TestCharm(unittest.TestCase):
                     "smtp_use_tls": False,
                     "customization_debug": True,
                     "customization_sources_url": "https://example.com/custom",
-                    "indico_extra_plugins": "storage_s3",
+                    "s3_storage": "s3:bucket=my-indico-test-bucket,access_key=12345,secret_key=topsecret",
                 }
             )
 
@@ -182,6 +182,11 @@ class TestCharm(unittest.TestCase):
         self.assertFalse(updated_plan_env["SMTP_USE_TLS"])
         self.assertTrue(updated_plan_env["CUSTOMIZATION_DEBUG"])
         self.assertEqual("storage_s3", updated_plan_env["INDICO_EXTRA_PLUGINS"])
+        self.assertEqual("fs:/srv/indico/archive", updated_plan_env["STORAGE_DICT"]["default"])
+        self.assertEqual(
+            "s3:bucket=my-indico-test-bucket,access_key=12345,secret_key=topsecret",
+            updated_plan_env["STORAGE_DICT"]["s3"],
+        )
 
         updated_plan = self.harness.get_container_pebble_plan("indico-celery").to_dict()
         updated_plan_env = updated_plan["services"]["indico-celery"]["environment"]
@@ -200,6 +205,11 @@ class TestCharm(unittest.TestCase):
         self.assertFalse(updated_plan_env["SMTP_USE_TLS"])
         self.assertTrue(updated_plan_env["CUSTOMIZATION_DEBUG"])
         self.assertEqual("storage_s3", updated_plan_env["INDICO_EXTRA_PLUGINS"])
+        self.assertEqual("fs:/srv/indico/archive", updated_plan_env["STORAGE_DICT"]["default"])
+        self.assertEqual(
+            "s3:bucket=my-indico-test-bucket,access_key=12345,secret_key=topsecret",
+            updated_plan_env["STORAGE_DICT"]["s3"],
+        )
 
         self.harness.disable_hooks()
         self.harness.set_leader(True)

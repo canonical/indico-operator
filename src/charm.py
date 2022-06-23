@@ -214,7 +214,6 @@ class IndicoOperatorCharm(CharmBase):
             "CELERY_BROKER": "redis://{host}:{port}".format(host=redis_hostname, port=redis_port),
             "CUSTOMIZATION_DEBUG": self.config["customization_debug"],
             "INDICO_DB_URI": self._stored.db_uri,
-            "INDICO_EXTRA_PLUGINS": self.config["indico_extra_plugins"],
             "INDICO_NO_REPLY_EMAIL": self.config["indico_no_reply_email"],
             "INDICO_PUBLIC_SUPPORT_EMAIL": self.config["indico_public_support_email"],
             "INDICO_SUPPORT_EMAIL": self.config["indico_support_email"],
@@ -230,7 +229,13 @@ class IndicoOperatorCharm(CharmBase):
             "SMTP_PORT": self.config["smtp_port"],
             "SMTP_SERVER": self.config["smtp_server"],
             "SMTP_USE_TLS": self.config["smtp_use_tls"],
+            "STORAGE_DICT": {
+                "default": "fs:/srv/indico/archive",
+            },
         }
+        if self.config["s3_storage"]:
+            env_config["STORAGE_DICT"].update({"s3": self.config["s3_storage"]})
+            env_config["INDICO_EXTRA_PLUGINS"] = "storage_s3"
         return env_config
 
     def _on_config_changed(self, event):
