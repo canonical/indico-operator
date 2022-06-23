@@ -28,14 +28,16 @@ RUN apt update \
     && apt install -y software-properties-common \
     && add-apt-repository ppa:deadsnakes/ppa -y \
     && apt update \
-    && apt install -y gettext git postgresql-client python3.9 python3.9-dev texlive-xetex
+    && apt install -y cron gettext git postgresql-client python3.9 python3.9-dev texlive-xetex
 
 COPY --from=0 /usr/local/bin /usr/local/bin
 COPY --from=0 /usr/local/lib/python3.9/dist-packages /usr/local/lib/python3.9/dist-packages
 
 RUN ["/bin/bash", "-c", "mkdir -p --mode=775 /srv/indico/{etc,tmp,log,cache,archive,custom}"]
 RUN /usr/local/bin/indico setup create-symlinks /srv/indico \
-    && /usr/local/bin/indico setup create-logging-config /etc
+    && /usr/local/bin/indico setup create-logging-config /etc \
+    && echo "* * * * * git -C /srv/indico/custom pull" | crontab -u indico - \
+    && /etc/init.d/cron start
 
 COPY files/start-indico.sh /srv/indico/
 COPY files/etc/indico/indico.conf /srv/indico/etc/
