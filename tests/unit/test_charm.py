@@ -2,6 +2,7 @@
 # See LICENSE file for licensing details.
 
 import unittest
+from ast import literal_eval
 from unittest.mock import MagicMock, patch
 
 from ops.model import ActiveStatus, Container, WaitingStatus
@@ -86,7 +87,8 @@ class TestCharm(unittest.TestCase):
         self.assertEqual("", updated_plan_env["SMTP_PASSWORD"])
         self.assertTrue(updated_plan_env["SMTP_USE_TLS"])
         self.assertFalse(updated_plan_env["CUSTOMIZATION_DEBUG"])
-        self.assertEqual("fs:/srv/indico/archive", updated_plan_env["STORAGE_DICT"]["default"])
+        storage_dict = literal_eval(updated_plan_env["STORAGE_DICT"])
+        self.assertEqual("fs:/srv/indico/archive", storage_dict["default"])
 
         service = self.harness.model.unit.get_container("indico").get_service("indico")
         self.assertTrue(service.is_running())
@@ -121,7 +123,8 @@ class TestCharm(unittest.TestCase):
         self.assertEqual("", updated_plan_env["SMTP_PASSWORD"])
         self.assertTrue(updated_plan_env["SMTP_USE_TLS"])
         self.assertFalse(updated_plan_env["CUSTOMIZATION_DEBUG"])
-        self.assertEqual("fs:/srv/indico/archive", updated_plan_env["STORAGE_DICT"]["default"])
+        storage_dict = literal_eval(updated_plan_env["STORAGE_DICT"])
+        self.assertEqual("fs:/srv/indico/archive", storage_dict["default"])
 
         service = self.harness.model.unit.get_container("indico-celery").get_service(
             "indico-celery"
@@ -182,10 +185,11 @@ class TestCharm(unittest.TestCase):
         self.assertFalse(updated_plan_env["SMTP_USE_TLS"])
         self.assertTrue(updated_plan_env["CUSTOMIZATION_DEBUG"])
         self.assertEqual("storage_s3", updated_plan_env["INDICO_EXTRA_PLUGINS"])
-        self.assertEqual("fs:/srv/indico/archive", updated_plan_env["STORAGE_DICT"]["default"])
+        storage_dict = literal_eval(updated_plan_env["STORAGE_DICT"])
+        self.assertEqual("fs:/srv/indico/archive", storage_dict["default"])
         self.assertEqual(
             "s3:bucket=my-indico-test-bucket,access_key=12345,secret_key=topsecret",
-            updated_plan_env["STORAGE_DICT"]["s3"],
+            storage_dict["s3"],
         )
 
         updated_plan = self.harness.get_container_pebble_plan("indico-celery").to_dict()
@@ -205,10 +209,11 @@ class TestCharm(unittest.TestCase):
         self.assertFalse(updated_plan_env["SMTP_USE_TLS"])
         self.assertTrue(updated_plan_env["CUSTOMIZATION_DEBUG"])
         self.assertEqual("storage_s3", updated_plan_env["INDICO_EXTRA_PLUGINS"])
-        self.assertEqual("fs:/srv/indico/archive", updated_plan_env["STORAGE_DICT"]["default"])
+        storage_dict = literal_eval(updated_plan_env["STORAGE_DICT"])
+        self.assertEqual("fs:/srv/indico/archive", storage_dict["default"])
         self.assertEqual(
             "s3:bucket=my-indico-test-bucket,access_key=12345,secret_key=topsecret",
-            updated_plan_env["STORAGE_DICT"]["s3"],
+            storage_dict["s3"],
         )
 
         self.harness.disable_hooks()

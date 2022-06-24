@@ -236,6 +236,7 @@ class IndicoOperatorCharm(CharmBase):
         if self.config["s3_storage"]:
             env_config["STORAGE_DICT"].update({"s3": self.config["s3_storage"]})
             env_config["INDICO_EXTRA_PLUGINS"] = "storage_s3"
+        env_config["STORAGE_DICT"] = str(env_config["STORAGE_DICT"])
         return env_config
 
     def _on_config_changed(self, event):
