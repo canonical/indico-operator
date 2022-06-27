@@ -28,9 +28,12 @@ async def test_build_and_deploy(ops_test: OpsTest, indico_image, indico_nginx_im
         "indico-image": indico_image,
         "indico-nginx-image": indico_nginx_image,
     }
-    await ops_test.model.deploy("redis-k8s")
     await ops_test.model.deploy("postgresql-k8s")
+    await ops_test.model.deploy("redis-k8s")
     await ops_test.model.deploy(charm, resources=resources, application_name=APP_NAME)
-    await ops_test.model.add_relation(APP_NAME, "redis-k8s")
-    await ops_test.model.add_relation(APP_NAME, "postgresql-k8s:db")
+    await ops_test.model.wait_for_idle()
     assert ops_test.model.applications[APP_NAME].units[0].workload_status == "waiting"
+    await ops_test.model.add_relation(APP_NAME, "postgresql-k8s:db")
+    await ops_test.model.add_relation(APP_NAME, "redis-k8s")
+    await ops_test.model.wait_for_idle()
+    assert ops_test.model.applications[APP_NAME].units[0].workload_status == "active"
