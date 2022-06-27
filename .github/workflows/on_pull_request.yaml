@@ -1,8 +1,4 @@
-name: Test and publish
-
-# On pull_request, we:
-# * always publish to charmhub at latest/edge/branchname
-# * always run tests
+name: Test
 
 on:
   pull_request:
