@@ -51,7 +51,6 @@ jobs:
         with:
           provider: microk8s
       - name: Set up Docker Buildx
-        id: buildx
         uses: docker/setup-buildx-action@v2
       - name: Build and import images into microk8s
         run: |
