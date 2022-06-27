@@ -211,6 +211,7 @@ class IndicoOperatorCharm(CharmBase):
             redis_port = self._stored.redis_relation[redis_unit]["port"]
 
         env_config = {
+            "ATTACHMENT_STORAGE": "default",
             "CELERY_BROKER": "redis://{host}:{port}".format(host=redis_hostname, port=redis_port),
             "CUSTOMIZATION_DEBUG": self.config["customization_debug"],
             "INDICO_DB_URI": self._stored.db_uri,
@@ -235,6 +236,7 @@ class IndicoOperatorCharm(CharmBase):
         }
         if self.config["s3_storage"]:
             env_config["STORAGE_DICT"].update({"s3": self.config["s3_storage"]})
+            env_config["ATTACHMENT_STORAGE"] = "s3"
             env_config["INDICO_EXTRA_PLUGINS"] = "storage_s3"
         env_config["STORAGE_DICT"] = str(env_config["STORAGE_DICT"])
         return env_config

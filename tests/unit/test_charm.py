@@ -87,6 +87,7 @@ class TestCharm(unittest.TestCase):
         self.assertEqual("", updated_plan_env["SMTP_PASSWORD"])
         self.assertTrue(updated_plan_env["SMTP_USE_TLS"])
         self.assertFalse(updated_plan_env["CUSTOMIZATION_DEBUG"])
+        self.assertEqual("default", updated_plan_env["ATTACHMENT_STORAGE"])
         storage_dict = literal_eval(updated_plan_env["STORAGE_DICT"])
         self.assertEqual("fs:/srv/indico/archive", storage_dict["default"])
 
@@ -123,6 +124,7 @@ class TestCharm(unittest.TestCase):
         self.assertEqual("", updated_plan_env["SMTP_PASSWORD"])
         self.assertTrue(updated_plan_env["SMTP_USE_TLS"])
         self.assertFalse(updated_plan_env["CUSTOMIZATION_DEBUG"])
+        self.assertEqual("default", updated_plan_env["ATTACHMENT_STORAGE"])
         storage_dict = literal_eval(updated_plan_env["STORAGE_DICT"])
         self.assertEqual("fs:/srv/indico/archive", storage_dict["default"])
 
@@ -186,6 +188,7 @@ class TestCharm(unittest.TestCase):
         self.assertTrue(updated_plan_env["CUSTOMIZATION_DEBUG"])
         self.assertEqual("storage_s3", updated_plan_env["INDICO_EXTRA_PLUGINS"])
         storage_dict = literal_eval(updated_plan_env["STORAGE_DICT"])
+        self.assertEqual("s3", updated_plan_env["ATTACHMENT_STORAGE"])
         self.assertEqual("fs:/srv/indico/archive", storage_dict["default"])
         self.assertEqual(
             "s3:bucket=my-indico-test-bucket,access_key=12345,secret_key=topsecret",
@@ -209,6 +212,7 @@ class TestCharm(unittest.TestCase):
         self.assertFalse(updated_plan_env["SMTP_USE_TLS"])
         self.assertTrue(updated_plan_env["CUSTOMIZATION_DEBUG"])
         self.assertEqual("storage_s3", updated_plan_env["INDICO_EXTRA_PLUGINS"])
+        self.assertEqual("s3", updated_plan_env["ATTACHMENT_STORAGE"])
         storage_dict = literal_eval(updated_plan_env["STORAGE_DICT"])
         self.assertEqual("fs:/srv/indico/archive", storage_dict["default"])
         self.assertEqual(
