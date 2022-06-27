@@ -18,7 +18,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Publish images
+      - name: Publish image
         env:
           CHARMCRAFT_AUTH: ${{ secrets.charmhub-token }}
         run: |
