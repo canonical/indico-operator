@@ -10,10 +10,10 @@ jobs:
   publish-indico-image:
     runs-on: ubuntu-latest
     steps:
-      - name: Install dependencies
-        run: |
-          sudo snap install docker
-          sudo snap install charmcraft --classic
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Install charmcraft
+        run: sudo snap install charmcraft --classic
       - name: Checkout
         uses: actions/checkout@v3
         with:
@@ -28,10 +28,10 @@ jobs:
   publish-nginx-image:
     runs-on: ubuntu-latest
     steps:
-      - name: Install dependencies
-        run: |
-          sudo snap install docker
-          sudo snap install charmcraft --classic
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Install charmcraft
+        run: sudo snap install charmcraft --classic
       - name: Checkout
         uses: actions/checkout@v3
         with:
@@ -53,7 +53,6 @@ jobs:
           fetch-depth: 0
       - name: Select charmhub channel
         uses: canonical/charming-actions/channel@1.0.3
-        id: channel
       - name: Upload charm to charmhub
         uses: canonical/charming-actions/upload-charm@1.0.3
         with:
