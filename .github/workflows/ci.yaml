@@ -54,15 +54,14 @@ jobs:
         uses: docker/setup-buildx-action@v2
       - name: Build and import images into microk8s
         run: |
-          docker build -t indico:latest -f indico.Dockerfile .
-          docker save indico:latest > indico.tar
-          sudo microk8s ctr image import indico.tar
-          docker build -t indico-nginx:latest -f indico-nginx.Dockerfile .
-          docker save indico-nginx:latest > indico-nginx.tar
-          sudo microk8s ctr image import indico-nginx.tar
-          sudo microk8s ctr images ls
+          sudo microk8s.enable registry
+          sudo microk8s status -a registry
+          docker build -t http://localhost:32000/indico:latest -f indico.Dockerfile .
+          docker push http://localhost:32000/indico:latest
+          docker build -t http://localhost:32000/indico-nginx:latest -f indico-nginx.Dockerfile .
+          docker push http://localhost:32000/indico-nginx:latest
       - name: Run integration tests
-        run: tox -e integration -- --model testing --indico-image indico:latest --indico-nginx-image indico-nginx:latest
+        run: tox -e integration -- --model testing --indico-image http://localhost:32000/indico:latest --indico-nginx-image http://localhost:32000/indico-nginx:latest
       - name: Dump logs
         uses: canonical/charm-logdump-action@main
         if: failure()
