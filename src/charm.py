@@ -171,14 +171,8 @@ class IndicoOperatorCharm(CharmBase):
                     },
                 },
                 "checks": {
-                    "indico-ready": {
-                        "override": "replace",
-                        "level": "ready",
-                        "tcp": {
-                            "port": 80
-                        }
-                    }
-                }
+                    "indico-ready": {"override": "replace", "level": "ready", "tcp": {"port": 80}}
+                },
             },
             "indico-celery": {
                 "summary": "Indico celery layer",
@@ -197,11 +191,9 @@ class IndicoOperatorCharm(CharmBase):
                     "ready": {
                         "override": "replace",
                         "level": "ready",
-                        "http": {
-                            "url": indico_env_config["CELERY_BROKER"]
-                        }
-                    }
-                }
+                        "http": {"url": indico_env_config["CELERY_BROKER"]},
+                    },
+                },
             },
             "indico-nginx": {
                 "summary": "Indico nginx layer",
@@ -218,18 +210,14 @@ class IndicoOperatorCharm(CharmBase):
                     "nginx-up": {
                         "override": "replace",
                         "level": "alive",
-                        "exec": {
-                            "command": "service nginx status"
-                        }
+                        "exec": {"command": "service nginx status"},
                     },
                     "nginx-ready": {
                         "override": "replace",
                         "level": "ready",
-                        "http": {
-                            "url": "http://localhost:8080"
-                        }
-                    }
-                }
+                        "http": {"url": "http://localhost:8080"},
+                    },
+                },
             },
         }
         return configuration[container_name]
