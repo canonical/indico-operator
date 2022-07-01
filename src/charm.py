@@ -174,7 +174,7 @@ class IndicoOperatorCharm(CharmBase):
                     "indico-ready": {
                         "override": "replace",
                         "level": "ready",
-                        "tcp":{
+                        "tcp": {
                             "port": 80
                         }
                     }
@@ -197,7 +197,7 @@ class IndicoOperatorCharm(CharmBase):
                     "ready": {
                         "override": "replace",
                         "level": "ready",
-                        "http":{
+                        "http": {
                             "url": indico_env_config["CELERY_BROKER"]
                         }
                     }
@@ -225,7 +225,7 @@ class IndicoOperatorCharm(CharmBase):
                     "nginx-ready": {
                         "override": "replace",
                         "level": "ready",
-                        "http":{
+                        "http": {
                             "url": "http://localhost:8080"
                         }
                     }
