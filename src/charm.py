@@ -14,12 +14,14 @@ from charms.redis_k8s.v0.redis import RedisRelationCharmEvents, RedisRequires
 from ops.charm import CharmBase
 from ops.framework import StoredState
 from ops.main import main
-from ops.model import ActiveStatus, MaintenanceStatus, WaitingStatus
+from ops.model import ActiveStatus, BlockedStatus, MaintenanceStatus, WaitingStatus
 from ops.pebble import ExecError
 
 DATABASE_NAME = "indico"
-PORT = 8080
 INDICO_CUSTOMIZATION_DIR = "/srv/indico/custom"
+PORT = 8080
+SAML_IDP_CRT = "saml-idp.crt"
+UBUNTU_SAML_URL = "https://login.ubuntu.com/saml/"
 
 pgsql = ops.lib.use("pgsql", 1, "postgresql-charmers@lists.launchpad.net")
 
@@ -178,7 +180,7 @@ class IndicoOperatorCharm(CharmBase):
                     "indico-celery": {
                         "override": "replace",
                         "summary": "Indico celery",
-                        "command": "/usr/local/bin/indico celery worker -B --uid 2000",
+                        "command": "/usr/local/bin/indico celery worker -B",
                         "startup": "enabled",
                         "user": "indico",
                         "environment": indico_env_config,
@@ -212,7 +214,9 @@ class IndicoOperatorCharm(CharmBase):
             "ATTACHMENT_STORAGE": "default",
             "CELERY_BROKER": "redis://{host}:{port}".format(host=redis_hostname, port=redis_port),
             "CUSTOMIZATION_DEBUG": self.config["customization_debug"],
+            "INDICO_AUTH_PROVIDERS": str({}),
             "INDICO_DB_URI": self._stored.db_uri,
+            "INDICO_IDENTITY_PROVIDERS": str({}),
             "INDICO_NO_REPLY_EMAIL": self.config["indico_no_reply_email"],
             "INDICO_PUBLIC_SUPPORT_EMAIL": self.config["indico_public_support_email"],
             "INDICO_SUPPORT_EMAIL": self.config["indico_support_email"],
@@ -237,11 +241,104 @@ class IndicoOperatorCharm(CharmBase):
             env_config["ATTACHMENT_STORAGE"] = "s3"
             env_config["INDICO_EXTRA_PLUGINS"] = "storage_s3"
         env_config["STORAGE_DICT"] = str(env_config["STORAGE_DICT"])
+
+        if self.config["saml_target_url"]:
+            saml_config = {
+                "strict": True,
+                "debug": True,
+                "sp": {
+                    "entityId": "https://login.ubuntu.com/+saml/metadata",
+                    # Depending on your security config below you may need to generate
+                    # a certificate and private key.
+                    # You can use https://www.samltool.com/self_signed_certs.php or
+                    # use openssl for it (which is more secure as it ensures the
+                    # key never leaves your machine)
+                    "assertionConsumerService": {
+                        # URL Location where the <Response> from the IdP will be returned
+                        "url": "{scheme}://{host}:{port}/login/sso/saml".format(
+                            scheme=self._get_external_scheme(),
+                            host=self._get_external_hostname(),
+                            port=self._get_external_port(),
+                        ),
+                        # SAML protocol binding to be used when returning the <Response>
+                        # message. OneLogin Toolkit supports this endpoint for the
+                        # HTTP-POST binding only.
+                        "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST",
+                    },
+                    "singleLogoutService": {
+                        "url": "https://login.ubuntu.com/+logout",
+                        "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect",
+                    },
+                    "x509cert": "",
+                    "privateKey": "",
+                },
+                "idp": {
+                    # This metadata is provided by your SAML IdP. You can omit (or
+                    # leave empty) the whole 'idp' section in case you need SP
+                    # metadata to register your app and get the IdP metadata from
+                    # https://indico.example.com/multipass/saml/{auth-provider-name}/metadata
+                    # and then fill in the IdP metadata afterwards.
+                    "entityId": "https://login.ubuntu.com/+saml/metadata",
+                    "singleSignOnService": {
+                        "url": "https://login.ubuntu.com/saml/",
+                        "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect",
+                    },
+                    "singleLogoutService": {
+                        "url": "https://login.ubuntu.com/+logout",
+                        "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect",
+                    },
+                    "x509cert": SAML_IDP_CRT,
+                },
+                # These advanced settings allow you to tune the SAML security options.
+                # Please see the documentation on https://github.com/onelogin/python3-saml
+                # for details on how they behave. Note that by requiring signatures,
+                # you usually need to set a cert and key on your SP config.
+                # "security": {
+                #     'nameIdEncrypted': False,
+                #     'authnRequestsSigned': True,
+                #     'logoutRequestSigned': True,
+                #     'logoutResponseSigned': True,
+                #     'signMetadata': True,
+                #     'wantMessagesSigned': True,
+                #     'wantAssertionsSigned': True,
+                #     'wantNameId': True,
+                #     'wantNameIdEncrypted': False,
+                #     'wantAssertionsEncrypted': False,
+                #     'allowSingleLabelDomains': False,
+                #     'signatureAlgorithm': 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256',
+                #     'digestAlgorithm': 'http://www.w3.org/2001/04/xmlenc#sha256'
+                # }
+            }
+            auth_providers = {"saml": {"type": "saml", "saml_config": saml_config}}
+            env_config["INDICO_AUTH_PROVIDERS"] = str(auth_providers)
+            identity_providers = {
+                "saml": {
+                    "type": "saml",
+                    "trusted_email": True,
+                    "mapping": {
+                        "user_name": "username",
+                        "first_name": "fullname",
+                        "last_name": "",
+                        "email": "email",
+                    },
+                    "identifier_field": "openid",
+                }
+            }
+            env_config["INDICO_IDENTITY_PROVIDERS"] = str(identity_providers)
         return env_config
+
+    def _is_config_valid(self):
+        return (
+            not self.config["saml_target_url"] or UBUNTU_SAML_URL == self.config["saml_target_url"]
+        )
 
     def _on_config_changed(self, event):
         """Handle changes in configuration."""
         if self._are_relations_ready(event):
+            if not self._is_config_valid():
+                self.unit.status = BlockedStatus("Invalid saml_target_url option provided")
+                event.defer()
+                return
             if not self._are_pebble_instances_ready():
                 self.unit.status = WaitingStatus("Waiting for pebble")
                 event.defer()

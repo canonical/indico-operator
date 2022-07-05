@@ -5,7 +5,7 @@ import unittest
 from ast import literal_eval
 from unittest.mock import MagicMock, patch
 
-from ops.model import ActiveStatus, Container, WaitingStatus
+from ops.model import ActiveStatus, BlockedStatus, Container, WaitingStatus
 from ops.testing import Harness
 
 from charm import IndicoOperatorCharm
@@ -127,6 +127,8 @@ class TestCharm(unittest.TestCase):
         self.assertEqual("default", updated_plan_env["ATTACHMENT_STORAGE"])
         storage_dict = literal_eval(updated_plan_env["STORAGE_DICT"])
         self.assertEqual("fs:/srv/indico/archive", storage_dict["default"])
+        self.assertFalse(literal_eval(updated_plan_env["INDICO_AUTH_PROVIDERS"]))
+        self.assertFalse(literal_eval(updated_plan_env["INDICO_IDENTITY_PROVIDERS"]))
 
         service = self.harness.model.unit.get_container("indico-celery").get_service(
             "indico-celery"
@@ -167,6 +169,7 @@ class TestCharm(unittest.TestCase):
                     "customization_debug": True,
                     "customization_sources_url": "https://example.com/custom",
                     "s3_storage": "s3:bucket=my-indico-test-bucket,access_key=12345,secret_key=topsecret",
+                    "saml_target_url": "https://login.ubuntu.com/saml/",
                 }
             )
 
@@ -219,6 +222,10 @@ class TestCharm(unittest.TestCase):
             "s3:bucket=my-indico-test-bucket,access_key=12345,secret_key=topsecret",
             storage_dict["s3"],
         )
+        auth_providers = literal_eval(updated_plan_env["INDICO_AUTH_PROVIDERS"])
+        self.assertEqual("saml", auth_providers["saml"]["type"])
+        identity_providers = literal_eval(updated_plan_env["INDICO_IDENTITY_PROVIDERS"])
+        self.assertEqual("saml", identity_providers["saml"]["type"])
 
         self.harness.disable_hooks()
         self.harness.set_leader(True)
@@ -237,3 +244,24 @@ class TestCharm(unittest.TestCase):
 
         self.harness.update_config({"indico_support_email": "example@email.local"})
         self.assertEqual(self.harness.model.unit.status, WaitingStatus("Waiting for pebble"))
+
+    def test_config_changed_when_saml_target_url_invalid(self):
+        # Set relation data
+        self.harness.charm._stored.db_uri = "db-uri"
+        self.harness.charm._stored.redis_relation = {1: {"hostname": "redis-host", "port": 1010}}
+        self.harness.disable_hooks()
+        self.harness.set_leader(True)
+        self.harness.enable_hooks()
+
+        container = self.harness.model.unit.get_container("indico")
+        self.harness.charm.on.indico_pebble_ready.emit(container)
+        container = self.harness.model.unit.get_container("indico-celery")
+        self.harness.charm.on.indico_celery_pebble_ready.emit(container)
+        container = self.harness.model.unit.get_container("indico-nginx")
+        self.harness.charm.on.indico_nginx_pebble_ready.emit(container)
+
+        self.harness.update_config({"saml_target_url": "sample.com/saml"})
+        self.assertEqual(
+            self.harness.model.unit.status,
+            BlockedStatus("Invalid saml_target_url option provided"),
+        )
