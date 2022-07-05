@@ -9,7 +9,7 @@ RUN apt update \
     && apt install -y software-properties-common \
     && add-apt-repository ppa:deadsnakes/ppa -y \
     && apt update \
-    && apt install -y gettext git libpq-dev postgresql-client python3.9 python3.9-dev python3.9-distutils python3-pip texlive-xetex
+    && apt install -y cron gettext git libpq-dev postgresql-client python3.9 python3.9-dev python3.9-distutils python3-pip texlive-xetex
 
 RUN python3.9 -m pip install --prefer-binary indico indico-plugins uwsgi
 
@@ -24,7 +24,9 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 RUN ["/bin/bash", "-c", "mkdir -p --mode=775 /srv/indico/{etc,tmp,log,cache,archive,custom}"]
 RUN /usr/local/bin/indico setup create-symlinks /srv/indico \
-    && /usr/local/bin/indico setup create-logging-config /etc
+    && /usr/local/bin/indico setup create-logging-config /etc \
+    && echo "* * * * * git -C /srv/indico/custom pull" | crontab -u indico - \
+    && /etc/init.d/cron start
 
 COPY files/start-indico.sh /srv/indico/
 COPY files/etc/indico/indico.conf /srv/indico/etc/
