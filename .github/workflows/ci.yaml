@@ -81,12 +81,15 @@ jobs:
           key: ${{ runner.os }}-buildx
       - name: Build image
         uses: docker/build-push-action@v2
+        id: build_image
         with:
           tags: localhost:32000/indico-nginx:latest
           file: indico-nginx.Dockerfile
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
           outputs: type=docker,dest=/tmp/indico-nginx.tar
+      - name: Print
+        run: echo ${{ steps.build_image.outputs.digest }}
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
