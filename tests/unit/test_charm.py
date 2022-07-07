@@ -223,9 +223,9 @@ class TestCharm(unittest.TestCase):
             storage_dict["s3"],
         )
         auth_providers = literal_eval(updated_plan_env["INDICO_AUTH_PROVIDERS"])
-        self.assertEqual("saml", auth_providers["saml"]["type"])
+        self.assertEqual("saml", auth_providers["ubuntu"]["type"])
         identity_providers = literal_eval(updated_plan_env["INDICO_IDENTITY_PROVIDERS"])
-        self.assertEqual("saml", identity_providers["saml"]["type"])
+        self.assertEqual("saml", identity_providers["ubuntu"]["type"])
 
         self.harness.disable_hooks()
         self.harness.set_leader(True)

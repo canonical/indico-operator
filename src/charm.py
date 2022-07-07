@@ -309,10 +309,10 @@ class IndicoOperatorCharm(CharmBase):
                 #     'digestAlgorithm': 'http://www.w3.org/2001/04/xmlenc#sha256'
                 # }
             }
-            auth_providers = {"saml": {"type": "saml", "saml_config": saml_config}}
+            auth_providers = {"ubuntu": {"type": "saml", "saml_config": saml_config}}
             env_config["INDICO_AUTH_PROVIDERS"] = str(auth_providers)
             identity_providers = {
-                "saml": {
+                "ubuntu": {
                     "type": "saml",
                     "trusted_email": True,
                     "mapping": {
