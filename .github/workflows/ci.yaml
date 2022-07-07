@@ -55,7 +55,7 @@ jobs:
           file: indico.Dockerfile
           outputs: type=docker,dest=/tmp/indico.tar
       - name: Upload artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: indico
           path: /tmp/indico.tar
@@ -74,7 +74,7 @@ jobs:
           file: indico-nginx.Dockerfile
           outputs: type=docker,dest=/tmp/indico-nginx.tar
       - name: Upload artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: indico-nginx
           path: /tmp/indico-nginx.tar
@@ -91,23 +91,16 @@ jobs:
           provider: microk8s
       - name: Enable microk8s registry
         run: sudo microk8s.enable registry
-      - name: Download indico image
-        uses: actions/download-artifact@v2
-        with:
-          name: indico
-          path: /tmp
-      - name: Download nginx image
-        uses: actions/download-artifact@v2
-        with:
-          name: indico-nginx
-          path: /tmp
-      - name: Push images to microk8s registry
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+      - name: Push indico image to microk8s registry
         run: |
-          docker load --input /tmp/indico.tar
-          docker load --input /tmp/indico-nginx.tar
+          docker load --input indico.tar
           docker push localhost:32000/indico:latest
+      - name: Push nginx image to microk8s registry
+        run: |
+          docker load --input indico-nginx.tar
           docker push localhost:32000/indico-nginx:latest
-          microk8s ctr images ls
       - name: Run integration tests
         run: tox -e integration -- --model testing --indico-image localhost:32000/indico:latest --indico-nginx-image localhost:32000/indico-nginx:latest
       - name: Dump logs
