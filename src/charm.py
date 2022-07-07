@@ -231,12 +231,18 @@ class IndicoOperatorCharm(CharmBase):
             "STORAGE_DICT": {
                 "default": "fs:/srv/indico/archive",
             },
+            "INDICO_EXTRA_PLUGINS": "",
         }
+        # Piwik settings can't be configured using the config file for the time being:
+        # https://github.com/indico/indico-plugins/issues/182
+        indico_plugins = ["piwik"]
+
         if self.config["s3_storage"]:
             env_config["STORAGE_DICT"].update({"s3": self.config["s3_storage"]})
             env_config["ATTACHMENT_STORAGE"] = "s3"
-            env_config["INDICO_EXTRA_PLUGINS"] = "storage_s3"
+            indico_plugins.append("storage_s3")
         env_config["STORAGE_DICT"] = str(env_config["STORAGE_DICT"])
+        env_config["INDICO_EXTRA_PLUGINS"] = ",".join(indico_plugins)
         return env_config
 
     def _on_config_changed(self, event):
