@@ -9,9 +9,8 @@ RUN apt update \
     && apt install -y software-properties-common \
     && add-apt-repository ppa:deadsnakes/ppa -y \
     && apt update \
-    && apt install -y libpq-dev python3.9 python3.9-dev python3.9-distutils python3-pip
-
-RUN python3.9 -m pip install --prefer-binary indico indico-plugins
+    && apt install -y libpq-dev python3.9 python3.9-dev python3.9-distutils python3-pip \
+    && python3.9 -m pip install --prefer-binary indico indico-plugins
 
 FROM ubuntu:jammy
 
