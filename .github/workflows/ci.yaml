@@ -53,6 +53,8 @@ jobs:
         with:
           tags: localhost:32000/indico:latest
           file: indico.Dockerfile
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
           outputs: type=docker,dest=/tmp/indico.tar
       - name: Upload artifact
         uses: actions/upload-artifact@v3
@@ -72,6 +74,8 @@ jobs:
         with:
           tags: localhost:32000/indico-nginx:latest
           file: indico-nginx.Dockerfile
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
           outputs: type=docker,dest=/tmp/indico-nginx.tar
       - name: Upload artifact
         uses: actions/upload-artifact@v3
@@ -95,13 +99,12 @@ jobs:
         uses: actions/download-artifact@v3
       - name: Push indico image to microk8s registry
         run: |
-          ls -R
-          docker load --input indico.tar
+          docker load --input indico/indico.tar
           docker push localhost:32000/indico:latest
       - name: Push nginx image to microk8s registry
         run: |
           ls -R
-          docker load --input indico-nginx.tar
+          docker load --input indico-nginx/indico-nginx.tar
           docker push localhost:32000/indico-nginx:latest
       - name: Run integration tests
         run: tox -e integration -- --model testing --indico-image localhost:32000/indico:latest --indico-nginx-image localhost:32000/indico-nginx:latest

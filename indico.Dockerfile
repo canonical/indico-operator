@@ -1,6 +1,6 @@
 FROM ubuntu:jammy
 
-ENV DEBIAN_FRONTEND=noninteractive\
+ENV DEBIAN_FRONTEND=noninteractive \
     INDICO_CONFIG="/srv/indico/etc/indico.conf"
 
 ARG indico_gid=2000
