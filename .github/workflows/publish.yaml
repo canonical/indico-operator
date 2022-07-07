@@ -29,10 +29,12 @@ jobs:
         with:
           tags: indico:latest
           file: indico.Dockerfile
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
       - name: Publish image
         env:
           CHARMCRAFT_AUTH: ${{ secrets.charmhub-token }}
-        run: echo ${{ steps.build_image.outputs }}
+        run: echo ${{ join(steps.build_image.outputs.*, '\n')}}
   publish-nginx-image:
     runs-on: ubuntu-latest
     steps:
@@ -55,6 +57,8 @@ jobs:
         with:
           tags: indico-nginx:latest
           file: indico-nginx.Dockerfile
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
       - name: Publish image
         env:
           CHARMCRAFT_AUTH: ${{ secrets.charmhub-token }}
