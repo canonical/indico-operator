@@ -95,10 +95,12 @@ jobs:
         uses: actions/download-artifact@v3
       - name: Push indico image to microk8s registry
         run: |
+          ls -R
           docker load --input indico.tar
           docker push localhost:32000/indico:latest
       - name: Push nginx image to microk8s registry
         run: |
+          ls -R
           docker load --input indico-nginx.tar
           docker push localhost:32000/indico-nginx:latest
       - name: Run integration tests
