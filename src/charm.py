@@ -233,6 +233,8 @@ class IndicoOperatorCharm(CharmBase):
             },
             "INDICO_EXTRA_PLUGINS": "",
         }
+        # Piwik settings can't be configured using the config file for the time being:
+        # https://github.com/indico/indico-plugins/issues/182
         indico_plugins = ["piwik"]
 
         if self.config["s3_storage"]:
