@@ -54,18 +54,12 @@ jobs:
         run: sudo microk8s.enable registry
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
-      - name: Build and push indico image
-        uses: docker/build-push-action@v2
-        with:
-          push: true
-          tags: localhost:32000/indico:latest
-          file: indico.Dockerfile
-      - name: Build and push indico nginx image
-        uses: docker/build-push-action@v2
-        with:
-          push: true
-          tags: localhost:32000/indico-nginx:latest
-          file: indico-nginx.Dockerfile
+      - name: Build and import images into microk8s
+        run: |
+          docker build -t localhost:32000/indico:latest -f indico.Dockerfile .
+          docker push localhost:32000/indico:latest
+          docker build -t localhost:32000/indico-nginx:latest -f indico-nginx.Dockerfile .
+          docker push localhost:32000/indico-nginx:latest
       - name: Run integration tests
         run: tox -e integration -- --model testing --indico-image localhost:32000/indico:latest --indico-nginx-image localhost:32000/indico-nginx:latest
       - name: Dump logs
