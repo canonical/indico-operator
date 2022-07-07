@@ -8,20 +8,9 @@ name: Publish to edge
 # charmhub edge channel.
 
 on:
-  push:
-    branches:
-      - master
-      - main
-      - track/**
+  pull_request:
 
 jobs:
-
-  tests:
-    name: Run Tests
-    uses: ./.github/workflows/ci.yaml
-    secrets:
-      charmhub-token: "${{ secrets.CHARMHUB_TOKEN }}"
-
   publish-charm-to-edge:
     name: Publish Charm To Edge
     uses: ./.github/workflows/publish.yaml
