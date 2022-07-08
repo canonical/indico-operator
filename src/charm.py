@@ -171,7 +171,7 @@ class IndicoOperatorCharm(CharmBase):
                     },
                 },
                 "checks": {
-                    "indico-ready": {"override": "replace", "level": "ready", "tcp": {"port": 80}}
+                    "indico-ready": {"override": "replace", "level": "ready", "tcp": {"port": 8081}}
                 },
             },
             "indico-celery": {
@@ -181,7 +181,7 @@ class IndicoOperatorCharm(CharmBase):
                     "indico-celery": {
                         "override": "replace",
                         "summary": "Indico celery",
-                        "command": "/usr/local/bin/indico celery worker -B --uid 2000",
+                        "command": "/usr/local/bin/indico celery worker -B",
                         "startup": "enabled",
                         "user": "indico",
                         "environment": indico_env_config,
@@ -191,7 +191,7 @@ class IndicoOperatorCharm(CharmBase):
                     "ready": {
                         "override": "replace",
                         "level": "ready",
-                        "http": {"url": indico_env_config["CELERY_BROKER"]},
+                        "exec": {"command": "celery inspect ping -b {} -d celery@indico-0".format(indico_env_config["CELERY_BROKER"])},
                     },
                 },
             },
@@ -215,7 +215,7 @@ class IndicoOperatorCharm(CharmBase):
                     "nginx-ready": {
                         "override": "replace",
                         "level": "ready",
-                        "http": {"url": "http://localhost:8080"},
+                        "http": {"url": "http://localhost:8080/health"},
                     },
                 },
             },
