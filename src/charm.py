@@ -191,7 +191,8 @@ class IndicoOperatorCharm(CharmBase):
                     "ready": {
                         "override": "replace",
                         "level": "ready",
-                        "exec": {"command": "celery inspect ping -b {} -d celery@indico-0".format(indico_env_config["CELERY_BROKER"])},
+                        "exec": {"command": "/usr/local/bin/indico celery inspect ping"},
+                        "environment": indico_env_config,
                     },
                 },
             },

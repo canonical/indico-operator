@@ -19,18 +19,15 @@ ARG indico_uid=2000
 RUN addgroup --gid ${indico_gid} indico \
     && adduser --system --gid ${indico_gid} --uid ${indico_uid} --home /srv/indico --disabled-login indico
 
-ENV DEBIAN_FRONTEND=noninteractive \
-    INDICO_CONFIG="/srv/indico/etc/indico.conf"
+ENV DEBIAN_FRONTEND=noninteractive
 
 RUN ["/bin/bash", "-c", "mkdir -p --mode=775 /srv/indico/{etc,tmp,log,cache,archive,custom}"]
 RUN /usr/local/bin/indico setup create-symlinks /srv/indico \
     && /usr/local/bin/indico setup create-logging-config /etc
 
 COPY files/start-indico.sh /srv/indico/
-COPY files/etc/indico/indico.conf /srv/indico/etc/
-COPY files/etc/indico/uwsgi.ini /etc/
+COPY files/etc/indico/* /etc/
 
 RUN chmod +x /srv/indico/start-indico.sh \
     && chown -R indico:indico /srv/indico \
     && chmod 755 /srv/indico
-
