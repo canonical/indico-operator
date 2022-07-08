@@ -14,19 +14,17 @@ RUN apt update \
 
 FROM ubuntu:jammy
 
-ARG nginx_gid=2001
-ARG nginx_uid=2001
-
-RUN addgroup --gid ${nginx_gid} nginx \
-    && adduser --system --gid ${nginx_gid} --uid ${nginx_uid} --no-create-home --disabled-login nginx
-
 RUN apt update \
     && apt install -y nginx
 
 COPY --from=0 /usr/local/lib/python3.9/dist-packages/indico/web/static /srv/indico/static
-
 COPY files/etc/nginx/nginx.conf /etc/nginx/nginx.conf
 
-RUN chown -R nginx:nginx /srv/indico/static/ \
+ARG nginx_gid=2001
+ARG nginx_uid=2001
+
+RUN addgroup --gid ${nginx_gid} nginx \
+    && adduser --system --gid ${nginx_gid} --uid ${nginx_uid} --no-create-home --disabled-login nginx \
+    && chown -R nginx:nginx /srv/indico/static/ \
     && chmod 755 /srv/indico/static
 
