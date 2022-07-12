@@ -269,5 +269,7 @@ class TestCharm(unittest.TestCase):
         self.harness.update_config({"saml_target_url": "sample.com/saml"})
         self.assertEqual(
             self.harness.model.unit.status,
-            BlockedStatus("Invalid saml_target_url option provided"),
+            BlockedStatus(
+                "Invalid saml_target_url option provided. Only https://login.ubuntu.com/saml/ is available."
+            ),
         )
