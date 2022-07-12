@@ -20,7 +20,6 @@ from ops.pebble import ExecError
 DATABASE_NAME = "indico"
 INDICO_CUSTOMIZATION_DIR = "/srv/indico/custom"
 PORT = 8080
-SAML_IDP_CRT = "saml-idp.crt"
 UBUNTU_SAML_URL = "https://login.ubuntu.com/saml/"
 
 pgsql = ops.lib.use("pgsql", 1, "postgresql-charmers@lists.launchpad.net")
@@ -247,43 +246,24 @@ class IndicoOperatorCharm(CharmBase):
             indico_plugins.append("storage_s3")
         env_config["STORAGE_DICT"] = str(env_config["STORAGE_DICT"])
 
+        # SAML configuration reference https://github.com/onelogin/python3-saml
         if self.config["saml_target_url"]:
             saml_config = {
                 "strict": True,
                 "debug": True,
                 "sp": {
-                    "entityId": "https://login.ubuntu.com/+saml/metadata",
-                    # Depending on your security config below you may need to generate
-                    # a certificate and private key.
-                    # You can use https://www.samltool.com/self_signed_certs.php or
-                    # use openssl for it (which is more secure as it ensures the
-                    # key never leaves your machine)
-                    "assertionConsumerService": {
-                        # URL Location where the <Response> from the IdP will be returned
-                        "url": "{scheme}://{host}:{port}/login/sso/saml".format(
-                            scheme=self._get_external_scheme(),
-                            host=self._get_external_hostname(),
-                            port=self._get_external_port(),
-                        ),
-                        # SAML protocol binding to be used when returning the <Response>
-                        # message. OneLogin Toolkit supports this endpoint for the
-                        # HTTP-POST binding only.
-                        "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST",
-                    },
-                    "singleLogoutService": {
-                        "url": "https://login.ubuntu.com/+logout",
-                        "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect",
-                    },
-                    "x509cert": "",
-                    "privateKey": "",
+                    "entityId": self.config["site_url"],
+                    # "assertionConsumerService": {
+                    #     "url": "{}/login/sso/saml".format(self.config["site_url"]),
+                    #     "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST",
+                    # },
+                    # "singleLogoutService": {
+                    #     "url": "{}/+logout".format(self.config["site_url"]),
+                    #     "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect",
+                    # },
                 },
                 "idp": {
-                    # This metadata is provided by your SAML IdP. You can omit (or
-                    # leave empty) the whole 'idp' section in case you need SP
-                    # metadata to register your app and get the IdP metadata from
-                    # https://indico.example.com/multipass/saml/{auth-provider-name}/metadata
-                    # and then fill in the IdP metadata afterwards.
-                    "entityId": "https://login.ubuntu.com/+saml/metadata",
+                    "entityId": "https://login.ubuntu.com",
                     "singleSignOnService": {
                         "url": "https://login.ubuntu.com/saml/",
                         "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect",
@@ -292,27 +272,8 @@ class IndicoOperatorCharm(CharmBase):
                         "url": "https://login.ubuntu.com/+logout",
                         "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect",
                     },
-                    "x509cert": SAML_IDP_CRT,
+                    "x509cert": "MIICjzCCAfigAwIBAgIJALNN/vxaR1hyMA0GCSqGSIb3DQEBBQUAMDoxCzAJBgNVBAYTAkdCMRMwEQYDVQQIEwpTb21lLVN0YXRlMRYwFAYDVQQKEw1DYW5vbmljYWwgTHRkMB4XDTEyMDgxMDEyNDE0OFoXDTEzMDgxMDEyNDE0OFowOjELMAkGA1UEBhMCR0IxEzARBgNVBAgTClNvbWUtU3RhdGUxFjAUBgNVBAoTDUNhbm9uaWNhbCBMdGQwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAMM4pmIxkv419q8zj5EojK57y6plU/+k3apX6w1PgAYeI0zhNuud/tiqKVQEDyZ6W7HNeGtWSh5rewy8c07BShcHG5Y8ibzBdIibGs5k6gvtmsRiXDE/F39+RrPSW18beHhEuoVJM9RANp3MYMOK11SiClSiGo+NfBKFuoqNX3UjAgMBAAGjgZwwgZkwHQYDVR0OBBYEFH/no88pbywRnW6Fz+B4lQ04w/86MGoGA1UdIwRjMGGAFH/no88pbywRnW6Fz+B4lQ04w/86oT6kPDA6MQswCQYDVQQGEwJHQjETMBEGA1UECBMKU29tZS1TdGF0ZTEWMBQGA1UEChMNQ2Fub25pY2FsIEx0ZIIJALNN/vxaR1hyMAwGA1UdEwQFMAMBAf8wDQYJKoZIhvcNAQEFBQADgYEArTGbZ1rg++aBxnNuJ7eho62JKKtRW5O+kMBvBLWi7fKck5uXDE6d7Jv6hUy/gwUZV7r5kuPwRlw3Pu6AX4R60UsQuVG1/VVVI7nu32iCkXx5Vzq446IkVRdk/QOda1dRyq0oaifUUhJfwVFSsm95ENDFdGqD0raj7g77ajcBMf8=",
                 },
-                # These advanced settings allow you to tune the SAML security options.
-                # Please see the documentation on https://github.com/onelogin/python3-saml
-                # for details on how they behave. Note that by requiring signatures,
-                # you usually need to set a cert and key on your SP config.
-                # "security": {
-                #     'nameIdEncrypted': False,
-                #     'authnRequestsSigned': True,
-                #     'logoutRequestSigned': True,
-                #     'logoutResponseSigned': True,
-                #     'signMetadata': True,
-                #     'wantMessagesSigned': True,
-                #     'wantAssertionsSigned': True,
-                #     'wantNameId': True,
-                #     'wantNameIdEncrypted': False,
-                #     'wantAssertionsEncrypted': False,
-                #     'allowSingleLabelDomains': False,
-                #     'signatureAlgorithm': 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256',
-                #     'digestAlgorithm': 'http://www.w3.org/2001/04/xmlenc#sha256'
-                # }
             }
             auth_providers = {"ubuntu": {"type": "saml", "saml_config": saml_config}}
             env_config["INDICO_AUTH_PROVIDERS"] = str(auth_providers)

@@ -226,6 +226,10 @@ class TestCharm(unittest.TestCase):
         )
         auth_providers = literal_eval(updated_plan_env["INDICO_AUTH_PROVIDERS"])
         self.assertEqual("saml", auth_providers["ubuntu"]["type"])
+        self.assertEqual(
+            "https://example.local:8080",
+            auth_providers["ubuntu"]["saml_config"]["sp"]["entityId"],
+        )
         identity_providers = literal_eval(updated_plan_env["INDICO_IDENTITY_PROVIDERS"])
         self.assertEqual("saml", identity_providers["ubuntu"]["type"])
 
