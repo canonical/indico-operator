@@ -250,17 +250,8 @@ class IndicoOperatorCharm(CharmBase):
         if self.config["saml_target_url"]:
             saml_config = {
                 "strict": True,
-                "debug": True,
                 "sp": {
                     "entityId": self.config["site_url"],
-                    # "assertionConsumerService": {
-                    #     "url": "{}/login/sso/saml".format(self.config["site_url"]),
-                    #     "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST",
-                    # },
-                    # "singleLogoutService": {
-                    #     "url": "{}/+logout".format(self.config["site_url"]),
-                    #     "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect",
-                    # },
                 },
                 "idp": {
                     "entityId": "https://login.ubuntu.com",
@@ -303,7 +294,9 @@ class IndicoOperatorCharm(CharmBase):
         """Handle changes in configuration."""
         if self._are_relations_ready(event):
             if not self._is_config_valid():
-                self.unit.status = BlockedStatus("Invalid saml_target_url option provided")
+                self.unit.status = BlockedStatus(
+                    "Invalid saml_target_url option provided. Only {} is available.".format(UBUNTU_SAML_URL)
+                )
                 event.defer()
                 return
             if not self._are_pebble_instances_ready():
