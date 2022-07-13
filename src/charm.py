@@ -258,7 +258,11 @@ class IndicoOperatorCharm(CharmBase):
 
             self.model.unit.status = MaintenanceStatus("Configuring pod")
             self._download_customization_changes()
-            plugins = self.config["external_plugins"].split(",")
+            plugins = (
+                self.config["external_plugins"].split(",")
+                if self.config["external_plugins"]
+                else []
+            )
             if self.config["s3_storage"]:
                 plugins.append("indico-plugin-storage-s3")
             self._install_plugins(plugins)
