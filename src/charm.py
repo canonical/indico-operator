@@ -34,12 +34,18 @@ class IndicoOperatorCharm(CharmBase):
         super().__init__(*args)
 
         self.framework.observe(self.on.config_changed, self._on_config_changed)
-        self.framework.observe(self.on.leader_elected, self._on_config_changed)
+        self.framework.observe(self.on.leader_elected, self._on_leader_elected)
         self.framework.observe(self.on.indico_pebble_ready, self._on_pebble_ready)
         self.framework.observe(self.on.indico_celery_pebble_ready, self._on_pebble_ready)
         self.framework.observe(self.on.indico_nginx_pebble_ready, self._on_pebble_ready)
         self.framework.observe(
             self.on.refresh_customization_changes_action, self._refresh_customization_changes
+        )
+        self.framework.observe(
+            self.on.instances_relation_joined, self._on_instances_relation_changed
+        )
+        self.framework.observe(
+            self.on.instances_relation_changed, self._on_instances_relation_changed
         )
 
         self._stored.set_default(
@@ -48,7 +54,7 @@ class IndicoOperatorCharm(CharmBase):
             db_ro_uris=[],
             redis_relation={},
             # This key would need to be shared across instances to support horizontal scalability
-            secret_key=repr(os.urandom(32)),
+            secret_key=None,
             pebble_statuses={
                 "indico": False,
                 "indico-nginx": False,
@@ -319,6 +325,18 @@ class IndicoOperatorCharm(CharmBase):
                 user="indico",
             )
             process.wait_output()
+
+    def _on_leader_elected(self, _) -> None:
+        """Handle relation-joined event for the instances' relation."""
+        peer_relation = self.model.get_relation("instances")
+        if not peer_relation.data[self.app].get("secret-key"):
+            peer_relation.data[self.app].update({"secret-key": repr(os.urandom(32))})
+
+    def _on_instances_relation_changed(self, event) -> None:
+        """Handle relation-changed event for the instances' relation."""
+        secret_key = event.relation.data[self.app].get("secret-key")
+        if secret_key and secret_key != self._stored.secret_key:
+            self._stored.secret_key = secret_key
 
 
 if __name__ == "__main__":
