@@ -208,6 +208,12 @@ class IndicoOperatorCharm(CharmBase):
             redis_hostname = self._stored.redis_relation[redis_unit]["hostname"]
             redis_port = self._stored.redis_relation[redis_unit]["port"]
 
+        indico_container = self.unit.get_container("indico")
+        process = indico_container.exec(["indico", "setup", "list-plugins"])
+        output, _ = process.wait_output()
+        # Parse output table, discarding header and footer rows and fetching first column value
+        available_plugins = [item.split("|")[1].strip() for item in output.split("\n")[3:-2]]
+
         env_config = {
             "ATTACHMENT_STORAGE": "default",
             "CELERY_BROKER": "redis://{host}:{port}".format(host=redis_hostname, port=redis_port),
@@ -231,18 +237,15 @@ class IndicoOperatorCharm(CharmBase):
             "STORAGE_DICT": {
                 "default": "fs:/srv/indico/archive",
             },
-            "INDICO_EXTRA_PLUGINS": "",
+            "INDICO_EXTRA_PLUGINS": ",".join(available_plugins),
         }
         # Piwik settings can't be configured using the config file for the time being:
         # https://github.com/indico/indico-plugins/issues/182
-        indico_plugins = ["piwik"]
 
         if self.config["s3_storage"]:
             env_config["STORAGE_DICT"].update({"s3": self.config["s3_storage"]})
             env_config["ATTACHMENT_STORAGE"] = "s3"
-            indico_plugins.append("storage_s3")
         env_config["STORAGE_DICT"] = str(env_config["STORAGE_DICT"])
-        env_config["INDICO_EXTRA_PLUGINS"] = ",".join(indico_plugins)
         return env_config
 
     def _on_config_changed(self, event):
@@ -254,10 +257,14 @@ class IndicoOperatorCharm(CharmBase):
                 return
 
             self.model.unit.status = MaintenanceStatus("Configuring pod")
+            self._download_customization_changes()
+            plugins = self.config["external_plugins"].split(",")
+            if self.config["s3_storage"]:
+                plugins.append("indico-plugin-storage-s3")
+            self._install_plugins(plugins)
             for container_name in self.model.unit.containers:
                 self._config_pebble(self.unit.get_container(container_name))
 
-            self._download_customization_changes()
             self.ingress.update_config(self._make_ingress_config())
             self.model.unit.status = ActiveStatus()
 
@@ -276,6 +283,18 @@ class IndicoOperatorCharm(CharmBase):
             logging.debug(ex)
             pass
         return remote_url.rstrip()
+
+    def _install_plugins(self, plugins):
+        """Install the external plugins."""
+        if plugins:
+            indico_container = self.unit.get_container("indico")
+            process = indico_container.exec(["python3.9", "-m", "pip", "install"] + plugins)
+            process.wait_output()
+            process = indico_container.exec(["indico", "setup", "list-plugins"])
+            output, _ = process.wait_output()
+            # Parse output table, discarding header and footer rows and fetching first column value
+            available_plugins = [item.split("|")[1].strip() for item in output.split("\n")[3:-2]]
+            logging.error(available_plugins)
 
     def _download_customization_changes(self):
         """Clone the remote repository with the customization changes."""

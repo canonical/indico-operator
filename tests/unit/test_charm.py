@@ -38,8 +38,12 @@ class TestCharm(unittest.TestCase):
         self.harness.charm._stored.db_uri = "db-uri"
         self.harness.charm._stored.redis_relation = {1: {"hostname": "redis-host", "port": 1010}}
 
-        container = self.harness.model.unit.get_container("indico-nginx")
-        self.harness.charm.on.indico_nginx_pebble_ready.emit(container)
+        class MockExecProcess(object):
+            wait_output = MagicMock(return_value=("", None))
+
+        with patch.object(Container, "exec", return_value=MockExecProcess()):
+            container = self.harness.model.unit.get_container("indico-nginx")
+            self.harness.charm.on.indico_nginx_pebble_ready.emit(container)
 
         service = self.harness.model.unit.get_container("indico-nginx").get_service("indico-nginx")
         self.assertTrue(service.is_running())
@@ -50,15 +54,19 @@ class TestCharm(unittest.TestCase):
         self.harness.charm._stored.db_uri = "db-uri"
         self.harness.charm._stored.redis_relation = {1: {"hostname": "redis-host", "port": 1010}}
 
-        container = self.harness.model.unit.get_container("indico")
-        self.harness.charm.on.indico_pebble_ready.emit(container)
-        self.assertEqual(self.harness.model.unit.status, WaitingStatus("Waiting for pebble"))
-        container = self.harness.model.unit.get_container("indico-celery")
-        self.harness.charm.on.indico_celery_pebble_ready.emit(container)
-        self.assertEqual(self.harness.model.unit.status, WaitingStatus("Waiting for pebble"))
-        container = self.harness.model.unit.get_container("indico-nginx")
-        self.harness.charm.on.indico_nginx_pebble_ready.emit(container)
-        self.assertEqual(self.harness.model.unit.status, ActiveStatus())
+        class MockExecProcess(object):
+            wait_output = MagicMock(return_value=("", None))
+
+        with patch.object(Container, "exec", return_value=MockExecProcess()):
+            container = self.harness.model.unit.get_container("indico")
+            self.harness.charm.on.indico_pebble_ready.emit(container)
+            self.assertEqual(self.harness.model.unit.status, WaitingStatus("Waiting for pebble"))
+            container = self.harness.model.unit.get_container("indico-celery")
+            self.harness.charm.on.indico_celery_pebble_ready.emit(container)
+            self.assertEqual(self.harness.model.unit.status, WaitingStatus("Waiting for pebble"))
+            container = self.harness.model.unit.get_container("indico-nginx")
+            self.harness.charm.on.indico_nginx_pebble_ready.emit(container)
+            self.assertEqual(self.harness.model.unit.status, ActiveStatus())
 
     def test_indico_pebble_ready(self):
         initial_plan = self.harness.get_container_pebble_plan("indico")
@@ -67,11 +75,15 @@ class TestCharm(unittest.TestCase):
         self.harness.charm._stored.db_uri = "db-uri"
         self.harness.charm._stored.redis_relation = {1: {"hostname": "redis-host", "port": 1010}}
 
-        container = self.harness.model.unit.get_container("indico")
-        self.harness.charm.on.indico_pebble_ready.emit(container)
+        class MockExecProcess(object):
+            wait_output = MagicMock(return_value=("", None))
+
+        with patch.object(Container, "exec", return_value=MockExecProcess()):
+            container = self.harness.model.unit.get_container("indico")
+            self.harness.charm.on.indico_pebble_ready.emit(container)
+
         updated_plan = self.harness.get_container_pebble_plan("indico").to_dict()
         updated_plan_env = updated_plan["services"]["indico"]["environment"]
-
         self.assertEqual("db-uri", updated_plan_env["INDICO_DB_URI"])
         self.assertEqual("redis://redis-host:1010", updated_plan_env["CELERY_BROKER"])
         self.assertEqual(self.harness.charm._stored.secret_key, updated_plan_env["SECRET_KEY"])
@@ -87,7 +99,6 @@ class TestCharm(unittest.TestCase):
         self.assertEqual("", updated_plan_env["SMTP_PASSWORD"])
         self.assertTrue(updated_plan_env["SMTP_USE_TLS"])
         self.assertFalse(updated_plan_env["CUSTOMIZATION_DEBUG"])
-        self.assertEqual("piwik", updated_plan_env["INDICO_EXTRA_PLUGINS"])
         self.assertEqual("default", updated_plan_env["ATTACHMENT_STORAGE"])
         storage_dict = literal_eval(updated_plan_env["STORAGE_DICT"])
         self.assertEqual("fs:/srv/indico/archive", storage_dict["default"])
@@ -104,11 +115,15 @@ class TestCharm(unittest.TestCase):
         self.harness.charm._stored.db_uri = "db-uri"
         self.harness.charm._stored.redis_relation = {1: {"hostname": "redis-host", "port": 1010}}
 
-        container = self.harness.model.unit.get_container("indico-celery")
-        self.harness.charm.on.indico_celery_pebble_ready.emit(container)
+        class MockExecProcess(object):
+            wait_output = MagicMock(return_value=("", None))
+
+        with patch.object(Container, "exec", return_value=MockExecProcess()):
+            container = self.harness.model.unit.get_container("indico-celery")
+            self.harness.charm.on.indico_celery_pebble_ready.emit(container)
+
         updated_plan = self.harness.get_container_pebble_plan("indico-celery").to_dict()
         updated_plan_env = updated_plan["services"]["indico-celery"]["environment"]
-
         self.assertEqual("db-uri", updated_plan_env["INDICO_DB_URI"])
         self.assertEqual("redis://redis-host:1010", updated_plan_env["CELERY_BROKER"])
         self.assertEqual(self.harness.charm._stored.secret_key, updated_plan_env["SECRET_KEY"])
@@ -125,7 +140,6 @@ class TestCharm(unittest.TestCase):
         self.assertEqual("", updated_plan_env["SMTP_PASSWORD"])
         self.assertTrue(updated_plan_env["SMTP_USE_TLS"])
         self.assertFalse(updated_plan_env["CUSTOMIZATION_DEBUG"])
-        self.assertEqual("piwik", updated_plan_env["INDICO_EXTRA_PLUGINS"])
         self.assertEqual("default", updated_plan_env["ATTACHMENT_STORAGE"])
         storage_dict = literal_eval(updated_plan_env["STORAGE_DICT"])
         self.assertEqual("fs:/srv/indico/archive", storage_dict["default"])
@@ -144,19 +158,19 @@ class TestCharm(unittest.TestCase):
         self.harness.set_leader(True)
         self.harness.enable_hooks()
 
-        container = self.harness.model.unit.get_container("indico")
-        self.harness.charm.on.indico_pebble_ready.emit(container)
-        container = self.harness.model.unit.get_container("indico-celery")
-        self.harness.charm.on.indico_celery_pebble_ready.emit(container)
-        container = self.harness.model.unit.get_container("indico-nginx")
-        self.harness.charm.on.indico_nginx_pebble_ready.emit(container)
-
         class MockExecProcess(object):
             wait_output = MagicMock(return_value=("", None))
 
         with patch.object(Container, "exec", return_value=MockExecProcess()):
+            container = self.harness.model.unit.get_container("indico")
+            self.harness.charm.on.indico_pebble_ready.emit(container)
+            container = self.harness.model.unit.get_container("indico-celery")
+            self.harness.charm.on.indico_celery_pebble_ready.emit(container)
+            container = self.harness.model.unit.get_container("indico-nginx")
+            self.harness.charm.on.indico_nginx_pebble_ready.emit(container)
             self.harness.update_config(
                 {
+                    "external_plugins": "git+https://github.com/indico/indico-plugins-cern.git/#subdirectory=themes_cern",
                     "indico_support_email": "example@email.local",
                     "indico_public_support_email": "public@email.local",
                     "indico_no_reply_email": "noreply@email.local",
@@ -188,7 +202,6 @@ class TestCharm(unittest.TestCase):
         self.assertEqual("pass", updated_plan_env["SMTP_PASSWORD"])
         self.assertFalse(updated_plan_env["SMTP_USE_TLS"])
         self.assertTrue(updated_plan_env["CUSTOMIZATION_DEBUG"])
-        self.assertEqual("piwik,storage_s3", updated_plan_env["INDICO_EXTRA_PLUGINS"])
         storage_dict = literal_eval(updated_plan_env["STORAGE_DICT"])
         self.assertEqual("s3", updated_plan_env["ATTACHMENT_STORAGE"])
         self.assertEqual("fs:/srv/indico/archive", storage_dict["default"])
@@ -213,7 +226,6 @@ class TestCharm(unittest.TestCase):
         self.assertEqual("pass", updated_plan_env["SMTP_PASSWORD"])
         self.assertFalse(updated_plan_env["SMTP_USE_TLS"])
         self.assertTrue(updated_plan_env["CUSTOMIZATION_DEBUG"])
-        self.assertEqual("piwik,storage_s3", updated_plan_env["INDICO_EXTRA_PLUGINS"])
         self.assertEqual("s3", updated_plan_env["ATTACHMENT_STORAGE"])
         storage_dict = literal_eval(updated_plan_env["STORAGE_DICT"])
         self.assertEqual("fs:/srv/indico/archive", storage_dict["default"])
