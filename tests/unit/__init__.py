@@ -3,4 +3,4 @@
 
 import ops.testing
 
-ops.testing.SIMULATE_CAN_CONNECT = False
+ops.testing.SIMULATE_CAN_CONNECT = True
