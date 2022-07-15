@@ -42,10 +42,10 @@ class IndicoOperatorCharm(CharmBase):
             self.on.refresh_customization_changes_action, self._refresh_customization_changes
         )
         self.framework.observe(
-            self.on.instances_relation_joined, self._on_instances_relation_changed
+            self.on.indico_peers_relation_joined, self._on_indico_peers_relation_changed
         )
         self.framework.observe(
-            self.on.instances_relation_changed, self._on_instances_relation_changed
+            self.on.indico_peers_relation_changed, self._on_indico_peers_relation_changed
         )
 
         self._stored.set_default(
@@ -327,13 +327,13 @@ class IndicoOperatorCharm(CharmBase):
             process.wait_output()
 
     def _on_leader_elected(self, _) -> None:
-        """Handle relation-joined event for the instances' relation."""
-        peer_relation = self.model.get_relation("instances")
+        """Handle leader-elected event."""
+        peer_relation = self.model.get_relation("indico-peers")
         if not peer_relation.data[self.app].get("secret-key"):
             peer_relation.data[self.app].update({"secret-key": repr(os.urandom(32))})
 
-    def _on_instances_relation_changed(self, event) -> None:
-        """Handle relation-changed event for the instances' relation."""
+    def _on_indico_peers_relation_changed(self, event) -> None:
+        """Handle relation-changed event for the indico_peers relation."""
         secret_key = event.relation.data[self.app].get("secret-key")
         if secret_key and secret_key != self._stored.secret_key:
             self._stored.secret_key = secret_key

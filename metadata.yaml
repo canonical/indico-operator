@@ -36,5 +36,5 @@ requires:
     limit: 1
 
 peers:
-  instances:
+  indico-peers:
     interface: indico-instance

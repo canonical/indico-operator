@@ -242,16 +242,16 @@ class TestCharm(unittest.TestCase):
 
     def test_on_leader_elected(self):
         self.harness.charm.db = None
-        rel_id = self.harness.add_relation("instances", "indico")
+        rel_id = self.harness.add_relation("indico-peers", "indico")
         self.harness.set_leader(True)
         self.assertIsNotNone(self.harness.get_relation_data(rel_id, "indico").get("secret-key"))
 
     def test_on_instances_relation_changed(self):
         self.harness.charm.db = None
-        rel_id = self.harness.add_relation("instances", "indico")
-        rel = self.harness.charm.model.get_relation("instances")
+        rel_id = self.harness.add_relation("indico-peers", "indico")
+        rel = self.harness.charm.model.get_relation("indico-peers")
         self.harness.set_leader(True)
-        self.harness.charm.on.instances_relation_joined.emit(rel)
+        self.harness.charm.on.indico_peers_relation_joined.emit(rel)
         self.assertEquals(
             self.harness.charm._stored.secret_key,
             self.harness.get_relation_data(rel_id, "indico").get("secret-key"),
