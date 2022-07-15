@@ -10,6 +10,7 @@ from urllib.parse import urlparse
 
 import ops.lib
 from charms.nginx_ingress_integrator.v0.ingress import IngressRequires
+from charms.prometheus_k8s.v0.prometheus_scrape import MetricsEndpointProvider
 from charms.redis_k8s.v0.redis import RedisRelationCharmEvents, RedisRequires
 from ops.charm import CharmBase
 from ops.framework import StoredState
@@ -66,6 +67,7 @@ class IndicoOperatorCharm(CharmBase):
         self.framework.observe(self.on.redis_relation_updated, self._on_config_changed)
 
         self.ingress = IngressRequires(self, self._make_ingress_config())
+        self.metrics_endpoint = MetricsEndpointProvider(self)
 
     def _on_database_relation_joined(self, event: pgsql.DatabaseRelationJoinedEvent):
         """Handle db-relation-joined."""

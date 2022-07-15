@@ -25,12 +25,16 @@ resources:
     description: Docker image for nginx Indico
     auto-fetch: true
 
+provides:
+  metrics-endpoint:
+    interface: prometheus_scrape
+
 requires:
-  redis:
-    interface: redis
   db:
     interface: pgsql
     limit: 1
   ingress:
     interface: ingress
     limit: 1
+  redis:
+    interface: redis
