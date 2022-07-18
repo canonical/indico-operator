@@ -26,6 +26,8 @@ resources:
     auto-fetch: true
 
 provides:
+  grafana-dashboard:
+    interface: grafana_dashboard
   metrics-endpoint:
     interface: prometheus_scrape
 
@@ -35,6 +37,9 @@ requires:
     limit: 1
   ingress:
     interface: ingress
+    limit: 1
+  logging:
+    interface: loki_push_api
     limit: 1
   redis:
     interface: redis
