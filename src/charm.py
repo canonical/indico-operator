@@ -70,10 +70,16 @@ class IndicoOperatorCharm(CharmBase):
 
         self._ingress = IngressRequires(self, self._make_ingress_config())
         self._metrics_endpoint = MetricsEndpointProvider(self)
-        self._logging = LogProxyConsumer(self, log_files=[
-            ""
-        ])
         self._grafana_dashboards = GrafanaDashboardProvider(self)
+        # self._logging_indico = LogProxyConsumer(self, log_files=[
+        #     "/var/log/bla"
+        # ], container_name="indico")
+        # self._logging_celery = LogProxyConsumer(self, log_files=[
+        #     ""
+        # ], container_name="indico-celery")
+        # self._logging_nginx = LogProxyConsumer(self, log_files=[
+        #     ""
+        # ], container_name="indico-nginx")
 
     def _on_database_relation_joined(self, event: pgsql.DatabaseRelationJoinedEvent):
         """Handle db-relation-joined."""

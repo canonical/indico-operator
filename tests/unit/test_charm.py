@@ -229,7 +229,7 @@ class TestCharm(unittest.TestCase):
         with patch.object(Container, "exec", return_value=MockExecProcess()):
             self.harness.update_config({"site_url": "https://example.local"})
         self.assertEqual(
-            "example.local", self.harness.charm.ingress.config_dict["service-hostname"]
+            "example.local", self.harness.charm._ingress.config_dict["service-hostname"]
         )
 
     def test_config_changed_when_pebble_not_ready(self):

@@ -38,7 +38,7 @@ requires:
   ingress:
     interface: ingress
     limit: 1
-  logging:
+  log-proxy:
     interface: loki_push_api
     limit: 1
   redis:
