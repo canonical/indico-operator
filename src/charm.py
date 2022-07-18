@@ -294,11 +294,6 @@ class IndicoOperatorCharm(CharmBase):
             indico_container = self.unit.get_container("indico")
             process = indico_container.exec(["python3.9", "-m", "pip", "install"] + plugins)
             process.wait_output()
-            process = indico_container.exec(["indico", "setup", "list-plugins"])
-            output, _ = process.wait_output()
-            # Parse output table, discarding header and footer rows and fetching first column value
-            available_plugins = [item.split("|")[1].strip() for item in output.split("\n")[3:-2]]
-            logging.error(available_plugins)
 
     def _download_customization_changes(self):
         """Clone the remote repository with the customization changes."""

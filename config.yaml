@@ -12,7 +12,7 @@ options:
     default: ''
   external_plugins:
     type: string
-    description: Comma separated list of resources to be installed as in git+https://github.com/indico/indico-plugins-cern.git/#subdirectory=themes_cern. The format of each item must  be supported by pip
+    description: Comma separated list of external plugins to be installed, e.g. git+https://github.com/indico/indico-plugins-cern.git/#subdirectory=themes_cern. The format of each item must be supported by pip.
     default: ''
   indico_no_reply_email:
     type: string
