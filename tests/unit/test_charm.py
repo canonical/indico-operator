@@ -33,8 +33,6 @@ class TestCharm(unittest.TestCase):
         )
 
     def test_indico_nginx_pebble_ready(self):
-        initial_plan = self.harness.get_container_pebble_plan("indico-nginx")
-        self.assertEqual(initial_plan.to_yaml(), "{}\n")
         # Set relation data
         self.harness.charm._stored.db_uri = "db-uri"
         self.harness.charm._stored.redis_relation = {1: {"hostname": "redis-host", "port": 1010}}
@@ -45,8 +43,7 @@ class TestCharm(unittest.TestCase):
             wait_output = MagicMock(return_value=("", None))
 
         with patch.object(Container, "exec", return_value=MockExecProcess()):
-            container = self.harness.model.unit.get_container("indico-nginx")
-            self.harness.charm.on.indico_nginx_pebble_ready.emit(container)
+            self.harness.container_pebble_ready("indico-nginx")
 
         service = self.harness.model.unit.get_container("indico-nginx").get_service("indico-nginx")
         self.assertTrue(service.is_running())
@@ -63,19 +60,14 @@ class TestCharm(unittest.TestCase):
             wait_output = MagicMock(return_value=("", None))
 
         with patch.object(Container, "exec", return_value=MockExecProcess()):
-            container = self.harness.model.unit.get_container("indico")
-            self.harness.charm.on.indico_pebble_ready.emit(container)
+            self.harness.container_pebble_ready("indico")
             self.assertEqual(self.harness.model.unit.status, WaitingStatus("Waiting for pebble"))
-            container = self.harness.model.unit.get_container("indico-celery")
-            self.harness.charm.on.indico_celery_pebble_ready.emit(container)
+            self.harness.container_pebble_ready("indico-celery")
             self.assertEqual(self.harness.model.unit.status, WaitingStatus("Waiting for pebble"))
-            container = self.harness.model.unit.get_container("indico-nginx")
-            self.harness.charm.on.indico_nginx_pebble_ready.emit(container)
+            self.harness.container_pebble_ready("indico-nginx")
             self.assertEqual(self.harness.model.unit.status, ActiveStatus())
 
     def test_indico_pebble_ready(self):
-        initial_plan = self.harness.get_container_pebble_plan("indico")
-        self.assertEqual(initial_plan.to_yaml(), "{}\n")
         # Set relation data
         self.harness.charm._stored.db_uri = "db-uri"
         self.harness.charm._stored.redis_relation = {1: {"hostname": "redis-host", "port": 1010}}
@@ -86,8 +78,7 @@ class TestCharm(unittest.TestCase):
             wait_output = MagicMock(return_value=("", None))
 
         with patch.object(Container, "exec", return_value=MockExecProcess()):
-            container = self.harness.model.unit.get_container("indico")
-            self.harness.charm.on.indico_pebble_ready.emit(container)
+            self.harness.container_pebble_ready("indico")
 
         updated_plan = self.harness.get_container_pebble_plan("indico").to_dict()
         updated_plan_env = updated_plan["services"]["indico"]["environment"]
@@ -118,8 +109,6 @@ class TestCharm(unittest.TestCase):
         self.assertEqual(self.harness.model.unit.status, WaitingStatus("Waiting for pebble"))
 
     def test_indico_celery_pebble_ready(self):
-        initial_plan = self.harness.get_container_pebble_plan("indico-celery")
-        self.assertEqual(initial_plan.to_yaml(), "{}\n")
         # Set relation data
         self.harness.charm._stored.db_uri = "db-uri"
         self.harness.charm._stored.redis_relation = {1: {"hostname": "redis-host", "port": 1010}}
@@ -130,8 +119,7 @@ class TestCharm(unittest.TestCase):
             wait_output = MagicMock(return_value=("", None))
 
         with patch.object(Container, "exec", return_value=MockExecProcess()):
-            container = self.harness.model.unit.get_container("indico-celery")
-            self.harness.charm.on.indico_celery_pebble_ready.emit(container)
+            self.harness.container_pebble_ready("indico-celery")
 
         updated_plan = self.harness.get_container_pebble_plan("indico-celery").to_dict()
         updated_plan_env = updated_plan["services"]["indico-celery"]["environment"]
@@ -177,12 +165,9 @@ class TestCharm(unittest.TestCase):
             wait_output = MagicMock(return_value=("", None))
 
         with patch.object(Container, "exec", return_value=MockExecProcess()):
-            container = self.harness.model.unit.get_container("indico")
-            self.harness.charm.on.indico_pebble_ready.emit(container)
-            container = self.harness.model.unit.get_container("indico-celery")
-            self.harness.charm.on.indico_celery_pebble_ready.emit(container)
-            container = self.harness.model.unit.get_container("indico-nginx")
-            self.harness.charm.on.indico_nginx_pebble_ready.emit(container)
+            self.harness.container_pebble_ready("indico")
+            self.harness.container_pebble_ready("indico-celery")
+            self.harness.container_pebble_ready("indico-nginx")
             self.harness.update_config(
                 {
                     "external_plugins": "git+https://github.com/indico/indico-plugins-cern.git/#subdirectory=themes_cern",
@@ -262,6 +247,15 @@ class TestCharm(unittest.TestCase):
 
         self.harness.update_config({"indico_support_email": "example@email.local"})
         self.assertEqual(self.harness.model.unit.status, WaitingStatus("Waiting for pebble"))
+
+    def test_pebble_ready_when_relations_not_ready(self):
+        self.harness.container_pebble_ready("indico")
+        self.harness.container_pebble_ready("indico-celery")
+        self.harness.container_pebble_ready("indico-nginx")
+
+        self.assertEqual(
+            self.harness.model.unit.status, WaitingStatus("Waiting for redis relation")
+        )
 
     def test_on_leader_elected(self):
         rel_id = self.harness.add_relation("indico-peers", "indico")

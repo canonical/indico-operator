@@ -47,11 +47,6 @@ class IndicoOperatorCharm(CharmBase):
             db_uri=None,
             db_ro_uris=[],
             redis_relation={},
-            pebble_statuses={
-                "indico": False,
-                "indico-nginx": False,
-                "indico-celery": False,
-            },
         )
 
         self.db = pgsql.PostgreSQLClient(self, "db")
@@ -83,13 +78,10 @@ class IndicoOperatorCharm(CharmBase):
             # Leader has not yet set requirements. Wait until next
             # event, or risk connecting to an incorrect database.
             return
-
         self._stored.db_conn_str = None if event.master is None else event.master.conn_str
         self._stored.db_uri = None if event.master is None else event.master.uri
-
         if event.master is None:
             return
-
         self._on_config_changed(event)
 
     def _make_ingress_config(self):
@@ -102,7 +94,12 @@ class IndicoOperatorCharm(CharmBase):
 
     def _are_pebble_instances_ready(self):
         """Check if all pebble instances are ready."""
-        return all(self._stored.pebble_statuses.values())
+        return all(
+            [
+                self.unit.get_container(container_name).can_connect()
+                for container_name in self.model.unit.containers
+            ]
+        )
 
     def _get_external_hostname(self):
         """Extract and return hostname from site_url."""
@@ -123,20 +120,20 @@ class IndicoOperatorCharm(CharmBase):
         """Handle the on pebble ready event for Indico."""
         if not self._stored.redis_relation:
             self.unit.status = WaitingStatus("Waiting for redis relation")
-            event.defer()
             return False
 
         if not self._stored.db_uri:
             self.unit.status = WaitingStatus("Waiting for database relation")
-            event.defer()
             return False
 
         return True
 
     def _on_pebble_ready(self, event):
         """Handle the on pebble ready event for the containers."""
-        if self._are_relations_ready(event):
-            self._config_pebble(event.workload)
+        if not self._are_relations_ready(event) or not event.workload.can_connect():
+            event.defer()
+            return
+        self._config_pebble(event.workload)
 
     def _config_pebble(self, container):
         """Apply pebble changes."""
@@ -145,7 +142,6 @@ class IndicoOperatorCharm(CharmBase):
         container.add_layer(container.name, pebble_config, combine=True)
         self.unit.status = MaintenanceStatus("Starting {} container".format(container.name))
         container.pebble.replan_services()
-        self._stored.pebble_statuses[container.name] = True
         if self._are_pebble_instances_ready():
             self.unit.status = ActiveStatus()
         else:
@@ -249,27 +245,26 @@ class IndicoOperatorCharm(CharmBase):
 
     def _on_config_changed(self, event):
         """Handle changes in configuration."""
-        if self._are_relations_ready(event):
-            if not self._are_pebble_instances_ready():
-                self.unit.status = WaitingStatus("Waiting for pebble")
-                event.defer()
-                return
+        if not self._are_relations_ready(event):
+            event.defer()
+            return
+        if not self._are_pebble_instances_ready():
+            self.unit.status = WaitingStatus("Waiting for pebble")
+            event.defer()
+            return
+        self.model.unit.status = MaintenanceStatus("Configuring pod")
+        self._download_customization_changes()
+        plugins = (
+            self.config["external_plugins"].split(",") if self.config["external_plugins"] else []
+        )
+        if self.config["s3_storage"]:
+            plugins.append("indico-plugin-storage-s3")
+        self._install_plugins(plugins)
+        for container_name in self.model.unit.containers:
+            self._config_pebble(self.unit.get_container(container_name))
 
-            self.model.unit.status = MaintenanceStatus("Configuring pod")
-            self._download_customization_changes()
-            plugins = (
-                self.config["external_plugins"].split(",")
-                if self.config["external_plugins"]
-                else []
-            )
-            if self.config["s3_storage"]:
-                plugins.append("indico-plugin-storage-s3")
-            self._install_plugins(plugins)
-            for container_name in self.model.unit.containers:
-                self._config_pebble(self.unit.get_container(container_name))
-
-            self.ingress.update_config(self._make_ingress_config())
-            self.model.unit.status = ActiveStatus()
+        self.ingress.update_config(self._make_ingress_config())
+        self.model.unit.status = ActiveStatus()
 
     def _get_current_customization_url(self):
         """Get the current remote repository for the customization changes."""
