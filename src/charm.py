@@ -285,7 +285,8 @@ class IndicoOperatorCharm(CharmBase):
         env_config["INDICO_EXTRA_PLUGINS"] = ",".join(indico_plugins)
         return env_config
 
-    def _is_config_valid(self):
+    def _is_saml_target_url_valid(self):
+        """Check if the target SAML URL is currently supported."""
         return (
             not self.config["saml_target_url"] or UBUNTU_SAML_URL == self.config["saml_target_url"]
         )
@@ -293,7 +294,7 @@ class IndicoOperatorCharm(CharmBase):
     def _on_config_changed(self, event):
         """Handle changes in configuration."""
         if self._are_relations_ready(event):
-            if not self._is_config_valid():
+            if not self._is_saml_target_url_valid():
                 self.unit.status = BlockedStatus(
                     "Invalid saml_target_url option provided. Only {} is available.".format(
                         UBUNTU_SAML_URL
