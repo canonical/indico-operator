@@ -244,7 +244,7 @@ class TestCharm(unittest.TestCase):
         self.assertEqual(
             self.harness.model.unit.status, WaitingStatus("Waiting for redis relation")
         )
-        
+
     def test_on_leader_elected(self):
         rel_id = self.harness.add_relation("indico-peers", "indico")
         self.harness.set_leader(True)
