@@ -41,20 +41,12 @@ class IndicoOperatorCharm(CharmBase):
         self.framework.observe(
             self.on.refresh_customization_changes_action, self._refresh_customization_changes
         )
-        self.framework.observe(
-            self.on.indico_peers_relation_joined, self._on_indico_peers_relation_changed
-        )
-        self.framework.observe(
-            self.on.indico_peers_relation_changed, self._on_indico_peers_relation_changed
-        )
 
         self._stored.set_default(
             db_conn_str=None,
             db_uri=None,
             db_ro_uris=[],
             redis_relation={},
-            # This key would need to be shared across instances to support horizontal scalability
-            secret_key=None,
             pebble_statuses={
                 "indico": False,
                 "indico-nginx": False,
@@ -214,6 +206,7 @@ class IndicoOperatorCharm(CharmBase):
             redis_hostname = self._stored.redis_relation[redis_unit]["hostname"]
             redis_port = self._stored.redis_relation[redis_unit]["port"]
 
+        peer_relation = self.model.get_relation("indico-peers")
         env_config = {
             "ATTACHMENT_STORAGE": "default",
             "CELERY_BROKER": "redis://{host}:{port}".format(host=redis_hostname, port=redis_port),
@@ -225,7 +218,7 @@ class IndicoOperatorCharm(CharmBase):
             "REDIS_CACHE_URL": "redis://{host}:{port}".format(
                 host=redis_hostname, port=redis_port
             ),
-            "SECRET_KEY": self._stored.secret_key,
+            "SECRET_KEY": peer_relation.data[self.app].get("secret-key"),
             "SERVICE_HOSTNAME": self._get_external_hostname(),
             "SERVICE_PORT": self._get_external_port(),
             "SERVICE_SCHEME": self._get_external_scheme(),
@@ -331,12 +324,6 @@ class IndicoOperatorCharm(CharmBase):
         peer_relation = self.model.get_relation("indico-peers")
         if not peer_relation.data[self.app].get("secret-key"):
             peer_relation.data[self.app].update({"secret-key": repr(os.urandom(32))})
-
-    def _on_indico_peers_relation_changed(self, event) -> None:
-        """Handle relation-changed event for the indico_peers relation."""
-        secret_key = event.relation.data[self.app].get("secret-key")
-        if secret_key and secret_key != self._stored.secret_key:
-            self._stored.secret_key = secret_key
 
 
 if __name__ == "__main__":

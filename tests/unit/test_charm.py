@@ -16,6 +16,7 @@ class TestCharm(unittest.TestCase):
         self.harness = Harness(IndicoOperatorCharm)
         self.addCleanup(self.harness.cleanup)
         self.harness.begin()
+        self.harness.charm.db = None
 
     def test_missing_relations(self):
         self.harness.update_config({"site_url": "foo"})
@@ -37,6 +38,8 @@ class TestCharm(unittest.TestCase):
         # Set relation data
         self.harness.charm._stored.db_uri = "db-uri"
         self.harness.charm._stored.redis_relation = {1: {"hostname": "redis-host", "port": 1010}}
+        self.harness.add_relation("indico-peers", "indico")
+        self.harness.set_leader(True)
 
         container = self.harness.model.unit.get_container("indico-nginx")
         self.harness.charm.on.indico_nginx_pebble_ready.emit(container)
@@ -49,6 +52,8 @@ class TestCharm(unittest.TestCase):
         # Set relation data
         self.harness.charm._stored.db_uri = "db-uri"
         self.harness.charm._stored.redis_relation = {1: {"hostname": "redis-host", "port": 1010}}
+        self.harness.add_relation("indico-peers", "indico")
+        self.harness.set_leader(True)
 
         container = self.harness.model.unit.get_container("indico")
         self.harness.charm.on.indico_pebble_ready.emit(container)
@@ -66,6 +71,8 @@ class TestCharm(unittest.TestCase):
         # Set relation data
         self.harness.charm._stored.db_uri = "db-uri"
         self.harness.charm._stored.redis_relation = {1: {"hostname": "redis-host", "port": 1010}}
+        rel_id = self.harness.add_relation("indico-peers", "indico")
+        self.harness.set_leader(True)
 
         container = self.harness.model.unit.get_container("indico")
         self.harness.charm.on.indico_pebble_ready.emit(container)
@@ -74,7 +81,10 @@ class TestCharm(unittest.TestCase):
 
         self.assertEqual("db-uri", updated_plan_env["INDICO_DB_URI"])
         self.assertEqual("redis://redis-host:1010", updated_plan_env["CELERY_BROKER"])
-        self.assertEqual(self.harness.charm._stored.secret_key, updated_plan_env["SECRET_KEY"])
+        self.assertEqual(
+            self.harness.get_relation_data(rel_id, "indico").get("secret-key"),
+            updated_plan_env["SECRET_KEY"],
+        )
         self.assertEqual("indico", updated_plan_env["SERVICE_HOSTNAME"])
         self.assertIsNone(updated_plan_env["SERVICE_PORT"])
         self.assertEqual("redis://redis-host:1010", updated_plan_env["REDIS_CACHE_URL"])
@@ -100,9 +110,10 @@ class TestCharm(unittest.TestCase):
         initial_plan = self.harness.get_container_pebble_plan("indico-celery")
         self.assertEqual(initial_plan.to_yaml(), "{}\n")
         # Set relation data
-        self.maxDiff = None
         self.harness.charm._stored.db_uri = "db-uri"
         self.harness.charm._stored.redis_relation = {1: {"hostname": "redis-host", "port": 1010}}
+        rel_id = self.harness.add_relation("indico-peers", "indico")
+        self.harness.set_leader(True)
 
         container = self.harness.model.unit.get_container("indico-celery")
         self.harness.charm.on.indico_celery_pebble_ready.emit(container)
@@ -111,7 +122,10 @@ class TestCharm(unittest.TestCase):
 
         self.assertEqual("db-uri", updated_plan_env["INDICO_DB_URI"])
         self.assertEqual("redis://redis-host:1010", updated_plan_env["CELERY_BROKER"])
-        self.assertEqual(self.harness.charm._stored.secret_key, updated_plan_env["SECRET_KEY"])
+        self.assertEqual(
+            self.harness.get_relation_data(rel_id, "indico").get("secret-key"),
+            updated_plan_env["SECRET_KEY"],
+        )
         self.assertEqual("indico", updated_plan_env["SERVICE_HOSTNAME"])
         self.assertEqual("http", updated_plan_env["SERVICE_SCHEME"])
         self.assertIsNone(updated_plan_env["SERVICE_PORT"])
@@ -141,6 +155,7 @@ class TestCharm(unittest.TestCase):
         self.harness.charm._stored.db_uri = "db-uri"
         self.harness.charm._stored.redis_relation = {1: {"hostname": "redis-host", "port": 1010}}
         self.harness.disable_hooks()
+        self.harness.add_relation("indico-peers", "indico")
         self.harness.set_leader(True)
         self.harness.enable_hooks()
 
@@ -222,10 +237,6 @@ class TestCharm(unittest.TestCase):
             storage_dict["s3"],
         )
 
-        self.harness.disable_hooks()
-        self.harness.set_leader(True)
-        self.harness.enable_hooks()
-
         with patch.object(Container, "exec", return_value=MockExecProcess()):
             self.harness.update_config({"site_url": "https://example.local"})
         self.assertEqual(
@@ -241,18 +252,6 @@ class TestCharm(unittest.TestCase):
         self.assertEqual(self.harness.model.unit.status, WaitingStatus("Waiting for pebble"))
 
     def test_on_leader_elected(self):
-        self.harness.charm.db = None
         rel_id = self.harness.add_relation("indico-peers", "indico")
         self.harness.set_leader(True)
         self.assertIsNotNone(self.harness.get_relation_data(rel_id, "indico").get("secret-key"))
-
-    def test_on_instances_relation_changed(self):
-        self.harness.charm.db = None
-        rel_id = self.harness.add_relation("indico-peers", "indico")
-        rel = self.harness.charm.model.get_relation("indico-peers")
-        self.harness.set_leader(True)
-        self.harness.charm.on.indico_peers_relation_joined.emit(rel)
-        self.assertEquals(
-            self.harness.charm._stored.secret_key,
-            self.harness.get_relation_data(rel_id, "indico").get("secret-key"),
-        )
