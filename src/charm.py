@@ -34,7 +34,7 @@ class IndicoOperatorCharm(CharmBase):
         super().__init__(*args)
 
         self.framework.observe(self.on.config_changed, self._on_config_changed)
-        self.framework.observe(self.on.leader_elected, self._on_config_changed)
+        self.framework.observe(self.on.leader_elected, self._on_leader_elected)
         self.framework.observe(self.on.indico_pebble_ready, self._on_pebble_ready)
         self.framework.observe(self.on.indico_celery_pebble_ready, self._on_pebble_ready)
         self.framework.observe(self.on.indico_nginx_pebble_ready, self._on_pebble_ready)
@@ -47,8 +47,6 @@ class IndicoOperatorCharm(CharmBase):
             db_uri=None,
             db_ro_uris=[],
             redis_relation={},
-            # This key would need to be shared across instances to support horizontal scalability
-            secret_key=repr(os.urandom(32)),
             pebble_statuses={
                 "indico": False,
                 "indico-nginx": False,
@@ -214,6 +212,7 @@ class IndicoOperatorCharm(CharmBase):
         # Parse output table, discarding header and footer rows and fetching first column value
         available_plugins = [item.split("|")[1].strip() for item in output.split("\n")[3:-2]]
 
+        peer_relation = self.model.get_relation("indico-peers")
         env_config = {
             "ATTACHMENT_STORAGE": "default",
             "CELERY_BROKER": "redis://{host}:{port}".format(host=redis_hostname, port=redis_port),
@@ -225,7 +224,7 @@ class IndicoOperatorCharm(CharmBase):
             "REDIS_CACHE_URL": "redis://{host}:{port}".format(
                 host=redis_hostname, port=redis_port
             ),
-            "SECRET_KEY": self._stored.secret_key,
+            "SECRET_KEY": peer_relation.data[self.app].get("secret-key"),
             "SERVICE_HOSTNAME": self._get_external_hostname(),
             "SERVICE_PORT": self._get_external_port(),
             "SERVICE_SCHEME": self._get_external_scheme(),
@@ -337,6 +336,12 @@ class IndicoOperatorCharm(CharmBase):
                 user="indico",
             )
             process.wait_output()
+
+    def _on_leader_elected(self, _) -> None:
+        """Handle leader-elected event."""
+        peer_relation = self.model.get_relation("indico-peers")
+        if not peer_relation.data[self.app].get("secret-key"):
+            peer_relation.data[self.app].update({"secret-key": repr(os.urandom(32))})
 
 
 if __name__ == "__main__":

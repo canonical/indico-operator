@@ -1,8 +1,8 @@
 venv/
 build/
 *.charm
-
+.tox/
 .coverage
-.tox
 __pycache__/
 *.py[cod]
+.idea
