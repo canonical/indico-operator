@@ -43,3 +43,7 @@ requires:
     limit: 1
   redis:
     interface: redis
+
+peers:
+  indico-peers:
+    interface: indico-instance
