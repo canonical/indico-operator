@@ -170,7 +170,7 @@ class TestCharm(unittest.TestCase):
             self.harness.container_pebble_ready("indico-nginx")
             self.harness.update_config(
                 {
-                    "external_plugins": "git+https://github.com/indico/indico-plugins-cern.git/#subdirectory=themes_cern",
+                    "external_plugins": "git+https://example.git/#subdirectory=themes_cern",
                     "indico_support_email": "example@email.local",
                     "indico_public_support_email": "public@email.local",
                     "indico_no_reply_email": "noreply@email.local",
