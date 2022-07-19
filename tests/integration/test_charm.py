@@ -48,15 +48,15 @@ async def test_build_and_deploy(ops_test: OpsTest, indico_image, indico_nginx_im
 
 @pytest.mark.abort_on_fail
 async def test_health_checks(ops_test: OpsTest):
-    contlist = ["indico", "indico-nginx", "indico-celery"]
+    container_list = ["indico", "indico-nginx", "indico-celery"]
     app = ops_test.model.applications["indico"]
     indico_unit = app.units[0]
-    for cont in contlist:
-        req = await juju_run(indico_unit, 'PEBBLE_SOCKET=/charm/containers/{}/pebble.socket /charm/bin/pebble checks'.format(cont))
-        if cont != "indico-nginx":
-            assert req.count("0/3") == 1
+    for container in container_list:
+        result = await juju_run(indico_unit, 'PEBBLE_SOCKET=/charm/containers/{}/pebble.socket /charm/bin/pebble checks'.format(container))
+        if container != "indico-nginx":
+            assert result.count("0/3") == 1
         else:
-            assert req.count("0/3") == 2
+            assert result.count("0/3") == 2
     
     
   
