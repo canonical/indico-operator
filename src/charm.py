@@ -17,12 +17,13 @@ from charms.redis_k8s.v0.redis import RedisRelationCharmEvents, RedisRequires
 from ops.charm import CharmBase
 from ops.framework import StoredState
 from ops.main import main
-from ops.model import ActiveStatus, MaintenanceStatus, WaitingStatus
+from ops.model import ActiveStatus, BlockedStatus, MaintenanceStatus, WaitingStatus
 from ops.pebble import ExecError
 
 DATABASE_NAME = "indico"
-PORT = 8080
 INDICO_CUSTOMIZATION_DIR = "/srv/indico/custom"
+PORT = 8080
+UBUNTU_SAML_URL = "https://login.ubuntu.com/saml/"
 
 pgsql = ops.lib.use("pgsql", 1, "postgresql-charmers@lists.launchpad.net")
 
@@ -186,7 +187,7 @@ class IndicoOperatorCharm(CharmBase):
                     "indico-celery": {
                         "override": "replace",
                         "summary": "Indico celery",
-                        "command": "/usr/local/bin/indico celery worker -B --uid 2000",
+                        "command": "/usr/local/bin/indico celery worker -B",
                         "startup": "enabled",
                         "user": "indico",
                         "environment": indico_env_config,
@@ -227,7 +228,9 @@ class IndicoOperatorCharm(CharmBase):
             "ATTACHMENT_STORAGE": "default",
             "CELERY_BROKER": "redis://{host}:{port}".format(host=redis_hostname, port=redis_port),
             "CUSTOMIZATION_DEBUG": self.config["customization_debug"],
+            "INDICO_AUTH_PROVIDERS": str({}),
             "INDICO_DB_URI": self._stored.db_uri,
+            "INDICO_IDENTITY_PROVIDERS": str({}),
             "INDICO_NO_REPLY_EMAIL": self.config["indico_no_reply_email"],
             "INDICO_PUBLIC_SUPPORT_EMAIL": self.config["indico_public_support_email"],
             "INDICO_SUPPORT_EMAIL": self.config["indico_support_email"],
@@ -255,11 +258,62 @@ class IndicoOperatorCharm(CharmBase):
             env_config["STORAGE_DICT"].update({"s3": self.config["s3_storage"]})
             env_config["ATTACHMENT_STORAGE"] = "s3"
         env_config["STORAGE_DICT"] = str(env_config["STORAGE_DICT"])
+
+        # SAML configuration reference https://github.com/onelogin/python3-saml
+        if self.config["saml_target_url"]:
+            saml_config = {
+                "strict": True,
+                "sp": {
+                    "entityId": self.config["site_url"],
+                },
+                "idp": {
+                    "entityId": "https://login.ubuntu.com",
+                    "singleSignOnService": {
+                        "url": "https://login.ubuntu.com/saml/",
+                        "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect",
+                    },
+                    "singleLogoutService": {
+                        "url": "https://login.ubuntu.com/+logout",
+                        "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect",
+                    },
+                    "x509cert": "MIICjzCCAfigAwIBAgIJALNN/vxaR1hyMA0GCSqGSIb3DQEBBQUAMDoxCzAJBgNVBAYTAkdCMRMwEQYDVQQIEwpTb21lLVN0YXRlMRYwFAYDVQQKEw1DYW5vbmljYWwgTHRkMB4XDTEyMDgxMDEyNDE0OFoXDTEzMDgxMDEyNDE0OFowOjELMAkGA1UEBhMCR0IxEzARBgNVBAgTClNvbWUtU3RhdGUxFjAUBgNVBAoTDUNhbm9uaWNhbCBMdGQwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAMM4pmIxkv419q8zj5EojK57y6plU/+k3apX6w1PgAYeI0zhNuud/tiqKVQEDyZ6W7HNeGtWSh5rewy8c07BShcHG5Y8ibzBdIibGs5k6gvtmsRiXDE/F39+RrPSW18beHhEuoVJM9RANp3MYMOK11SiClSiGo+NfBKFuoqNX3UjAgMBAAGjgZwwgZkwHQYDVR0OBBYEFH/no88pbywRnW6Fz+B4lQ04w/86MGoGA1UdIwRjMGGAFH/no88pbywRnW6Fz+B4lQ04w/86oT6kPDA6MQswCQYDVQQGEwJHQjETMBEGA1UECBMKU29tZS1TdGF0ZTEWMBQGA1UEChMNQ2Fub25pY2FsIEx0ZIIJALNN/vxaR1hyMAwGA1UdEwQFMAMBAf8wDQYJKoZIhvcNAQEFBQADgYEArTGbZ1rg++aBxnNuJ7eho62JKKtRW5O+kMBvBLWi7fKck5uXDE6d7Jv6hUy/gwUZV7r5kuPwRlw3Pu6AX4R60UsQuVG1/VVVI7nu32iCkXx5Vzq446IkVRdk/QOda1dRyq0oaifUUhJfwVFSsm95ENDFdGqD0raj7g77ajcBMf8=",
+                },
+            }
+            auth_providers = {"ubuntu": {"type": "saml", "saml_config": saml_config}}
+            env_config["INDICO_AUTH_PROVIDERS"] = str(auth_providers)
+            identity_providers = {
+                "ubuntu": {
+                    "type": "saml",
+                    "trusted_email": True,
+                    "mapping": {
+                        "user_name": "username",
+                        "first_name": "fullname",
+                        "last_name": "",
+                        "email": "email",
+                    },
+                    "identifier_field": "openid",
+                }
+            }
+            env_config["INDICO_IDENTITY_PROVIDERS"] = str(identity_providers)
         return env_config
+
+    def _is_saml_target_url_valid(self):
+        """Check if the target SAML URL is currently supported."""
+        return (
+            not self.config["saml_target_url"] or UBUNTU_SAML_URL == self.config["saml_target_url"]
+        )
 
     def _on_config_changed(self, event):
         """Handle changes in configuration."""
         if not self._are_relations_ready(event):
+            event.defer()
+            return
+        if not self._is_saml_target_url_valid():
+            self.unit.status = BlockedStatus(
+                "Invalid saml_target_url option provided. Only {} is available.".format(
+                    UBUNTU_SAML_URL
+                )
+            )
             event.defer()
             return
         if not self._are_pebble_instances_ready():
