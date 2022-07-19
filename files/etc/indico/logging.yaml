@@ -8,7 +8,7 @@ loggers:
   indico:
     handlers: [indico, email]
   celery:
-    handlers: [celery, email, stderr]
+    handlers: [celery, email]
 
 handlers:
   indico:
