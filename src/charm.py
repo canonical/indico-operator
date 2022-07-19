@@ -10,7 +10,6 @@ from urllib.parse import urlparse
 
 import ops.lib
 from charms.grafana_k8s.v0.grafana_dashboard import GrafanaDashboardProvider
-from charms.loki_k8s.v0.loki_push_api import LogProxyConsumer
 from charms.nginx_ingress_integrator.v0.ingress import IngressRequires
 from charms.prometheus_k8s.v0.prometheus_scrape import MetricsEndpointProvider
 from charms.redis_k8s.v0.redis import RedisRelationCharmEvents, RedisRequires
@@ -65,15 +64,6 @@ class IndicoOperatorCharm(CharmBase):
         self._ingress = IngressRequires(self, self._make_ingress_config())
         self._metrics_endpoint = MetricsEndpointProvider(self)
         self._grafana_dashboards = GrafanaDashboardProvider(self)
-        # self._logging_indico = LogProxyConsumer(self, log_files=[
-        #     "/srv/indico/log/indico.log"
-        # ], container_name="indico")
-        # self._logging_celery = LogProxyConsumer(self, log_files=[
-        #     "/srv/indico/log/celery.log"
-        # ], container_name="indico-celery")
-        self._logging_nginx = LogProxyConsumer(self, log_files=[
-            "/var/log/nginx/error.log"
-        ], container_name="indico-nginx")
 
     def _on_database_relation_joined(self, event: pgsql.DatabaseRelationJoinedEvent):
         """Handle db-relation-joined."""
