@@ -13,8 +13,7 @@ RUN apt update \
     && apt install -y cron gettext git libpq-dev postgresql-client python3.9 python3.9-dev python3.9-distutils python3-pip texlive-xetex \
     && python3.9 -m pip install --prefer-binary indico indico-plugin-piwik uwsgi \
     && /bin/bash -c "mkdir -p --mode=775 /srv/indico/{etc,tmp,log,cache,archive,custom}" \
-    && /usr/local/bin/indico setup create-symlinks /srv/indico \
-    && /usr/local/bin/indico setup create-logging-config /etc
+    && /usr/local/bin/indico setup create-symlinks /srv/indico
 
 ARG indico_gid=2000
 ARG indico_uid=2000
@@ -25,8 +24,7 @@ RUN addgroup --gid ${indico_gid} indico \
     && /etc/init.d/cron start
 
 COPY files/start-indico.sh /srv/indico/
-COPY files/etc/indico/indico.conf /srv/indico/etc/
-COPY files/etc/indico/uwsgi.ini /etc/
+COPY files/etc/indico/ /srv/indico/etc/
 
 RUN chmod +x /srv/indico/start-indico.sh \
     && chown -R indico:indico /srv/indico \
