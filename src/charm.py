@@ -281,7 +281,6 @@ class IndicoOperatorCharm(CharmBase):
                 }
             }
             env_config["INDICO_IDENTITY_PROVIDERS"] = str(identity_providers)
-        env_config["INDICO_EXTRA_PLUGINS"] = ",".join(indico_plugins)
         return env_config
 
     def _is_saml_target_url_valid(self):
