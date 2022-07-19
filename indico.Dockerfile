@@ -11,7 +11,7 @@ RUN apt update \
     && add-apt-repository ppa:deadsnakes/ppa -y \
     && apt update \
     && apt install -y cron gettext git libpq-dev libxmlsec1-dev pkg-config postgresql-client python3.9 python3.9-dev python3.9-distutils python3-pip texlive-xetex \
-    && python3.9 -m pip install --prefer-binary indico indico-plugins python3-saml uwsgi \
+    && python3.9 -m pip install --prefer-binary indico indico-plugin-piwik python3-saml uwsgi \
     && /bin/bash -c "mkdir -p --mode=775 /srv/indico/{etc,tmp,log,cache,archive,custom}" \
     && /usr/local/bin/indico setup create-symlinks /srv/indico \
     && /usr/local/bin/indico setup create-logging-config /etc
