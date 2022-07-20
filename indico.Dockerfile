@@ -26,10 +26,6 @@ RUN addgroup --gid ${indico_gid} indico \
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN ["/bin/bash", "-c", "mkdir -p --mode=775 /srv/indico/{etc,tmp,log,cache,archive,custom}"]
-RUN /usr/local/bin/indico setup create-symlinks /srv/indico \
-    && /usr/local/bin/indico setup create-logging-config /etc
-
 COPY files/start-indico.sh /srv/indico/
 COPY files/etc/indico/ /etc/
 
