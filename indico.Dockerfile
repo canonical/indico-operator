@@ -20,7 +20,8 @@ ARG indico_gid=2000
 ARG indico_uid=2000
 
 RUN addgroup --gid ${indico_gid} indico \
-    && adduser --system --gid ${indico_gid} --uid ${indico_uid} --home /srv/indico --disabled-login indico
+    && adduser --system --gid ${indico_gid} --uid ${indico_uid} --home /srv/indico --disabled-login indico \
+    &&  echo "* * * * * git -C /srv/indico/custom pull" | crontab -u indico - \
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -34,3 +35,4 @@ COPY files/etc/indico/ /etc/
 RUN chmod +x /srv/indico/start-indico.sh \
     && chown -R indico:indico /srv/indico \
     && chmod 755 /srv/indico
+

@@ -65,3 +65,4 @@ async def test_health_checks(ops_test: OpsTest):
             assert result.count("0/3") == 1
         else:
             assert result.count("0/3") == 2
+
