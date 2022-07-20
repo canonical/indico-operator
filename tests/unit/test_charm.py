@@ -80,7 +80,9 @@ class TestCharm(unittest.TestCase):
         self.assertEqual("redis://broker-host:1010", updated_plan_env["CELERY_BROKER"])
         peer_relation = self.harness.model.get_relation("indico-peers")
         self.assertEqual(
-            self.harness.get_relation_data(peer_relation.id, "indico").get("secret-key"),
+            self.harness.get_relation_data(peer_relation.id, self.harness.charm.app.name).get(
+                "secret-key"
+            ),
             updated_plan_env["SECRET_KEY"],
         )
         self.assertEqual("indico", updated_plan_env["SERVICE_HOSTNAME"])
@@ -116,7 +118,9 @@ class TestCharm(unittest.TestCase):
         self.assertEqual("redis://broker-host:1010", updated_plan_env["CELERY_BROKER"])
         peer_relation = self.harness.model.get_relation("indico-peers")
         self.assertEqual(
-            self.harness.get_relation_data(peer_relation.id, "indico").get("secret-key"),
+            self.harness.get_relation_data(peer_relation.id, self.harness.charm.app.name).get(
+                "secret-key"
+            ),
             updated_plan_env["SECRET_KEY"],
         )
         self.assertEqual("indico", updated_plan_env["SERVICE_HOSTNAME"])
@@ -265,13 +269,15 @@ class TestCharm(unittest.TestCase):
         )
 
     def test_on_leader_elected(self):
-        rel_id = self.harness.add_relation("indico-peers", "indico")
+        rel_id = self.harness.add_relation("indico-peers", self.harness.charm.app.name)
         self.harness.set_leader(True)
-        self.assertIsNotNone(self.harness.get_relation_data(rel_id, "indico").get("secret-key"))
+        self.assertIsNotNone(
+            self.harness.get_relation_data(rel_id, self.harness.charm.app.name).get("secret-key")
+        )
 
     def set_up_all_relations(self):
         self.harness.charm._stored.db_uri = "db-uri"
-        self.harness.add_relation("indico-peers", "indico")
+        self.harness.add_relation("indico-peers", self.harness.charm.app.name)
         broker_relation_id = self.harness.add_relation("redis", self.harness.charm.app.name)
         self.harness.add_relation_unit(broker_relation_id, "redis-broker/0")
         cache_relation_id = self.harness.add_relation("redis", self.harness.charm.app.name)
