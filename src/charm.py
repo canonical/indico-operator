@@ -14,12 +14,13 @@ from charms.redis_k8s.v0.redis import RedisRelationCharmEvents, RedisRequires
 from ops.charm import CharmBase
 from ops.framework import StoredState
 from ops.main import main
-from ops.model import ActiveStatus, MaintenanceStatus, WaitingStatus
+from ops.model import ActiveStatus, BlockedStatus, MaintenanceStatus, WaitingStatus
 from ops.pebble import ExecError
 
 DATABASE_NAME = "indico"
-PORT = 8080
 INDICO_CUSTOMIZATION_DIR = "/srv/indico/custom"
+PORT = 8080
+UBUNTU_SAML_URL = "https://login.ubuntu.com/saml/"
 
 pgsql = ops.lib.use("pgsql", 1, "postgresql-charmers@lists.launchpad.net")
 
@@ -34,7 +35,7 @@ class IndicoOperatorCharm(CharmBase):
         super().__init__(*args)
 
         self.framework.observe(self.on.config_changed, self._on_config_changed)
-        self.framework.observe(self.on.leader_elected, self._on_config_changed)
+        self.framework.observe(self.on.leader_elected, self._on_leader_elected)
         self.framework.observe(self.on.indico_pebble_ready, self._on_pebble_ready)
         self.framework.observe(self.on.indico_celery_pebble_ready, self._on_pebble_ready)
         self.framework.observe(self.on.indico_nginx_pebble_ready, self._on_pebble_ready)
@@ -47,13 +48,6 @@ class IndicoOperatorCharm(CharmBase):
             db_uri=None,
             db_ro_uris=[],
             redis_relation={},
-            # This key would need to be shared across instances to support horizontal scalability
-            secret_key=repr(os.urandom(32)),
-            pebble_statuses={
-                "indico": False,
-                "indico-nginx": False,
-                "indico-celery": False,
-            },
         )
 
         self.db = pgsql.PostgreSQLClient(self, "db")
@@ -85,13 +79,10 @@ class IndicoOperatorCharm(CharmBase):
             # Leader has not yet set requirements. Wait until next
             # event, or risk connecting to an incorrect database.
             return
-
         self._stored.db_conn_str = None if event.master is None else event.master.conn_str
         self._stored.db_uri = None if event.master is None else event.master.uri
-
         if event.master is None:
             return
-
         self._on_config_changed(event)
 
     def _make_ingress_config(self):
@@ -104,7 +95,12 @@ class IndicoOperatorCharm(CharmBase):
 
     def _are_pebble_instances_ready(self):
         """Check if all pebble instances are ready."""
-        return all(self._stored.pebble_statuses.values())
+        return all(
+            [
+                self.unit.get_container(container_name).can_connect()
+                for container_name in self.model.unit.containers
+            ]
+        )
 
     def _get_external_hostname(self):
         """Extract and return hostname from site_url."""
@@ -125,20 +121,20 @@ class IndicoOperatorCharm(CharmBase):
         """Handle the on pebble ready event for Indico."""
         if not self._stored.redis_relation:
             self.unit.status = WaitingStatus("Waiting for redis relation")
-            event.defer()
             return False
 
         if not self._stored.db_uri:
             self.unit.status = WaitingStatus("Waiting for database relation")
-            event.defer()
             return False
 
         return True
 
     def _on_pebble_ready(self, event):
         """Handle the on pebble ready event for the containers."""
-        if self._are_relations_ready(event):
-            self._config_pebble(event.workload)
+        if not self._are_relations_ready(event) or not event.workload.can_connect():
+            event.defer()
+            return
+        self._config_pebble(event.workload)
 
     def _config_pebble(self, container):
         """Apply pebble changes."""
@@ -147,7 +143,6 @@ class IndicoOperatorCharm(CharmBase):
         container.add_layer(container.name, pebble_config, combine=True)
         self.unit.status = MaintenanceStatus("Starting {} container".format(container.name))
         container.pebble.replan_services()
-        self._stored.pebble_statuses[container.name] = True
         if self._are_pebble_instances_ready():
             self.unit.status = ActiveStatus()
         else:
@@ -239,18 +234,27 @@ class IndicoOperatorCharm(CharmBase):
             redis_hostname = self._stored.redis_relation[redis_unit]["hostname"]
             redis_port = self._stored.redis_relation[redis_unit]["port"]
 
+        indico_container = self.unit.get_container("indico")
+        process = indico_container.exec(["indico", "setup", "list-plugins"])
+        output, _ = process.wait_output()
+        # Parse output table, discarding header and footer rows and fetching first column value
+        available_plugins = [item.split("|")[1].strip() for item in output.split("\n")[3:-2]]
+
+        peer_relation = self.model.get_relation("indico-peers")
         env_config = {
             "ATTACHMENT_STORAGE": "default",
             "CELERY_BROKER": "redis://{host}:{port}".format(host=redis_hostname, port=redis_port),
             "CUSTOMIZATION_DEBUG": self.config["customization_debug"],
+            "INDICO_AUTH_PROVIDERS": str({}),
             "INDICO_DB_URI": self._stored.db_uri,
+            "INDICO_IDENTITY_PROVIDERS": str({}),
             "INDICO_NO_REPLY_EMAIL": self.config["indico_no_reply_email"],
             "INDICO_PUBLIC_SUPPORT_EMAIL": self.config["indico_public_support_email"],
             "INDICO_SUPPORT_EMAIL": self.config["indico_support_email"],
             "REDIS_CACHE_URL": "redis://{host}:{port}".format(
                 host=redis_hostname, port=redis_port
             ),
-            "SECRET_KEY": self._stored.secret_key,
+            "SECRET_KEY": peer_relation.data[self.app].get("secret-key"),
             "SERVICE_HOSTNAME": self._get_external_hostname(),
             "SERVICE_PORT": self._get_external_port(),
             "SERVICE_SCHEME": self._get_external_scheme(),
@@ -262,29 +266,90 @@ class IndicoOperatorCharm(CharmBase):
             "STORAGE_DICT": {
                 "default": "fs:/srv/indico/archive",
             },
+            "INDICO_EXTRA_PLUGINS": ",".join(available_plugins),
         }
+        # Piwik settings can't be configured using the config file for the time being:
+        # https://github.com/indico/indico-plugins/issues/182
+
         if self.config["s3_storage"]:
             env_config["STORAGE_DICT"].update({"s3": self.config["s3_storage"]})
             env_config["ATTACHMENT_STORAGE"] = "s3"
-            env_config["INDICO_EXTRA_PLUGINS"] = "storage_s3"
         env_config["STORAGE_DICT"] = str(env_config["STORAGE_DICT"])
+
+        # SAML configuration reference https://github.com/onelogin/python3-saml
+        if self.config["saml_target_url"]:
+            saml_config = {
+                "strict": True,
+                "sp": {
+                    "entityId": self.config["site_url"],
+                },
+                "idp": {
+                    "entityId": "https://login.ubuntu.com",
+                    "singleSignOnService": {
+                        "url": "https://login.ubuntu.com/saml/",
+                        "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect",
+                    },
+                    "singleLogoutService": {
+                        "url": "https://login.ubuntu.com/+logout",
+                        "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect",
+                    },
+                    "x509cert": "MIICjzCCAfigAwIBAgIJALNN/vxaR1hyMA0GCSqGSIb3DQEBBQUAMDoxCzAJBgNVBAYTAkdCMRMwEQYDVQQIEwpTb21lLVN0YXRlMRYwFAYDVQQKEw1DYW5vbmljYWwgTHRkMB4XDTEyMDgxMDEyNDE0OFoXDTEzMDgxMDEyNDE0OFowOjELMAkGA1UEBhMCR0IxEzARBgNVBAgTClNvbWUtU3RhdGUxFjAUBgNVBAoTDUNhbm9uaWNhbCBMdGQwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAMM4pmIxkv419q8zj5EojK57y6plU/+k3apX6w1PgAYeI0zhNuud/tiqKVQEDyZ6W7HNeGtWSh5rewy8c07BShcHG5Y8ibzBdIibGs5k6gvtmsRiXDE/F39+RrPSW18beHhEuoVJM9RANp3MYMOK11SiClSiGo+NfBKFuoqNX3UjAgMBAAGjgZwwgZkwHQYDVR0OBBYEFH/no88pbywRnW6Fz+B4lQ04w/86MGoGA1UdIwRjMGGAFH/no88pbywRnW6Fz+B4lQ04w/86oT6kPDA6MQswCQYDVQQGEwJHQjETMBEGA1UECBMKU29tZS1TdGF0ZTEWMBQGA1UEChMNQ2Fub25pY2FsIEx0ZIIJALNN/vxaR1hyMAwGA1UdEwQFMAMBAf8wDQYJKoZIhvcNAQEFBQADgYEArTGbZ1rg++aBxnNuJ7eho62JKKtRW5O+kMBvBLWi7fKck5uXDE6d7Jv6hUy/gwUZV7r5kuPwRlw3Pu6AX4R60UsQuVG1/VVVI7nu32iCkXx5Vzq446IkVRdk/QOda1dRyq0oaifUUhJfwVFSsm95ENDFdGqD0raj7g77ajcBMf8=",
+                },
+            }
+            auth_providers = {"ubuntu": {"type": "saml", "saml_config": saml_config}}
+            env_config["INDICO_AUTH_PROVIDERS"] = str(auth_providers)
+            identity_providers = {
+                "ubuntu": {
+                    "type": "saml",
+                    "trusted_email": True,
+                    "mapping": {
+                        "user_name": "username",
+                        "first_name": "fullname",
+                        "last_name": "",
+                        "email": "email",
+                    },
+                    "identifier_field": "openid",
+                }
+            }
+            env_config["INDICO_IDENTITY_PROVIDERS"] = str(identity_providers)
         return env_config
+
+    def _is_saml_target_url_valid(self):
+        """Check if the target SAML URL is currently supported."""
+        return (
+            not self.config["saml_target_url"] or UBUNTU_SAML_URL == self.config["saml_target_url"]
+        )
 
     def _on_config_changed(self, event):
         """Handle changes in configuration."""
-        if self._are_relations_ready(event):
-            if not self._are_pebble_instances_ready():
-                self.unit.status = WaitingStatus("Waiting for pebble")
-                event.defer()
-                return
+        if not self._are_relations_ready(event):
+            event.defer()
+            return
+        if not self._is_saml_target_url_valid():
+            self.unit.status = BlockedStatus(
+                "Invalid saml_target_url option provided. Only {} is available.".format(
+                    UBUNTU_SAML_URL
+                )
+            )
+            event.defer()
+            return
+        if not self._are_pebble_instances_ready():
+            self.unit.status = WaitingStatus("Waiting for pebble")
+            event.defer()
+            return
+        self.model.unit.status = MaintenanceStatus("Configuring pod")
+        self._download_customization_changes()
+        plugins = (
+            self.config["external_plugins"].split(",") if self.config["external_plugins"] else []
+        )
+        if self.config["s3_storage"]:
+            plugins.append("indico-plugin-storage-s3")
+        self._install_plugins(plugins)
+        for container_name in self.model.unit.containers:
+            self._config_pebble(self.unit.get_container(container_name))
 
-            self.model.unit.status = MaintenanceStatus("Configuring pod")
-            for container_name in self.model.unit.containers:
-                self._config_pebble(self.unit.get_container(container_name))
-
-            self._download_customization_changes()
-            self.ingress.update_config(self._make_ingress_config())
-            self.model.unit.status = ActiveStatus()
+        self.ingress.update_config(self._make_ingress_config())
+        self.model.unit.status = ActiveStatus()
 
     def _get_current_customization_url(self):
         """Get the current remote repository for the customization changes."""
@@ -301,6 +366,13 @@ class IndicoOperatorCharm(CharmBase):
             logging.debug(ex)
             pass
         return remote_url.rstrip()
+
+    def _install_plugins(self, plugins):
+        """Install the external plugins."""
+        if plugins:
+            indico_container = self.unit.get_container("indico")
+            process = indico_container.exec(["python3.9", "-m", "pip", "install"] + plugins)
+            process.wait_output()
 
     def _download_customization_changes(self):
         """Clone the remote repository with the customization changes."""
@@ -344,6 +416,12 @@ class IndicoOperatorCharm(CharmBase):
                 user="indico",
             )
             process.wait_output()
+
+    def _on_leader_elected(self, _) -> None:
+        """Handle leader-elected event."""
+        peer_relation = self.model.get_relation("indico-peers")
+        if not peer_relation.data[self.app].get("secret-key"):
+            peer_relation.data[self.app].update({"secret-key": repr(os.urandom(32))})
 
 
 if __name__ == "__main__":
