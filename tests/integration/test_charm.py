@@ -37,5 +37,5 @@ async def test_build_and_deploy(ops_test: OpsTest, indico_image, indico_nginx_im
     await ops_test.model.add_relation(APP_NAME, "postgresql-k8s:db")
     await ops_test.model.add_relation(APP_NAME, "redis-broker")
     await ops_test.model.add_relation(APP_NAME, "redis-cache")
-    await ops_test.model.wait_for_idle()
+    await ops_test.model.wait_for_idle(apps=[APP_NAME])
     assert ops_test.model.applications[APP_NAME].units[0].workload_status == "active"
