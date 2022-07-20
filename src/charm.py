@@ -171,7 +171,11 @@ class IndicoOperatorCharm(CharmBase):
                     },
                 },
                 "checks": {
-                    "indico-ready": {"override": "replace", "level": "ready", "tcp": {"port": 8081}}
+                    "indico-ready": {
+                        "override": "replace",
+                        "level": "ready",
+                        "tcp": {"port": 8081},
+                    }
                 },
             },
             "indico-celery": {
@@ -193,7 +197,10 @@ class IndicoOperatorCharm(CharmBase):
                         "level": "alive",
                         "period": "20s",
                         "timeout": "19s",
-                        "exec": {"command": "/usr/local/bin/indico celery inspect ping", "environment": indico_env_config,},
+                        "exec": {
+                            "command": "/usr/local/bin/indico celery inspect ping",
+                            "environment": indico_env_config,
+                        },
                     },
                 },
             },

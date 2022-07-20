@@ -17,16 +17,12 @@ ARG indico_gid=2000
 ARG indico_uid=2000
 
 RUN addgroup --gid ${indico_gid} indico \
-    && adduser --system --gid ${indico_gid} --uid ${indico_uid} --home /srv/indico --disabled-login indico
-
-ENV DEBIAN_FRONTEND=noninteractive
-
-RUN ["/bin/bash", "-c", "mkdir -p --mode=775 /srv/indico/{etc,tmp,log,cache,archive,custom}"]
-RUN /usr/local/bin/indico setup create-symlinks /srv/indico \
-    && /usr/local/bin/indico setup create-logging-config /etc
+    && adduser --system --gid ${indico_gid} --uid ${indico_uid} --home /srv/indico --disabled-login indico \
+    &&  echo "* * * * * git -C /srv/indico/custom pull" | crontab -u indico - \
+    && /etc/init.d/cron start
 
 COPY files/start-indico.sh /srv/indico/
-COPY files/etc/indico/* /etc/
+COPY files/etc/indico/ /etc/
 
 RUN chmod +x /srv/indico/start-indico.sh \
     && chown -R indico:indico /srv/indico \
