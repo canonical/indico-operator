@@ -22,6 +22,7 @@ ARG indico_uid=2000
 RUN addgroup --gid ${indico_gid} indico \
     && adduser --system --gid ${indico_gid} --uid ${indico_uid} --home /srv/indico --disabled-login indico \
     &&  echo "* * * * * git -C /srv/indico/custom pull" | crontab -u indico - \
+    && /etc/init.d/cron start
 
 ENV DEBIAN_FRONTEND=noninteractive
 
