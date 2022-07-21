@@ -26,14 +26,15 @@ resources:
     auto-fetch: true
 
 requires:
-  redis:
-    interface: redis
   db:
     interface: pgsql
     limit: 1
   ingress:
     interface: ingress
     limit: 1
+  redis:
+    interface: redis
+    limit: 2
 
 peers:
   indico-peers:

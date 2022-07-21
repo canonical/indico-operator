@@ -57,7 +57,7 @@ class IndicoOperatorCharm(CharmBase):
         self.framework.observe(self.db.on.master_changed, self._on_master_changed)
 
         self.redis = RedisRequires(self, self._stored)
-        self.framework.observe(self.on.redis_relation_updated, self._on_config_changed)
+        self.framework.observe(self.on.redis_relation_changed, self._on_config_changed)
 
         self.ingress = IngressRequires(self, self._make_ingress_config())
 
@@ -117,16 +117,17 @@ class IndicoOperatorCharm(CharmBase):
         site_url = self.config["site_url"]
         return urlparse(site_url).port
 
-    def _are_relations_ready(self, event):
+    def _are_relations_ready(self, _):
         """Handle the on pebble ready event for Indico."""
-        if not self._stored.redis_relation:
-            self.unit.status = WaitingStatus("Waiting for redis relation")
+        if not any(rel.app.name == "redis-broker" for rel in self.model.relations["redis"]):
+            self.unit.status = WaitingStatus("Waiting for redis-broker relation")
             return False
-
+        if not any(rel.app.name == "redis-cache" for rel in self.model.relations["redis"]):
+            self.unit.status = WaitingStatus("Waiting for redis-cache relation")
+            return False
         if not self._stored.db_uri:
             self.unit.status = WaitingStatus("Waiting for database relation")
             return False
-
         return True
 
     def _on_pebble_ready(self, event):
@@ -197,11 +198,17 @@ class IndicoOperatorCharm(CharmBase):
 
     def _get_indico_env_config(self):
         """Return an envConfig with some core configuration."""
-        redis_hostname = ""
-        redis_port = ""
-        for redis_unit in self._stored.redis_relation:
-            redis_hostname = self._stored.redis_relation[redis_unit]["hostname"]
-            redis_port = self._stored.redis_relation[redis_unit]["port"]
+        cache_rel = next(
+            rel for rel in self.model.relations["redis"] if rel.app.name == "redis-cache"
+        )
+        cache_host = self._stored.redis_relation[cache_rel.id]["hostname"]
+        cache_port = self._stored.redis_relation[cache_rel.id]["port"]
+
+        broker_rel = next(
+            rel for rel in self.model.relations["redis"] if rel.app.name == "redis-broker"
+        )
+        broker_host = self._stored.redis_relation[broker_rel.id]["hostname"]
+        broker_port = self._stored.redis_relation[broker_rel.id]["port"]
 
         indico_container = self.unit.get_container("indico")
         process = indico_container.exec(["indico", "setup", "list-plugins"])
@@ -212,7 +219,7 @@ class IndicoOperatorCharm(CharmBase):
         peer_relation = self.model.get_relation("indico-peers")
         env_config = {
             "ATTACHMENT_STORAGE": "default",
-            "CELERY_BROKER": "redis://{host}:{port}".format(host=redis_hostname, port=redis_port),
+            "CELERY_BROKER": "redis://{host}:{port}".format(host=broker_host, port=broker_port),
             "CUSTOMIZATION_DEBUG": self.config["customization_debug"],
             "INDICO_AUTH_PROVIDERS": str({}),
             "INDICO_DB_URI": self._stored.db_uri,
@@ -220,9 +227,7 @@ class IndicoOperatorCharm(CharmBase):
             "INDICO_NO_REPLY_EMAIL": self.config["indico_no_reply_email"],
             "INDICO_PUBLIC_SUPPORT_EMAIL": self.config["indico_public_support_email"],
             "INDICO_SUPPORT_EMAIL": self.config["indico_support_email"],
-            "REDIS_CACHE_URL": "redis://{host}:{port}".format(
-                host=redis_hostname, port=redis_port
-            ),
+            "REDIS_CACHE_URL": "redis://{host}:{port}".format(host=cache_host, port=cache_port),
             "SECRET_KEY": peer_relation.data[self.app].get("secret-key"),
             "SERVICE_HOSTNAME": self._get_external_hostname(),
             "SERVICE_PORT": self._get_external_port(),
