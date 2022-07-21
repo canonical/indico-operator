@@ -65,7 +65,8 @@ async def test_health_checks(ops_test: OpsTest):
             ),
         )
         # When executing the checks, `0/3` means there are 0 errors of 3.
-        # Each check has it's own `0/3`, so we will count `n` times, where `n` is the number of checks for that container.
+        # Each check has it's own `0/3`, so we will count `n` times,
+        # where `n` is the number of checks for that container.
         if container != "indico-nginx":
             assert result.count("0/3") == 1
         else:
