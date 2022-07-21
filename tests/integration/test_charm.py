@@ -8,6 +8,7 @@ from pathlib import Path
 
 import pytest
 import yaml
+from ops.model import ActiveStatus, WaitingStatus
 from pytest_operator.plugin import OpsTest
 
 logger = logging.getLogger(__name__)
@@ -29,11 +30,13 @@ async def test_build_and_deploy(ops_test: OpsTest, indico_image, indico_nginx_im
         "indico-nginx-image": indico_nginx_image,
     }
     await ops_test.model.deploy("postgresql-k8s")
-    await ops_test.model.deploy("redis-k8s")
+    await ops_test.model.deploy("redis-k8s", "redis-broker")
+    await ops_test.model.deploy("redis-k8s", "redis-cache")
     await ops_test.model.deploy(charm, resources=resources, application_name=APP_NAME)
     await ops_test.model.wait_for_idle()
-    assert ops_test.model.applications[APP_NAME].units[0].workload_status == "waiting"
+    assert ops_test.model.applications[APP_NAME].units[0].workload_status == WaitingStatus.name
     await ops_test.model.add_relation(APP_NAME, "postgresql-k8s:db")
-    await ops_test.model.add_relation(APP_NAME, "redis-k8s")
-    await ops_test.model.wait_for_idle()
-    assert ops_test.model.applications[APP_NAME].units[0].workload_status == "active"
+    await ops_test.model.add_relation(APP_NAME, "redis-broker")
+    await ops_test.model.add_relation(APP_NAME, "redis-cache")
+    await ops_test.model.wait_for_idle(status="active")
+    assert ops_test.model.applications[APP_NAME].units[0].workload_status == ActiveStatus.name
