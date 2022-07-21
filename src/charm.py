@@ -168,6 +168,13 @@ class IndicoOperatorCharm(CharmBase):
                         "environment": indico_env_config,
                     },
                 },
+                "checks": {
+                    "indico-ready": {
+                        "override": "replace",
+                        "level": "ready",
+                        "tcp": {"port": 8081},
+                    }
+                },
             },
             "indico-celery": {
                 "summary": "Indico celery layer",
@@ -182,6 +189,18 @@ class IndicoOperatorCharm(CharmBase):
                         "environment": indico_env_config,
                     },
                 },
+                "checks": {
+                    "ready": {
+                        "override": "replace",
+                        "level": "alive",
+                        "period": "20s",
+                        "timeout": "19s",
+                        "exec": {
+                            "command": "/usr/local/bin/indico celery inspect ping",
+                            "environment": indico_env_config,
+                        },
+                    },
+                },
             },
             "indico-nginx": {
                 "summary": "Indico nginx layer",
@@ -192,6 +211,18 @@ class IndicoOperatorCharm(CharmBase):
                         "summary": "Nginx service",
                         "command": "/usr/sbin/nginx",
                         "startup": "enabled",
+                    },
+                },
+                "checks": {
+                    "nginx-up": {
+                        "override": "replace",
+                        "level": "alive",
+                        "exec": {"command": "service nginx status"},
+                    },
+                    "nginx-ready": {
+                        "override": "replace",
+                        "level": "ready",
+                        "http": {"url": "http://localhost:8080/health"},
                     },
                 },
             },
