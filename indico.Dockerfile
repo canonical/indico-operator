@@ -1,7 +1,6 @@
 FROM ubuntu:jammy
 
-ENV DEBIAN_FRONTEND=noninteractive \
-    INDICO_CONFIG="/srv/indico/etc/indico.conf"
+ENV DEBIAN_FRONTEND=noninteractive
 
 # Python 3.9 is the only version supported by indico at the moment (see
 # https://github.com/indico/indico/issues/5364). Install from the PPA
@@ -25,8 +24,7 @@ RUN addgroup --gid ${indico_gid} indico \
     && /etc/init.d/cron start
 
 COPY files/start-indico.sh /srv/indico/
-COPY files/etc/indico/indico.conf /srv/indico/etc/
-COPY files/etc/indico/uwsgi.ini /etc/
+COPY files/etc/indico/ /etc/
 
 RUN chmod +x /srv/indico/start-indico.sh \
     && chown -R indico:indico /srv/indico \
