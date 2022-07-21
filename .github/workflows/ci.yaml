@@ -7,19 +7,6 @@ on:
         required: true
 
 jobs:
-  lib-check:
-    name: Check libraries
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - name: Check libs
-        uses: canonical/charming-actions/check-libraries@1.0.3
-        with:
-          credentials: "${{ secrets.charmhub-token }}"
-          github-token: "${{ secrets.GITHUB_TOKEN }}"
   lint:
     name: Lint
     runs-on: ubuntu-latest

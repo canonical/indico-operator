@@ -15,13 +15,24 @@ on:
       - track/**
 
 jobs:
-
+  lib-check:
+    name: Check libraries
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Check libs
+        uses: canonical/charming-actions/check-libraries@1.0.3
+        with:
+          credentials: "${{ secrets.charmhub-token }}"
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
   tests:
     name: Run Tests
     uses: ./.github/workflows/ci.yaml
     secrets:
       charmhub-token: "${{ secrets.CHARMHUB_TOKEN }}"
-
   publish-charm-to-edge:
     name: Publish Charm To Edge
     uses: ./.github/workflows/publish.yaml
