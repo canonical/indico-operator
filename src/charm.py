@@ -61,7 +61,9 @@ class IndicoOperatorCharm(CharmBase):
         self.framework.observe(self.on.redis_relation_changed, self._on_config_changed)
 
         self._ingress = IngressRequires(self, self._make_ingress_config())
-        self._metrics_endpoint = MetricsEndpointProvider(self)
+        self._metrics_endpoint = MetricsEndpointProvider(
+            self, jobs=[{"static_configs": [{"targets": ["*:8080", "*:1717", "*:9080"]}]}]
+        )
 
     def _on_database_relation_joined(self, event: pgsql.DatabaseRelationJoinedEvent):
         """Handle db-relation-joined."""

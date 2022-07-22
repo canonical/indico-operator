@@ -18,6 +18,7 @@ RUN addgroup --gid ${indico_gid} indico \
     && python3.9 -m pip install --prefer-binary indico indico-plugin-piwik python3-saml uwsgi \
     && /bin/bash -c "mkdir -p --mode=755 /srv/indico/{etc,tmp,log,cache,archive,custom}" \
     && /usr/local/bin/indico setup create-symlinks /srv/indico \
+    && /usr/local/bin/indico setup create-logging-config /etc \
     &&  echo "* * * * * git -C /srv/indico/custom pull" | crontab -u indico - \
     && /etc/init.d/cron start
 
