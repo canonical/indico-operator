@@ -29,6 +29,6 @@ jobs:
   publish-charm-to-edge:
     name: Publish Charm To Edge
     uses: ./.github/workflows/publish.yaml
-    needs: tests
+#    needs: tests
     secrets:
       charmhub-token: "${{ secrets.CHARMHUB_TOKEN }}"
