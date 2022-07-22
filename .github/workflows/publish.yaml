@@ -31,7 +31,7 @@ jobs:
           file: indico.Dockerfile
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
-          outputs: type=oci
+          outputs: type=image
       - name: Publish image
         env:
           CHARMCRAFT_AUTH: ${{ secrets.charmhub-token }}
@@ -60,7 +60,7 @@ jobs:
           file: indico-nginx.Dockerfile
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
-          outputs: type=oci
+          outputs: type=image
       - name: Publish image
         env:
           CHARMCRAFT_AUTH: ${{ secrets.charmhub-token }}
