@@ -2,9 +2,6 @@ name: CI
 
 on:
   workflow_call:
-    secrets:
-      charmhub-token:
-        required: true
 
 jobs:
   lint:
