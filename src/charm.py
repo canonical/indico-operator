@@ -60,7 +60,7 @@ class IndicoOperatorCharm(CharmBase):
         self.redis = RedisRequires(self, self._stored)
         self.framework.observe(self.on.redis_relation_changed, self._on_config_changed)
 
-        self._ingress = IngressRequires(self, self._make_ingress_config())
+        self.ingress = IngressRequires(self, self._make_ingress_config())
         self._metrics_endpoint = MetricsEndpointProvider(
             self, jobs=[{"static_configs": [{"targets": ["*:8080", "*:1717", "*:9080"]}]}]
         )
@@ -356,7 +356,7 @@ class IndicoOperatorCharm(CharmBase):
         self._install_plugins(plugins)
         for container_name in self.model.unit.containers:
             self._config_pebble(self.unit.get_container(container_name))
-        self._ingress.update_config(self._make_ingress_config())
+        self.ingress.update_config(self._make_ingress_config())
         self.model.unit.status = ActiveStatus()
 
     def _get_current_customization_url(self):
