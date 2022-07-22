@@ -31,11 +31,13 @@ jobs:
           file: indico.Dockerfile
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
-          outputs: type=oci
+          outputs: type=oci,dest=/tmp/myimage.tar
       - name: Publish image
         env:
           CHARMCRAFT_AUTH: ${{ secrets.charmhub-token }}
-        run: charmcraft upload-resource indico indico-image --image=${{ steps.build_image.outputs.digest }}
+        run: |
+          docker load --input /tmp/myimage.tar
+          charmcraft upload-resource indico indico-image --image=${{ steps.build_image.outputs.imageid }}
   publish-nginx-image:
     runs-on: ubuntu-latest
     steps:
@@ -60,11 +62,13 @@ jobs:
           file: indico-nginx.Dockerfile
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
-          outputs: type=oci
+          outputs: type=oci,dest=/tmp/myimage.tar
       - name: Publish image
         env:
           CHARMCRAFT_AUTH: ${{ secrets.charmhub-token }}
-        run: charmcraft upload-resource indico indico-nginx-image --image=${{ steps.build_image.outputs.digest }}
+        run: |
+          docker load --input /tmp/myimage.tar
+          charmcraft upload-resource indico indico-nginx-image --image=${{ steps.build_image.outputs.imageid }}
   publish-charm:
     runs-on: ubuntu-latest
     needs: [publish-indico-image, publish-nginx-image]
