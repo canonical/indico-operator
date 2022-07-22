@@ -37,8 +37,7 @@ jobs:
           CHARMCRAFT_AUTH: ${{ secrets.charmhub-token }}
         run: |
           docker load --input /tmp/myimage.tar
-          docker images ls
-          charmcraft upload-resource indico indico-image --image=${{ steps.build_image.outputs.digest }}
+          charmcraft upload-resource indico indico-image --image=${{ steps.build_image.outputs.imageid }}
   publish-nginx-image:
     runs-on: ubuntu-latest
     steps:
@@ -69,8 +68,7 @@ jobs:
           CHARMCRAFT_AUTH: ${{ secrets.charmhub-token }}
         run: |
           docker load --input /tmp/myimage.tar
-          docker images ls
-          charmcraft upload-resource indico indico-nginx-image --image=${{ steps.build_image.outputs.digest }}
+          charmcraft upload-resource indico indico-nginx-image --image=${{ steps.build_image.outputs.imageid }}
   publish-charm:
     runs-on: ubuntu-latest
     needs: [publish-indico-image, publish-nginx-image]
