@@ -66,6 +66,7 @@ jobs:
       - name: Push indico image to microk8s registry
         run: |
           docker load --input indico/indico.tar
+          docker image ls
           docker push localhost:32000/indico:latest
       - name: Push nginx image to microk8s registry
         run: |
