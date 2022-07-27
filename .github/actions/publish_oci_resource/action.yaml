@@ -13,6 +13,10 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: ${{ inputs.resource-name }}
     - name: Publish image
       env:
         CHARMCRAFT_AUTH: ${{ secrets.charmhub-token }}
