@@ -7,12 +7,12 @@ name: Publish to edge
 # by convention these branches are the source for a corresponding
 # charmhub edge channel.
 
-on:
-  push:
-    branches:
-      - master
-      - main
-      - track/**
+on: push
+#  push:
+#    branches:
+#      - master
+#      - main
+#      - track/**
 
 jobs:
   lib-check:
@@ -26,14 +26,23 @@ jobs:
       - name: Check libs
         uses: canonical/charming-actions/check-libraries@1.0.3
         with:
-          credentials: "${{ secrets.CHARMHUB_TOKEN }}"
-          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          credentials: ${{ secrets.CHARMHUB_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
   tests:
     name: Run Tests
     uses: ./.github/workflows/ci.yaml
+  select-channel:
+    name: Check channel
+    runs-on: ubuntu-latest
+    steps:
+      - name: Select charmhub channel
+        uses: canonical/charming-actions/channel@1.0.3
+        id: channel
   publish-charm-to-edge:
-    name: Publish Charm To Edge
+    name: Publish Charm To ${{ needs.select-channel.outputs.name }}
     uses: ./.github/workflows/publish.yaml
-    needs: [tests, lib-check]
+    needs: [lib-check, select-channel, tests]
     secrets:
-      charmhub-token: "${{ secrets.CHARMHUB_TOKEN }}"
+      charmhub-token: ${{ secrets.CHARMHUB_TOKEN }}
+    with:
+      channel: ${{ needs.select-channel.outputs.name }}
