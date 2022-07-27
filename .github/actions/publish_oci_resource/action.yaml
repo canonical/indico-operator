@@ -1,9 +1,6 @@
 name: Publish OCI resource
 description: Publish OCI image as a charm resource
 inputs:
-  dockerfile:
-    required: true
-    description: Dockerfile filename
   charm-name:
     required: true
     description: Name of the charm to which the resource will be linked
@@ -16,12 +13,6 @@ inputs:
 runs:
   using: composite
   steps:
-    - uses: actions/checkout@v2
-    - uses: ./.github/actions/build_oci_image
-      id: build-image
-      with:
-        dockerfile: ${{ inputs.dockerfile }}
-        resource-name: ${{ inputs.resource-name }}
     - name: Publish image
       env:
         CHARMCRAFT_AUTH: ${{ secrets.charmhub-token }}

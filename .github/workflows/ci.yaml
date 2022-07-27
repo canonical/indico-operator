@@ -36,12 +36,7 @@ jobs:
         with:
           dockerfile: indico.Dockerfile
           resource-name: indico-image
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: indico
-          path: /tmp/indico-image.tar
-  build-nginx-image:
+  build-indico-nginx-image:
     name: Build nginx image
     runs-on: ubuntu-latest
     outputs:
@@ -52,16 +47,11 @@ jobs:
         id: build
         with:
           dockerfile: indico-nginx.Dockerfile
-          resource-name: nginx-image
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: indico-nginx
-          path: /tmp/nginx-image.tar
+          resource-name: indico-nginx-image
   integration-test-microk8s:
     name: Integration tests (microk8s)
     runs-on: ubuntu-latest
-    needs: [build-indico-image, build-nginx-image]
+    needs: [build-indico-image, build-indico-nginx-image, lint, unit-test]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -75,15 +65,13 @@ jobs:
         uses: actions/download-artifact@v3
       - name: Push indico image to microk8s registry
         run: |
-          docker load --input /tmp/indico-image.tar
+          docker load --input indico/indico-image.tar
           docker tag ${{ needs.build-indico-image.outputs.image-id }} localhost:32000/indico:latest
-          docker image ls
           docker push localhost:32000/indico:latest
       - name: Push nginx image to microk8s registry
         run: |
-          docker load --input /tmp/nginx-image.tar
+          docker load --input indico-nginx/indico-nginx-image.tar
           docker tag ${{ needs.build-nginx-image.outputs.image-id }} localhost:32000/indico-nginx:latest
-          docker image ls
           docker push localhost:32000/indico-nginx:latest
       - name: Run integration tests
         run: tox -e integration -- --model testing --indico-image localhost:32000/indico:latest --indico-nginx-image localhost:32000/indico-nginx:latest

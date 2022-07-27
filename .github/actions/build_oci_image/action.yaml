@@ -36,3 +36,8 @@ runs:
         cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
         outputs: type=oci,dest=/tmp/${{ inputs.resource-name }}.tar
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ inputs.resource-name }}
+        path: /tmp/${{ inputs.resource-name }}.tar
