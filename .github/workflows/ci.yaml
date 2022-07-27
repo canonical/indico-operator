@@ -28,7 +28,7 @@ jobs:
     name: Build indico image
     runs-on: ubuntu-latest
     steps:
-      - uses: ./.github/actions/build_oci_image.yaml
+      - uses: ./.github/actions/build_oci_image
         with:
           dockerfile: indico.Dockerfile
           resource-name: indico
@@ -42,7 +42,7 @@ jobs:
     name: Build nginx image
     runs-on: ubuntu-latest
     steps:
-      - uses: ./.github/actions/build_oci_image.yaml
+      - uses: ./.github/actions/build_oci_image
         with:
           dockerfile: indico-nginx.Dockerfile
           resource-name: indico-nginx

@@ -16,7 +16,7 @@ inputs:
 runs:
   using: composite
   steps:
-    - uses: ./.github/actions/build_oci_image.yaml
+    - uses: ./.github/actions/build_oci_image
       id: build-image
       with:
         dockerfile: ${{ inputs.dockerfile }}

@@ -14,7 +14,7 @@ jobs:
   publish-indico-image:
     runs-on: ubuntu-latest
     steps:
-      - uses: ./.github/actions/publish_oci_resource.yaml
+      - uses: ./.github/actions/publish_oci_resource
         with:
           dockerfile: indico.Dockerfile
           charm-name: indico
@@ -23,7 +23,7 @@ jobs:
   publish-nginx-image:
     runs-on: ubuntu-latest
     steps:
-      - uses: ./.github/actions/publish_oci_resource.yaml
+      - uses: ./.github/actions/publish_oci_resource
         with:
           dockerfile: indico-nginx.Dockerfile
           charm-name: indico
