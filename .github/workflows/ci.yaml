@@ -70,11 +70,13 @@ jobs:
       - name: Push indico image to microk8s registry
         run: |
           docker load --input indico/indico.tar
+          docker tag ${{ jobs.build-indico-image.outputs.imageid }} localhost:32000/indico:latest
           docker image ls
           docker push localhost:32000/indico:latest
       - name: Push nginx image to microk8s registry
         run: |
           docker load --input indico-nginx/indico-nginx.tar
+          docker tag ${{ jobs.build-nginx-image.outputs.imageid }} localhost:32000/indico-nginx:latest
           docker image ls
           docker push localhost:32000/indico-nginx:latest
       - name: Run integration tests
