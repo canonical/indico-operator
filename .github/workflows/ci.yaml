@@ -32,14 +32,17 @@ jobs:
         include:
           - dockerfile: indico.Dockerfile
             resource-name: indico
+            tags: localhost:32000/indico:latest
           - dockerfile: indico-nginx.Dockerfile
             resource-name: indico-nginx
+            tags: localhost:32000/indico-nginx:latest
     steps:
       - uses: actions/checkout@v2
       - uses: ./.github/actions/build_oci_image
         with:
           dockerfile: ${{ matrix.dockerfile }}
           resource-name: ${{ matrix.resource-name }}
+          tags: ${{ matrix.tags }}
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
@@ -63,14 +66,12 @@ jobs:
       - name: Push indico image to microk8s registry
         run: |
           docker load --input indico/indico.tar
-          echo ${{ jobs.build-images.outputs }}
-          echo ${{ jobs.build-images.outputs.imageid }}
           docker image ls
-          docker tag ${{ jobs.build-images.outputs.imageid }} localhost:32000/indico:latest
           docker push localhost:32000/indico:latest
       - name: Push nginx image to microk8s registry
         run: |
           docker load --input indico-nginx/indico-nginx.tar
+          docker image ls
           docker push localhost:32000/indico-nginx:latest
       - name: Run integration tests
         run: tox -e integration -- --model testing --indico-image localhost:32000/indico:latest --indico-nginx-image localhost:32000/indico-nginx:latest

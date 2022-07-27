@@ -35,4 +35,4 @@ runs:
         file: ${{ inputs.dockerfile }}
         cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
-        outputs: type=oci,dest=/tmp/${{ inputs.resource-name }}.tar
+        outputs: type=docker,dest=/tmp/${{ inputs.resource-name }}.tar
