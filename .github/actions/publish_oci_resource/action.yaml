@@ -16,6 +16,7 @@ inputs:
 runs:
   using: composite
   steps:
+    - uses: actions/checkout@v2
     - uses: ./.github/actions/build_oci_image
       id: build-image
       with:
@@ -24,6 +25,7 @@ runs:
     - name: Publish image
       env:
         CHARMCRAFT_AUTH: ${{ secrets.charmhub-token }}
+      shell: bash
       run: |
         docker load --input /tmp/${{ inputs.resource-name }}.tar
         charmcraft upload-resource ${{ inputs.charm-name }} ${{ inputs.resource-name }} --image=${{ jobs.build-image.outputs.image-id }}
