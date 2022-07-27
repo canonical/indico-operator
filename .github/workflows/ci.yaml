@@ -28,6 +28,7 @@ jobs:
     name: Build indico image
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
       - uses: ./.github/actions/build_oci_image
         with:
           dockerfile: indico.Dockerfile

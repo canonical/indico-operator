@@ -28,4 +28,4 @@ runs:
       shell: bash
       run: |
         docker load --input /tmp/${{ inputs.resource-name }}.tar
-        charmcraft upload-resource ${{ inputs.charm-name }} ${{ inputs.resource-name }} --image=${{ jobs.build-image.outputs.image-id }}
+        charmcraft upload-resource ${{ inputs.charm-name }} ${{ inputs.resource-name }} --image=${{ jobs.build-image.outputs.imageid }}
