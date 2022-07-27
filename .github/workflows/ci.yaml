@@ -27,9 +27,12 @@ jobs:
   build-indico-image:
     name: Build indico image
     runs-on: ubuntu-latest
+    outputs:
+      image-id: ${{ steps.build.outputs.imageid }}
     steps:
       - uses: actions/checkout@v2
       - uses: ./.github/actions/build_oci_image
+        id: build
         with:
           dockerfile: indico.Dockerfile
           resource-name: indico
@@ -41,9 +44,12 @@ jobs:
   build-nginx-image:
     name: Build nginx image
     runs-on: ubuntu-latest
+    outputs:
+      image-id: ${{ steps.build.outputs.imageid }}
     steps:
       - uses: actions/checkout@v2
       - uses: ./.github/actions/build_oci_image
+        id: build
         with:
           dockerfile: indico-nginx.Dockerfile
           resource-name: indico-nginx
@@ -70,13 +76,13 @@ jobs:
       - name: Push indico image to microk8s registry
         run: |
           docker load --input indico/indico.tar
-          docker tag ${{ jobs.build-indico-image.outputs.imageid }} localhost:32000/indico:latest
+          docker tag ${{ needs.build-indico-image.outputs.image-id }} localhost:32000/indico:latest
           docker image ls
           docker push localhost:32000/indico:latest
       - name: Push nginx image to microk8s registry
         run: |
           docker load --input indico-nginx/indico-nginx.tar
-          docker tag ${{ jobs.build-nginx-image.outputs.imageid }} localhost:32000/indico-nginx:latest
+          docker tag ${{ needs.build-nginx-image.outputs.image-id }} localhost:32000/indico-nginx:latest
           docker image ls
           docker push localhost:32000/indico-nginx:latest
       - name: Run integration tests
