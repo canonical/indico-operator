@@ -32,8 +32,10 @@ jobs:
     name: Run Tests
     uses: ./.github/workflows/ci.yaml
   select-channel:
-    name: Check channel
+    name: Select target channel
     runs-on: ubuntu-latest
+    outputs:
+      channel: ${{ steps.channel.outputs.name }}
     steps:
       - name: Select charmhub channel
         uses: canonical/charming-actions/channel@1.0.3
@@ -45,4 +47,4 @@ jobs:
     secrets:
       charmhub-token: ${{ secrets.CHARMHUB_TOKEN }}
     with:
-      channel: ${{ needs.select-channel.outputs.name }}
+      channel: ${{ needs.select-channel.outputs.channel }}
