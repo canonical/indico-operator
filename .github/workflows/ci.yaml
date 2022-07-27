@@ -35,7 +35,7 @@ jobs:
         id: build
         with:
           dockerfile: indico.Dockerfile
-          resource-name: indico
+          resource-name: indico-image
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
@@ -52,7 +52,7 @@ jobs:
         id: build
         with:
           dockerfile: indico-nginx.Dockerfile
-          resource-name: indico-nginx
+          resource-name: nginx-image
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
