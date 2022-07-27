@@ -44,7 +44,7 @@ jobs:
           file: indico.Dockerfile
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
-          outputs: type=docker,dest=/tmp/indico.tar
+          outputs: type=oci,dest=/tmp/indico.tar
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
@@ -70,7 +70,7 @@ jobs:
           file: indico-nginx.Dockerfile
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
-          outputs: type=docker,dest=/tmp/indico-nginx.tar
+          outputs: type=oci,dest=/tmp/indico-nginx.tar
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:

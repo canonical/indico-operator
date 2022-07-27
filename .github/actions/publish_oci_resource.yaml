@@ -33,7 +33,7 @@ runs:
       id: build_image
       uses: docker/build-push-action@v2
       with:
-        file: ${{ inputs.charm-name }}
+        file: ${{ inputs.dockerfile }}
         cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
         outputs: type=oci,dest=/tmp/myimage.tar
