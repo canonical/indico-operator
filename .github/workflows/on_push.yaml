@@ -7,12 +7,12 @@ name: Publish to edge
 # by convention these branches are the source for a corresponding
 # charmhub edge channel.
 
-on: push
-#  push:
-#    branches:
-#      - master
-#      - main
-#      - track/**
+on:
+  push:
+    branches:
+      - master
+      - main
+      - track/**
 
 jobs:
   lib-check:
