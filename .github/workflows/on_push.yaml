@@ -40,8 +40,8 @@ jobs:
       - name: Select charmhub channel
         uses: canonical/charming-actions/channel@1.0.3
         id: channel
-  publish-charm-to-edge:
-    name: Publish Charm To ${{ needs.select-channel.outputs.name }}
+  publish-charm:
+    name: Publish Charm To ${{ needs.select-channel.outputs.channel }}
     uses: ./.github/workflows/publish.yaml
     needs: [lib-check, select-channel, tests]
     secrets:
