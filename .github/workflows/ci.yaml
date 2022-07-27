@@ -24,34 +24,38 @@ jobs:
         run: python3 -m pip install tox
       - name: Run tests
         run: tox -e unit
-  build-images:
-    name: Build docker images
+  build-indico-image:
+    name: Build indico image
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - dockerfile: indico.Dockerfile
-            resource-name: indico
-            tags: localhost:32000/indico:latest
-          - dockerfile: indico-nginx.Dockerfile
-            resource-name: indico-nginx
-            tags: localhost:32000/indico-nginx:latest
     steps:
       - uses: actions/checkout@v2
       - uses: ./.github/actions/build_oci_image
         with:
-          dockerfile: ${{ matrix.dockerfile }}
-          resource-name: ${{ matrix.resource-name }}
-          tags: ${{ matrix.tags }}
+          dockerfile: indico.Dockerfile
+          resource-name: indico
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: indico
-          path: /tmp/${{ matrix.resource-name }}.tar
+          path: /tmp/indico-image.tar
+  build-nginx-image:
+    name: Build nginx image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ./.github/actions/build_oci_image
+        with:
+          dockerfile: indico-nginx.Dockerfile
+          resource-name: indico-nginx
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: indico-nginx
+          path: /tmp/nginx-image.tar
   integration-test-microk8s:
     name: Integration tests (microk8s)
     runs-on: ubuntu-latest
-    needs: [build-images]
+    needs: [build-indico-image, build-nginx-image]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
