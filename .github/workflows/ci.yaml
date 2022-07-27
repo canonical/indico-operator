@@ -75,13 +75,13 @@ jobs:
         uses: actions/download-artifact@v3
       - name: Push indico image to microk8s registry
         run: |
-          docker load --input /tmp/indico.tar
+          docker load --input /tmp/indico-image.tar
           docker tag ${{ needs.build-indico-image.outputs.image-id }} localhost:32000/indico:latest
           docker image ls
           docker push localhost:32000/indico:latest
       - name: Push nginx image to microk8s registry
         run: |
-          docker load --input /tmp/indico-nginx.tar
+          docker load --input /tmp/nginx-image.tar
           docker tag ${{ needs.build-nginx-image.outputs.image-id }} localhost:32000/indico-nginx:latest
           docker image ls
           docker push localhost:32000/indico-nginx:latest
