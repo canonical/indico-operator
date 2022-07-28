@@ -25,6 +25,7 @@ jobs:
     uses: ./.github/workflows/ci.yaml
   publish-indico-image:
     runs-on: ubuntu-latest
+    needs: [ tests ]
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/publish_oci_resource
@@ -34,6 +35,7 @@ jobs:
           charmhub-token: ${{ secrets.charmhub-token }}
   publish-indico-nginx-image:
     runs-on: ubuntu-latest
+    needs: [ tests ]
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/publish_oci_resource
