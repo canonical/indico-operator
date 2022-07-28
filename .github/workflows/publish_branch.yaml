@@ -7,6 +7,40 @@ on:
         required: true
 
 jobs:
+  lib-check:
+    name: Check libraries
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Check libs
+        uses: canonical/charming-actions/check-libraries@1.0.3
+        with:
+          credentials: ${{ secrets.CHARMHUB_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+  tests:
+    name: Run Tests
+    uses: ./.github/workflows/ci.yaml
+  publish-indico-image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/publish_oci_resource
+        with:
+          charm-name: indico
+          resource-name: indico-image
+          charmhub-token: ${{ secrets.charmhub-token }}
+  publish-indico-nginx-image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/publish_oci_resource
+        with:
+          charm-name: indico
+          resource-name: indico-nginx-image
+          charmhub-token: ${{ secrets.charmhub-token }}
   select-branch:
     name: Select target branch
     runs-on: ubuntu-latest
@@ -17,13 +51,19 @@ jobs:
         shell: bash
         run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
         id: extract-branch
-  release-branch:
-    name: Release latest/edge/${{{{ needs.select-branch.outputs.branch }}}}
+  publish-charm:
+    name: Publish charm to latest/edge/${{ needs.select-branch.outputs.branch }}
     runs-on: ubuntu-latest
-    needs: [select-branch]
+    needs: [ select-branch, publish-indico-image, publish-indico-nginx-image ]
     steps:
-      - name: Publish Charm to branch
-        uses: ./.github/workflows/publish.yaml
+      - name: Checkout
+        uses: actions/checkout@v3
         with:
-          charmhub-token: ${{ secrets.charmhub-token }}
-          channel: latest/edge/${{ needs.select-branch.outputs.branch }}
+          fetch-depth: 0
+      - name: Upload charm to charmhub
+        uses: canonical/charming-actions/upload-charm@1.0.3
+        with:
+          credentials: ${{ secrets.charmhub-token }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          channel: ${{ needs.select-branch.outputs.branch }}
+          upload-image: false }}
