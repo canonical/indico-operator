@@ -1,0 +1,29 @@
+name: Release charm to a branch in channel edge
+
+on:
+  workflow_dispatch:
+    secrets:
+      charmhub-token:
+        required: true
+
+jobs:
+  select-branch:
+    name: Select target branch
+    runs-on: ubuntu-latest
+    outputs:
+      channel: ${{ steps.extract-branch.outputs.branch }}
+    steps:
+      - name: Get target branch
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract-branch
+  release-branch:
+    name: Release latest/edge/${{{{ needs.select-branch.outputs.branch }}}}
+    runs-on: ubuntu-latest
+    needs: [select-branch]
+    steps:
+      - name: Publish Charm to branch
+        uses: ./.github/workflows/publish.yaml
+        with:
+          charmhub-token: ${{ secrets.charmhub-token }}
+          channel: latest/edge/${{ needs.select-branch.outputs.branch }}

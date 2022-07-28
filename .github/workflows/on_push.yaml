@@ -15,22 +15,6 @@ on:
       - track/**
 
 jobs:
-  lib-check:
-    name: Check libraries
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - name: Check libs
-        uses: canonical/charming-actions/check-libraries@1.0.3
-        with:
-          credentials: ${{ secrets.CHARMHUB_TOKEN }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-  tests:
-    name: Run Tests
-    uses: ./.github/workflows/ci.yaml
   select-channel:
     name: Select target channel
     runs-on: ubuntu-latest
@@ -43,7 +27,7 @@ jobs:
   publish-charm:
     name: Publish Charm To ${{ needs.select-channel.outputs.channel }}
     uses: ./.github/workflows/publish.yaml
-    needs: [lib-check, select-channel, tests]
+    needs: [select-channel]
     secrets:
       charmhub-token: ${{ secrets.CHARMHUB_TOKEN }}
     with:
