@@ -23,5 +23,5 @@ runs:
         CHARMCRAFT_AUTH: ${{ secrets.charmhub-token }}
       shell: bash
       run: |
-        docker load --input /tmp/${{ inputs.resource-name }}.tar
-        charmcraft upload-resource ${{ inputs.charm-name }} ${{ inputs.resource-name }} --image=${{ jobs.build-image.outputs.imageid }}
+        imageId=$(docker load --input /tmp/${{ inputs.resource-name }}.tar | sed -e "s/^Loaded image ID: //")
+        charmcraft upload-resource ${{ inputs.charm-name }} ${{ inputs.resource-name }} --image=$imageId
