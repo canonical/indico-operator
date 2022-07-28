@@ -20,7 +20,7 @@ runs:
         path: /tmp
     - name: Publish image
       env:
-        CHARMCRAFT_AUTH: ${{ secrets.charmhub-token }}
+        CHARMCRAFT_AUTH: ${{ inputs.charmhub-token }}
       shell: bash
       run: |
         imageId=$(docker load --input /tmp/${{ inputs.resource-name }}.tar | sed -e "s/^Loaded image ID: //")
