@@ -8,5 +8,3 @@ jobs:
   tests:
     name: Run Tests
     uses: ./.github/workflows/ci.yaml
-    secrets:
-      charmhub-token: "${{ secrets.CHARMHUB_TOKEN }}"
