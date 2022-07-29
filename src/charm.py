@@ -9,6 +9,7 @@ import os
 from urllib.parse import urlparse
 
 import ops.lib
+from charms.grafana_k8s.v0.grafana_dashboard import GrafanaDashboardProvider
 from charms.nginx_ingress_integrator.v0.ingress import IngressRequires
 from charms.redis_k8s.v0.redis import RedisRelationCharmEvents, RedisRequires
 from ops.charm import CharmBase
@@ -60,6 +61,7 @@ class IndicoOperatorCharm(CharmBase):
         self.framework.observe(self.on.redis_relation_changed, self._on_config_changed)
 
         self.ingress = IngressRequires(self, self._make_ingress_config())
+        self._grafana_dashboards = GrafanaDashboardProvider(self)
 
     def _on_database_relation_joined(self, event: pgsql.DatabaseRelationJoinedEvent):
         """Handle db-relation-joined."""
