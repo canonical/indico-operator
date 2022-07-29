@@ -39,3 +39,7 @@ requires:
 peers:
   indico-peers:
     interface: indico-instance
+
+provides:
+  grafana-dashboard:
+    interface: grafana_dashboard
