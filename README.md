@@ -35,20 +35,24 @@ defined:
 * formatting the code: `tox -e fmt`
 * linting the code: `tox -e lint`
 * running unit tests: `tox -e unit`
-* running integration tests: `tox -e integration`
+* running integration tests: `tox -e integration  -- --indico-image localhost:32000/indico:latest --indico-nginx-image=localhost:32000/indico-nginx:latest`
 
-To deploy for development, use the same commands as above except for
-`juju deploy indico`, use the following instead:
+For the integration tests (and also to deploy the charm locally), the indico
+and indico-nginx images are required in the microk8s registry. To enable it:
 
-    # Build the indico docker images
+    microk8s enable registry
+
+The following commands push the required images into the registry:
+
     docker build . -f indico.Dockerfile -t localhost:32000/indico:latest
     docker push localhost:32000/indico:latest
     docker build . -f indico-nginx.Dockerfile -t  localhost:32000/indico-nginx:latest
     docker push localhost:32000/indico-nginx:latest
+
+To deploy for development, use the same commands as above except for
+`juju deploy indico`, use the following instead:
+
     # Build the charm
     charmcraft pack
     # Deploy the charm
     juju deploy ./indico_ubuntu-20.04-amd64.charm --resource indico-image=localhost:32000/indico:latest --resource indico-nginx-image=localhost:32000/indico-nginx:latest
-
-Assuming that microk8s is used for juju and that the local registry is
-enabled: `microk8s enable registry`
