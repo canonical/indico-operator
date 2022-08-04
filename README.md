@@ -29,6 +29,8 @@ For further details, [see here](https://charmhub.io/indico/docs).
 
 ## Development
 
+Assuming [juju and microk8s has been setup](https://juju.is/docs/olm/microk8s)
+
 This project uses [tox](https://tox.wiki/en/latest/). These commands have been
 defined:
 
