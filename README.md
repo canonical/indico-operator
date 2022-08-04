@@ -36,3 +36,19 @@ defined:
 * linting the code: `tox -e lint`
 * running unit tests: `tox -e unit`
 * running integration tests: `tox -e integration`
+
+To deploy for development, use the same commands as above except for
+`juju deploy indico`, use the following instead:
+
+    # Build the indico docker images
+    docker build . -f indico.Dockerfile -t localhost:32000/indico:latest
+    docker push localhost:32000/indico:latest
+    docker build . -f indico-nginx.Dockerfile -t  localhost:32000/indico-nginx:latest
+    docker push localhost:32000/indico-nginx:latest
+    # Build the charm
+    charmcraft pack
+    # Deploy the charm
+    juju deploy ./indico_ubuntu-20.04-amd64.charm --resource indico-image=localhost:32000/indico:latest --resource indico-nginx-image=localhost:32000/indico-nginx:latest
+
+Assuming that microk8s is used for juju and that the local registry is
+enabled: `microk8s enable registry`
