@@ -7,6 +7,7 @@ import logging
 from pathlib import Path
 
 import pytest
+import requests
 import yaml
 from ops.model import ActiveStatus
 from pytest_operator.plugin import OpsTest
@@ -36,6 +37,23 @@ async def test_active(ops_test: OpsTest, app_name: str, indico_charm):
     """
     # build and deploy charm from local source folder
     assert ops_test.model.applications[app_name].units[0].workload_status == ActiveStatus.name
+
+
+@pytest.mark.asyncio
+@pytest.mark.abort_on_fail
+async def test_indico_is_up(ops_test: OpsTest, app_name: str, indico_charm):
+    """Check that the bootstrap page is reachable.
+
+    Assume that the charm has already been built and is running.
+    """
+    # Read the IP address of indico
+    status = await ops_test.model.get_status()
+    unit = list(status.applications[app_name].units)[0]
+    address = status["applications"][app_name]["units"][unit]["address"]
+
+    # Send request to bootstrap page and set Host header to indico (which the application expects)
+    response = requests.get(f"http://{address}:8080/bootstrap", headers={"Host": "indico"})
+    assert response.status_code == 200
 
 
 @pytest.mark.asyncio
