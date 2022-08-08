@@ -288,9 +288,9 @@ class TestCharm(unittest.TestCase):
         self.assertEqual(db_relation_data.get("database"),
                          "indico",
                          "database name should be set after relation joined")
-        for extension in ["pg_trgm:public", "unaccent:public"]:
-            self.assertIn(extension, db_relation_data.get("extensions"),
-                          "database roles should be set after relation joined")
+        self.assertSetEqual({"pg_trgm:public", "unaccent:public"},
+                            set(db_relation_data.get("extensions").split(",")),
+                            "database roles should be set after relation joined")
         self.harness.update_relation_data(self.db_relation_id, "postgresql/0",
                                           {"master": "host=master"})
         self.assertEqual(self.harness.charm._stored.db_uri,
