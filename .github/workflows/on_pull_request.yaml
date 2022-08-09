@@ -8,3 +8,16 @@ jobs:
   tests:
     name: Run Tests
     uses: ./.github/workflows/ci.yaml
+  test-stuff:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: "This is a test"
+            })
