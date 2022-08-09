@@ -18,6 +18,8 @@ jobs:
           URL: ${{ github.event.issue.comments_url }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          echo $URL
+          echo ${{ github.event.issue }}
           curl \
             -X POST \
             $URL \
