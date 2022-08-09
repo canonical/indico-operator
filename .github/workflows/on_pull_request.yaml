@@ -7,21 +7,16 @@ jobs:
     name: Run Tests
     uses: ./.github/workflows/ci.yaml
   test-stuff:
-    permissions:
-      issues: write
-      pull-requests: write
     name: Test
     runs-on: ubuntu-latest
     steps:
-      - name: Add comment to PR
-        env:
-          URL: ${{ github.event.issue.comments_url }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo ${{ github.event }}
-          curl \
-            -X POST \
-            https://api.github.com/repos/canonical/indico-operator/issues/59/comments \
-            -H "Content-Type: application/json" \
-            -H "Authorization: token $GITHUB_TOKEN" \
-            --data '{ "body": "This is a test" }'
+      - uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: "This is a test"
+            })
