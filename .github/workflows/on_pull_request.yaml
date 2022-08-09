@@ -18,15 +18,16 @@ jobs:
       - name: Run unit tests
         run: tox -e unit
       - name: Generate coverage report
-        run: tox -e coverage
-        id: coverage-report
+        run: tox -e coverage -q
+        id: coverage_report
       - uses: actions/github-script@v6
         with:
           script: |
-            const coverageReport = `${{ steps.run_tests.outputs }}`;
+            let coverageReport = `${{ join(steps.coverage_report.outputs.*, '\n') }}`;
+            coverageReport = coverageReport.split(/.+summary.+/)[0];
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: "```\n" + coverageReport + "\n```"
+              body: "```\n" + coverageReport + "```"
             })
