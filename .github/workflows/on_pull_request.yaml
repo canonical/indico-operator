@@ -4,7 +4,29 @@ on:
   pull_request:
 
 jobs:
-
   tests:
     name: Run Tests
     uses: ./.github/workflows/ci.yaml
+  coverage-report:
+    name: Generate Coverage Report
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install dependencies
+        run: python3 -m pip install tox
+      - name: Run unit tests
+        run: tox -e unit
+      - name: Generate coverage report
+        run: tox -e coverage
+        id: coverage-report
+      - uses: actions/github-script@v6
+        with:
+          script: |
+            const coverageReport = `${{ steps.run_tests.outputs }}`;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: "```\n" + coverageReport + "\n```"
+            })
