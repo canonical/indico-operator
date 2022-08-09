@@ -35,7 +35,6 @@ async def test_active(ops_test: OpsTest, app_name: str, indico_charm):
 
     Assume that the charm has already been built and is running.
     """
-    # build and deploy charm from local source folder
     assert ops_test.model.applications[app_name].units[0].workload_status == ActiveStatus.name
 
 
@@ -51,8 +50,9 @@ async def test_indico_is_up(ops_test: OpsTest, app_name: str, indico_charm):
     unit = list(status.applications[app_name].units)[0]
     address = status["applications"][app_name]["units"][unit]["address"]
 
-    # Send request to bootstrap page and set Host header to indico (which the application expects)
-    response = requests.get(f"http://{address}:8080/bootstrap", headers={"Host": "indico"})
+    # Send request to bootstrap page and set Host header to app_name (which the application
+    # expects)
+    response = requests.get(f"http://{address}:8080/bootstrap", headers={"Host": app_name})
     assert response.status_code == 200
 
 
