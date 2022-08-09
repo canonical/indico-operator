@@ -18,11 +18,10 @@ jobs:
           URL: ${{ github.event.issue.comments_url }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo $URL
-          echo ${{ github.event.issue }}
+          echo ${{ github.event }}
           curl \
             -X POST \
-            $URL \
+            https://api.github.com/repos/canonical/indico-operator/issues/59/comments \
             -H "Content-Type: application/json" \
             -H "Authorization: token $GITHUB_TOKEN" \
             --data '{ "body": "This is a test" }'
