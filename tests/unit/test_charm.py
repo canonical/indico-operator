@@ -283,24 +283,39 @@ class TestCharm(unittest.TestCase):
         self.harness.set_leader(True)
         # testing harness not re-emits deferred events, manually trigger that
         self.harness.framework.reemit()
-        db_relation_data = self.harness.get_relation_data(self.db_relation_id,
-                                                          self.harness.charm.app.name)
-        self.assertEqual(db_relation_data.get("database"),
-                         "indico",
-                         "database name should be set after relation joined")
-        self.assertSetEqual({"pg_trgm:public", "unaccent:public"},
-                            set(db_relation_data.get("extensions").split(",")),
-                            "database roles should be set after relation joined")
-        self.harness.update_relation_data(self.db_relation_id, "postgresql/0",
-                                          {"master": "host=master"})
-        self.assertEqual(self.harness.charm._stored.db_uri,
-                         "postgresql://master",
-                         "database connection string should be set after database master ready")
-        self.harness.update_relation_data(self.db_relation_id, "postgresql/0",
-                                          {"master": "host=new_master"})
-        self.assertEqual(self.harness.charm._stored.db_uri,
-                         "postgresql://new_master",
-                         "database connection string should change after database master changed")
+        db_relation_data = self.harness.get_relation_data(
+            self.db_relation_id, self.harness.charm.app.name
+        )
+        self.assertEqual(
+            db_relation_data.get("database"),
+            "indico",
+            "database name should be set after relation joined",
+        )
+        self.assertSetEqual(
+            {"pg_trgm:public", "unaccent:public"},
+            set(db_relation_data.get("extensions").split(",")),
+            "database roles should be set after relation joined",
+        )
+        self.harness.update_relation_data(
+            self.db_relation_id,
+            "postgresql/0",
+            {"master": "host=master"},
+        )
+        self.assertEqual(
+            self.harness.charm._stored.db_uri,
+            "postgresql://master",
+            "database connection string should be set after database master ready",
+        )
+        self.harness.update_relation_data(
+            self.db_relation_id,
+            "postgresql/0",
+            {"master": "host=new_master"},
+        )
+        self.assertEqual(
+            self.harness.charm._stored.db_uri,
+            "postgresql://new_master",
+            "database connection string should change after database master changed",
+        )
 
     def set_up_all_relations(self):
         self.harness.charm._stored.db_uri = "db-uri"

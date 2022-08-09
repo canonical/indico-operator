@@ -1,17 +1,21 @@
 # Copyright 2022 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-"""This script is used to monkey patch necessary code to allow running unit tests with
+"""Patch the ``ops-lib-pgsql`` library for unit testing.
+
+This script is used to monkey patch necessary code to allow running unit tests with
 ``ops-lib-pgsql``. This patch needs to be run prior to the importing of the main module since
-the main module uses ``ops.lib.use`` which runs ``exec_module`` internally and the ``ops-lib-pgsql``
-just happens to use ``from .client import *``. Combined, that makes patching any private variables
-inside ``pgsql.client`` afterwards impossible.
+the main module uses ``ops.lib.use`` which runs ``exec_module`` internally and the
+``ops-lib-pgsql`` just happens to use ``from .client import *``. Combined, that makes patching
+any private variables inside ``pgsql.client`` afterwards impossible.
 """
-__all__ = ["IndicoOperatorCharm", "pgsql_patch"]
+
+from unittest.mock import MagicMock, patch
 
 import ops.lib
 import pgsql.client
-from unittest.mock import MagicMock, patch
+
+__all__ = ["IndicoOperatorCharm", "pgsql_patch"]
 
 _og_use = ops.lib.use
 
@@ -32,10 +36,12 @@ class _PGSQLPatch:
         # borrow some code from
         # https://github.com/canonical/ops-lib-pgsql/blob/master/tests/test_client.py
         self._leadership_data = {}
-        self._patch = patch.multiple(pgsql.client,
-                                     _is_ready=MagicMock(return_value=True),
-                                     _get_pgsql_leader_data=self._leadership_data.copy,
-                                     _set_pgsql_leader_data=self._leadership_data.update)
+        self._patch = patch.multiple(
+            pgsql.client,
+            _is_ready=MagicMock(return_value=True),
+            _get_pgsql_leader_data=self._leadership_data.copy,
+            _set_pgsql_leader_data=self._leadership_data.update,
+        )
 
     def _reset_leadership_data(self):
         self._leadership_data.clear()
