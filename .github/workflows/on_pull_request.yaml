@@ -2,13 +2,13 @@ name: Test
 
 on:
   pull_request:
-permissions:
-  issues: write
 jobs:
   tests:
     name: Run Tests
     uses: ./.github/workflows/ci.yaml
   test-stuff:
+    permissions:
+      issues: write
     name: Test
     runs-on: ubuntu-latest
     steps:
