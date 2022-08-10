@@ -2,7 +2,7 @@ name: Comment
 
 on:
   workflow_run:
-    workflows: [ "Receive PR" ]
+    workflows: [ "Test" ]
     types:
     - completed
 jobs:
