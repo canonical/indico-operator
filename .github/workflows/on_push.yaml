@@ -16,7 +16,7 @@ on:
 
 jobs:
   lib-check:
-    if: github.repository == 'canonical/indico-operator'
+    if: github.repository_owner == 'canonical'
     name: Check libraries
     runs-on: ubuntu-latest
     steps:
