@@ -12,8 +12,8 @@ async def juju_run(unit, cmd):
     action = await unit.run(cmd)
     result = await action.wait()
     code = result["return-code"]
-    stdout = result["stdout"]
-    stderr = result["stderr"]
+    stdout = result.get("stdout")
+    stderr = result.get("stderr")
     assert code == "0", f"{cmd} failed ({code}): {stderr or stdout}"
     return stdout
 
