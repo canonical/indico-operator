@@ -7,6 +7,7 @@ import requests
 from ops.model import ActiveStatus, Application
 from pytest_operator.plugin import OpsTest
 
+
 async def juju_run(unit, cmd):
     """Helper function that runs a juju command."""
     action = await unit.run(cmd)
@@ -46,7 +47,7 @@ async def test_indico_is_up(ops_test: OpsTest, app: Application):
 
 
 @pytest.mark.asyncio
-#@pytest.mark.abort_on_fail
+@pytest.mark.abort_on_fail
 async def test_health_checks(ops_test: OpsTest, app: Application):
     """Runs health checks for each container.
 
