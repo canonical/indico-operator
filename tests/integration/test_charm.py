@@ -8,17 +8,6 @@ from ops.model import ActiveStatus, Application
 from pytest_operator.plugin import OpsTest
 
 
-async def juju_run(unit, cmd):
-    """Helper function that runs a juju command."""
-    action = await unit.run(cmd)
-    result = await action.wait()
-    code = result["return-code"]
-    stdout = result.get("stdout")
-    stderr = result.get("stderr")
-    assert code == 0, f"{cmd} failed ({code}): {stderr or stdout}"
-    return stdout
-
-
 @pytest.mark.asyncio
 @pytest.mark.abort_on_fail
 async def test_active(app: Application):
@@ -38,7 +27,7 @@ async def test_indico_is_up(ops_test: OpsTest, app: Application):
     """
     # Read the IP address of indico
     status = await ops_test.model.get_status()
-    unit = app.units[0]
+    unit = list(status.applications[app.name].units)[0]
     address = status["applications"][app.name]["units"][unit]["address"]
     # Send request to bootstrap page and set Host header to app_name (which the application
     # expects)
@@ -53,18 +42,20 @@ async def test_health_checks(app: Application):
 
     Assume that the charm has already been built and is running.
     """
-    unit = app.units[0]
     container_list = ["indico", "indico-nginx", "indico-celery"]
+    indico_unit = app.units[0]
     for container in container_list:
-        result = await juju_run(
-            unit,
-            f"PEBBLE_SOCKET=/charm/containers/{container}/pebble.socket /charm/bin/pebble checks",
-        )
-
-    # When executing the checks, `0/3` means there are 0 errors of 3.
-    # Each check has it's own `0/3`, so we will count `n` times,
-    # where `n` is the number of checks for that container.
-    if container != "indico-nginx":
-        assert result.count("0/3") == 1
-    else:
-        assert result.count("0/3") == 2
+        cmd = f"PEBBLE_SOCKET=/charm/containers/{container}/pebble.socket /charm/bin/pebble checks"
+        action = await indico_unit.run(cmd)
+        result = await action.wait()
+        code = result["return-code"]
+        stdout = result.get("stdout")
+        stderr = result.get("stderr")
+        assert code == 0, f"{cmd} failed ({code}): {stderr or stdout}"
+        # When executing the checks, `0/3` means there are 0 errors of 3.
+        # Each check has it's own `0/3`, so we will count `n` times,
+        # where `n` is the number of checks for that container.
+        if container != "indico-nginx":
+            assert stdout.count("0/3") == 1
+        else:
+            assert stdout.count("0/3") == 2
