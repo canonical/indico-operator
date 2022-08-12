@@ -15,13 +15,13 @@ async def juju_run(unit, cmd):
     code = result["return-code"]
     stdout = result.get("stdout")
     stderr = result.get("stderr")
-    assert code == "0", f"{cmd} failed ({code}): {stderr or stdout}"
+    assert code == 0, f"{cmd} failed ({code}): {stderr or stdout}"
     return stdout
 
 
 @pytest.mark.asyncio
 @pytest.mark.abort_on_fail
-async def test_active(ops_test: OpsTest, app: Application):
+async def test_active(app: Application):
     """Check that the charm is active.
 
     Assume that the charm has already been built and is running.
@@ -38,7 +38,7 @@ async def test_indico_is_up(ops_test: OpsTest, app: Application):
     """
     # Read the IP address of indico
     status = await ops_test.model.get_status()
-    unit = list(status.applications[app.name].units)[0]
+    unit = app.units[0]
     address = status["applications"][app.name]["units"][unit]["address"]
     # Send request to bootstrap page and set Host header to app_name (which the application
     # expects)
@@ -48,12 +48,12 @@ async def test_indico_is_up(ops_test: OpsTest, app: Application):
 
 @pytest.mark.asyncio
 @pytest.mark.abort_on_fail
-async def test_health_checks(ops_test: OpsTest, app: Application):
+async def test_health_checks(app: Application):
     """Runs health checks for each container.
 
     Assume that the charm has already been built and is running.
     """
-    unit = ops_test.model.applications[app.name].units[0]
+    unit = app.units[0]
     container_list = ["indico", "indico-nginx", "indico-celery"]
     for container in container_list:
         result = await juju_run(
@@ -61,6 +61,9 @@ async def test_health_checks(ops_test: OpsTest, app: Application):
             f"PEBBLE_SOCKET=/charm/containers/{container}/pebble.socket /charm/bin/pebble checks",
         )
 
+    # When executing the checks, `0/3` means there are 0 errors of 3.
+    # Each check has it's own `0/3`, so we will count `n` times,
+    # where `n` is the number of checks for that container.
     if container != "indico-nginx":
         assert result.count("0/3") == 1
     else:
