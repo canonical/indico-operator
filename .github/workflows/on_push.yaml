@@ -16,6 +16,10 @@ on:
 
 jobs:
   lib-check:
+    # This job is the precondition of all jobs that need the Charmhub token.
+    # By disabling this job on forked repositories, we can achieve 
+    # disabling the publishing to Charmhub action on forked repositories 
+    # while still running tests on push events
     if: github.repository_owner == 'canonical'
     name: Check libraries
     runs-on: ubuntu-latest
