@@ -48,9 +48,9 @@ async def test_health_checks(app: Application):
         cmd = f"PEBBLE_SOCKET=/charm/containers/{container}/pebble.socket /charm/bin/pebble checks"
         action = await indico_unit.run(cmd)
         result = await action.wait()
-        code = result["return-code"]
-        stdout = result.get("stdout")
-        stderr = result.get("stderr")
+        code = result.results.get("return-code")
+        stdout = result.results.get("stdout")
+        stderr = result.results.get("stderr")
         assert code == 0, f"{cmd} failed ({code}): {stderr or stdout}"
         # When executing the checks, `0/3` means there are 0 errors of 3.
         # Each check has it's own `0/3`, so we will count `n` times,
