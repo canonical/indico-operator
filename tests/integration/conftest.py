@@ -24,7 +24,7 @@ def app_name(metadata):
 
 
 @pytest_asyncio.fixture(scope="module")
-async def indico_charm(ops_test: OpsTest, app_name: str, pytestconfig: Config):
+async def app(ops_test: OpsTest, app_name: str, pytestconfig: Config):
     """Indico charm used for integration testing.
 
     Builds the charm and deploys it and the relations it depends on.
@@ -42,7 +42,9 @@ async def indico_charm(ops_test: OpsTest, app_name: str, pytestconfig: Config):
         "indico-image": pytestconfig.getoption("--indico-image"),
         "indico-nginx-image": pytestconfig.getoption("--indico-nginx-image"),
     }
-    await ops_test.model.deploy(charm, resources=resources, application_name=app_name)
+    application = await ops_test.model.deploy(
+        charm, resources=resources, application_name=app_name
+    )
     await ops_test.model.wait_for_idle()
 
     # Add required relations
@@ -54,4 +56,4 @@ async def indico_charm(ops_test: OpsTest, app_name: str, pytestconfig: Config):
     )
     await ops_test.model.wait_for_idle(status="active")
 
-    yield charm
+    yield application
