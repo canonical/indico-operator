@@ -8,11 +8,7 @@ name: Publish to edge
 # charmhub edge channel.
 
 on:
-  push:
-    branches:
-      - master
-      - main
-      - track/**
+  pull_request:
 
 jobs:
   lib-check:
@@ -46,7 +42,7 @@ jobs:
         with:
           charm-name: indico
           resource-name: indico-image
-          charmhub-token: ${{ secrets.charmhub-token }}
+          charmhub-token: ${{ secrets.CHARMHUB_TOKEN }}
   publish-indico-nginx-image:
     name: Publish nginx image to charmhub
     runs-on: ubuntu-latest
@@ -57,7 +53,7 @@ jobs:
         with:
           charm-name: indico
           resource-name: indico-nginx-image
-          charmhub-token: ${{ secrets.charmhub-token }}
+          charmhub-token: ${{ secrets.CHARMHUB_TOKEN }}
   select-channel:
     name: Select target channel
     runs-on: ubuntu-latest
