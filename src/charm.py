@@ -433,4 +433,4 @@ class IndicoOperatorCharm(CharmBase):
 
 
 if __name__ == "__main__":
-    main(IndicoOperatorCharm)
+    main(IndicoOperatorCharm, use_juju_for_storage=True)

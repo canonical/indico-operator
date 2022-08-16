@@ -1,0 +1,40 @@
+name: Build OCI image
+description: Build OCI image an store it as a tarball
+inputs:
+  dockerfile:
+    required: true
+    description: Dockerfile filename
+  resource-name:
+    required: true
+    description: Name of the resulting tar containing the image
+  tags:
+    required: false
+    description: List of tags for the image
+runs:
+  using: composite
+  steps:
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - name: Cache Docker layers
+      uses: actions/cache@v2
+      with:
+        path: /tmp/.buildx-cache
+        key: ${{ runner.os }}-buildx
+    - name: Build image
+      id: build-image
+      uses: docker/build-push-action@v2
+      with:
+        tags: ${{ inputs.tags }}
+        file: ${{ inputs.dockerfile }}
+        cache-from: type=local,src=/tmp/.buildx-cache
+        cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
+        outputs: type=oci,dest=/tmp/${{ inputs.resource-name }}.tar
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ inputs.resource-name }}
+        path: /tmp/${{ inputs.resource-name }}.tar
