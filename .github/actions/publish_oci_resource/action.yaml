@@ -15,7 +15,7 @@ runs:
   steps:
     - name: Install charmcraft
       shell: bash
-      run: sudo snap install charmcraft --classic --channel=1.x/stable
+      run: sudo snap install charmcraft --classic
     - name: Download all artifacts
       uses: actions/download-artifact@v3
       with:
@@ -27,4 +27,5 @@ runs:
       shell: bash
       run: |
         imageId=$(docker load --input /tmp/${{ inputs.resource-name }}.tar | sed -e "s/^Loaded image ID: //")
-        charmcraft upload-resource ${{ inputs.charm-name }} ${{ inputs.resource-name }} --image=$imageId
+        charmcraft upload-resource ${{ inputs.charm-name }} ${{ inputs.resource-name }} --image=$imageId --verbosity=trace
+        
