@@ -27,4 +27,5 @@ runs:
       shell: bash
       run: |
         imageId=$(docker load --input /tmp/${{ inputs.resource-name }}.tar | sed -e "s/^Loaded image ID: //")
-        charmcraft upload-resource ${{ fix-charmcraft-invalid-arg
+        charmcraft upload-resource ${{ inputs.charm-name }} ${{ inputs.resource-name }} --image=$imageId --verbosity=trace
+        
