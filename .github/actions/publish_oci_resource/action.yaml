@@ -15,7 +15,7 @@ runs:
   steps:
     - name: Install charmcraft
       shell: bash
-      run: sudo snap install charmcraft --classic
+      run: sudo snap install charmcraft --classic --channel=1.x/stable
     - name: Download all artifacts
       uses: actions/download-artifact@v3
       with:

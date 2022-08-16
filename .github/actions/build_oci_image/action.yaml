@@ -15,9 +15,6 @@ runs:
   steps:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
-    - name: Install charmcraft
-      shell: bash
-      run: sudo snap install charmcraft --classic
     - name: Checkout
       uses: actions/checkout@v3
       with:
