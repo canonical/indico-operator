@@ -10,7 +10,7 @@ on:
         description: 'Origin Channel'
         required: true
     secrets:
-      charmhub-token:
+      CHARMHUB_TOKEN:
         required: true
 
 jobs:
@@ -22,7 +22,7 @@ jobs:
       - name: Release charm to channel
         uses: canonical/charming-actions/release-charm@1.0.3
         with:
-          credentials: ${{ secrets.charmhub-token }}
+          credentials: ${{ secrets.CHARMHUB_TOKEN }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           destination-channel: ${{ github.event.inputs.destination-channel }}
           origin-channel: ${{ github.event.inputs.origin-channel }}

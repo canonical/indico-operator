@@ -3,7 +3,7 @@ name: Release charm to a branch in channel edge
 on:
   workflow_dispatch:
     secrets:
-      charmhub-token:
+      CHARMHUB_TOKEN:
         required: true
 
 jobs:
@@ -33,7 +33,7 @@ jobs:
         with:
           charm-name: indico
           resource-name: indico-image
-          charmhub-token: ${{ secrets.charmhub-token }}
+          charmhub-token: ${{ secrets.CHARMHUB_TOKEN }}
   publish-indico-nginx-image:
     name: Publish nginx image to charmhub
     runs-on: ubuntu-latest
@@ -44,7 +44,7 @@ jobs:
         with:
           charm-name: indico
           resource-name: indico-nginx-image
-          charmhub-token: ${{ secrets.charmhub-token }}
+          charmhub-token: ${{ secrets.CHARMHUB_TOKEN }}
   select-branch:
     name: Select target branch
     runs-on: ubuntu-latest
@@ -67,7 +67,7 @@ jobs:
       - name: Upload charm to charmhub
         uses: canonical/charming-actions/upload-charm@1.0.3
         with:
-          credentials: ${{ secrets.charmhub-token }}
+          credentials: ${{ secrets.CHARMHUB_TOKEN }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           channel: ${{ needs.select-branch.outputs.branch }}
           upload-image: false
