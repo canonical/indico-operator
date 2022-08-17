@@ -50,13 +50,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: [ lib-check, tests ]
     steps:
-    - name: Publish image
-      env:
-        CHARMCRAFT_AUTH: ${{ secrets.CHARMHUB_TOKEN }}
-      shell: bash
-      run: |
-        imageId=$(docker pull nginx/nginx-prometheus-exporter:latest | grep "Digest:" | sed -e "s/^Digest: //")
-        charmcraft upload-resource indico nginx-prometheus-exporter-image --image=$imageId --verbosity=trace
+      - name: Publish image
+        env:
+          CHARMCRAFT_AUTH: ${{ secrets.CHARMHUB_TOKEN }}
+        shell: bash
+        run: |
+          imageId=$(docker pull nginx/nginx-prometheus-exporter:latest | grep "Digest:" | sed -e "s/^Digest: //")
+          charmcraft upload-resource indico nginx-prometheus-exporter-image --image=$imageId --verbosity=trace
   select-branch:
     name: Select target branch
     runs-on: ubuntu-latest
