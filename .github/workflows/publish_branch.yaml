@@ -43,8 +43,20 @@ jobs:
       - uses: ./.github/actions/publish_oci_resource
         with:
           charm-name: indico
-          resource-name: indico-nginx-image
+          resource-name: nginx-prometheus-exporter-image
           charmhub-token: ${{ secrets.CHARMHUB_TOKEN }}
+  publish-nginx-prometheus-exporter-image:
+    name: Publish nginx prometheus exporter image
+    runs-on: ubuntu-latest
+    needs: [ lib-check, tests ]
+    steps:
+    - name: Publish image
+      env:
+        CHARMCRAFT_AUTH: ${{ secrets.CHARMHUB_TOKEN }}
+      shell: bash
+      run: |
+        imageId=$(docker pull nginx/nginx-prometheus-exporter:latest | grep "Digest:" | sed -e "s/^Digest: //")
+        charmcraft upload-resource indico nginx-prometheus-exporter-image --image=$imageId --verbosity=trace
   select-branch:
     name: Select target branch
     runs-on: ubuntu-latest
@@ -58,7 +70,7 @@ jobs:
   publish-charm:
     name: Publish charm to latest/edge/${{ needs.select-branch.outputs.branch }}
     runs-on: ubuntu-latest
-    needs: [ select-branch, publish-indico-image, publish-indico-nginx-image ]
+    needs: [ select-branch, publish-indico-image, publish-indico-nginx-image, publish-nginx-prometheus-exporter-image ]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
