@@ -41,7 +41,9 @@ async def app(ops_test: OpsTest, app_name: str, pytestconfig: Config):
     resources = {
         "indico-image": pytestconfig.getoption("--indico-image"),
         "indico-nginx-image": pytestconfig.getoption("--indico-nginx-image"),
-        "nginx-prometheus-exporter-image": pytestconfig.getoption("--nginx-prometheus-exporter-image"),
+        "nginx-prometheus-exporter-image": pytestconfig.getoption(
+            "--nginx-prometheus-exporter-image"
+        ),
     }
     application = await ops_test.model.deploy(
         charm, resources=resources, application_name=app_name
