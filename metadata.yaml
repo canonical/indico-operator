@@ -14,6 +14,8 @@ containers:
     resource: indico-nginx-image
   indico-celery:
     resource: indico-image
+  nginx-prometheus-exporter:
+    resource: nginx-prometheus-exporter-image
 
 resources:
   indico-image:
@@ -23,6 +25,10 @@ resources:
   indico-nginx-image:
     type: oci-image
     description: Docker image for nginx Indico
+    auto-fetch: true
+  nginx-prometheus-exporter-image:
+    type: oci-image
+    description: Prometheus exporter for nginx
     auto-fetch: true
 
 provides:

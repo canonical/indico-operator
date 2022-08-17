@@ -41,6 +41,9 @@ class IndicoOperatorCharm(CharmBase):
         self.framework.observe(self.on.indico_celery_pebble_ready, self._on_pebble_ready)
         self.framework.observe(self.on.indico_nginx_pebble_ready, self._on_pebble_ready)
         self.framework.observe(
+            self.on.nginx_prometheus_exporter_pebble_ready, self._on_pebble_ready
+        )
+        self.framework.observe(
             self.on.refresh_customization_changes_action, self._refresh_customization_changes
         )
 
@@ -61,9 +64,7 @@ class IndicoOperatorCharm(CharmBase):
         self.framework.observe(self.on.redis_relation_changed, self._on_config_changed)
 
         self.ingress = IngressRequires(self, self._make_ingress_config())
-        self._metrics_endpoint = MetricsEndpointProvider(
-            self, jobs=[{"static_configs": [{"targets": ["*:8080"]}]}]
-        )
+        self._metrics_endpoint = MetricsEndpointProvider(self)
 
     def _on_database_relation_joined(self, event: pgsql.DatabaseRelationJoinedEvent):
         """Handle db-relation-joined."""
@@ -225,6 +226,30 @@ class IndicoOperatorCharm(CharmBase):
                         "override": "replace",
                         "level": "ready",
                         "http": {"url": "http://localhost:8080/health"},
+                    },
+                },
+            },
+            "nginx-prometheus-exporter": {
+                "summary": "Nginx prometheus exporter",
+                "description": "Prometheus exporter for nginx",
+                "services": {
+                    "exporter": {
+                        "override": "replace",
+                        "summary": "Exporter",
+                        "command": "nginx-prometheus-exporter -nginx.scrape-uri=http://localhost:8080/stub_status",
+                        "startup": "enabled",
+                    },
+                },
+                "checks": {
+                    "exporter-up": {
+                        "override": "replace",
+                        "level": "alive",
+                        "http": {"url": "http://localhost:9113/metrics"},
+                    },
+                    "exporter-ready": {
+                        "override": "replace",
+                        "level": "ready",
+                        "http": {"url": "http://localhost:9113/metrics"},
                     },
                 },
             },
