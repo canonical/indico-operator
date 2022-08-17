@@ -62,7 +62,7 @@ class IndicoOperatorCharm(CharmBase):
 
         self.ingress = IngressRequires(self, self._make_ingress_config())
         self._metrics_endpoint = MetricsEndpointProvider(
-            self, jobs=[{"static_configs": [{"targets": ["*:8080", "*:1717", "*:9080"]}]}]
+            self, jobs=[{"static_configs": [{"targets": ["*:8080"]}]}]
         )
 
     def _on_database_relation_joined(self, event: pgsql.DatabaseRelationJoinedEvent):
