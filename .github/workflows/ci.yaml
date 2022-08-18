@@ -13,7 +13,7 @@ jobs:
         uses: actions/checkout@v3
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: '3.8'
       - name: Install dependencies
         run: python -m pip install tox
       - name: Run linters
@@ -26,7 +26,7 @@ jobs:
         uses: actions/checkout@v3
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: '3.8'
       - name: Install dependencies
         run: python -m pip install tox
       - name: Run tests
@@ -80,6 +80,9 @@ jobs:
           imageId=$(docker load --input indico-nginx-image/indico-nginx-image.tar | sed -e "s/^Loaded image ID: //")
           docker tag $imageId localhost:32000/indico-nginx:latest
           docker push localhost:32000/indico-nginx:latest
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.8'
       - name: Run integration tests
         run: tox -e integration -- --model testing --indico-image localhost:32000/indico:latest --indico-nginx-image localhost:32000/indico-nginx:latest
       - name: Dump logs
