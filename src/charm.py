@@ -238,7 +238,7 @@ class IndicoOperatorCharm(CharmBase):
                     "exporter": {
                         "override": "replace",
                         "summary": "Exporter",
-                        "command": "nginx-prometheus-exporter -nginx.scrape-uri=http://localhost:8080/stub_status",
+                        "command": "nginx-prometheus-exporter -nginx.scrape-uri=http://localhost:9080/stub_status",
                         "startup": "enabled",
                     },
                 },
