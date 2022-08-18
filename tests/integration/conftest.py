@@ -30,7 +30,9 @@ def nginx_prometheus_exporter_image(metadata):
 
 
 @pytest_asyncio.fixture(scope="module")
-async def app(ops_test: OpsTest, app_name: str, pytestconfig: Config, nginx_prometheus_exporter_image: str):
+async def app(
+    ops_test: OpsTest, app_name: str, pytestconfig: Config, nginx_prometheus_exporter_image: str
+):
     """Indico charm used for integration testing.
 
     Builds the charm and deploys it and the relations it depends on.
