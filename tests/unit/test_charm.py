@@ -63,6 +63,8 @@ class TestCharm(unittest.TestCase):
         self.harness.set_leader(True)
 
         with patch.object(Container, "exec", return_value=MockExecProcess()):
+            self.harness.container_pebble_ready("nginx-prometheus-exporter")
+            self.assertEqual(self.harness.model.unit.status, WaitingStatus("Waiting for pebble"))
             self.harness.container_pebble_ready("indico")
             self.assertEqual(self.harness.model.unit.status, WaitingStatus("Waiting for pebble"))
             self.harness.container_pebble_ready("indico-celery")
@@ -156,6 +158,7 @@ class TestCharm(unittest.TestCase):
         self.harness.set_leader(True)
 
         with patch.object(Container, "exec", return_value=MockExecProcess()):
+            self.harness.container_pebble_ready("nginx-prometheus-exporter")
             self.harness.container_pebble_ready("indico")
             self.harness.container_pebble_ready("indico-celery")
             self.harness.container_pebble_ready("indico-nginx")
@@ -185,7 +188,6 @@ class TestCharm(unittest.TestCase):
         self.assertEqual("example@email.local", updated_plan_env["INDICO_SUPPORT_EMAIL"])
         self.assertEqual("public@email.local", updated_plan_env["INDICO_PUBLIC_SUPPORT_EMAIL"])
         self.assertEqual("noreply@email.local", updated_plan_env["INDICO_NO_REPLY_EMAIL"])
-        self.assertEqual("example.local", updated_plan_env["SERVICE_HOSTNAME"])
         self.assertEqual("https", updated_plan_env["SERVICE_SCHEME"])
         self.assertEqual(8080, updated_plan_env["SERVICE_PORT"])
         self.assertEqual("localhost", updated_plan_env["SMTP_SERVER"])

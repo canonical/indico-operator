@@ -10,6 +10,7 @@ from urllib.parse import urlparse
 
 import ops.lib
 from charms.nginx_ingress_integrator.v0.ingress import IngressRequires
+from charms.prometheus_k8s.v0.prometheus_scrape import MetricsEndpointProvider
 from charms.redis_k8s.v0.redis import RedisRelationCharmEvents, RedisRequires
 from ops.charm import CharmBase
 from ops.framework import StoredState
@@ -40,6 +41,9 @@ class IndicoOperatorCharm(CharmBase):
         self.framework.observe(self.on.indico_celery_pebble_ready, self._on_pebble_ready)
         self.framework.observe(self.on.indico_nginx_pebble_ready, self._on_pebble_ready)
         self.framework.observe(
+            self.on.nginx_prometheus_exporter_pebble_ready, self._on_pebble_ready
+        )
+        self.framework.observe(
             self.on.refresh_customization_changes_action, self._refresh_customization_changes
         )
 
@@ -60,6 +64,9 @@ class IndicoOperatorCharm(CharmBase):
         self.framework.observe(self.on.redis_relation_changed, self._on_config_changed)
 
         self.ingress = IngressRequires(self, self._make_ingress_config())
+        self._metrics_endpoint = MetricsEndpointProvider(
+            self, jobs=[{"static_configs": [{"targets": ["*:9113"]}]}]
+        )
 
     def _on_database_relation_joined(self, event: pgsql.DatabaseRelationJoinedEvent):
         """Handle db-relation-joined."""
@@ -224,6 +231,30 @@ class IndicoOperatorCharm(CharmBase):
                     },
                 },
             },
+            "nginx-prometheus-exporter": {
+                "summary": "Nginx prometheus exporter",
+                "description": "Prometheus exporter for nginx",
+                "services": {
+                    "exporter": {
+                        "override": "replace",
+                        "summary": "Exporter",
+                        "command": "nginx-prometheus-exporter -nginx.scrape-uri=http://localhost:9080/stub_status",
+                        "startup": "enabled",
+                    },
+                },
+                "checks": {
+                    "exporter-up": {
+                        "override": "replace",
+                        "level": "alive",
+                        "http": {"url": "http://localhost:9113/metrics"},
+                    },
+                    "exporter-ready": {
+                        "override": "replace",
+                        "level": "ready",
+                        "http": {"url": "http://localhost:9113/metrics"},
+                    },
+                },
+            },
         }
         return configuration[container_name]
 
@@ -352,7 +383,6 @@ class IndicoOperatorCharm(CharmBase):
         self._install_plugins(plugins)
         for container_name in self.model.unit.containers:
             self._config_pebble(self.unit.get_container(container_name))
-
         self.ingress.update_config(self._make_ingress_config())
         self.model.unit.status = ActiveStatus()
 
