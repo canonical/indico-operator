@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, patch
 from ops.model import ActiveStatus, BlockedStatus, Container, WaitingStatus
 from ops.testing import Harness
 
-from charm import IndicoOperatorCharm
+from tests.unit._patched_charm import IndicoOperatorCharm, pgsql_patch
 
 
 class MockExecProcess(object):
@@ -17,10 +17,13 @@ class MockExecProcess(object):
 
 class TestCharm(unittest.TestCase):
     def setUp(self):
+        pgsql_patch.start()
         self.harness = Harness(IndicoOperatorCharm)
         self.addCleanup(self.harness.cleanup)
         self.harness.begin()
-        self.harness.charm.db = None
+
+    def tearDown(self):
+        pgsql_patch.stop()
 
     def test_missing_relations(self):
         self.harness.update_config({"site_url": "foo"})
@@ -60,6 +63,8 @@ class TestCharm(unittest.TestCase):
         self.harness.set_leader(True)
 
         with patch.object(Container, "exec", return_value=MockExecProcess()):
+            self.harness.container_pebble_ready("nginx-prometheus-exporter")
+            self.assertEqual(self.harness.model.unit.status, WaitingStatus("Waiting for pebble"))
             self.harness.container_pebble_ready("indico")
             self.assertEqual(self.harness.model.unit.status, WaitingStatus("Waiting for pebble"))
             self.harness.container_pebble_ready("indico-celery")
@@ -153,6 +158,7 @@ class TestCharm(unittest.TestCase):
         self.harness.set_leader(True)
 
         with patch.object(Container, "exec", return_value=MockExecProcess()):
+            self.harness.container_pebble_ready("nginx-prometheus-exporter")
             self.harness.container_pebble_ready("indico")
             self.harness.container_pebble_ready("indico-celery")
             self.harness.container_pebble_ready("indico-nginx")
@@ -182,7 +188,6 @@ class TestCharm(unittest.TestCase):
         self.assertEqual("example@email.local", updated_plan_env["INDICO_SUPPORT_EMAIL"])
         self.assertEqual("public@email.local", updated_plan_env["INDICO_PUBLIC_SUPPORT_EMAIL"])
         self.assertEqual("noreply@email.local", updated_plan_env["INDICO_NO_REPLY_EMAIL"])
-        self.assertEqual("example.local", updated_plan_env["SERVICE_HOSTNAME"])
         self.assertEqual("https", updated_plan_env["SERVICE_SCHEME"])
         self.assertEqual(8080, updated_plan_env["SERVICE_PORT"])
         self.assertEqual("localhost", updated_plan_env["SMTP_SERVER"])
@@ -275,6 +280,45 @@ class TestCharm(unittest.TestCase):
             self.harness.get_relation_data(rel_id, self.harness.charm.app.name).get("secret-key")
         )
 
+    def test_db_relations(self):
+        self.set_up_all_relations()
+        self.harness.set_leader(True)
+        # testing harness not re-emits deferred events, manually trigger that
+        self.harness.framework.reemit()
+        db_relation_data = self.harness.get_relation_data(
+            self.db_relation_id, self.harness.charm.app.name
+        )
+        self.assertEqual(
+            db_relation_data.get("database"),
+            "indico",
+            "database name should be set after relation joined",
+        )
+        self.assertSetEqual(
+            {"pg_trgm:public", "unaccent:public"},
+            set(db_relation_data.get("extensions").split(",")),
+            "database roles should be set after relation joined",
+        )
+        self.harness.update_relation_data(
+            self.db_relation_id,
+            "postgresql/0",
+            {"master": "host=master"},
+        )
+        self.assertEqual(
+            self.harness.charm._stored.db_uri,
+            "postgresql://master",
+            "database connection string should be set after database master ready",
+        )
+        self.harness.update_relation_data(
+            self.db_relation_id,
+            "postgresql/0",
+            {"master": "host=new_master"},
+        )
+        self.assertEqual(
+            self.harness.charm._stored.db_uri,
+            "postgresql://new_master",
+            "database connection string should change after database master changed",
+        )
+
     def set_up_all_relations(self):
         self.harness.charm._stored.db_uri = "db-uri"
         self.harness.add_relation("indico-peers", self.harness.charm.app.name)
@@ -282,6 +326,8 @@ class TestCharm(unittest.TestCase):
         self.harness.add_relation_unit(broker_relation_id, "redis-broker/0")
         cache_relation_id = self.harness.add_relation("redis", self.harness.charm.app.name)
         self.harness.add_relation_unit(cache_relation_id, "redis-cache/0")
+        self.db_relation_id = self.harness.add_relation("db", self.harness.charm.app.name)
+        self.harness.add_relation_unit(self.db_relation_id, "postgresql/0")
         self.harness.charm._stored.redis_relation = {
             broker_relation_id: {"hostname": "broker-host", "port": 1010},
             cache_relation_id: {"hostname": "cache-host", "port": 1011},
