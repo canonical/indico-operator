@@ -30,6 +30,7 @@ resources:
     type: oci-image
     description: Prometheus exporter for nginx
     auto-fetch: true
+    upstream-source: nginx-prometheus-exporter:0.10.0
 
 provides:
   metrics-endpoint:

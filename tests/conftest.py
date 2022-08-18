@@ -5,4 +5,3 @@
 def pytest_addoption(parser):
     parser.addoption("--indico-image", action="store")
     parser.addoption("--indico-nginx-image", action="store")
-    parser.addoption("--nginx-prometheus-exporter-image", action="store")

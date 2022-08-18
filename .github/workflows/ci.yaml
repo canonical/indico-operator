@@ -75,7 +75,7 @@ jobs:
           docker tag $imageId localhost:32000/indico-nginx:latest
           docker push localhost:32000/indico-nginx:latest
       - name: Run integration tests
-        run: tox -e integration -- --model testing --indico-image localhost:32000/indico:latest --indico-nginx-image localhost:32000/indico-nginx:latest --nginx-prometheus-exporter-image=nginx/nginx-prometheus-exporter:latest
+        run: tox -e integration -- --model testing --indico-image localhost:32000/indico:latest --indico-nginx-image localhost:32000/indico-nginx:latest
       - name: Dump logs
         uses: canonical/charm-logdump-action@main
         if: failure()

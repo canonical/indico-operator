@@ -58,18 +58,6 @@ jobs:
           charm-name: indico
           resource-name: indico-nginx-image
           charmhub-token: ${{ secrets.CHARMHUB_TOKEN }}
-  publish-nginx-prometheus-exporter-image:
-    name: Publish nginx prometheus exporter image
-    runs-on: ubuntu-latest
-    needs: [ lib-check, tests ]
-    steps:
-      - name: Publish image
-        env:
-          CHARMCRAFT_AUTH: ${{ secrets.CHARMHUB_TOKEN }}
-        shell: bash
-        run: |
-          imageId=$(docker pull nginx/nginx-prometheus-exporter:latest | grep "Digest:" | sed -e "s/^Digest: //")
-          charmcraft upload-resource indico nginx-prometheus-exporter-image --image=$imageId --verbosity=trace
   select-channel:
     name: Select target channel
     runs-on: ubuntu-latest
@@ -82,7 +70,7 @@ jobs:
   publish-charm:
     name: Publish charm to ${{ needs.select-channel.outputs.channel }}
     runs-on: ubuntu-latest
-    needs: [ select-channel, publish-indico-image, publish-indico-nginx-image, publish-nginx-prometheus-exporter-image ]
+    needs: [ select-channel, publish-indico-image, publish-indico-nginx-image ]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
