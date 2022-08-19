@@ -11,7 +11,9 @@ inputs:
     required: true
     description: Charmhub access token
  outputs:
-  revision: ${{ steps.publish.outputs.revision }}
+  revision:
+    description: "Resource revision"
+    value: ${{ steps.publish.outputs.revision }}
 runs:
   using: composite
   steps:
