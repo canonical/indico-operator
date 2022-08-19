@@ -54,15 +54,15 @@ jobs:
           charm-name: indico
           resource-name: indico-nginx-image
           charmhub-token: ${{ secrets.CHARMHUB_TOKEN }}
-  select-channel:
-    name: Select target channel
-    runs-on: ubuntu-latest
-    outputs:
-      channel: ${{ steps.channel.outputs.name }}
-    steps:
-      - name: Select charmhub channel
-        uses: canonical/charming-actions/channel@1.0.3
-        id: channel
+  # select-channel:
+  #   name: Select target channel
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     channel: ${{ steps.channel.outputs.name }}
+  #   steps:
+  #     - name: Select charmhub channel
+  #       uses: canonical/charming-actions/channel@1.0.3
+  #       id: channel
   publish-charm:
     name: Publish charm to ${{ needs.select-channel.outputs.channel }}
     runs-on: ubuntu-latest
@@ -77,4 +77,4 @@ jobs:
         with:
           credentials: ${{ secrets.CHARMHUB_TOKEN }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          channel: ${{ needs.select-channel.outputs.channel }}
+          channel: edge
