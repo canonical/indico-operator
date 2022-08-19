@@ -9,10 +9,6 @@ name: Publish to edge
 
 on:
   push:
-    branches:
-      - master
-      - main
-      - track/**
 
 jobs:
   lib-check:
@@ -82,4 +78,3 @@ jobs:
           credentials: ${{ secrets.CHARMHUB_TOKEN }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           channel: ${{ needs.select-channel.outputs.channel }}
-          upload-image: false
