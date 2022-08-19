@@ -10,6 +10,8 @@ inputs:
   charmhub-token:
     required: true
     description: Charmhub access token
+ outputs:
+  revision: ${{ steps.publish.outputs.revision }}
 runs:
   using: composite
   steps:
@@ -22,10 +24,13 @@ runs:
         name: ${{ inputs.resource-name }}
         path: /tmp
     - name: Publish image
+      id: publish
       env:
         CHARMCRAFT_AUTH: ${{ inputs.charmhub-token }}
       shell: bash
       run: |
         imageId=$(docker load --input /tmp/${{ inputs.resource-name }}.tar | sed -e "s/^Loaded image ID: //")
-        charmcraft upload-resource ${{ inputs.charm-name }} ${{ inputs.resource-name }} --image=$imageId --verbosity=trace
+        out=$(charmcraft upload-resource ${{ inputs.charm-name }} ${{ inputs.resource-name }} --image=$imageId --verbosity=trace)
+        revision=$(echo $out | awk '{ print $16 }')
+        echo "::set-output name=revision::$revision"
         
