@@ -78,7 +78,4 @@ jobs:
           credentials: ${{ secrets.CHARMHUB_TOKEN }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           channel: edge
-          resource-overrides: > 
-            indico-image:${{needs.publish-indico-image.outputs.revision}},
-            indico-nginx-image:${{needs.publish-indico-nginx-image.outputs.revision}},
-            nginx-prometheus-exporter-image:1
+          upload: false

@@ -70,4 +70,4 @@ jobs:
           credentials: ${{ secrets.CHARMHUB_TOKEN }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           channel: ${{ needs.select-branch.outputs.branch }}
-          upload-image: false
+          resource-overrides: nginx-prometheus-exporter-image:1
