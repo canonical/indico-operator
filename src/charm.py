@@ -272,6 +272,8 @@ class IndicoOperatorCharm(CharmBase):
         broker_host = self._stored.redis_relation[broker_rel.id]["hostname"]
         broker_port = self._stored.redis_relation[broker_rel.id]["port"]
 
+        available_plugins = []
+
         indico_container = self.unit.get_container("indico")
         process = indico_container.exec(["indico", "setup", "list-plugins"])
         output, _ = process.wait_output()
@@ -351,6 +353,7 @@ class IndicoOperatorCharm(CharmBase):
         return env_config
 
     def _get_http_proxy_configuration(self):
+        """Generate http proxy config."""
         config = {}
         if self.config["http_proxy"]:
             config["HTTP_PROXY"] = self.config["http_proxy"]
