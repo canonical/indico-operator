@@ -157,7 +157,7 @@ class TestCharm(unittest.TestCase):
         self.set_up_all_relations()
         self.harness.set_leader(True)
 
-        with patch.object(Container, "exec", return_value=MockExecProcess()):
+        with patch.object(Container, "exec", return_value=MockExecProcess()) as exec_mock:
             self.harness.container_pebble_ready("nginx-prometheus-exporter")
             self.harness.container_pebble_ready("indico")
             self.harness.container_pebble_ready("indico-celery")
@@ -190,8 +190,6 @@ class TestCharm(unittest.TestCase):
         self.assertEqual("example@email.local", updated_plan_env["INDICO_SUPPORT_EMAIL"])
         self.assertEqual("public@email.local", updated_plan_env["INDICO_PUBLIC_SUPPORT_EMAIL"])
         self.assertEqual("noreply@email.local", updated_plan_env["INDICO_NO_REPLY_EMAIL"])
-        self.assertEqual("http://squid.internal:3128", updated_plan_env["HTTP_PROXY"])
-        self.assertEqual("https://squid.internal:3128", updated_plan_env["HTTPS_PROXY"])
         self.assertEqual("https", updated_plan_env["SERVICE_SCHEME"])
         self.assertEqual(8080, updated_plan_env["SERVICE_PORT"])
         self.assertEqual("localhost", updated_plan_env["SMTP_SERVER"])
@@ -206,6 +204,29 @@ class TestCharm(unittest.TestCase):
         self.assertEqual(
             "s3:bucket=my-indico-test-bucket,access_key=12345,secret_key=topsecret",
             storage_dict["s3"],
+        )
+        exec_mock.assert_any_call(
+            ["git", "clone", "https://example.com/custom", "."],
+            working_dir="/srv/indico/custom",
+            user="indico",
+            environment={
+                "HTTP_PROXY": "http://squid.internal:3128",
+                "HTTPS_PROXY": "https://squid.internal:3128",
+            },
+        )
+        exec_mock.assert_any_call(
+            [
+                "python3.9",
+                "-m",
+                "pip",
+                "install",
+                "git+https://example.git/#subdirectory=themes_cern",
+                "indico-plugin-storage-s3",
+            ],
+            environment={
+                "HTTP_PROXY": "http://squid.internal:3128",
+                "HTTPS_PROXY": "https://squid.internal:3128",
+            },
         )
 
         updated_plan = self.harness.get_container_pebble_plan("indico-celery").to_dict()

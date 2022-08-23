@@ -304,10 +304,6 @@ class IndicoOperatorCharm(CharmBase):
                 "default": "fs:/srv/indico/archive",
             },
         }
-        if self.config["http_proxy"]:
-            env_config["HTTP_PROXY"] = self.config["http_proxy"]
-        if self.config["https_proxy"]:
-            env_config["HTTPS_PROXY"] = self.config["https_proxy"]
 
         # Piwik settings can't be configured using the config file for the time being:
         # https://github.com/indico/indico-plugins/issues/182
@@ -353,6 +349,14 @@ class IndicoOperatorCharm(CharmBase):
             }
             env_config["INDICO_IDENTITY_PROVIDERS"] = str(identity_providers)
         return env_config
+
+    def _get_http_proxy_configuration(self):
+        config = {}
+        if self.config["http_proxy"]:
+            config["HTTP_PROXY"] = self.config["http_proxy"]
+        if self.config["https_proxy"]:
+            config["HTTPS_PROXY"] = self.config["https_proxy"]
+        return config
 
     def _is_saml_target_url_valid(self):
         """Check if the target SAML URL is currently supported."""
@@ -410,7 +414,10 @@ class IndicoOperatorCharm(CharmBase):
         """Install the external plugins."""
         if plugins:
             indico_container = self.unit.get_container("indico")
-            process = indico_container.exec(["python3.9", "-m", "pip", "install"] + plugins)
+            process = indico_container.exec(
+                ["python3.9", "-m", "pip", "install"] + plugins,
+                environment=self._get_http_proxy_configuration(),
+            )
             process.wait_output()
 
     def _download_customization_changes(self):
@@ -442,6 +449,7 @@ class IndicoOperatorCharm(CharmBase):
                     ["git", "clone", self.config["customization_sources_url"], "."],
                     working_dir=INDICO_CUSTOMIZATION_DIR,
                     user="indico",
+                    environment=self._get_http_proxy_configuration(),
                 )
                 process.wait_output()
 
@@ -453,6 +461,7 @@ class IndicoOperatorCharm(CharmBase):
                 ["git", "pull"],
                 working_dir=INDICO_CUSTOMIZATION_DIR,
                 user="indico",
+                environment=self._get_http_proxy_configuration(),
             )
             process.wait_output()
 
