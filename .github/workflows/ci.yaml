@@ -7,7 +7,7 @@ on:
 jobs:
   lint:
     name: Lint
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -17,7 +17,7 @@ jobs:
         run: tox -e lint
   unit-test:
     name: Unit tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -27,7 +27,7 @@ jobs:
         run: tox -e unit
   build-indico-image:
     name: Build indico image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     outputs:
       image-id: ${{ steps.build.outputs.imageid }}
     steps:
@@ -39,7 +39,7 @@ jobs:
           resource-name: indico-image
   build-indico-nginx-image:
     name: Build nginx image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     outputs:
       image-id: ${{ steps.build.outputs.imageid }}
     steps:
@@ -51,7 +51,7 @@ jobs:
           resource-name: indico-nginx-image
   integration-test-microk8s:
     name: Integration tests (microk8s)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs: [build-indico-image, build-indico-nginx-image, lint, unit-test]
     steps:
       - name: Checkout
