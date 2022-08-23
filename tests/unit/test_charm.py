@@ -164,20 +164,22 @@ class TestCharm(unittest.TestCase):
             self.harness.container_pebble_ready("indico-nginx")
             self.harness.update_config(
                 {
+                    "customization_debug": True,
+                    "customization_sources_url": "https://example.com/custom",
                     "external_plugins": "git+https://example.git/#subdirectory=themes_cern",
                     "indico_support_email": "example@email.local",
                     "indico_public_support_email": "public@email.local",
                     "indico_no_reply_email": "noreply@email.local",
+                    "http_proxy": "http://squid.internal:3128",
+                    "https_proxy": "https://squid.internal:3128",
+                    "saml_target_url": "https://login.ubuntu.com/saml/",
                     "site_url": "https://example.local:8080",
                     "smtp_server": "localhost",
                     "smtp_port": 8025,
                     "smtp_login": "user",
                     "smtp_password": "pass",
                     "smtp_use_tls": False,
-                    "customization_debug": True,
-                    "customization_sources_url": "https://example.com/custom",
                     "s3_storage": "s3:bucket=my-indico-test-bucket,access_key=12345,secret_key=topsecret",
-                    "saml_target_url": "https://login.ubuntu.com/saml/",
                 }
             )
 
@@ -188,6 +190,8 @@ class TestCharm(unittest.TestCase):
         self.assertEqual("example@email.local", updated_plan_env["INDICO_SUPPORT_EMAIL"])
         self.assertEqual("public@email.local", updated_plan_env["INDICO_PUBLIC_SUPPORT_EMAIL"])
         self.assertEqual("noreply@email.local", updated_plan_env["INDICO_NO_REPLY_EMAIL"])
+        self.assertEqual("http://squid.internal:3128", updated_plan_env["HTTP_PROXY"])
+        self.assertEqual("https://squid.internal:3128", updated_plan_env["HTTPS_PROXY"])
         self.assertEqual("https", updated_plan_env["SERVICE_SCHEME"])
         self.assertEqual(8080, updated_plan_env["SERVICE_PORT"])
         self.assertEqual("localhost", updated_plan_env["SMTP_SERVER"])
