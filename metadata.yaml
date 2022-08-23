@@ -30,7 +30,10 @@ resources:
     type: oci-image
     description: Prometheus exporter for nginx
     auto-fetch: true
-    upstream-source: nginx/nginx-prometheus-exporter:0.10.0
+    # charmhub actions will fail if upstream-resource is present:
+    # 
+    # If changed, the OCI image will have to be uploaded manually
+    # upstream-source: nginx/nginx-prometheus-exporter:0.10.0
 
 provides:
   metrics-endpoint:
