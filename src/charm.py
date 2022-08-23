@@ -285,6 +285,7 @@ class IndicoOperatorCharm(CharmBase):
             "CUSTOMIZATION_DEBUG": self.config["customization_debug"],
             "INDICO_AUTH_PROVIDERS": str({}),
             "INDICO_DB_URI": self._stored.db_uri,
+            "INDICO_EXTRA_PLUGINS": ",".join(available_plugins),
             "INDICO_IDENTITY_PROVIDERS": str({}),
             "INDICO_NO_REPLY_EMAIL": self.config["indico_no_reply_email"],
             "INDICO_PUBLIC_SUPPORT_EMAIL": self.config["indico_public_support_email"],
@@ -302,11 +303,14 @@ class IndicoOperatorCharm(CharmBase):
             "STORAGE_DICT": {
                 "default": "fs:/srv/indico/archive",
             },
-            "INDICO_EXTRA_PLUGINS": ",".join(available_plugins),
         }
+        if self.config["http_proxy"]:
+            env_config["HTTP_PROXY"] = self.config["http_proxy"]
+        if self.config["https_proxy"]:
+            env_config["HTTPS_PROXY"] = self.config["https_proxy"]
+
         # Piwik settings can't be configured using the config file for the time being:
         # https://github.com/indico/indico-plugins/issues/182
-
         if self.config["s3_storage"]:
             env_config["STORAGE_DICT"].update({"s3": self.config["s3_storage"]})
             env_config["ATTACHMENT_STORAGE"] = "s3"
