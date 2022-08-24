@@ -159,8 +159,36 @@ class IndicoOperatorCharm(CharmBase):
         else:
             self.unit.status = WaitingStatus("Waiting for pebble")
 
+    def _set_git_proxy_config(self, container):
+        """Set git proxy configuration in the container."""
+        # Workaround for pip issue https://github.com/pypa/pip/issues/11405
+        git_config_http_command = ["git", "config", "--global", " --unset", "http.proxy"]
+        git_config_https_command = ["git", "config", "--global", " --unset", "https.proxy"]
+        if self.config["http_proxy"]:
+            git_config_http_command = [
+                "git",
+                "config",
+                "--global",
+                "http.proxy",
+                self.config["http_proxy"],
+            ]
+        if self.config["https_proxy"]:
+            git_config_https_command = [
+                "git",
+                "config",
+                "--global",
+                "http.proxy",
+                self.config["https_proxy"],
+            ]
+
+        process = container.exec(git_config_http_command)
+        process.wait_output()
+        process = container.exec(git_config_https_command)
+        process.wait_output()
+
     def _get_indico_pebble_config(self, container):
         """Generate pebble config for the indico container."""
+        self._set_git_proxy_config(container)
         indico_env_config = self._get_indico_env_config(container)
         return {
             "summary": "Indico layer",
@@ -270,31 +298,6 @@ class IndicoOperatorCharm(CharmBase):
 
     def _get_indico_env_config(self, container):
         """Return an envConfig with some core configuration."""
-        # Workaround for pip issue https://github.com/pypa/pip/issues/11405
-        git_config_http_command = ["git", "config", "--global", " --unset", "http.proxy"]
-        git_config_https_command = ["git", "config", "--global", " --unset", "https.proxy"]
-        if self.config["http_proxy"]:
-            git_config_http_command = [
-                "git",
-                "config",
-                "--global",
-                "http.proxy",
-                self.config["http_proxy"],
-            ]
-        if self.config["https_proxy"]:
-            git_config_https_command = [
-                "git",
-                "config",
-                "--global",
-                "http.proxy",
-                self.config["https_proxy"],
-            ]
-
-        process = container.exec(git_config_http_command)
-        process.wait_output()
-        process = container.exec(git_config_https_command)
-        process.wait_output()
-
         cache_rel = next(
             rel for rel in self.model.relations["redis"] if rel.app.name == "redis-cache"
         )
