@@ -162,8 +162,8 @@ class IndicoOperatorCharm(CharmBase):
     def _set_git_proxy_config(self):
         """Set git proxy configuration in indico and indico-celery containers."""
         # Workaround for pip issue https://github.com/pypa/pip/issues/11405
-        git_config_http_command = ["git", "config", "--global", " --unset", "http.proxy"]
-        git_config_https_command = ["git", "config", "--global", " --unset", "https.proxy"]
+        git_config_http_command = ["git", "config", "--global", "--unset", "http.proxy"]
+        git_config_https_command = ["git", "config", "--global", "--unset", "https.proxy"]
         if self.config["http_proxy"]:
             git_config_http_command = [
                 "git",
