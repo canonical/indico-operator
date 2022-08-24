@@ -182,7 +182,7 @@ class IndicoOperatorCharm(CharmBase):
             ]
 
         for container_name in ["indico", "indico-celery"]:
-            container = self.unit.get_container(container_name)    
+            container = self.unit.get_container(container_name)
             process = container.exec(git_config_http_command)
             process.wait_output()
             process = container.exec(git_config_https_command)
