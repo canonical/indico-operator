@@ -49,36 +49,36 @@ jobs:
         with:
           dockerfile: indico-nginx.Dockerfile
           resource-name: indico-nginx-image
-  # integration-test-microk8s:
-  #   name: Integration tests (microk8s)
-  #   runs-on: ubuntu-20.04
-  #   needs: [build-indico-image, build-indico-nginx-image, lint, unit-test]
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v3
-  #     - name: Setup operator environment
-  #       uses: charmed-kubernetes/actions-operator@main
-  #       with:
-  #         provider: microk8s
-  #     - name: Enable microk8s registry
-  #       run: sudo microk8s.enable registry
-  #     - name: Download all artifacts
-  #       uses: actions/download-artifact@v3
-  #     - name: Push indico image to microk8s registry
-  #       run: |
-  #         imageId=$(docker load --input indico-image/indico-image.tar | sed -e "s/^Loaded image ID: //")
-  #         docker tag $imageId localhost:32000/indico:latest
-  #         docker push localhost:32000/indico:latest
-  #     - name: Push nginx image to microk8s registry
-  #       run: |
-  #         imageId=$(docker load --input indico-nginx-image/indico-nginx-image.tar | sed -e "s/^Loaded image ID: //")
-  #         docker tag $imageId localhost:32000/indico-nginx:latest
-  #         docker push localhost:32000/indico-nginx:latest
-  #     - name: Run integration tests
-  #       run: tox -e integration -- --model testing --indico-image localhost:32000/indico:latest --indico-nginx-image localhost:32000/indico-nginx:latest
-  #     - name: Dump logs
-  #       uses: canonical/charm-logdump-action@main
-  #       if: failure()
-  #       with:
-  #         app: indico
-  #         model: testing
+  integration-test-microk8s:
+    name: Integration tests (microk8s)
+    runs-on: ubuntu-20.04
+    needs: [build-indico-image, build-indico-nginx-image, lint, unit-test]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup operator environment
+        uses: charmed-kubernetes/actions-operator@main
+        with:
+          provider: microk8s
+      - name: Enable microk8s registry
+        run: sudo microk8s.enable registry
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+      - name: Push indico image to microk8s registry
+        run: |
+          imageId=$(docker load --input indico-image/indico-image.tar | sed -e "s/^Loaded image ID: //")
+          docker tag $imageId localhost:32000/indico:latest
+          docker push localhost:32000/indico:latest
+      - name: Push nginx image to microk8s registry
+        run: |
+          imageId=$(docker load --input indico-nginx-image/indico-nginx-image.tar | sed -e "s/^Loaded image ID: //")
+          docker tag $imageId localhost:32000/indico-nginx:latest
+          docker push localhost:32000/indico-nginx:latest
+      - name: Run integration tests
+        run: tox -e integration -- --model testing --indico-image localhost:32000/indico:latest --indico-nginx-image localhost:32000/indico-nginx:latest
+      - name: Dump logs
+        uses: canonical/charm-logdump-action@main
+        if: failure()
+        with:
+          app: indico
+          model: testing

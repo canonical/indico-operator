@@ -30,9 +30,6 @@ resources:
     type: oci-image
     description: Prometheus exporter for nginx
     auto-fetch: true
-    # charmhub actions will fail if upstream-resource is present:
-    # https://github.com/canonical/charming-actions/issues/60
-    # If changed, the OCI image will have to be uploaded manually
     upstream-source: nginx/nginx-prometheus-exporter:0.10.0
 
 provides:
