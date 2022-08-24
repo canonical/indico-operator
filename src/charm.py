@@ -416,12 +416,13 @@ class IndicoOperatorCharm(CharmBase):
     def _install_plugins(self, plugins):
         """Install the external plugins."""
         if plugins:
-            indico_container = self.unit.get_container("indico")
-            process = indico_container.exec(
-                ["python3.9", "-m", "pip", "install"] + plugins,
-                environment=self._get_http_proxy_configuration(),
-            )
-            process.wait_output()
+            for container_name in ["indico", "indico-celery"]:
+                indico_container = self.unit.get_container(container_name)
+                process = indico_container.exec(
+                    ["python3.9", "-m", "pip", "install"] + plugins,
+                    environment=self._get_http_proxy_configuration(),
+                )
+                process.wait_output()
 
     def _download_customization_changes(self):
         """Clone the remote repository with the customization changes."""
