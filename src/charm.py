@@ -146,10 +146,10 @@ class IndicoOperatorCharm(CharmBase):
 
     def _config_pebble(self, container):
         """Apply pebble changes."""
-        pubble_config_func = getattr(
+        pebble_config_func = getattr(
             self, "_get_{}_pebble_config".format(container.name.replace("-", "_"))
         )
-        pebble_config = pubble_config_func(container)
+        pebble_config = pebble_config_func(container)
         self.unit.status = MaintenanceStatus("Adding {} layer to pebble".format(container.name))
         container.add_layer(container.name, pebble_config, combine=True)
         self.unit.status = MaintenanceStatus("Starting {} container".format(container.name))
@@ -159,8 +159,8 @@ class IndicoOperatorCharm(CharmBase):
         else:
             self.unit.status = WaitingStatus("Waiting for pebble")
 
-    def _set_git_proxy_config(self, container):
-        """Set git proxy configuration in the container."""
+    def _set_git_proxy_config(self):
+        """Set git proxy configuration in indico and indico-celery containers."""
         # Workaround for pip issue https://github.com/pypa/pip/issues/11405
         git_config_http_command = ["git", "config", "--global", " --unset", "http.proxy"]
         git_config_https_command = ["git", "config", "--global", " --unset", "https.proxy"]
@@ -181,14 +181,15 @@ class IndicoOperatorCharm(CharmBase):
                 self.config["https_proxy"],
             ]
 
-        process = container.exec(git_config_http_command)
-        process.wait_output()
-        process = container.exec(git_config_https_command)
-        process.wait_output()
+        for container_name in ["indico", "indico-celery"]:
+            container = self.unit.get_container(container_name)    
+            process = container.exec(git_config_http_command)
+            process.wait_output()
+            process = container.exec(git_config_https_command)
+            process.wait_output()
 
     def _get_indico_pebble_config(self, container):
         """Generate pebble config for the indico container."""
-        self._set_git_proxy_config(container)
         indico_env_config = self._get_indico_env_config(container)
         return {
             "summary": "Indico layer",
@@ -421,6 +422,7 @@ class IndicoOperatorCharm(CharmBase):
             event.defer()
             return
         self.model.unit.status = MaintenanceStatus("Configuring pod")
+        self._set_git_proxy_config()
         self._download_customization_changes()
         plugins = (
             self.config["external_plugins"].split(",") if self.config["external_plugins"] else []
