@@ -115,7 +115,7 @@ class IndicoOperatorCharm(CharmBase):
         site_url = self.config["site_url"]
         if site_url and not urlparse(site_url).hostname:
             return False, "Configuration option site_url is not valid"
-        return True, None
+        return True, ""
 
     def _get_external_hostname(self):
         """Extract and return hostname from site_url."""
