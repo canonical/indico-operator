@@ -267,6 +267,41 @@ class TestCharm(unittest.TestCase):
             "example.local", self.harness.charm.ingress.config_dict["service-hostname"]
         )
 
+    def test_config_changed_when_http_proxy_config_not_present(self):
+        self.set_up_all_relations()
+        self.harness.set_leader(True)
+
+        with patch.object(Container, "exec", return_value=MockExecProcess()) as exec_mock:
+            self.harness.container_pebble_ready("nginx-prometheus-exporter")
+            self.harness.container_pebble_ready("indico")
+            self.harness.container_pebble_ready("indico-celery")
+            self.harness.container_pebble_ready("indico-nginx")
+            self.harness.update_config(
+                {
+                    "customization_sources_url": "https://example.com/custom",
+                    "external_plugins": "git+https://example.git/#subdirectory=themes_cern",
+                }
+            )
+
+        exec_mock.assert_any_call(["git", "config", "--global", "--unset", "http.proxy"])
+        exec_mock.assert_any_call(["git", "config", "--global", "--unset", "https.proxy"])
+        exec_mock.assert_any_call(
+            ["git", "clone", "https://example.com/custom", "."],
+            working_dir="/srv/indico/custom",
+            user="indico",
+            environment=None,
+        )
+        exec_mock.assert_any_call(
+            [
+                "python3.9",
+                "-m",
+                "pip",
+                "install",
+                "git+https://example.git/#subdirectory=themes_cern",
+            ],
+            environment=None,
+        )
+
     def test_config_changed_when_pebble_not_ready(self):
         self.set_up_all_relations()
         self.harness.update_config({"indico_support_email": "example@email.local"})
@@ -301,8 +336,15 @@ class TestCharm(unittest.TestCase):
     def test_on_leader_elected(self):
         rel_id = self.harness.add_relation("indico-peers", self.harness.charm.app.name)
         self.harness.set_leader(True)
-        self.assertIsNotNone(
-            self.harness.get_relation_data(rel_id, self.harness.charm.app.name).get("secret-key")
+        secret_key = self.harness.get_relation_data(rel_id, self.harness.charm.app.name).get(
+            "secret-key"
+        )
+        self.assertIsNotNone(secret_key)
+        self.harness.set_leader(False)
+        self.harness.set_leader(True)
+        self.assertEquals(
+            secret_key,
+            self.harness.get_relation_data(rel_id, self.harness.charm.app.name).get("secret-key"),
         )
 
     def test_db_relations(self):
