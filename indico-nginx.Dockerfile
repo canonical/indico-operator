@@ -11,8 +11,6 @@ FROM ubuntu:jammy
 RUN apt update \
     && apt install -y nginx
 
-RUN ls /usr/local/lib/
-
 COPY --from=0 /usr/local/lib/python3.10/dist-packages/indico/web/static /srv/indico/static
 COPY files/etc/nginx/nginx.conf /etc/nginx/nginx.conf
 
