@@ -6,6 +6,7 @@
 """Charm for Indico on kubernetes."""
 import logging
 import os
+from typing import Tuple
 from urllib.parse import urlparse
 
 import ops.lib
@@ -108,6 +109,13 @@ class IndicoOperatorCharm(CharmBase):
                 for container_name in self.model.unit.containers
             ]
         )
+
+    def _is_configuration_valid(self) -> Tuple[bool, str]:
+        """Validate charm configuration."""
+        site_url = self.config["site_url"]
+        if site_url and not urlparse(site_url).hostname:
+            return False, "Configuration option site_url is not valid"
+        return True, None
 
     def _get_external_hostname(self):
         """Extract and return hostname from site_url."""
@@ -432,6 +440,11 @@ class IndicoOperatorCharm(CharmBase):
             event.defer()
             return
         self.model.unit.status = MaintenanceStatus("Configuring pod")
+        is_valid, error = self._is_configuration_valid()
+        if not is_valid:
+            self.model.unit.status = BlockedStatus(error)
+            event.defer()
+            return
         self._set_git_proxy_config()
         self._download_customization_changes()
         plugins = (
