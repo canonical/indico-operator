@@ -25,6 +25,18 @@ jobs:
         run: python3 -m pip install tox
       - name: Run tests
         run: tox -e unit
+      - name: Generate coverage report
+        if: if: github.event_name != 'pull_request'
+        run: |
+          mkdir -p coverage-report
+          tox -e coverage-report -q | sed -n '/___ summary ___/q;p' > ./coverage-report/coverage-report.txt
+      - name: Save PR number
+        run: echo echo ${{ github.event.number }} > ./coverage-report/PR.txt
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverage-report
+          path: coverage-report/
   build-indico-image:
     name: Build indico image
     runs-on: ubuntu-20.04
