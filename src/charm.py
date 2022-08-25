@@ -184,9 +184,19 @@ class IndicoOperatorCharm(CharmBase):
         for container_name in ["indico", "indico-celery"]:
             container = self.unit.get_container(container_name)
             process = container.exec(git_config_http_command)
-            process.wait_output()
+            # Workaround for the git config --unset command not being idempotent. It returns a '5'
+            # error code when the configuration has not being set
+            try:
+                process.wait_output()
+            except ExecError as ex:
+                if ex.exit_code != 5:
+                    raise ex
             process = container.exec(git_config_https_command)
-            process.wait_output()
+            try:
+                process.wait_output()
+            except ExecError as ex:
+                if ex.exit_code != 5:
+                    raise ex
 
     def _get_indico_pebble_config(self, container):
         """Generate pebble config for the indico container."""
@@ -396,7 +406,7 @@ class IndicoOperatorCharm(CharmBase):
             config["HTTP_PROXY"] = self.config["http_proxy"]
         if self.config["https_proxy"]:
             config["HTTPS_PROXY"] = self.config["https_proxy"]
-        return config
+        return config if config else None
 
     def _is_saml_target_url_valid(self):
         """Check if the target SAML URL is currently supported."""
@@ -514,5 +524,5 @@ class IndicoOperatorCharm(CharmBase):
             peer_relation.data[self.app].update({"secret-key": repr(os.urandom(32))})
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     main(IndicoOperatorCharm, use_juju_for_storage=True)
