@@ -467,8 +467,7 @@ class IndicoOperatorCharm(CharmBase):
             for container_name in ["indico", "indico-celery"]:
                 indico_container = self.unit.get_container(container_name)
                 process = indico_container.exec(
-                    ["python3.9", "-m", "pip", "install"] + plugins,
-                    environment=self._get_http_proxy_configuration(),
+                    ["pip", "install"] + plugins, environment=self._get_http_proxy_configuration()
                 )
                 process.wait_output()
 

@@ -216,8 +216,6 @@ class TestCharm(unittest.TestCase):
         )
         exec_mock.assert_any_call(
             [
-                "python3.9",
-                "-m",
                 "pip",
                 "install",
                 "git+https://example.git/#subdirectory=themes_cern",
@@ -292,13 +290,7 @@ class TestCharm(unittest.TestCase):
             environment=None,
         )
         exec_mock.assert_any_call(
-            [
-                "python3.9",
-                "-m",
-                "pip",
-                "install",
-                "git+https://example.git/#subdirectory=themes_cern",
-            ],
+            ["pip", "install", "git+https://example.git/#subdirectory=themes_cern"],
             environment=None,
         )
 
@@ -342,7 +334,7 @@ class TestCharm(unittest.TestCase):
         self.assertIsNotNone(secret_key)
         self.harness.set_leader(False)
         self.harness.set_leader(True)
-        self.assertEquals(
+        self.assertEqual(
             secret_key,
             self.harness.get_relation_data(rel_id, self.harness.charm.app.name).get("secret-key"),
         )
