@@ -1,0 +1,34 @@
+name: Unit tests
+
+on:
+  workflow_call:
+  pull_request:
+
+jobs:
+  unit-test:
+    name: Unit tests
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install dependencies
+        run: python3 -m pip install tox
+      - name: Run tests
+        run: tox -e unit
+      - name: Generate coverage report
+        if: always() && github.event_name == 'pull_request'
+        run: |
+          mkdir -p coverage-report
+          tox -e coverage-report -q | sed -n '/___ summary ___/q;p' > ./coverage-report/coverage-report.txt
+      - name: Save PR number
+        if: github.event_name == 'pull_request'
+        run: echo ${{ github.event.number }} > ./coverage-report/PR.txt
+      - name: Save git sha
+        if: github.event_name == 'pull_request'
+        run: echo ${{ github.event.pull_request.head.sha }} > ./coverage-report/sha.txt
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v2
+        if: github.event_name == 'pull_request'
+        with:
+          name: coverage-report
+          path: coverage-report/
