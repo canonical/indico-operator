@@ -2,18 +2,17 @@ name: Comment on the pull request
 
 on:
   workflow_run:
-    workflows: ["Unit Tests"]
+    workflows: ["Tests"]
     types:
       - completed
 
 jobs:
-  comment-coverage-report:
+  comment-on-pr:
     runs-on: ubuntu-latest
     if: >
-      github.event.workflow_run.event == 'pull_request' &&
-      github.event.workflow_run.conclusion == 'success'
+      github.event.workflow_run.event == 'pull_request'
     steps:
-      - name: 'Download coverage report artifact'
+      - name: 'Download test report artifact'
         uses: actions/github-script@v3.1.0
         with:
           script: |
@@ -24,7 +23,7 @@ jobs:
                run_id: ${{github.event.workflow_run.id }},
             });
             const matchArtifact = artifacts.data.artifacts.filter((artifact) => {
-              return artifact.name == "coverage-report"
+              return artifact.name == "report"
             })[0];
             const download = await github.actions.downloadArtifact({
                owner: context.repo.owner,
@@ -32,21 +31,32 @@ jobs:
                artifact_id: matchArtifact.id,
                archive_format: 'zip',
             });
-            fs.writeFileSync('${{github.workspace}}/coverage-report.zip', Buffer.from(download.data));
-      - run: unzip coverage-report.zip
-
+            fs.writeFileSync('${{github.workspace}}/report.zip', Buffer.from(download.data));
+      - run: unzip report.zip
       - name: 'Comment on PR'
         uses: actions/github-script@v3
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const fs = require('fs');
-            const issue_number = Number(fs.readFileSync('./PR.txt'));
-            const sha = fs.readFileSync('./sha.txt');
-            const coverageReport = fs.readFileSync('./coverage-report.txt').toString().trim();
-            await github.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: issue_number,
-              body: `Test coverage report for ${sha}\`\`\`\n${coverageReport}\n\`\`\``
-            });
+            const report = JSON.parse(fs.readFileSync('./report.json'));
+            const issue_number = report.number;
+            const sha = report.sha;
+            const createComment = async (body) => {
+              await github.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue_number,
+                body
+              });
+            }
+            const coverageReport = report.reports.coverage.output.trim()
+            await createComment(`Test coverage report for ${sha}\n\`\`\`\n${coverageReport}\n\`\`\``);
+            if (!report.reports.unit.success) {
+              const unitReport = report.reports.unit.output.trim();
+              await createComment(`Unit tests failed for ${sha}\n\`\`\`${unitReport}\`\`\``);
+            }
+            if (!report.reports.lint.success) {
+              const lintReport = report.reports.lint.output.trim();
+              await createComment(`Lint checks failed for ${sha}\n\`\`\`${lintReport}\`\`\``);
+            }
