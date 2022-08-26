@@ -225,7 +225,7 @@ class IndicoOperatorCharm(CharmBase):
             "checks": {
                 "indico-ready": {
                     "override": "replace",
-                    "level": "alive",
+                    "level": "ready",
                     "tcp": {"port": 8081},
                 }
             },
