@@ -225,7 +225,7 @@ class IndicoOperatorCharm(CharmBase):
             "checks": {
                 "indico-ready": {
                     "override": "replace",
-                    "level": "ready",
+                    "level": "alive",
                     "tcp": {"port": 8081},
                 }
             },
@@ -277,12 +277,12 @@ class IndicoOperatorCharm(CharmBase):
             "checks": {
                 "nginx-up": {
                     "override": "replace",
-                    "level": "alive",
+                    "level": "ready",
                     "exec": {"command": "service nginx status"},
                 },
                 "nginx-ready": {
                     "override": "replace",
-                    "level": "ready",
+                    "level": "alive",
                     "http": {"url": "http://localhost:8080/health"},
                 },
             },
@@ -305,11 +305,6 @@ class IndicoOperatorCharm(CharmBase):
                 "exporter-up": {
                     "override": "replace",
                     "level": "alive",
-                    "http": {"url": "http://localhost:9113/metrics"},
-                },
-                "exporter-ready": {
-                    "override": "replace",
-                    "level": "ready",
                     "http": {"url": "http://localhost:9113/metrics"},
                 },
             },
