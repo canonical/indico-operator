@@ -160,7 +160,7 @@ class IndicoOperatorCharm(CharmBase):
         pebble_config = pebble_config_func(container)
         self.unit.status = MaintenanceStatus("Adding {} layer to pebble".format(container.name))
         container.add_layer(container.name, pebble_config, combine=True)
-        for container.name in ["indico", "indico-celery"]:
+        if container.name in ["indico", "indico-celery"]:
             self._set_git_proxy_config(container)
             plugins = (
                 self.config["external_plugins"].split(",")
