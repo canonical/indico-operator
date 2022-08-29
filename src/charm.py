@@ -163,7 +163,9 @@ class IndicoOperatorCharm(CharmBase):
         for container.name in ["indico", "indico-celery"]:
             self._set_git_proxy_config(container)
             plugins = (
-                self.config["external_plugins"].split(",") if self.config["external_plugins"] else []
+                self.config["external_plugins"].split(",")
+                if self.config["external_plugins"]
+                else []
             )
             if self.config["s3_storage"]:
                 plugins.append("indico-plugin-storage-s3")
