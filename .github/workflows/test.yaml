@@ -5,43 +5,37 @@ on:
   pull_request:
 
 jobs:
-  lint:
-    name: Lint
+  lint-and-unit-test:
+    name: Lint and unit tests
     runs-on: ubuntu-20.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Install dependencies
-        run: python3 -m pip install tox
-      - name: Run linters
-        run: tox -e lint
-  unit-test:
-    name: Unit tests
-    runs-on: ubuntu-20.04
+    outputs:
+      report: ${{ steps.export-test-report.outputs.report }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Install dependencies
         run: python3 -m pip install tox
       - name: Run tests
-        run: tox -e unit
+        run: tox -e lint,unit,coverage-report --result-json=test-result.json
+      - name: Export test report
+        if: always() && github.event_name == 'pull_request'
+        id: export-test-report
+        run: echo "::set-output name=report::$(cat test-result.json | xz | base64 -w 0)"
   report:
-    if: github.event_name == 'pull_request'
+    if: always() && github.event_name == 'pull_request'
     name: Unit test and lint report
     runs-on: ubuntu-20.04
+    needs: [ lint-and-unit-test ]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Install dependencies
-        run: python3 -m pip install tox
-      - name: Generate report
-        run: tox -e lint,unit,coverage-report --result-json=test-result.json
+      - name: Import test result
+        run: echo ${{ needs.lint-and-unit-test.outputs.report }} | base64 -d | xz -d > test-result.json
       - name: Format test report
         shell: python
         env:
           GITHUB_EVENT_PULL_REQUEST_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           GITHUB_EVENT_NUMBER: ${{ github.event.number }}
-        if: always()
         run: |
           import os
           import re
