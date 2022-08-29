@@ -410,6 +410,7 @@ class IndicoOperatorCharm(CharmBase):
                 }
             }
             env_config["INDICO_IDENTITY_PROVIDERS"] = str(identity_providers)
+            env_config = {**env_config, **self._get_http_proxy_configuration()}
         return env_config
 
     def _get_http_proxy_configuration(self):

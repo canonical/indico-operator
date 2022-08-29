@@ -167,11 +167,11 @@ class TestCharm(unittest.TestCase):
                     "customization_debug": True,
                     "customization_sources_url": "https://example.com/custom",
                     "external_plugins": "git+https://example.git/#subdirectory=themes_cern",
+                    "http_proxy": "http://squid.internal:3128",
+                    "https_proxy": "https://squid.internal:3128",
                     "indico_support_email": "example@email.local",
                     "indico_public_support_email": "public@email.local",
                     "indico_no_reply_email": "noreply@email.local",
-                    "http_proxy": "http://squid.internal:3128",
-                    "https_proxy": "https://squid.internal:3128",
                     "saml_target_url": "https://login.ubuntu.com/saml/",
                     "site_url": "https://example.local:8080",
                     "smtp_server": "localhost",
@@ -187,6 +187,8 @@ class TestCharm(unittest.TestCase):
         updated_plan_env = updated_plan["services"]["indico"]["environment"]
 
         self.assertEqual("example.local", updated_plan_env["SERVICE_HOSTNAME"])
+        self.assertEqual("http://squid.internal:3128", updated_plan_env["HTTP_PROXY"])
+        self.assertEqual("https://squid.internal:3128", updated_plan_env["HTTPS_PROXY"])
         self.assertEqual("example@email.local", updated_plan_env["INDICO_SUPPORT_EMAIL"])
         self.assertEqual("public@email.local", updated_plan_env["INDICO_PUBLIC_SUPPORT_EMAIL"])
         self.assertEqual("noreply@email.local", updated_plan_env["INDICO_NO_REPLY_EMAIL"])
@@ -231,6 +233,8 @@ class TestCharm(unittest.TestCase):
         updated_plan_env = updated_plan["services"]["indico-celery"]["environment"]
 
         self.assertEqual("example.local", updated_plan_env["SERVICE_HOSTNAME"])
+        self.assertEqual("http://squid.internal:3128", updated_plan_env["HTTP_PROXY"])
+        self.assertEqual("https://squid.internal:3128", updated_plan_env["HTTPS_PROXY"])
         self.assertEqual("example@email.local", updated_plan_env["INDICO_SUPPORT_EMAIL"])
         self.assertEqual("public@email.local", updated_plan_env["INDICO_PUBLIC_SUPPORT_EMAIL"])
         self.assertEqual("noreply@email.local", updated_plan_env["INDICO_NO_REPLY_EMAIL"])

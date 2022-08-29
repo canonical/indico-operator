@@ -4,7 +4,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt update \
     && apt install -y libpq-dev python3-pip \
-    && python3 -m pip install --prefer-binary indico indico-plugins
+    && pip install --prefer-binary indico indico-plugins
 
 FROM ubuntu:jammy
 
