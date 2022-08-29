@@ -475,7 +475,7 @@ class IndicoOperatorCharm(CharmBase):
         """Install the external plugins."""
         if plugins:
             process = container.exec(
-                ["python3.9", "-m", "pip", "install"] + plugins,
+                ["pip", "install"] + plugins,
                 environment=self._get_http_proxy_configuration(),
             )
             process.wait_output()

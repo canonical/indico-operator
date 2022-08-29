@@ -2,22 +2,16 @@ FROM ubuntu:jammy
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Python 3.9 is the only version supported by indico at the moment (see
-# https://github.com/indico/indico/issues/5364). Install from the PPA
-# deadsnakes/ppa until this is addressed.
 RUN apt update \
-    && apt install -y software-properties-common \
-    && add-apt-repository ppa:deadsnakes/ppa -y \
-    && apt update \
-    && apt install -y libpq-dev python3.9 python3.9-dev python3.9-distutils python3-pip \
-    && python3.9 -m pip install --prefer-binary indico indico-plugins
+    && apt install -y libpq-dev python3-pip \
+    && python3 -m pip install --prefer-binary indico indico-plugins
 
 FROM ubuntu:jammy
 
 RUN apt update \
     && apt install -y nginx
 
-COPY --from=0 /usr/local/lib/python3.9/dist-packages/indico/web/static /srv/indico/static
+COPY --from=0 /usr/local/lib/python3.10/dist-packages/indico/web/static /srv/indico/static
 COPY files/etc/nginx/nginx.conf /etc/nginx/nginx.conf
 
 ARG nginx_gid=2001
