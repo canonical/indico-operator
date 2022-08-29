@@ -265,6 +265,21 @@ class TestCharm(unittest.TestCase):
             "example.local", self.harness.charm.ingress.config_dict["service-hostname"]
         )
 
+    def test_config_changed_when_config_invalid(self):
+        self.set_up_all_relations()
+        self.harness.set_leader(True)
+
+        with patch.object(Container, "exec", return_value=MockExecProcess()):
+            self.harness.container_pebble_ready("nginx-prometheus-exporter")
+            self.harness.container_pebble_ready("indico")
+            self.harness.container_pebble_ready("indico-celery")
+            self.harness.container_pebble_ready("indico-nginx")
+        self.harness.update_config({"site_url": "example.local"})
+        self.assertEqual(
+            self.harness.model.unit.status,
+            BlockedStatus("Configuration option site_url is not valid"),
+        )
+
     def test_config_changed_when_http_proxy_config_not_present(self):
         self.set_up_all_relations()
         self.harness.set_leader(True)

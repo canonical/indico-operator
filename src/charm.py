@@ -6,6 +6,7 @@
 """Charm for Indico on kubernetes."""
 import logging
 import os
+from typing import Tuple
 from urllib.parse import urlparse
 
 import ops.lib
@@ -109,6 +110,13 @@ class IndicoOperatorCharm(CharmBase):
             ]
         )
 
+    def _is_configuration_valid(self) -> Tuple[bool, str]:
+        """Validate charm configuration."""
+        site_url = self.config["site_url"]
+        if site_url and not urlparse(site_url).hostname:
+            return False, "Configuration option site_url is not valid"
+        return True, ""
+
     def _get_external_hostname(self):
         """Extract and return hostname from site_url."""
         site_url = self.config["site_url"]
@@ -152,6 +160,18 @@ class IndicoOperatorCharm(CharmBase):
         pebble_config = pebble_config_func(container)
         self.unit.status = MaintenanceStatus("Adding {} layer to pebble".format(container.name))
         container.add_layer(container.name, pebble_config, combine=True)
+        if container.name in ["indico", "indico-celery"]:
+            self._set_git_proxy_config(container)
+            plugins = (
+                self.config["external_plugins"].split(",")
+                if self.config["external_plugins"]
+                else []
+            )
+            if self.config["s3_storage"]:
+                plugins.append("indico-plugin-storage-s3")
+            self._install_plugins(container, plugins)
+        if container.name == "indico":
+            self._download_customization_changes(container)
         self.unit.status = MaintenanceStatus("Starting {} container".format(container.name))
         container.pebble.replan_services()
         if self._are_pebble_instances_ready():
@@ -159,7 +179,7 @@ class IndicoOperatorCharm(CharmBase):
         else:
             self.unit.status = WaitingStatus("Waiting for pebble")
 
-    def _set_git_proxy_config(self):
+    def _set_git_proxy_config(self, container):
         """Set git proxy configuration in indico and indico-celery containers."""
         # Workaround for pip issue https://github.com/pypa/pip/issues/11405
         git_config_http_command = ["git", "config", "--global", "--unset", "http.proxy"]
@@ -181,22 +201,20 @@ class IndicoOperatorCharm(CharmBase):
                 self.config["https_proxy"],
             ]
 
-        for container_name in ["indico", "indico-celery"]:
-            container = self.unit.get_container(container_name)
-            process = container.exec(git_config_http_command)
-            # Workaround for the git config --unset command not being idempotent. It returns a '5'
-            # error code when the configuration has not being set
-            try:
-                process.wait_output()
-            except ExecError as ex:
-                if ex.exit_code != 5:
-                    raise ex
-            process = container.exec(git_config_https_command)
-            try:
-                process.wait_output()
-            except ExecError as ex:
-                if ex.exit_code != 5:
-                    raise ex
+        process = container.exec(git_config_http_command)
+        # Workaround for the git config --unset command not being idempotent. It returns a '5'
+        # error code when the configuration has not being set
+        try:
+            process.wait_output()
+        except ExecError as ex:
+            if ex.exit_code != 5:
+                raise ex
+        process = container.exec(git_config_https_command)
+        try:
+            process.wait_output()
+        except ExecError as ex:
+            if ex.exit_code != 5:
+                raise ex
 
     def _get_indico_pebble_config(self, container):
         """Generate pebble config for the indico container."""
@@ -269,12 +287,12 @@ class IndicoOperatorCharm(CharmBase):
             "checks": {
                 "nginx-up": {
                     "override": "replace",
-                    "level": "alive",
+                    "level": "ready",
                     "exec": {"command": "service nginx status"},
                 },
                 "nginx-ready": {
                     "override": "replace",
-                    "level": "ready",
+                    "level": "alive",
                     "http": {"url": "http://localhost:8080/health"},
                 },
             },
@@ -297,11 +315,6 @@ class IndicoOperatorCharm(CharmBase):
                 "exporter-up": {
                     "override": "replace",
                     "level": "alive",
-                    "http": {"url": "http://localhost:9113/metrics"},
-                },
-                "exporter-ready": {
-                    "override": "replace",
-                    "level": "ready",
                     "http": {"url": "http://localhost:9113/metrics"},
                 },
             },
@@ -432,14 +445,11 @@ class IndicoOperatorCharm(CharmBase):
             event.defer()
             return
         self.model.unit.status = MaintenanceStatus("Configuring pod")
-        self._set_git_proxy_config()
-        self._download_customization_changes()
-        plugins = (
-            self.config["external_plugins"].split(",") if self.config["external_plugins"] else []
-        )
-        if self.config["s3_storage"]:
-            plugins.append("indico-plugin-storage-s3")
-        self._install_plugins(plugins)
+        is_valid, error = self._is_configuration_valid()
+        if not is_valid:
+            self.model.unit.status = BlockedStatus(error)
+            event.defer()
+            return
         for container_name in self.model.unit.containers:
             self._config_pebble(self.unit.get_container(container_name))
         self.ingress.update_config(self._make_ingress_config())
@@ -461,17 +471,16 @@ class IndicoOperatorCharm(CharmBase):
             pass
         return remote_url.rstrip()
 
-    def _install_plugins(self, plugins):
+    def _install_plugins(self, container, plugins):
         """Install the external plugins."""
         if plugins:
-            for container_name in ["indico", "indico-celery"]:
-                indico_container = self.unit.get_container(container_name)
-                process = indico_container.exec(
-                    ["pip", "install"] + plugins, environment=self._get_http_proxy_configuration()
-                )
-                process.wait_output()
+            process = container.exec(
+                ["pip", "install"] + plugins,
+                environment=self._get_http_proxy_configuration(),
+            )
+            process.wait_output()
 
-    def _download_customization_changes(self):
+    def _download_customization_changes(self, container):
         """Clone the remote repository with the customization changes."""
         current_remote_url = self._get_current_customization_url()
         if current_remote_url != self.config["customization_sources_url"]:
@@ -480,13 +489,12 @@ class IndicoOperatorCharm(CharmBase):
                 INDICO_CUSTOMIZATION_DIR,
                 current_remote_url,
             )
-            indico_container = self.unit.get_container("indico")
-            process = indico_container.exec(
+            process = container.exec(
                 ["rm", "-rf", INDICO_CUSTOMIZATION_DIR],
                 user="indico",
             )
             process.wait_output()
-            process = indico_container.exec(
+            process = container.exec(
                 ["mkdir", INDICO_CUSTOMIZATION_DIR],
                 user="indico",
             )
@@ -496,7 +504,7 @@ class IndicoOperatorCharm(CharmBase):
                     "New URL repo for customization %s. Cloning contents",
                     self.config["customization_sources_url"],
                 )
-                process = indico_container.exec(
+                process = container.exec(
                     ["git", "clone", self.config["customization_sources_url"], "."],
                     working_dir=INDICO_CUSTOMIZATION_DIR,
                     user="indico",

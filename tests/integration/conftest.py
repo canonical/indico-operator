@@ -26,7 +26,7 @@ def app_name(metadata):
 @fixture(scope="module")
 def nginx_prometheus_exporter_image(metadata):
     """Provides the nginx prometheus exporter image from the metadata."""
-    return "nginx/nginx-prometheus-exporter:0.10.0"
+    yield metadata["resources"]["nginx-prometheus-exporter-image"]["upstream-source"]
 
 
 @pytest_asyncio.fixture(scope="module")
