@@ -11,7 +11,7 @@
 #   Indico-specific default values mentioned above.  It also handles unicode
 #   properly so it is not recommended to use the default SMTPHandler as that one
 #   may silently drop some log messages which contain non-ascii characters.
-# - All log formaters may use `%(request_id)s` to get a random ID unique to each
+# - All log formatters may use `%(request_id)s` to get a random ID unique to each
 #   request which makes it easier to grep for all other log entries that belong to
 #   a specific request.
 # - All log formatters may also use `%(user_id)s` to get the ID of the user
