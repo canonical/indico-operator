@@ -1,30 +1,10 @@
-name: CI
+name: Integration tests
 
 on:
   pull_request:
   workflow_call:
 
 jobs:
-  lint:
-    name: Lint
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Install dependencies
-        run: python3 -m pip install tox
-      - name: Run linters
-        run: tox -e lint
-  unit-test:
-    name: Unit tests
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Install dependencies
-        run: python3 -m pip install tox
-      - name: Run tests
-        run: tox -e unit
   build-indico-image:
     name: Build indico image
     runs-on: ubuntu-20.04
@@ -52,7 +32,7 @@ jobs:
   integration-test-microk8s:
     name: Integration tests (microk8s)
     runs-on: ubuntu-20.04
-    needs: [build-indico-image, build-indico-nginx-image, lint, unit-test]
+    needs: [build-indico-image, build-indico-nginx-image]
     steps:
       - name: Checkout
         uses: actions/checkout@v3

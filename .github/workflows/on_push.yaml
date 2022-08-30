@@ -34,8 +34,11 @@ jobs:
           credentials: ${{ secrets.CHARMHUB_TOKEN }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
   tests:
-    name: Run Tests
-    uses: ./.github/workflows/ci.yaml
+    name: Run tests
+    uses: ./.github/workflows/test.yaml
+  integration-tests:
+    name: Run integration tests
+    uses: ./.github/workflows/integration_test.yaml
   publish-indico-image:
     name: Publish indico image to charmhub
     runs-on: ubuntu-latest
