@@ -9,10 +9,6 @@ name: Publish to edge
 
 on:
   push:
-    branches:
-      - master
-      - main
-      - track/**
 
 jobs:
   lib-check:
