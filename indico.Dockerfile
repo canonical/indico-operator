@@ -20,7 +20,7 @@ RUN addgroup --gid ${indico_gid} indico \
     &&  echo "* * * * * git -C /srv/indico/custom pull" | crontab -u indico - \
     && /etc/init.d/cron start
 
-COPY --chown=indico:indico files/start-indico.sh /srv/indico/
+COPY files/start-indico.sh /srv/indico/
 COPY files/etc/indico/ /etc/
 
 RUN chmod +x /srv/indico/start-indico.sh \
