@@ -15,6 +15,9 @@ on:
       - track/**
 
 jobs:
+  # Temporariry disabled until https://github.com/canonical/indico-operator/pull/101
+  # can be substituted by a proper library version
+  #
   # lib-check:
   #   # This job is the precondition of all jobs that need the Charmhub token.
   #   # By disabling this job on forked repositories, we can achieve 
@@ -42,7 +45,7 @@ jobs:
   publish-indico-image:
     name: Publish indico image to charmhub
     runs-on: ubuntu-latest
-    needs: [ lib-check, tests, integration-tests ]
+    needs: [ tests, integration-tests ]
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/publish_oci_resource
@@ -53,7 +56,7 @@ jobs:
   publish-indico-nginx-image:
     name: Publish nginx image to charmhub
     runs-on: ubuntu-latest
-    needs: [ lib-check, tests, integration-tests ]
+    needs: [ tests, integration-tests ]
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/publish_oci_resource
