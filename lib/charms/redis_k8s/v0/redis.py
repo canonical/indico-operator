@@ -44,7 +44,7 @@ LIBAPI = 0
 
 # Increment this PATCH version before using `charmcraft publish-lib` or reset
 # to 0 if you are raising the major API version.
-LIBPATCH = 3
+LIBPATCH = 2
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +62,7 @@ class RedisRequires(Object):
     def __init__(self, charm, _stored):
         """A class implementing the redis requires relation."""
         super().__init__(charm, "redis")
-        self.framework.observe(charm.on.redis_relation_joined, self._on_relation_changed)
+        self.framework.observe(charm.on.redis_relation_created, self._on_relation_changed)
         self.framework.observe(charm.on.redis_relation_changed, self._on_relation_changed)
         self.framework.observe(charm.on.redis_relation_broken, self._on_relation_broken)
         self._stored = _stored
