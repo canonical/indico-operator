@@ -15,24 +15,24 @@ on:
       - track/**
 
 jobs:
-  lib-check:
-    # This job is the precondition of all jobs that need the Charmhub token.
-    # By disabling this job on forked repositories, we can achieve 
-    # disabling the publishing to Charmhub action on forked repositories 
-    # while still running tests on push events
-    if: github.repository_owner == 'canonical'
-    name: Check libraries
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - name: Check libs
-        uses: canonical/charming-actions/check-libraries@1.0.3
-        with:
-          credentials: ${{ secrets.CHARMHUB_TOKEN }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+  # lib-check:
+  #   # This job is the precondition of all jobs that need the Charmhub token.
+  #   # By disabling this job on forked repositories, we can achieve 
+  #   # disabling the publishing to Charmhub action on forked repositories 
+  #   # while still running tests on push events
+  #   if: github.repository_owner == 'canonical'
+  #   name: Check libraries
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
+  #       with:
+  #         fetch-depth: 0
+  #     - name: Check libs
+  #       uses: canonical/charming-actions/check-libraries@1.0.3
+  #       with:
+  #         credentials: ${{ secrets.CHARMHUB_TOKEN }}
+  #         github-token: ${{ secrets.GITHUB_TOKEN }}
   tests:
     name: Run tests
     uses: ./.github/workflows/test.yaml

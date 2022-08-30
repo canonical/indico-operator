@@ -62,6 +62,7 @@ class RedisRequires(Object):
     def __init__(self, charm, _stored):
         """A class implementing the redis requires relation."""
         super().__init__(charm, "redis")
+        self.framework.observe(charm.on.redis_relation_joined, self._on_relation_changed)
         self.framework.observe(charm.on.redis_relation_changed, self._on_relation_changed)
         self.framework.observe(charm.on.redis_relation_broken, self._on_relation_broken)
         self._stored = _stored
