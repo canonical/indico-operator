@@ -7,19 +7,22 @@ on:
         required: true
 
 jobs:
-  lib-check:
-    name: Check libraries
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - name: Check libs
-        uses: canonical/charming-actions/check-libraries@1.0.3
-        with:
-          credentials: ${{ secrets.CHARMHUB_TOKEN }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+  # Temporariry disabled until https://github.com/canonical/indico-operator/pull/101
+  # can be substituted by a proper library version
+  #
+  # lib-check:
+  #   name: Check libraries
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
+  #       with:
+  #         fetch-depth: 0
+  #     - name: Check libs
+  #       uses: canonical/charming-actions/check-libraries@1.0.3
+  #       with:
+  #         credentials: ${{ secrets.CHARMHUB_TOKEN }}
+  #         github-token: ${{ secrets.GITHUB_TOKEN }}
   tests:
     name: Run tests
     uses: ./.github/workflows/test.yaml
@@ -29,7 +32,7 @@ jobs:
   publish-indico-image:
     name: Publish indico image to charmhub
     runs-on: ubuntu-latest
-    needs: [ lib-check, tests, integration-tests ]
+    needs: [ tests, integration-tests ]
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/publish_oci_resource
@@ -40,7 +43,7 @@ jobs:
   publish-indico-nginx-image:
     name: Publish nginx image to charmhub
     runs-on: ubuntu-latest
-    needs: [ lib-check, tests, integration-tests ]
+    needs: [ tests, integration-tests ]
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/publish_oci_resource
