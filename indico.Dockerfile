@@ -1,4 +1,15 @@
-FROM ubuntu:jammy
+FROM ubuntu:jammy as builder
+
+RUN apt update \
+    && apt install -y libpq-dev libxmlsec1-dev pkg-config python3-pip
+
+RUN pip install --prefer-binary indico indico-plugin-piwik python3-saml uwsgi
+
+FROM ubuntu:jammy as target
+
+COPY --from=builder /usr/local/bin/indico /usr/local/bin/indico
+COPY --from=builder /usr/local/bin/uwsgi /usr/local/bin/uwsgi
+COPY --from=builder /usr/local/lib/python3.10/dist-packages/ /usr/local/lib/python3.10/dist-packages/
 
 ENV DEBIAN_FRONTEND=noninteractive \
     LANG=C.UTF-8 \
@@ -6,11 +17,10 @@ ENV DEBIAN_FRONTEND=noninteractive \
     LC_LANG=C.UTF-8
 
 RUN apt update \
-    && apt install -y cron gettext git libpq-dev libxmlsec1-dev locales pkg-config postgresql-client python3-pip texlive-xetex \
-    && pip install --prefer-binary indico indico-plugin-piwik python3-saml uwsgi \
-    && /bin/bash -c "mkdir -p --mode=775 /srv/indico/{etc,tmp,log,cache,archive,custom}" \
-    && /usr/local/bin/indico setup create-symlinks /srv/indico \
-    && /usr/local/bin/indico setup create-logging-config /etc
+    && apt install -y cron gettext git locales postgresql-client python3-pip texlive-xetex
+
+RUN /bin/bash -c "mkdir -p --mode=775 /srv/indico/{etc,tmp,log,cache,archive,custom}" \
+    && /usr/local/bin/indico setup create-symlinks /srv/indico
 
 ARG indico_gid=2000
 ARG indico_uid=2000
