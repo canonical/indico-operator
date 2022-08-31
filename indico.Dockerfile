@@ -1,4 +1,4 @@
-FROM ubuntu:jammy as base
+FROM ubuntu:jammy as builder
 
 RUN apt update \
     && apt install -y libpq-dev libxmlsec1-dev pkg-config python3-pip
@@ -7,15 +7,15 @@ RUN pip install --prefer-binary indico indico-plugin-piwik python3-saml uwsgi
 
 FROM ubuntu:jammy as target
 
-COPY --from=0 /usr/local/bin/indico /usr/local/bin/indico
-COPY --from=0 /usr/local/bin/uwsgi /usr/local/bin/uwsgi
-COPY --from=0 /usr/local/lib/python3.10/dist-packages/ /usr/local/lib/python3.10/dist-packages/
+COPY --from=builder /usr/local/bin/indico /usr/local/bin/indico
+COPY --from=builder /usr/local/bin/uwsgi /usr/local/bin/uwsgi
+COPY --from=builder /usr/local/lib/python3.10/dist-packages/ /usr/local/lib/python3.10/dist-packages/
 
 ENV DEBIAN_FRONTEND=noninteractive \
     LANG=C.UTF-8 \
     LC_ALL=C.UTF-8 \
     LC_LANG=C.UTF-8
-    
+
 RUN apt update \
     && apt install -y cron gettext git locales postgresql-client python3-pip texlive-xetex
 
