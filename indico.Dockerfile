@@ -8,6 +8,7 @@ RUN pip install --prefer-binary indico indico-plugin-piwik python3-saml uwsgi
 FROM ubuntu:jammy as target
 
 COPY --from=0 /usr/local/bin/indico /usr/local/bin/indico
+COPY --from=0 /usr/local/bin/uwsgi /usr/local/bin/uwsgi
 COPY --from=0 /usr/local/lib/python3.10/dist-packages/ /usr/local/lib/python3.10/dist-packages/
 
 ENV DEBIAN_FRONTEND=noninteractive \
