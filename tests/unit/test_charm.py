@@ -93,6 +93,7 @@ class TestCharm(unittest.TestCase):
         self.assertEqual("indico", updated_plan_env["SERVICE_HOSTNAME"])
         self.assertIsNone(updated_plan_env["SERVICE_PORT"])
         self.assertEqual("redis://cache-host:1011", updated_plan_env["REDIS_CACHE_URL"])
+        self.assertFalse(updated_plan_env["ENABLE_ROOMBOOKING"])
         self.assertEqual("support-tech@mydomain.local", updated_plan_env["INDICO_SUPPORT_EMAIL"])
         self.assertEqual("support@mydomain.local", updated_plan_env["INDICO_PUBLIC_SUPPORT_EMAIL"])
         self.assertEqual("noreply@mydomain.local", updated_plan_env["INDICO_NO_REPLY_EMAIL"])
@@ -132,6 +133,7 @@ class TestCharm(unittest.TestCase):
         self.assertEqual("http", updated_plan_env["SERVICE_SCHEME"])
         self.assertIsNone(updated_plan_env["SERVICE_PORT"])
         self.assertEqual("redis://cache-host:1011", updated_plan_env["REDIS_CACHE_URL"])
+        self.assertFalse(updated_plan_env["ENABLE_ROOMBOOKING"])
         self.assertEqual("support-tech@mydomain.local", updated_plan_env["INDICO_SUPPORT_EMAIL"])
         self.assertEqual("support@mydomain.local", updated_plan_env["INDICO_PUBLIC_SUPPORT_EMAIL"])
         self.assertEqual("noreply@mydomain.local", updated_plan_env["INDICO_NO_REPLY_EMAIL"])
@@ -166,6 +168,7 @@ class TestCharm(unittest.TestCase):
                 {
                     "customization_debug": True,
                     "customization_sources_url": "https://example.com/custom",
+                    "enable_roombooking": True,
                     "external_plugins": "git+https://example.git/#subdirectory=themes_cern",
                     "http_proxy": "http://squid.internal:3128",
                     "https_proxy": "https://squid.internal:3128",
@@ -189,6 +192,7 @@ class TestCharm(unittest.TestCase):
         self.assertEqual("example.local", updated_plan_env["SERVICE_HOSTNAME"])
         self.assertEqual("http://squid.internal:3128", updated_plan_env["HTTP_PROXY"])
         self.assertEqual("https://squid.internal:3128", updated_plan_env["HTTPS_PROXY"])
+        self.assertTrue(updated_plan_env["ENABLE_ROOMBOOKING"])
         self.assertEqual("example@email.local", updated_plan_env["INDICO_SUPPORT_EMAIL"])
         self.assertEqual("public@email.local", updated_plan_env["INDICO_PUBLIC_SUPPORT_EMAIL"])
         self.assertEqual("noreply@email.local", updated_plan_env["INDICO_NO_REPLY_EMAIL"])
@@ -235,6 +239,7 @@ class TestCharm(unittest.TestCase):
         self.assertEqual("example.local", updated_plan_env["SERVICE_HOSTNAME"])
         self.assertEqual("http://squid.internal:3128", updated_plan_env["HTTP_PROXY"])
         self.assertEqual("https://squid.internal:3128", updated_plan_env["HTTPS_PROXY"])
+        self.assertTrue(updated_plan_env["ENABLE_ROOMBOOKING"])
         self.assertEqual("example@email.local", updated_plan_env["INDICO_SUPPORT_EMAIL"])
         self.assertEqual("public@email.local", updated_plan_env["INDICO_PUBLIC_SUPPORT_EMAIL"])
         self.assertEqual("noreply@email.local", updated_plan_env["INDICO_NO_REPLY_EMAIL"])
