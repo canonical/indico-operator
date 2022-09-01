@@ -1,19 +1,26 @@
-FROM ubuntu:jammy
+FROM ubuntu:jammy as builder
 
-ENV DEBIAN_FRONTEND=noninteractive
-
-# Python 3.9 is the only version supported by indico at the moment (see
-# https://github.com/indico/indico/issues/5364). Install from the PPA
-# deadsnakes/ppa until this is addressed.
 RUN apt update \
-    && apt install -y software-properties-common \
-    && add-apt-repository ppa:deadsnakes/ppa -y \
-    && apt update \
-    && apt install -y cron gettext git libpq-dev libxmlsec1-dev pkg-config postgresql-client python3.9 python3.9-dev python3.9-distutils python3-pip texlive-xetex \
-    && python3.9 -m pip install --prefer-binary indico indico-plugin-piwik python3-saml uwsgi \
-    && /bin/bash -c "mkdir -p --mode=775 /srv/indico/{etc,tmp,log,cache,archive,custom}" \
-    && /usr/local/bin/indico setup create-symlinks /srv/indico \
-    && /usr/local/bin/indico setup create-logging-config /etc
+    && apt install -y libpq-dev libxmlsec1-dev pkg-config python3-pip
+
+RUN pip install --prefer-binary indico indico-plugin-piwik python3-saml uwsgi
+
+FROM ubuntu:jammy as target
+
+COPY --from=builder /usr/local/bin/indico /usr/local/bin/indico
+COPY --from=builder /usr/local/bin/uwsgi /usr/local/bin/uwsgi
+COPY --from=builder /usr/local/lib/python3.10/dist-packages/ /usr/local/lib/python3.10/dist-packages/
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8 \
+    LC_LANG=C.UTF-8
+
+RUN apt update \
+    && apt install -y cron gettext git locales postgresql-client python3-pip texlive-xetex
+
+RUN /bin/bash -c "mkdir -p --mode=775 /srv/indico/{etc,tmp,log,cache,archive,custom}" \
+    && /usr/local/bin/indico setup create-symlinks /srv/indico
 
 ARG indico_gid=2000
 ARG indico_uid=2000

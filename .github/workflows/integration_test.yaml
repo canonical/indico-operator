@@ -1,33 +1,13 @@
-name: CI
+name: Integration tests
 
 on:
   pull_request:
   workflow_call:
 
 jobs:
-  lint:
-    name: Lint
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Install dependencies
-        run: python3 -m pip install tox
-      - name: Run linters
-        run: tox -e lint
-  unit-test:
-    name: Unit tests
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Install dependencies
-        run: python3 -m pip install tox
-      - name: Run tests
-        run: tox -e unit
   build-indico-image:
     name: Build indico image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     outputs:
       image-id: ${{ steps.build.outputs.imageid }}
     steps:
@@ -39,7 +19,7 @@ jobs:
           resource-name: indico-image
   build-indico-nginx-image:
     name: Build nginx image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     outputs:
       image-id: ${{ steps.build.outputs.imageid }}
     steps:
@@ -51,8 +31,8 @@ jobs:
           resource-name: indico-nginx-image
   integration-test-microk8s:
     name: Integration tests (microk8s)
-    runs-on: ubuntu-latest
-    needs: [build-indico-image, build-indico-nginx-image, lint, unit-test]
+    runs-on: ubuntu-20.04
+    needs: [build-indico-image, build-indico-nginx-image]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -61,7 +41,12 @@ jobs:
         with:
           provider: microk8s
       - name: Enable microk8s registry
-        run: sudo microk8s.enable registry
+        # Add a step to wait for the registry to become available after it has
+        # been deployed to avoid any issues with trying to push images to it
+        # before it is ready
+        run: |
+          sudo microk8s.enable registry
+          sudo microk8s.kubectl -n container-registry rollout status -w deployment/registry
       - name: Download all artifacts
         uses: actions/download-artifact@v3
       - name: Push indico image to microk8s registry

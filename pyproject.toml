@@ -6,7 +6,9 @@
 branch = true
 
 [tool.coverage.report]
+fail_under = 90
 show_missing = true
+
 
 [tool.pytest.ini_options]
 minversion = "6.0"
