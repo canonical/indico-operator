@@ -17,7 +17,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     LC_LANG=C.UTF-8
 
 RUN apt update \
-    && apt install -y cron gettext git locales postgresql-client python3-pip texlive-xetex
+    && apt install -y cron gettext git libxmlsec1 locales postgresql-client python3-pip texlive-xetex
 
 RUN /bin/bash -c "mkdir -p --mode=775 /srv/indico/{etc,tmp,log,cache,archive,custom}" \
     && /usr/local/bin/indico setup create-symlinks /srv/indico
