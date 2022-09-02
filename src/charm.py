@@ -345,6 +345,7 @@ class IndicoOperatorCharm(CharmBase):
             "ATTACHMENT_STORAGE": "default",
             "CELERY_BROKER": "redis://{host}:{port}".format(host=broker_host, port=broker_port),
             "CUSTOMIZATION_DEBUG": self.config["customization_debug"],
+            "ENABLE_ROOMBOOKING": self.config["enable_roombooking"],
             "INDICO_AUTH_PROVIDERS": str({}),
             "INDICO_DB_URI": self._stored.db_uri,
             "INDICO_EXTRA_PLUGINS": ",".join(available_plugins),

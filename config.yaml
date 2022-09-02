@@ -10,6 +10,10 @@ options:
     type: string
     description: URL for the git repository containing the customization files
     default: ''
+  enable_roombooking:
+    type: boolean
+    description: Enable the room booking plugin.
+    default: false
   external_plugins:
     type: string
     description: Comma separated list of external plugins to be installed, e.g. git+https://github.com/indico/indico-plugins-cern.git/#subdirectory=themes_cern. The format of each item must be supported by pip.
