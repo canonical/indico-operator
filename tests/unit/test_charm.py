@@ -221,12 +221,7 @@ class TestCharm(unittest.TestCase):
             },
         )
         exec_mock.assert_any_call(
-            [
-                "pip",
-                "install",
-                "git+https://example.git/#subdirectory=themes_cern",
-                "indico-plugin-storage-s3",
-            ],
+            ["pip", "install", "git+https://example.git/#subdirectory=themes_cern"],
             environment={
                 "HTTP_PROXY": "http://squid.internal:3128",
                 "HTTPS_PROXY": "https://squid.internal:3128",

@@ -154,12 +154,7 @@ class IndicoOperatorCharm(CharmBase):
 
     def _config_pebble(self, container):
         """Apply pebble changes."""
-        pebble_config_func = getattr(
-            self, "_get_{}_pebble_config".format(container.name.replace("-", "_"))
-        )
-        pebble_config = pebble_config_func(container)
         self.unit.status = MaintenanceStatus("Adding {} layer to pebble".format(container.name))
-        container.add_layer(container.name, pebble_config, combine=True)
         if container.name in ["indico", "indico-celery"]:
             self._set_git_proxy_config(container)
             plugins = (
@@ -167,9 +162,14 @@ class IndicoOperatorCharm(CharmBase):
                 if self.config["external_plugins"]
                 else []
             )
-            if self.config["s3_storage"]:
-                plugins.append("indico-plugin-storage-s3")
             self._install_plugins(container, plugins)
+        # The plugins need to be installed before adding the layer so that they are included in
+        # the corresponding env vars
+        pebble_config_func = getattr(
+            self, "_get_{}_pebble_config".format(container.name.replace("-", "_"))
+        )
+        pebble_config = pebble_config_func(container)
+        container.add_layer(container.name, pebble_config, combine=True)
         if container.name == "indico":
             self._download_customization_changes(container)
         self.unit.status = MaintenanceStatus("Starting {} container".format(container.name))

@@ -3,7 +3,7 @@ FROM ubuntu:jammy as builder
 RUN apt update \
     && apt install -y libpq-dev libxmlsec1-dev pkg-config python3-pip
 
-RUN pip install --prefer-binary indico indico-plugin-piwik python3-saml uwsgi
+RUN pip install --prefer-binary indico indico-plugin-piwik indico-plugin-storage-s3 python3-saml uwsgi
 
 FROM ubuntu:jammy as target
 
