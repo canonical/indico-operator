@@ -261,8 +261,8 @@ class IndicoOperatorCharm(CharmBase):
                 "ready": {
                     "override": "replace",
                     "level": "alive",
-                    "period": "20s",
-                    "timeout": "19s",
+                    "period": "120s",
+                    "timeout": "119s",
                     "exec": {
                         "command": "/usr/local/bin/indico celery inspect ping",
                         "environment": indico_env_config,
