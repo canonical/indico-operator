@@ -221,7 +221,7 @@ class TestCharm(unittest.TestCase):
             },
         )
         exec_mock.assert_any_call(
-            ["pip", "install", "git+https://example.git/#subdirectory=themes_cern"],
+            ["pip", "install", "--upgrade", "git+https://example.git/#subdirectory=themes_cern"],
             environment={
                 "HTTP_PROXY": "http://squid.internal:3128",
                 "HTTPS_PROXY": "https://squid.internal:3128",
@@ -309,7 +309,7 @@ class TestCharm(unittest.TestCase):
             environment=None,
         )
         exec_mock.assert_any_call(
-            ["pip", "install", "git+https://example.git/#subdirectory=themes_cern"],
+            ["pip", "install", "--upgrade", "git+https://example.git/#subdirectory=themes_cern"],
             environment=None,
         )
 
@@ -395,6 +395,35 @@ class TestCharm(unittest.TestCase):
             self.harness.charm._stored.db_uri,
             "postgresql://new_master",
             "database connection string should change after database master changed",
+        )
+
+    def test_refresh_external_resources_when_customization_and_plugins_set(self):
+        self.harness.disable_hooks()
+        self.set_up_all_relations()
+        self.harness.set_leader(True)
+
+        with patch.object(Container, "exec", return_value=MockExecProcess()) as exec_mock:
+            self.harness.container_pebble_ready("nginx-prometheus-exporter")
+            self.harness.container_pebble_ready("indico")
+            self.harness.container_pebble_ready("indico-celery")
+            self.harness.container_pebble_ready("indico-nginx")
+            self.harness.update_config(
+                {
+                    "customization_sources_url": "https://example.com/custom",
+                    "external_plugins": "git+https://example.git/#subdirectory=themes_cern",
+                }
+            )
+            self.harness.charm.on.update_status.emit()
+
+        exec_mock.assert_any_call(
+            ["git", "pull"],
+            working_dir="/srv/indico/custom",
+            user="indico",
+            environment=None,
+        )
+        exec_mock.assert_any_call(
+            ["pip", "install", "--upgrade", "git+https://example.git/#subdirectory=themes_cern"],
+            environment=None,
         )
 
     def set_up_all_relations(self):

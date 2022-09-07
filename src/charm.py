@@ -45,8 +45,9 @@ class IndicoOperatorCharm(CharmBase):
             self.on.nginx_prometheus_exporter_pebble_ready, self._on_pebble_ready
         )
         self.framework.observe(
-            self.on.refresh_customization_changes_action, self._refresh_customization_changes
+            self.on.refresh_external_resources_action, self._refresh_external_resources
         )
+        self.framework.observe(self.on.update_status, self._refresh_external_resources)
 
         self._stored.set_default(
             db_conn_str=None,
@@ -477,7 +478,7 @@ class IndicoOperatorCharm(CharmBase):
         """Install the external plugins."""
         if plugins:
             process = container.exec(
-                ["pip", "install"] + plugins,
+                ["pip", "install", "--upgrade"] + plugins,
                 environment=self._get_http_proxy_configuration(),
             )
             process.wait_output()
@@ -514,17 +515,24 @@ class IndicoOperatorCharm(CharmBase):
                 )
                 process.wait_output()
 
-    def _refresh_customization_changes(self, _):
-        """Pull changes from the remote repository."""
-        if self.config["customization_sources_url"]:
-            logging.debug("Pulling changes from %s", self.config["customization_sources_url"])
-            process = self.unit.get_container("indico").exec(
-                ["git", "pull"],
-                working_dir=INDICO_CUSTOMIZATION_DIR,
-                user="indico",
-                environment=self._get_http_proxy_configuration(),
-            )
-            process.wait_output()
+    def _refresh_external_resources(self, _):
+        """Pull changes from the remote repository and upgrade external plugins."""
+        container = self.unit.get_container("indico")
+        if container.can_connect():
+            self._download_customization_changes(container)
+            if self.config["customization_sources_url"]:
+                logging.debug("Pulling changes from %s", self.config["customization_sources_url"])
+                process = container.exec(
+                    ["git", "pull"],
+                    working_dir=INDICO_CUSTOMIZATION_DIR,
+                    user="indico",
+                    environment=self._get_http_proxy_configuration(),
+                )
+                process.wait_output()
+            if self.config["external_plugins"]:
+                logging.debug("Upgrading external plugins %s", self.config["external_plugins"])
+                plugins = self.config["external_plugins"].split(",")
+                self._install_plugins(container, plugins)
 
     def _on_leader_elected(self, _) -> None:
         """Handle leader-elected event."""
