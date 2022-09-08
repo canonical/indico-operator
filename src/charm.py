@@ -6,7 +6,7 @@
 """Charm for Indico on kubernetes."""
 import logging
 import os
-from typing import Tuple
+from typing import Dict, Tuple
 from urllib.parse import urlparse
 
 import ops.lib
@@ -14,7 +14,7 @@ from charms.grafana_k8s.v0.grafana_dashboard import GrafanaDashboardProvider
 from charms.nginx_ingress_integrator.v0.ingress import IngressRequires
 from charms.prometheus_k8s.v0.prometheus_scrape import MetricsEndpointProvider
 from charms.redis_k8s.v0.redis import RedisRelationCharmEvents, RedisRequires
-from ops.charm import CharmBase
+from ops.charm import ActionEvent, CharmBase
 from ops.framework import StoredState
 from ops.main import main
 from ops.model import ActiveStatus, BlockedStatus, MaintenanceStatus, WaitingStatus
@@ -46,8 +46,9 @@ class IndicoOperatorCharm(CharmBase):
             self.on.nginx_prometheus_exporter_pebble_ready, self._on_pebble_ready
         )
         self.framework.observe(
-            self.on.refresh_customization_changes_action, self._refresh_customization_changes
+            self.on.refresh_external_resources_action, self._refresh_external_resources_action
         )
+        self.framework.observe(self.on.update_status, self._refresh_external_resources)
 
         self._stored.set_default(
             db_conn_str=None,
@@ -155,12 +156,7 @@ class IndicoOperatorCharm(CharmBase):
 
     def _config_pebble(self, container):
         """Apply pebble changes."""
-        pebble_config_func = getattr(
-            self, "_get_{}_pebble_config".format(container.name.replace("-", "_"))
-        )
-        pebble_config = pebble_config_func(container)
         self.unit.status = MaintenanceStatus("Adding {} layer to pebble".format(container.name))
-        container.add_layer(container.name, pebble_config, combine=True)
         if container.name in ["indico", "indico-celery"]:
             self._set_git_proxy_config(container)
             plugins = (
@@ -168,9 +164,14 @@ class IndicoOperatorCharm(CharmBase):
                 if self.config["external_plugins"]
                 else []
             )
-            if self.config["s3_storage"]:
-                plugins.append("indico-plugin-storage-s3")
             self._install_plugins(container, plugins)
+        # The plugins need to be installed before adding the layer so that they are included in
+        # the corresponding env vars
+        pebble_config_func = getattr(
+            self, "_get_{}_pebble_config".format(container.name.replace("-", "_"))
+        )
+        pebble_config = pebble_config_func(container)
+        container.add_layer(container.name, pebble_config, combine=True)
         if container.name == "indico":
             self._download_customization_changes(container)
         self.unit.status = MaintenanceStatus("Starting {} container".format(container.name))
@@ -262,8 +263,8 @@ class IndicoOperatorCharm(CharmBase):
                 "ready": {
                     "override": "replace",
                     "level": "alive",
-                    "period": "20s",
-                    "timeout": "19s",
+                    "period": "120s",
+                    "timeout": "119s",
                     "exec": {
                         "command": "/usr/local/bin/indico celery inspect ping",
                         "environment": indico_env_config,
@@ -346,6 +347,7 @@ class IndicoOperatorCharm(CharmBase):
             "ATTACHMENT_STORAGE": "default",
             "CELERY_BROKER": "redis://{host}:{port}".format(host=broker_host, port=broker_port),
             "CUSTOMIZATION_DEBUG": self.config["customization_debug"],
+            "ENABLE_ROOMBOOKING": self.config["enable_roombooking"],
             "INDICO_AUTH_PROVIDERS": str({}),
             "INDICO_DB_URI": self._stored.db_uri,
             "INDICO_EXTRA_PLUGINS": ",".join(available_plugins),
@@ -423,7 +425,7 @@ class IndicoOperatorCharm(CharmBase):
             config["HTTPS_PROXY"] = self.config["https_proxy"]
         return config if config else None
 
-    def _is_saml_target_url_valid(self):
+    def _is_saml_target_url_valid(self) -> bool:
         """Check if the target SAML URL is currently supported."""
         return (
             not self.config["saml_target_url"] or UBUNTU_SAML_URL == self.config["saml_target_url"]
@@ -457,7 +459,7 @@ class IndicoOperatorCharm(CharmBase):
         self.ingress.update_config(self._make_ingress_config())
         self.model.unit.status = ActiveStatus()
 
-    def _get_current_customization_url(self):
+    def _get_current_customization_url(self) -> str:
         """Get the current remote repository for the customization changes."""
         indico_container = self.unit.get_container("indico")
         process = indico_container.exec(
@@ -477,7 +479,7 @@ class IndicoOperatorCharm(CharmBase):
         """Install the external plugins."""
         if plugins:
             process = container.exec(
-                ["pip", "install"] + plugins,
+                ["pip", "install", "--upgrade"] + plugins,
                 environment=self._get_http_proxy_configuration(),
             )
             process.wait_output()
@@ -514,17 +516,36 @@ class IndicoOperatorCharm(CharmBase):
                 )
                 process.wait_output()
 
-    def _refresh_customization_changes(self, _):
-        """Pull changes from the remote repository."""
-        if self.config["customization_sources_url"]:
-            logging.debug("Pulling changes from %s", self.config["customization_sources_url"])
-            process = self.unit.get_container("indico").exec(
-                ["git", "pull"],
-                working_dir=INDICO_CUSTOMIZATION_DIR,
-                user="indico",
-                environment=self._get_http_proxy_configuration(),
-            )
-            process.wait_output()
+    def _refresh_external_resources(self, _) -> Dict:
+        """Pull changes from the remote repository and upgrade external plugins."""
+        results = {
+            "customization-changes": False,
+            "plugin-updates": [],
+        }
+        container = self.unit.get_container("indico")
+        if container.can_connect():
+            self._download_customization_changes(container)
+            if self.config["customization_sources_url"]:
+                logging.debug("Pulling changes from %s", self.config["customization_sources_url"])
+                process = container.exec(
+                    ["git", "pull"],
+                    working_dir=INDICO_CUSTOMIZATION_DIR,
+                    user="indico",
+                    environment=self._get_http_proxy_configuration(),
+                )
+                process.wait_output()
+                results["customization-changes"] = True
+            if self.config["external_plugins"]:
+                logging.debug("Upgrading external plugins %s", self.config["external_plugins"])
+                plugins = self.config["external_plugins"].split(",")
+                self._install_plugins(container, plugins)
+                results["plugin-updates"] = plugins
+        return results
+
+    def _refresh_external_resources_action(self, event: ActionEvent) -> None:
+        """Refresh external resources and report action result."""
+        results = self._refresh_external_resources(event)
+        event.set_results(results)
 
     def _on_leader_elected(self, _) -> None:
         """Handle leader-elected event."""

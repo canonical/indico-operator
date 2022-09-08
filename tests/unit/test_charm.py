@@ -93,6 +93,7 @@ class TestCharm(unittest.TestCase):
         self.assertEqual("indico", updated_plan_env["SERVICE_HOSTNAME"])
         self.assertIsNone(updated_plan_env["SERVICE_PORT"])
         self.assertEqual("redis://cache-host:1011", updated_plan_env["REDIS_CACHE_URL"])
+        self.assertFalse(updated_plan_env["ENABLE_ROOMBOOKING"])
         self.assertEqual("support-tech@mydomain.local", updated_plan_env["INDICO_SUPPORT_EMAIL"])
         self.assertEqual("support@mydomain.local", updated_plan_env["INDICO_PUBLIC_SUPPORT_EMAIL"])
         self.assertEqual("noreply@mydomain.local", updated_plan_env["INDICO_NO_REPLY_EMAIL"])
@@ -132,6 +133,7 @@ class TestCharm(unittest.TestCase):
         self.assertEqual("http", updated_plan_env["SERVICE_SCHEME"])
         self.assertIsNone(updated_plan_env["SERVICE_PORT"])
         self.assertEqual("redis://cache-host:1011", updated_plan_env["REDIS_CACHE_URL"])
+        self.assertFalse(updated_plan_env["ENABLE_ROOMBOOKING"])
         self.assertEqual("support-tech@mydomain.local", updated_plan_env["INDICO_SUPPORT_EMAIL"])
         self.assertEqual("support@mydomain.local", updated_plan_env["INDICO_PUBLIC_SUPPORT_EMAIL"])
         self.assertEqual("noreply@mydomain.local", updated_plan_env["INDICO_NO_REPLY_EMAIL"])
@@ -166,6 +168,7 @@ class TestCharm(unittest.TestCase):
                 {
                     "customization_debug": True,
                     "customization_sources_url": "https://example.com/custom",
+                    "enable_roombooking": True,
                     "external_plugins": "git+https://example.git/#subdirectory=themes_cern",
                     "http_proxy": "http://squid.internal:3128",
                     "https_proxy": "https://squid.internal:3128",
@@ -189,6 +192,7 @@ class TestCharm(unittest.TestCase):
         self.assertEqual("example.local", updated_plan_env["SERVICE_HOSTNAME"])
         self.assertEqual("http://squid.internal:3128", updated_plan_env["HTTP_PROXY"])
         self.assertEqual("https://squid.internal:3128", updated_plan_env["HTTPS_PROXY"])
+        self.assertTrue(updated_plan_env["ENABLE_ROOMBOOKING"])
         self.assertEqual("example@email.local", updated_plan_env["INDICO_SUPPORT_EMAIL"])
         self.assertEqual("public@email.local", updated_plan_env["INDICO_PUBLIC_SUPPORT_EMAIL"])
         self.assertEqual("noreply@email.local", updated_plan_env["INDICO_NO_REPLY_EMAIL"])
@@ -217,12 +221,7 @@ class TestCharm(unittest.TestCase):
             },
         )
         exec_mock.assert_any_call(
-            [
-                "pip",
-                "install",
-                "git+https://example.git/#subdirectory=themes_cern",
-                "indico-plugin-storage-s3",
-            ],
+            ["pip", "install", "--upgrade", "git+https://example.git/#subdirectory=themes_cern"],
             environment={
                 "HTTP_PROXY": "http://squid.internal:3128",
                 "HTTPS_PROXY": "https://squid.internal:3128",
@@ -235,6 +234,7 @@ class TestCharm(unittest.TestCase):
         self.assertEqual("example.local", updated_plan_env["SERVICE_HOSTNAME"])
         self.assertEqual("http://squid.internal:3128", updated_plan_env["HTTP_PROXY"])
         self.assertEqual("https://squid.internal:3128", updated_plan_env["HTTPS_PROXY"])
+        self.assertTrue(updated_plan_env["ENABLE_ROOMBOOKING"])
         self.assertEqual("example@email.local", updated_plan_env["INDICO_SUPPORT_EMAIL"])
         self.assertEqual("public@email.local", updated_plan_env["INDICO_PUBLIC_SUPPORT_EMAIL"])
         self.assertEqual("noreply@email.local", updated_plan_env["INDICO_NO_REPLY_EMAIL"])
@@ -309,7 +309,7 @@ class TestCharm(unittest.TestCase):
             environment=None,
         )
         exec_mock.assert_any_call(
-            ["pip", "install", "git+https://example.git/#subdirectory=themes_cern"],
+            ["pip", "install", "--upgrade", "git+https://example.git/#subdirectory=themes_cern"],
             environment=None,
         )
 
@@ -395,6 +395,35 @@ class TestCharm(unittest.TestCase):
             self.harness.charm._stored.db_uri,
             "postgresql://new_master",
             "database connection string should change after database master changed",
+        )
+
+    def test_refresh_external_resources_when_customization_and_plugins_set(self):
+        self.harness.disable_hooks()
+        self.set_up_all_relations()
+        self.harness.set_leader(True)
+
+        with patch.object(Container, "exec", return_value=MockExecProcess()) as exec_mock:
+            self.harness.container_pebble_ready("nginx-prometheus-exporter")
+            self.harness.container_pebble_ready("indico")
+            self.harness.container_pebble_ready("indico-celery")
+            self.harness.container_pebble_ready("indico-nginx")
+            self.harness.update_config(
+                {
+                    "customization_sources_url": "https://example.com/custom",
+                    "external_plugins": "git+https://example.git/#subdirectory=themes_cern",
+                }
+            )
+            self.harness.charm.on.update_status.emit()
+
+        exec_mock.assert_any_call(
+            ["git", "pull"],
+            working_dir="/srv/indico/custom",
+            user="indico",
+            environment=None,
+        )
+        exec_mock.assert_any_call(
+            ["pip", "install", "--upgrade", "git+https://example.git/#subdirectory=themes_cern"],
+            environment=None,
         )
 
     def set_up_all_relations(self):

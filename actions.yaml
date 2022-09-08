@@ -1,2 +1,2 @@
-refresh-customization-changes:
-  description: Pull changes from the customization repository
+refresh-external-resources:
+  description: Pull changes from the customization repository and upgrade the external plugins
