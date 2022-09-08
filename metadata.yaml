@@ -34,6 +34,8 @@ resources:
     upstream-source: nginx/nginx-prometheus-exporter:0.10.0
 
 provides:
+  grafana-dashboard:
+    interface: grafana_dashboard
   metrics-endpoint:
     interface: prometheus_scrape
 

@@ -10,6 +10,7 @@ from typing import Dict, Tuple
 from urllib.parse import urlparse
 
 import ops.lib
+from charms.grafana_k8s.v0.grafana_dashboard import GrafanaDashboardProvider
 from charms.nginx_ingress_integrator.v0.ingress import IngressRequires
 from charms.prometheus_k8s.v0.prometheus_scrape import MetricsEndpointProvider
 from charms.redis_k8s.v0.redis import RedisRelationCharmEvents, RedisRequires
@@ -64,11 +65,11 @@ class IndicoOperatorCharm(CharmBase):
 
         self.redis = RedisRequires(self, self._stored)
         self.framework.observe(self.on.redis_relation_changed, self._on_config_changed)
-
         self.ingress = IngressRequires(self, self._make_ingress_config())
         self._metrics_endpoint = MetricsEndpointProvider(
             self, jobs=[{"static_configs": [{"targets": ["*:9113"]}]}]
         )
+        self._grafana_dashboards = GrafanaDashboardProvider(self)
 
     def _on_database_relation_joined(self, event: pgsql.DatabaseRelationJoinedEvent):
         """Handle db-relation-joined."""
