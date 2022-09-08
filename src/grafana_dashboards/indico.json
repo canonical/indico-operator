@@ -72,7 +72,7 @@
             "tooltip": "Indico sources on GitHub",
             "type": "link",
             "url": "https://github.com/indico/indico"
-          },
+          }
     ],
     "panels": [
         {
