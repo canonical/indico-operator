@@ -60,18 +60,18 @@
             "tags": [],
             "targetBlank": true,
             "title": "Docs",
-            "tooltip": "Official documentation of Indico",
+            "tooltip": "Official documentation of Indico Operator",
             "type": "link",
-            "url": "https://docs.getindico.io/en/latest/"
+            "url": "https://charmhub.io/indico"
           },
           {
             "icon": "info",
             "tags": [],
             "targetBlank": true,
             "title": "GitHub",
-            "tooltip": "Indico sources on GitHub",
+            "tooltip": "Indico Operator sources on GitHub",
             "type": "link",
-            "url": "https://github.com/indico/indico"
+            "url": "https://github.com/canonical/indico-operator"
           }
     ],
     "panels": [
