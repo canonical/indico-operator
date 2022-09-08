@@ -47,7 +47,7 @@ class IndicoOperatorCharm(CharmBase):
         self.framework.observe(
             self.on.refresh_external_resources_action, self._refresh_external_resources_action
         )
-        self.framework.observe(self.on.update_status, self._refresh_external_resources)
+        # self.framework.observe(self.on.update_status, self._refresh_external_resources)
 
         self._stored.set_default(
             db_conn_str=None,
