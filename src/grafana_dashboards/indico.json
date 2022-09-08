@@ -48,13 +48,32 @@
             }
         ]
     },
-    "description": "Official dashboard for NGINX Prometheus exporter",
+    "description": "Dashboard for the Indico Operator, powered by Juju.",
     "editable": true,
     "gnetId": null,
     "graphTooltip": 0,
     "id": null,
     "iteration": 1562682051068,
-    "links": [],
+    "links": [
+        {
+            "icon": "doc",
+            "tags": [],
+            "targetBlank": true,
+            "title": "Docs",
+            "tooltip": "Official documentation of Indico",
+            "type": "link",
+            "url": "https://docs.getindico.io/en/latest/"
+          },
+          {
+            "icon": "info",
+            "tags": [],
+            "targetBlank": true,
+            "title": "GitHub",
+            "tooltip": "Indico sources on GitHub",
+            "type": "link",
+            "url": "https://github.com/indico/indico"
+          },
+    ],
     "panels": [
         {
             "datasource": "${prometheusds}",
@@ -561,7 +580,7 @@
         ]
     },
     "timezone": "",
-    "title": "NGINX",
+    "title": "Indico Operator",
     "uid": "MsjffzSZz",
     "version": 1
 }
