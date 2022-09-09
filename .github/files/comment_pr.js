@@ -18,7 +18,7 @@ module.exports = async ({github, context}) => {
         repo: context.repo.repo,
         issue_number: issue_number,
     });
-    await createComment(comments)
+    await createComment("RES" + JSON.stringify(comments))
     // for (const comment of comments) {
     //     if (comment.user.login == 'github-actions') {
     //         await github.rest.issues.deleteComment({
