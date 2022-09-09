@@ -19,7 +19,7 @@ module.exports = async ({github, context}) => {
             repo: context.repo.repo,
             issue_number: issue_number,
         });
-        const githubActionsComments = comments.filter(comment => comment.user.login == 'github-actions[bot]')
+        const githubActionsComments = comments.data.filter(comment => comment.user.login == 'github-actions[bot]')
         for (const comment of githubActionsComments) {
             await github.rest.issues.deleteComment({
                 owner: context.repo.owner,
