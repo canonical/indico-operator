@@ -20,7 +20,7 @@ module.exports = async ({github, context}) => {
             issue_number: issue_number,
         });
         const githubActionsComments = comments.filter(comment => comment.user.login == 'github-actions[bot]')
-        for (const comment of github_actions_comments) {
+        for (const comment of githubActionsComments) {
             await github.rest.issues.deleteComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -30,7 +30,7 @@ module.exports = async ({github, context}) => {
     }
 
     const coverageReport = report.reports.coverage.output.trim()
-    await deleteGithubActionsComments()
+    await deleteGithubActionsComments();
     if (!report.reports.lint.success) {
         const lintReport = report.reports.lint.output.trim();
         await createComment(`Lint checks failed for ${sha}\n\`\`\`\n${lintReport}\n\`\`\``);
