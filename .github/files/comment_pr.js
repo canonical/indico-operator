@@ -13,23 +13,24 @@ module.exports = async ({github, context}) => {
         });
     }
 
-    const comments = await github.rest.issues.listComments({
-        owner: context.repo.owner,
-        repo: context.repo.repo,
-        issue_number: issue_number,
-    });
-    await createComment(JSON.stringify(comments.data))
-    // for (const comment of comments) {
-    //     if (comment.user.login == 'github-actions') {
-    //         await github.rest.issues.deleteComment({
-    //             owner: context.repo.owner,
-    //             repo: context.repo.repo,
-    //             comment_id: comment.id,
-    //         });
-    //     }
-    // }
+    const deleteGithubActionsComments = async () => {
+        const comments = await github.rest.issues.listComments({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: issue_number,
+        });
+        const githubActionsComments = comments.filter(comment => comment.user.login == 'github-actions[bot]')
+        for (const comment of github_actions_comments) {
+            await github.rest.issues.deleteComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: comment.id,
+            });
+        }
+    }
 
     const coverageReport = report.reports.coverage.output.trim()
+    await deleteGithubActionsComments()
     if (!report.reports.lint.success) {
         const lintReport = report.reports.lint.output.trim();
         await createComment(`Lint checks failed for ${sha}\n\`\`\`\n${lintReport}\n\`\`\``);
