@@ -300,8 +300,6 @@ class TestCharm(unittest.TestCase):
                 }
             )
 
-        exec_mock.assert_any_call(["git", "config", "--global", "--unset", "http.proxy"])
-        exec_mock.assert_any_call(["git", "config", "--global", "--unset", "https.proxy"])
         exec_mock.assert_any_call(
             ["git", "clone", "https://example.com/custom", "."],
             working_dir="/srv/indico/custom",
