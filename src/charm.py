@@ -158,7 +158,6 @@ class IndicoOperatorCharm(CharmBase):
         """Apply pebble changes."""
         self.unit.status = MaintenanceStatus("Adding {} layer to pebble".format(container.name))
         if container.name in ["indico", "indico-celery"]:
-            self._set_git_proxy_config(container)
             plugins = (
                 self.config["external_plugins"].split(",")
                 if self.config["external_plugins"]
@@ -180,43 +179,6 @@ class IndicoOperatorCharm(CharmBase):
             self.unit.status = ActiveStatus()
         else:
             self.unit.status = WaitingStatus("Waiting for pebble")
-
-    def _set_git_proxy_config(self, container):
-        """Set git proxy configuration in indico and indico-celery containers."""
-        # Workaround for pip issue https://github.com/pypa/pip/issues/11405
-        git_config_http_command = ["git", "config", "--global", "--unset", "http.proxy"]
-        git_config_https_command = ["git", "config", "--global", "--unset", "https.proxy"]
-        if self.config["http_proxy"]:
-            git_config_http_command = [
-                "git",
-                "config",
-                "--global",
-                "http.proxy",
-                self.config["http_proxy"],
-            ]
-        if self.config["https_proxy"]:
-            git_config_https_command = [
-                "git",
-                "config",
-                "--global",
-                "http.proxy",
-                self.config["https_proxy"],
-            ]
-
-        process = container.exec(git_config_http_command)
-        # Workaround for the git config --unset command not being idempotent. It returns a '5'
-        # error code when the configuration has not being set
-        try:
-            process.wait_output()
-        except ExecError as ex:
-            if ex.exit_code != 5:
-                raise ex
-        process = container.exec(git_config_https_command)
-        try:
-            process.wait_output()
-        except ExecError as ex:
-            if ex.exit_code != 5:
-                raise ex
 
     def _get_indico_pebble_config(self, container):
         """Generate pebble config for the indico container."""
