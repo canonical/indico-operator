@@ -31,8 +31,6 @@ module.exports = async ({github, context}) => {
 
     const coverageReport = report.reports.coverage.output.trim()
     const staticReport = report.reports["static"].output.trim()
-    console.log(`coverage report ${coverageReport}`)
-    console.log(`static report ${staticReport}`)
     await deleteGithubActionsComments();
     if (!report.reports.lint.success) {
         const lintReport = report.reports.lint.output.trim();
@@ -42,5 +40,5 @@ module.exports = async ({github, context}) => {
         const unitReport = report.reports.unit.output.trim();
         await createComment(`Unit tests failed for ${sha}\n\`\`\`\n${unitReport}\n\`\`\``);
     }
-    await createComment(`Test coverage report for ${sha}\n\`\`\`\n${coverageReport}\n\`\`\`\n\`\`\`\nstatic report\n${staticReport}\nreport end\`\`\``);
+    await createComment(`Test coverage report for ${sha}\n\`\`\`\n${coverageReport}\n\`\`\`\nStatic code analysis report\n\`\`\`\n${staticReport}\n\`\`\``);
 }
