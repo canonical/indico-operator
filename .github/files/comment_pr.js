@@ -31,6 +31,8 @@ module.exports = async ({github, context}) => {
 
     const coverageReport = report.reports.coverage.output.trim()
     const staticReport = report.reports["static"].output.trim()
+    console.log(`coverage report ${coverageReport}`)
+    console.log(`static report ${staticReport}`)
     await deleteGithubActionsComments();
     if (!report.reports.lint.success) {
         const lintReport = report.reports.lint.output.trim();
