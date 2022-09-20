@@ -30,7 +30,7 @@ module.exports = async ({github, context}) => {
     }
 
     const coverageReport = report.reports.coverage.output.trim()
-    const staticReport = report.reports.static.output.trim()
+    const staticReport = report.reports["static"].output.trim()
     await deleteGithubActionsComments();
     if (!report.reports.lint.success) {
         const lintReport = report.reports.lint.output.trim();
