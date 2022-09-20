@@ -40,5 +40,5 @@ module.exports = async ({github, context}) => {
         const unitReport = report.reports.unit.output.trim();
         await createComment(`Unit tests failed for ${sha}\n\`\`\`\n${unitReport}\n\`\`\``);
     }
-    await createComment(`Test coverage report for ${sha}\n\`\`\`\n${coverageReport}\n\`\`\`\n\`\`\`\n${staticReport}\n\`\`\``);
+    await createComment(`Test coverage report for ${sha}\n\`\`\`\n${coverageReport}\n\`\`\`\n\`\`\`\nstatic report\n${staticReport}\nreport end\`\`\``);
 }
