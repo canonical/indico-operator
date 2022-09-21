@@ -136,10 +136,10 @@ class IndicoOperatorCharm(CharmBase):
 
     def _are_relations_ready(self, _):
         """Handle the on pebble ready event for Indico."""
-        if not any(rel.app.name == "redis-broker" for rel in self.model.relations["redis"]):
+        if not any(rel.app.name.startswith("redis-broker") for rel in self.model.relations["redis"]):
             self.unit.status = WaitingStatus("Waiting for redis-broker relation")
             return False
-        if not any(rel.app.name == "redis-cache" for rel in self.model.relations["redis"]):
+        if not any(rel.app.name.startswith("redis-cache") for rel in self.model.relations["redis"]):
             self.unit.status = WaitingStatus("Waiting for redis-cache relation")
             return False
         if not self._stored.db_uri:
@@ -287,13 +287,13 @@ class IndicoOperatorCharm(CharmBase):
     def _get_indico_env_config(self, container):
         """Return an envConfig with some core configuration."""
         cache_rel = next(
-            rel for rel in self.model.relations["redis"] if rel.app.name == "redis-cache"
+            rel for rel in self.model.relations["redis"] if rel.app.name.startswith("redis-cache")
         )
         cache_host = self._stored.redis_relation[cache_rel.id]["hostname"]
         cache_port = self._stored.redis_relation[cache_rel.id]["port"]
 
         broker_rel = next(
-            rel for rel in self.model.relations["redis"] if rel.app.name == "redis-broker"
+            rel for rel in self.model.relations["redis"] if rel.app.name.startswith("redis-broker")
         )
         broker_host = self._stored.redis_relation[broker_rel.id]["hostname"]
         broker_port = self._stored.redis_relation[broker_rel.id]["port"]
