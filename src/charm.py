@@ -136,10 +136,14 @@ class IndicoOperatorCharm(CharmBase):
 
     def _are_relations_ready(self, _):
         """Handle the on pebble ready event for Indico."""
-        if not any(rel.app.name.startswith("redis-broker") for rel in self.model.relations["redis"]):
+        if not any(
+            rel.app.name.startswith("redis-broker") for rel in self.model.relations["redis"]
+        ):
             self.unit.status = WaitingStatus("Waiting for redis-broker relation")
             return False
-        if not any(rel.app.name.startswith("redis-cache") for rel in self.model.relations["redis"]):
+        if not any(
+            rel.app.name.startswith("redis-cache") for rel in self.model.relations["redis"]
+        ):
             self.unit.status = WaitingStatus("Waiting for redis-cache relation")
             return False
         if not self._stored.db_uri:
