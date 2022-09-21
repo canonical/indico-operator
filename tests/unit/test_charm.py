@@ -426,14 +426,21 @@ class TestCharm(unittest.TestCase):
 
     def set_up_all_relations(self):
         self.harness.charm._stored.db_uri = "db-uri"
-        self.harness.add_relation("indico-peers", self.harness.charm.app.name)
-        broker_relation_id = self.harness.add_relation("redis", self.harness.charm.app.name)
-        self.harness.add_relation_unit(broker_relation_id, "redis-broker/0")
-        cache_relation_id = self.harness.add_relation("redis", self.harness.charm.app.name)
-        self.harness.add_relation_unit(cache_relation_id, "redis-cache/0")
         self.db_relation_id = self.harness.add_relation("db", self.harness.charm.app.name)
         self.harness.add_relation_unit(self.db_relation_id, "postgresql/0")
-        self.harness.charm._stored.redis_relation = {
-            broker_relation_id: {"hostname": "broker-host", "port": 1010},
-            cache_relation_id: {"hostname": "cache-host", "port": 1011},
-        }
+
+        self.harness.add_relation("indico-peers", self.harness.charm.app.name)
+
+        broker_relation_id = self.harness.add_relation("redis", self.harness.charm.app.name)
+        self.harness.add_relation_unit(broker_relation_id, "redis-broker/0")
+
+        cache_relation_id = self.harness.add_relation("redis", self.harness.charm.app.name)
+        self.harness.add_relation_unit(cache_relation_id, "redis-cache/0")
+
+        cache_relation = self.harness.model.get_relation("redis", cache_relation_id)
+        cache_unit = self.harness.model.get_unit("redis-cache/0")
+        cache_relation.data = {cache_unit: {"hostname": "cache-host", "port": 1011}}
+
+        broker_relation = self.harness.model.get_relation("redis", broker_relation_id)
+        broker_unit = self.harness.model.get_unit("redis-broker/0")
+        broker_relation.data = {broker_unit: {"hostname": "broker-host", "port": 1010}}
