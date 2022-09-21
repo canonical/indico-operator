@@ -182,7 +182,7 @@ class TestCharm(unittest.TestCase):
                     "smtp_login": "user",
                     "smtp_password": "pass",
                     "smtp_use_tls": False,
-                    "s3_storage": "s3:bucket=my-indico-test-bucket,access_key=12345,secret_key=topsecret",
+                    "s3_storage": "s3:bucket=test-bucket,access_key=12345,secret_key=topsecret",
                 }
             )
 
@@ -208,7 +208,7 @@ class TestCharm(unittest.TestCase):
         self.assertEqual("s3", updated_plan_env["ATTACHMENT_STORAGE"])
         self.assertEqual("fs:/srv/indico/archive", storage_dict["default"])
         self.assertEqual(
-            "s3:bucket=my-indico-test-bucket,access_key=12345,secret_key=topsecret",
+            "s3:bucket=test-bucket,access_key=12345,secret_key=topsecret",
             storage_dict["s3"],
         )
         exec_mock.assert_any_call(
@@ -251,7 +251,7 @@ class TestCharm(unittest.TestCase):
         storage_dict = literal_eval(updated_plan_env["STORAGE_DICT"])
         self.assertEqual("fs:/srv/indico/archive", storage_dict["default"])
         self.assertEqual(
-            "s3:bucket=my-indico-test-bucket,access_key=12345,secret_key=topsecret",
+            "s3:bucket=test-bucket,access_key=12345,secret_key=topsecret",
             storage_dict["s3"],
         )
         auth_providers = literal_eval(updated_plan_env["INDICO_AUTH_PROVIDERS"])
@@ -327,11 +327,10 @@ class TestCharm(unittest.TestCase):
 
         self.harness.update_config({"saml_target_url": "sample.com/saml"})
         self.assertEqual(
-            self.harness.model.unit.status,
-            BlockedStatus(
-                "Invalid saml_target_url option provided. Only https://login.ubuntu.com/saml/ is available."
-            ),
+            self.harness.model.unit.status.name,
+            BlockedStatus.name,
         )
+        self.assertTrue("Invalid saml_target_url option" in self.harness.model.unit.status.message)
 
     def test_pebble_ready_when_relations_not_ready(self):
         self.harness.container_pebble_ready("indico")
