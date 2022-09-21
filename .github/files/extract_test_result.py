@@ -20,12 +20,16 @@ with open("./test-result.json", encoding="utf-8") as f:
     unit_result = result["testenvs"]["unit"]["test"]
     unit_success = unit_result[0]["retcode"] == 0
     unit_output = unit_result[0]["output"]
+    static_result = result["testenvs"]["static"]["test"]
+    static_success = static_result[0]["retcode"] == 0
+    static_output = static_result[0]["output"]
     coverage_result = result["testenvs"]["coverage-report"]["test"]
     coverage_success = coverage_result[0]["retcode"] == 0
     coverage_output = coverage_result[0]["output"]
     reports = {
         "lint": {"success": lint_success, "output": no_color(lint_output)},
         "unit": {"success": unit_success, "output": no_color(unit_output)},
+        "static": {"success": static_success, "output": no_color(static_output)},
         "coverage": {"success": coverage_success, "output": no_color(coverage_output)}
     }
     final_report = {

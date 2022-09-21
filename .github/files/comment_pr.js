@@ -30,6 +30,7 @@ module.exports = async ({github, context}) => {
     }
 
     const coverageReport = report.reports.coverage.output.trim()
+    const staticReport = report.reports["static"].output.trim()
     await deleteGithubActionsComments();
     if (!report.reports.lint.success) {
         const lintReport = report.reports.lint.output.trim();
@@ -39,5 +40,14 @@ module.exports = async ({github, context}) => {
         const unitReport = report.reports.unit.output.trim();
         await createComment(`Unit tests failed for ${sha}\n\`\`\`\n${unitReport}\n\`\`\``);
     }
-    await createComment(`Test coverage report for ${sha}\n\`\`\`\n${coverageReport}\n\`\`\``);
+    await createComment(
+`Test coverage report for ${sha}
+\`\`\`
+${coverageReport}
+\`\`\`
+Static code analysis report
+\`\`\`
+${staticReport}
+\`\`\``
+    );
 }
