@@ -296,14 +296,18 @@ class IndicoOperatorCharm(CharmBase):
         cache_rel = next(
             rel for rel in self.model.relations["redis"] if rel.app.name.startswith("redis-cache")
         )
-        cache_host = self._stored.redis_relation[cache_rel.id]["hostname"]
-        cache_port = self._stored.redis_relation[cache_rel.id]["port"]
+        cache_unit = next(unit for unit in cache_rel.data if unit.name.startswith("redis-cache"))
+        cache_host = cache_rel.data[cache_unit].get("hostname")
+        cache_port = cache_rel.data[cache_unit].get("port")
 
         broker_rel = next(
             rel for rel in self.model.relations["redis"] if rel.app.name.startswith("redis-broker")
         )
-        broker_host = self._stored.redis_relation[broker_rel.id]["hostname"]
-        broker_port = self._stored.redis_relation[broker_rel.id]["port"]
+        broker_unit = next(
+            unit for unit in broker_rel.data if unit.name.startswith("redis-broker")
+        )
+        broker_host = broker_rel.data[broker_unit].get("hostname")
+        broker_port = broker_rel.data[broker_unit].get("port")
 
         available_plugins = []
         process = container.exec(["indico", "setup", "list-plugins"])
