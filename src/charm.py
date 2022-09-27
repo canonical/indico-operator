@@ -122,7 +122,7 @@ class IndicoOperatorCharm(CharmBase):
     def _get_external_hostname(self):
         """Extract and return hostname from site_url."""
         site_url = self.config["site_url"]
-        return urlparse(site_url).hostname if site_url else self.app.name
+        return urlparse(site_url).hostname if site_url else "{}.local".format(self.app.name)
 
     def _get_external_scheme(self):
         """Extract and return schema from site_url."""
