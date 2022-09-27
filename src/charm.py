@@ -475,7 +475,7 @@ class IndicoOperatorCharm(CharmBase):
 
     def _get_indico_version(self):
         container = self.unit.get_container("indico")
-        process = container.exec(["indico", "--version"])
+        process = container.exec(["/usr/local/bin/indico", "--version"])
         version_string, _ = process.wait_output()
         version = findall("[0-9.]+", version_string)
         return version[0] if version else ""
