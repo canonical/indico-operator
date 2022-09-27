@@ -6,6 +6,7 @@
 """Charm for Indico on kubernetes."""
 import logging
 import os
+from re import findall
 from typing import Dict, Tuple
 from urllib.parse import urlparse
 
@@ -180,6 +181,7 @@ class IndicoOperatorCharm(CharmBase):
         self.unit.status = MaintenanceStatus("Starting {} container".format(container.name))
         container.pebble.replan_services()
         if self._are_pebble_instances_ready():
+            self.unit.set_workload_version(self._get_indico_version())
             self.unit.status = ActiveStatus()
         else:
             self.unit.status = WaitingStatus("Waiting for pebble")
@@ -470,6 +472,13 @@ class IndicoOperatorCharm(CharmBase):
                 environment=self._get_http_proxy_configuration(),
             )
             process.wait_output()
+
+    def _get_indico_version(self):
+        container = self.unit.get_container("indico")
+        process = container.exec(["indico", "--version"])
+        version_string, _ = process.wait_output()
+        version = findall(r"[0-9.]+", version_string)
+        return version[0] if version else ""
 
     def _download_customization_changes(self, container):
         """Clone the remote repository with the customization changes."""
