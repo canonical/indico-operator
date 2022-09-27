@@ -477,7 +477,7 @@ class IndicoOperatorCharm(CharmBase):
         container = self.unit.get_container("indico")
         process = container.exec(["indico", "--version"])
         version_string, _ = process.wait_output()
-        version = findall(r"[0-9.]+", version_string)
+        version = findall("[0-9.]+", version_string)
         return version[0] if version else ""
 
     def _download_customization_changes(self, container):
