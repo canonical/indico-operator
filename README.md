@@ -47,8 +47,8 @@ The charm also supports the `ingress` relation, which can be used with
     juju relate indico:ingress nginx-ingress-integrator:ingress
 
 Once the deployment has completed and the "indico" workload state in
-`juju status` has changed to "active" you can visit `http://indico` in
-a browser (assuming `indico` resolves to the IP(s) of your k8s ingress)
+`juju status` has changed to "active" you can visit `http://indico.local` in
+a browser (assuming `indico.local` resolves to the IP(s) of your k8s ingress)
 and log in to your Indico instance, and you'll be presented with a screen
 to create an initial admin account. Further accounts must be created using this
 admin account, or by setting up an external authentication source, such as

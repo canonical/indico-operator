@@ -123,7 +123,7 @@ class IndicoOperatorCharm(CharmBase):
     def _get_external_hostname(self):
         """Extract and return hostname from site_url."""
         site_url = self.config["site_url"]
-        return urlparse(site_url).hostname if site_url else self.app.name
+        return urlparse(site_url).hostname if site_url else f"{self.app.name}.local"
 
     def _get_external_scheme(self):
         """Extract and return schema from site_url."""
@@ -161,7 +161,7 @@ class IndicoOperatorCharm(CharmBase):
 
     def _config_pebble(self, container):
         """Apply pebble changes."""
-        self.unit.status = MaintenanceStatus("Adding {} layer to pebble".format(container.name))
+        self.unit.status = MaintenanceStatus(f"Adding {container.name} layer to pebble")
         if container.name in ["indico", "indico-celery"]:
             plugins = (
                 self.config["external_plugins"].split(",")
@@ -172,13 +172,13 @@ class IndicoOperatorCharm(CharmBase):
         # The plugins need to be installed before adding the layer so that they are included in
         # the corresponding env vars
         pebble_config_func = getattr(
-            self, "_get_{}_pebble_config".format(container.name.replace("-", "_"))
+            self, f"_get_{container.name.replace('-', '_')}_pebble_config"
         )
         pebble_config = pebble_config_func(container)
         container.add_layer(container.name, pebble_config, combine=True)
         if container.name == "indico":
             self._download_customization_changes(container)
-        self.unit.status = MaintenanceStatus("Starting {} container".format(container.name))
+        self.unit.status = MaintenanceStatus(f"Starting {container.name} container")
         container.pebble.replan_services()
         if self._are_pebble_instances_ready():
             self.unit.set_workload_version(self._get_indico_version())
@@ -320,7 +320,7 @@ class IndicoOperatorCharm(CharmBase):
         peer_relation = self.model.get_relation("indico-peers")
         env_config = {
             "ATTACHMENT_STORAGE": "default",
-            "CELERY_BROKER": "redis://{host}:{port}".format(host=broker_host, port=broker_port),
+            "CELERY_BROKER": f"redis://{broker_host}:{broker_port}",
             "CUSTOMIZATION_DEBUG": self.config["customization_debug"],
             "ENABLE_ROOMBOOKING": self.config["enable_roombooking"],
             "INDICO_AUTH_PROVIDERS": str({}),
@@ -330,7 +330,7 @@ class IndicoOperatorCharm(CharmBase):
             "INDICO_NO_REPLY_EMAIL": self.config["indico_no_reply_email"],
             "INDICO_PUBLIC_SUPPORT_EMAIL": self.config["indico_public_support_email"],
             "INDICO_SUPPORT_EMAIL": self.config["indico_support_email"],
-            "REDIS_CACHE_URL": "redis://{host}:{port}".format(host=cache_host, port=cache_port),
+            "REDIS_CACHE_URL": f"redis://{cache_host}:{cache_port}",
             "SECRET_KEY": peer_relation.data[self.app].get("secret-key"),
             "SERVICE_HOSTNAME": self._get_external_hostname(),
             "SERVICE_PORT": self._get_external_port(),
@@ -427,9 +427,7 @@ class IndicoOperatorCharm(CharmBase):
             return
         if not self._is_saml_target_url_valid():
             self.unit.status = BlockedStatus(
-                "Invalid saml_target_url option provided. Only {} is available.".format(
-                    UBUNTU_SAML_URL
-                )
+                f"Invalid saml_target_url option provided. Only {UBUNTU_SAML_URL} is available."
             )
             event.defer()
             return

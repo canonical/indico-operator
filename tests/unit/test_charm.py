@@ -90,7 +90,7 @@ class TestCharm(unittest.TestCase):
             ),
             updated_plan_env["SECRET_KEY"],
         )
-        self.assertEqual("indico", updated_plan_env["SERVICE_HOSTNAME"])
+        self.assertEqual("indico.local", updated_plan_env["SERVICE_HOSTNAME"])
         self.assertIsNone(updated_plan_env["SERVICE_PORT"])
         self.assertEqual("redis://cache-host:1011", updated_plan_env["REDIS_CACHE_URL"])
         self.assertFalse(updated_plan_env["ENABLE_ROOMBOOKING"])
@@ -129,7 +129,7 @@ class TestCharm(unittest.TestCase):
             ),
             updated_plan_env["SECRET_KEY"],
         )
-        self.assertEqual("indico", updated_plan_env["SERVICE_HOSTNAME"])
+        self.assertEqual("indico.local", updated_plan_env["SERVICE_HOSTNAME"])
         self.assertEqual("http", updated_plan_env["SERVICE_SCHEME"])
         self.assertIsNone(updated_plan_env["SERVICE_PORT"])
         self.assertEqual("redis://cache-host:1011", updated_plan_env["REDIS_CACHE_URL"])
