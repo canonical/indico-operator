@@ -425,7 +425,7 @@ class IndicoOperatorCharm(CharmBase):
             return
         if not self._is_saml_target_url_valid():
             self.unit.status = BlockedStatus(
-                "Invalid saml_target_url option provided. Only {UBUNTU_SAML_URL} is available."
+                f"Invalid saml_target_url option provided. Only {UBUNTU_SAML_URL} is available."
             )
             event.defer()
             return
