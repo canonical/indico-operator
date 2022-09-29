@@ -44,8 +44,7 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          dockerfile: indico.Dockerfile
-          resource-name: indico-image
+          file: indico.Dockerfile
   build-indico-nginx-image:
     name: Build nginx image
     runs-on: ubuntu-20.04
@@ -76,8 +75,7 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          dockerfile: indico-nginx.Dockerfile
-          resource-name: indico-nginx-image
+          file: indico-nginx.Dockerfile
 
   integration-test-microk8s:
     name: Integration tests (microk8s)
