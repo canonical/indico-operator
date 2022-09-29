@@ -89,7 +89,7 @@ jobs:
         with:
           provider: microk8s
       - name: Run integration tests
-        run: tox -e integration -- --model testing --indico-image ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.INDICO_IMAGE_NAME }}:latest --indico-nginx-image ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.NGINX_INDICO_IMAGE_NAME }}:latest
+        run: tox -e integration -- --model testing --indico-image ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.INDICO_IMAGE_NAME }}:isd-192-test-git-hubs-container-registry-performance-for-existing-workflows --indico-nginx-image ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.NGINX_INDICO_IMAGE_NAME }}:isd-192-test-git-hubs-container-registry-performance-for-existing-workflows
       - name: Dump logs
         uses: canonical/charm-logdump-action@main
         if: failure()
