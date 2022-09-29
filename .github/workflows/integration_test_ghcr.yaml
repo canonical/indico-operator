@@ -1,8 +1,10 @@
 name: ghcr Integration tests
 
 on:
-  workflow_call:
   workflow_dispatch:
+  push:
+    branches:
+      - "ISD-192-test-git-hubs-container-registry-performance-for-existing-workflows"
 
 env:
   REGISTRY: ghcr.io
