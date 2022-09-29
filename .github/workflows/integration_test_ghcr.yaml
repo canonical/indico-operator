@@ -2,6 +2,7 @@ name: ghcr Integration tests
 
 on:
   workflow_call:
+  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
