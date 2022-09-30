@@ -94,7 +94,7 @@ jobs:
           [plugins.\"io.containerd.grpc.v1.cri\".registry.configs.\"ghcr.io\".auth]
           username = \"${{ github.actor }}\"
           password = \"${{ secrets.GITHUB_TOKEN }}\"
-          \" >> /var/snap/microk8s/current/args/containerd-template.toml && microk8s stop && microk8s start"
+          \" >> /var/snap/microk8s/current/args/containerd-template.toml && microk8s stop && microk8s start" || \
           sudo systemctl status snap.microk8s.daemon-containerd.service
           sudo journalctl -xe
       - name: Run integration tests
