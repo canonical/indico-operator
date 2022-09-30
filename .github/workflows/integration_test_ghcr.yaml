@@ -88,12 +88,13 @@ jobs:
         uses: charmed-kubernetes/actions-operator@main
         with:
           provider: microk8s
-      - name: Log in to the Container registry
-        uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Configure GHCR in microk8s
+        run: |
+          echo "
+          [plugins.\"io.containerd.grpc.v1.cri\".registry.configs.\"ghcr.io\".auth]
+          username = ${{ github.actor }}
+          password = ${{ secrets.GITHUB_TOKEN }}
+          " >> /var/snap/microk8s/current/args/containerd-template.toml
       - name: Run integration tests
         run: tox -e integration -- --model testing --indico-image ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.INDICO_IMAGE_NAME }}:isd-192-test-git-hubs-container-registry-performance-for-existing-workflows --indico-nginx-image ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.NGINX_INDICO_IMAGE_NAME }}:isd-192-test-git-hubs-container-registry-performance-for-existing-workflows
       - name: Dump logs
