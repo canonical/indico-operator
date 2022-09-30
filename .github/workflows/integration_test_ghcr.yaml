@@ -90,7 +90,7 @@ jobs:
           provider: microk8s
       - name: Configure GHCR in microk8s
         run: |
-          ls -l /var/snap/microk8s/current/args/containerd-template.toml && sudo echo "
+          sudo ls -R /var/snap/microk8s/ && sudo echo "
           [plugins.\"io.containerd.grpc.v1.cri\".registry.configs.\"ghcr.io\".auth]
           username = \"${{ github.actor }}\"
           password = \"${{ secrets.GITHUB_TOKEN }}\"
