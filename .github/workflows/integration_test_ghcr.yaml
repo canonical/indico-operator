@@ -95,7 +95,7 @@ jobs:
           username = \"${{ github.actor }}\"
           password = \"${{ secrets.GITHUB_TOKEN }}\"
           " >> /var/snap/microk8s/current/args/containerd-template.toml'
-          sudo su -c 'microk8s stop && microk8s start && microk8s status --wait-ready'
+          sudo su -c 'systemctl restart snap.microk8s.daemon-containerd.service && microk8s status --wait-ready'
       - name: Run integration tests
         run: tox -e integration -- --model testing --indico-image ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.INDICO_IMAGE_NAME }}:isd-192-test-git-hubs-container-registry-performance-for-existing-workflows --indico-nginx-image ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.NGINX_INDICO_IMAGE_NAME }}:isd-192-test-git-hubs-container-registry-performance-for-existing-workflows
       - name: Dump logs
