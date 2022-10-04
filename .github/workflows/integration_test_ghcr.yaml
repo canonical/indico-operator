@@ -36,7 +36,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ env.OWNER }}/${{ env.INDICO_IMAGE_NAME }}:latest
+          tags: ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.INDICO_IMAGE_NAME }}:latest
           file: indico.Dockerfile
 
   build-indico-nginx-image:
@@ -61,7 +61,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ env.OWNER }}/${{ env.NGINX_INDICO_IMAGE_NAME }}:latest
+          tags: ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.NGINX_INDICO_IMAGE_NAME }}:latest
           file: indico-nginx.Dockerfile
 
   integration-test-microk8s:
