@@ -36,7 +36,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.INDICO_IMAGE_NAME }}:latest
+          tags: ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.INDICO_IMAGE_NAME }}:${{ github.run_id }}
           file: indico.Dockerfile
 
   build-indico-nginx-image:
@@ -61,7 +61,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.NGINX_INDICO_IMAGE_NAME }}:latest
+          tags: ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.NGINX_INDICO_IMAGE_NAME }}:${{ github.run_id }}
           file: indico-nginx.Dockerfile
 
   integration-test-microk8s:
@@ -84,7 +84,7 @@ jobs:
           " >> /var/snap/microk8s/current/args/containerd-template.toml'
           sudo su -c 'systemctl restart snap.microk8s.daemon-containerd.service && microk8s status --wait-ready'
       - name: Run integration tests
-        run: tox -e integration -- --model testing --indico-image ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.INDICO_IMAGE_NAME }}:latest --indico-nginx-image ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.NGINX_INDICO_IMAGE_NAME }}:latest
+        run: tox -e integration -- --model testing --indico-image ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.INDICO_IMAGE_NAME }}:${{ github.run_id }} --indico-nginx-image ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.NGINX_INDICO_IMAGE_NAME }}:${{ github.run_id }}
       - name: Dump logs
         uses: canonical/charm-logdump-action@main
         if: failure()
