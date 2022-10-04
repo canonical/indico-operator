@@ -30,21 +30,15 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.INDICO_IMAGE_NAME }}
-
       - name: Build and push indico image
         id: build
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
           context: .
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ env.OWNER }}/${{ env.INDICO_IMAGE_NAME }}:latest
           file: indico.Dockerfile
+
   build-indico-nginx-image:
     name: Build nginx image
     runs-on: ubuntu-20.04
@@ -61,20 +55,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.NGINX_INDICO_IMAGE_NAME }}
-
       - name: Build and push nginx indico image
         id: build
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
           context: .
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ env.OWNER }}/${{ env.NGINX_INDICO_IMAGE_NAME }}:latest
           file: indico-nginx.Dockerfile
 
   integration-test-microk8s:
@@ -97,7 +84,7 @@ jobs:
           " >> /var/snap/microk8s/current/args/containerd-template.toml'
           sudo su -c 'systemctl restart snap.microk8s.daemon-containerd.service && microk8s status --wait-ready'
       - name: Run integration tests
-        run: tox -e integration -- --model testing --indico-image ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.INDICO_IMAGE_NAME }}:isd-192-test-git-hubs-container-registry-performance-for-existing-workflows --indico-nginx-image ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.NGINX_INDICO_IMAGE_NAME }}:isd-192-test-git-hubs-container-registry-performance-for-existing-workflows
+        run: tox -e integration -- --model testing --indico-image ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.INDICO_IMAGE_NAME }}:latest --indico-nginx-image ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.NGINX_INDICO_IMAGE_NAME }}:latest
       - name: Dump logs
         uses: canonical/charm-logdump-action@main
         if: failure()
