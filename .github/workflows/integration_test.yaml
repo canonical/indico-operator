@@ -6,7 +6,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  OWNER: canonical
+  OWNER: ${{ github.repository_owner }}
   INDICO_IMAGE_NAME: indico
   NGINX_INDICO_IMAGE_NAME: indico-nginx
 
