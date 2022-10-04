@@ -15,8 +15,6 @@ jobs:
   build-indico-image:
     name: Build indico image
     runs-on: ubuntu-20.04
-    outputs:
-      image-id: ${{ steps.build.outputs.imageid }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -40,8 +38,6 @@ jobs:
   build-indico-nginx-image:
     name: Build nginx image
     runs-on: ubuntu-20.04
-    outputs:
-      image-id: ${{ steps.build.outputs.imageid }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
