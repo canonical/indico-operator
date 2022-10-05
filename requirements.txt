@@ -1,2 +1,2 @@
-ops >= 1.4.0
+ops == 1.5.2
 ops-lib-pgsql
