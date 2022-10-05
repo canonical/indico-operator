@@ -1,2 +1,3 @@
-ops >= 1.4.0
+# see https://github.com/canonical/operator/pull/786 
+ops == 1.5.2 # >= 1.5.3 raises an error, potentially we are using the tests wrong
 ops-lib-pgsql
