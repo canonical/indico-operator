@@ -71,6 +71,9 @@ jobs:
           provider: microk8s
       - name: Configure GHCR in microk8s
         run: |
+          # Adding authentication for ghcr.io for containerd as per https://microk8s.io/docs/registry-private
+          # Note: containerd has to be restarted for the changes to take effect
+          # (https://github.com/containerd/cri/blob/master/docs/registry.md)
           sudo su -c 'echo "
           [plugins.\"io.containerd.grpc.v1.cri\".registry.configs.\"ghcr.io\".auth]
           username = \"${{ github.actor }}\"
