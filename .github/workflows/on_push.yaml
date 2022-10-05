@@ -14,6 +14,12 @@ on:
       - main
       - track/**
 
+env:
+  REGISTRY: ghcr.io
+  OWNER: ${{ github.repository_owner }}
+  INDICO_IMAGE_NAME: indico
+  NGINX_INDICO_IMAGE_NAME: indico-nginx
+
 jobs:
   lib-check:
     # This job is the precondition of all jobs that need the Charmhub token.
@@ -47,8 +53,9 @@ jobs:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/publish_oci_resource
         with:
+          image: ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.INDICO_IMAGE_NAME }}:${{ github.run_id }}
           charm-name: indico
-          resource-name: indico-image
+          resource-name: ${{ env.INDICO_IMAGE_NAME }}-image
           charmhub-token: ${{ secrets.CHARMHUB_TOKEN }}
   publish-indico-nginx-image:
     name: Publish nginx image to charmhub
@@ -58,8 +65,9 @@ jobs:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/publish_oci_resource
         with:
+          image: ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.NGINX_INDICO_IMAGE_NAME }}:${{ github.run_id }}
           charm-name: indico
-          resource-name: indico-nginx-image
+          resource-name: ${{ env.NGINX_INDICO_IMAGE_NAME }}-image
           charmhub-token: ${{ secrets.CHARMHUB_TOKEN }}
   select-channel:
     name: Select target channel

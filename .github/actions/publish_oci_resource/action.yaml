@@ -1,6 +1,11 @@
 name: Publish OCI resource
 description: Publish OCI image as a charm resource
+env:
+  REGISTRY: ghcr.io
 inputs:
+  image:
+    required: true
+    description: Name of the image that is built (resource name and tag)
   charm-name:
     required: true
     description: Name of the charm to which the resource will be linked
@@ -16,16 +21,18 @@ runs:
     - name: Install charmcraft
       shell: bash
       run: sudo snap install charmcraft --classic
-    - name: Download all artifacts
-      uses: actions/download-artifact@v3
+    - name: Log in to the Container registry
+      uses: docker/login-action@v2
       with:
-        name: ${{ inputs.resource-name }}
-        path: /tmp
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
     - name: Publish image
       env:
         CHARMCRAFT_AUTH: ${{ inputs.charmhub-token }}
       shell: bash
       run: |
-        imageId=$(docker load --input /tmp/${{ inputs.resource-name }}.tar | sed -e "s/^Loaded image ID: //")
+        docker pull ${{ inputs.image }}
+        imageId=$(docker images ${{ inputs.image }} --format "{{.ID}")
         charmcraft upload-resource ${{ inputs.charm-name }} ${{ inputs.resource-name }} --image=$imageId --verbosity=trace
         
