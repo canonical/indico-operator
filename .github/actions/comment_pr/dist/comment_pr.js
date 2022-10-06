@@ -1,18 +1,24 @@
+
+
 module.exports = async ({github, context}) => {
+    const core = require('@actions/core');
+    const github = require('@actions/github');
     const fs = require('fs');
-    const report = JSON.parse(fs.readFileSync('./report.json'));
-    const issue_number = report.number;
-    const sha = report.sha;
+    const artifactName = core.getInput('artifact-name');
+    const reports = JSON.parse(fs.readFileSync(`${artifactName}.json`));
+    const issue_number = github.event.number;
+    console.log(`The pull request: ${github.event.pull_request}`);
+    console.log(`The event payload: ${github.event}`);
 
     const createComment = async (body) => {
         await github.rest.issues.createComment({
             owner: context.repo.owner,
             repo: context.repo.repo,
             issue_number: issue_number,
-            body
+            body,
         });
     }
-
+    
     const deleteGithubActionsComments = async () => {
         const comments = await github.rest.issues.listComments({
             owner: context.repo.owner,
@@ -24,30 +30,13 @@ module.exports = async ({github, context}) => {
             await github.rest.issues.deleteComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                comment_id: comment.id,
+                comment_id: issue_number,
             });
         }
     }
 
-    const coverageReport = report.reports.coverage.output.trim()
-    const staticReport = report.reports["static"].output.trim()
     await deleteGithubActionsComments();
-    if (!report.reports.lint.success) {
-        const lintReport = report.reports.lint.output.trim();
-        await createComment(`Lint checks failed for ${sha}\n\`\`\`\n${lintReport}\n\`\`\``);
+    for (const report of reports) {
+        await createComment(report);
     }
-    if (!report.reports.unit.success) {
-        const unitReport = report.reports.unit.output.trim();
-        await createComment(`Unit tests failed for ${sha}\n\`\`\`\n${unitReport}\n\`\`\``);
-    }
-    await createComment(
-`Test coverage report for ${sha}
-\`\`\`
-${coverageReport}
-\`\`\`
-Static code analysis report
-\`\`\`
-${staticReport}
-\`\`\``
-    );
 }
