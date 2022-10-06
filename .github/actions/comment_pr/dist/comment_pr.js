@@ -2,7 +2,7 @@
 
 module.exports = async ({github, context}) => {
     const fs = require('fs');
-    const comments = JSON.parse(fs.readFileSync('${artifact-name}.json'));
+    const comments = JSON.parse(fs.readFileSync('report.json'));
     const issue_number = github.event.number;
     console.log(`The pull request: ${github.event.pull_request}`);
     console.log(`The event payload: ${github.event}`);
