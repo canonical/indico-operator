@@ -1,6 +1,6 @@
 
 
-module.exports = async ({github, context}) => {
+module.exports = async (github, context) => {
     const fs = require('fs');
     const comments = JSON.parse(fs.readFileSync('report.json'));
     const issue_number = github.event.number;
