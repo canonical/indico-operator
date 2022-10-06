@@ -29,13 +29,13 @@ runs:
               artifact_id: matchArtifact.id,
               archive_format: 'zip',
           });
-          fs.writeFileSync('${{github.workspace}}/${{ inputs.artifact-name }}.zip', Buffer.from(download.data));
+          fs.writeFileSync('${{github.workspace}}/${{inputs.artifact-name}}.zip', Buffer.from(download.data));
     - shell: bash
-      run: unzip ${{ inputs.artifact-name }}.zip
+      run: unzip ${{inputs.artifact-name}}.zip
     - name: Comment on PR
       uses: actions/github-script@v6.2.0
       with:
         github-token: ${{ inputs.github-token }}
         script: |
-          const script = require('${{ github.workspace }}/.github/actions/comment_pr/dist/comment_pr.js')
+          const script = require('${{github.workspace}}/.github/actions/comment_pr/dist/comment_pr.js')
           await script({github, context})
