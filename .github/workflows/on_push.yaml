@@ -18,7 +18,7 @@ env:
   REGISTRY: ghcr.io
   OWNER: ${{ github.repository_owner }}
   INDICO_IMAGE_NAME: indico
-  NGINX_INDICO_IMAGE_NAME: indico-nginx
+  INDICO_NGINX_IMAGE_NAME: indico-nginx
 
 jobs:
   lib-check:
@@ -65,9 +65,9 @@ jobs:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/publish_oci_resource
         with:
-          image: ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.NGINX_INDICO_IMAGE_NAME }}:${{ github.run_id }}
+          image: ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.INDICO_NGINX_IMAGE_NAME }}:${{ github.run_id }}
           charm-name: indico
-          resource-name: ${{ env.NGINX_INDICO_IMAGE_NAME }}-image
+          resource-name: ${{ env.INDICO_NGINX_IMAGE_NAME }}-image
           charmhub-token: ${{ secrets.CHARMHUB_TOKEN }}
   select-channel:
     name: Select target channel
