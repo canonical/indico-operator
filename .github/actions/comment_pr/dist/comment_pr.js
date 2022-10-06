@@ -1,6 +1,6 @@
 
 
-module.exports = async ({github, context}) => {
+module.exports = async ({context}) => {
     const core = require('@actions/core');
     const github = require('@actions/github');
     const fs = require('fs');
