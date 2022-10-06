@@ -17,3 +17,4 @@ jobs:
       - uses: ./.github/actions/comment_pr
         with:
           artifact-name: report
+          github-token: ${{ secrets.GITHUB_TOKEN }}
