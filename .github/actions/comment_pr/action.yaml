@@ -19,5 +19,5 @@ runs:
       with:
         github-token: ${{ inputs.github-token }}
         script: |
-          const script = require('dist/comment_pr.js')
+          const script = require(''${{ github.workspace }}/.github/actions/comment_pr/dist/comment_pr.js'')
           await script({github, context})
