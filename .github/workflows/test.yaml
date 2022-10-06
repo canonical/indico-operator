@@ -8,8 +8,6 @@ jobs:
   lint-and-unit-test:
     name: Lint and unit tests
     runs-on: ubuntu-20.04
-    outputs:
-      report: ${{ steps.export-test-report.outputs.report }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -20,24 +18,11 @@ jobs:
       - name: Export test report
         if: always() && github.event_name == 'pull_request'
         id: export-test-report
-        run: echo "::set-output name=report::$(cat test-result.json | xz | base64 -w 0)"
-  report:
-    if: always() && github.event_name == 'pull_request'
-    name: Unit test and lint report
-    runs-on: ubuntu-20.04
-    needs: [ lint-and-unit-test ]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Import test result
-        run: echo ${{ needs.lint-and-unit-test.outputs.report }} | base64 -d | xz -d > test-result.json
-      - name: Format test report
         env:
           GITHUB_EVENT_PULL_REQUEST_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          GITHUB_EVENT_NUMBER: ${{ github.event.number }}
         run: python3 .github/files/extract_test_result.py
       - name: Upload coverage report
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         if: always()
         with:
           name: report

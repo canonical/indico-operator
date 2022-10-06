@@ -1,0 +1,24 @@
+name: Comment on PR
+description: Publish a comment on a PR and remove previous bot comments
+inputs:
+  artifact-name:
+    required: true
+    description: Artifact containing a JSON like list of comments to be published
+runs:
+  runs-on: ubuntu-latest
+  using: composite
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Download artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: ${{ inputs.resource-name }}
+      name: ${{ inputs.artifact-name }}
+    - name: Comment on PR
+      uses: actions/github-script@v6.2.0
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const script = require('dist/comment_pr.js')
+          await script({github, context})
