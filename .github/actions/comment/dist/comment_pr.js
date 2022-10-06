@@ -10,6 +10,15 @@ module.exports = async ({github, context}) => {
     console.log(`The pull request: ${github.event.pull_request}`);
     console.log(`The event payload: ${github.event}`);
 
+    const createComment = async (body) => {
+        await github.rest.issues.createComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: issue_number,
+            body,
+        });
+    }
+    
     const deleteGithubActionsComments = async () => {
         const comments = await github.rest.issues.listComments({
             owner: context.repo.owner,
@@ -27,13 +36,7 @@ module.exports = async ({github, context}) => {
     }
 
     await deleteGithubActionsComments();
-
     for (const report of reports) {
-        await github.rest.issues.createComment({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            issue_number: issue_number,
-            r
-        });
+        await createComment(report);
     }
 }
