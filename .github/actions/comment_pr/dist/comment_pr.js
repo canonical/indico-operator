@@ -1,8 +1,7 @@
 
 
-module.exports = async ({context}) => {
+module.exports = async ({github, context}) => {
     const core = require('@actions/core');
-    const github = require('@actions/github');
     const fs = require('fs');
     const artifactName = core.getInput('artifact-name');
     const comments = JSON.parse(fs.readFileSync(`${artifactName}.json`));
