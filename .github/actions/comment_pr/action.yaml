@@ -21,9 +21,9 @@ runs:
               run_id: ${{ github.event.workflow_run.id }},
           });
           console.log('${{ inputs.artifact-name }}')
-          const matchArtifact = artifacts.data.artifacts.filter((artifact) => {
-            return artifact.name == '${{ inputs.artifact-name }}',
-          })[0];
+          //const matchArtifact = artifacts.data.artifacts.filter((artifact) => {
+          //  return artifact.name == '${{ inputs.artifact-name }}',
+          //})[0];
           // const download = await github.rest.actions.downloadArtifact({
           //     owner: context.repo.owner,
           //     repo: context.repo.repo,
