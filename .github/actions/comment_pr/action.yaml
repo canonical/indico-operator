@@ -29,7 +29,7 @@ runs:
               artifact_id: matchArtifact.id,
               archive_format: 'zip',
           });
-          fs.writeFileSync('${{ inputs.artifact-name }}.zip', Buffer.from(download.data));
+          fs.writeFileSync(`${{ inputs.artifact-name }}.zip`, Buffer.from(download.data));
     - shell: bash
       run: unzip ${{ inputs.artifact-name }}.zip
     - name: Comment on PR
