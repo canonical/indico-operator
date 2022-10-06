@@ -5,7 +5,7 @@ module.exports = async ({github, context}) => {
     const github = require('@actions/github');
     const fs = require('fs');
     const artifactName = core.getInput('artifact-name');
-    const reports = JSON.parse(fs.readFileSync(`${artifactName}.json`));
+    const comments = JSON.parse(fs.readFileSync(`${artifactName}.json`));
     const issue_number = github.event.number;
     console.log(`The pull request: ${github.event.pull_request}`);
     console.log(`The event payload: ${github.event}`);
@@ -20,12 +20,14 @@ module.exports = async ({github, context}) => {
     }
     
     const deleteGithubActionsComments = async () => {
-        const comments = await github.rest.issues.listComments({
+        const existingComments = await github.rest.issues.listComments({
             owner: context.repo.owner,
             repo: context.repo.repo,
             issue_number: issue_number,
         });
-        const githubActionsComments = comments.data.filter(comment => comment.user.login == 'github-actions[bot]')
+        const githubActionsComments = existingComments.data.filter(
+            comment => comment.user.login == 'github-actions[bot]'
+        )
         for (const comment of githubActionsComments) {
             await github.rest.issues.deleteComment({
                 owner: context.repo.owner,
@@ -36,7 +38,7 @@ module.exports = async ({github, context}) => {
     }
 
     await deleteGithubActionsComments();
-    for (const report of reports) {
-        await createComment(report);
+    for (const comment of comments) {
+        await createComment(comment);
     }
 }
