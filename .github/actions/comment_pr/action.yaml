@@ -37,6 +37,7 @@ runs:
       with:
         github-token: ${{ inputs.github-token }}
         script: |
+          console.log('{{ github.event.workflow_run }}')
           const fs = require('fs');
           const comments = JSON.parse(fs.readFileSync('${{ inputs.artifact-name }}.json'));
           const issue_number = 3;
