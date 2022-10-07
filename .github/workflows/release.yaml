@@ -6,13 +6,11 @@ on:
       origin-channel:
         type: choice
         description: 'Origin Channel'
-        required: true
         options:
         - edge
       destination-channel:
         type: choice
         description: 'Destination Channel'
-        required: true
         options:
         - stable
     secrets:
