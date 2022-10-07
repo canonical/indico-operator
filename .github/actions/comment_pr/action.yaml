@@ -39,7 +39,7 @@ runs:
         script: |
           const fs = require('fs');
           const comments = JSON.parse(fs.readFileSync('${{ inputs.artifact-name }}.json'));
-          const issue_number = '${{ github.event.number }}';
+          const issue_number = 3;
 
           const createComment = async (body) => {
               await github.rest.issues.createComment({
