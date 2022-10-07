@@ -7,12 +7,12 @@ on:
         type: choice
         description: 'Origin Channel'
         options:
-        - edge
+        - latest/edge
       destination-channel:
         type: choice
         description: 'Destination Channel'
         options:
-        - stable
+        - latest/stable
     secrets:
       CHARMHUB_TOKEN:
         required: true
@@ -28,5 +28,5 @@ jobs:
         with:
           credentials: ${{ secrets.CHARMHUB_TOKEN }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          origin-channel: latest/${{ github.event.inputs.origin-channel }}
-          destination-channel: latest/${{ github.event.inputs.destination-channel }}
+          origin-channel: ${{ github.event.inputs.origin-channel }}
+          destination-channel: ${{ github.event.inputs.destination-channel }}
