@@ -1,11 +1,11 @@
 
 
-module.exports = async (github, context) => {
+module.exports = async (github, context, event) => {
     const fs = require('fs');
     const comments = JSON.parse(fs.readFileSync('report.json'));
-    const issue_number = '${{ github.event.number }}'
-    console.log('The pull request: ${{ github.event.pull_request }}');
-    console.log('The event payload: ${{ github.event }}');
+    const issue_number = event.number
+    console.log('The pull request: ${ event.pull_request ');
+    console.log('The event payload: ${ event }');
 
     const createComment = async (body) => {
         await github.rest.issues.createComment({
