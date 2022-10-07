@@ -38,8 +38,8 @@ runs:
         github-token: ${{ inputs.github-token }}
         script: |
           const fs = require('fs');
-          const comments = JSON.parse(fs.readFileSync('report.json'));
-          const issue_number = ${{ github.event.number }};
+          const comments = JSON.parse(fs.readFileSync('${{ inputs.artifact-name }}.json'));
+          const issue_number = '${{ github.event.number }}';
 
           const createComment = async (body) => {
               await github.rest.issues.createComment({
