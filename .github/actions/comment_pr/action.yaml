@@ -38,4 +38,4 @@ runs:
         github-token: ${{ inputs.github-token }}
         script: |
           const script = require('.github/actions/comment_pr/dist/comment_pr.js')
-          await script(github, context, ${ github.event })
+          await script(github, context, ${{} github.event }})
