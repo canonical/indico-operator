@@ -14,7 +14,7 @@ jobs:
       - name: Install dependencies
         run: python3 -m pip install tox
       - name: Run tests
-        run: tox -e lint,unit,static,coverage-report --result-json=test-result.json
+        run: tox --result-json=test-result.json
       - name: Export test report
         if: always() && github.event_name == 'pull_request'
         id: export-test-report

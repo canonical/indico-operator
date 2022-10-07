@@ -3,7 +3,7 @@ description: Publish a comment on a PR and remove previous bot comments
 inputs:
   artifact-name:
     required: true
-    description: Artifact containing a JSON like list of comments to be published
+    description: Artifact containing a JSON file with the list of comments to be published
   github-token:
     required: true
     description: Github token
@@ -30,12 +30,6 @@ runs:
               archive_format: 'zip',
           });
           fs.writeFileSync('${{ inputs.artifact-name }}.zip', Buffer.from(download.data));
-          const actions_run = (await github.rest.actions.getWorkflowRun({
-            owner : context.repo.owner,
-            repo : context.repo.repo,
-            run_id : ${{ github.event.workflow_run.id }},
-          })).data;
-          console.log(actions_run);
     - shell: bash
       run: unzip ${{ inputs.artifact-name }}.zip
     - name: Comment on PR
@@ -45,7 +39,12 @@ runs:
         script: |
           const fs = require('fs');
           const comments = JSON.parse(fs.readFileSync('${{ inputs.artifact-name }}.json'));
-          const issue_number = 3;
+          
+          const issue_number = (await github.rest.actions.getWorkflowRun({
+            owner : context.repo.owner,
+            repo : context.repo.repo,
+            run_id : ${{ github.event.workflow_run.id }},
+          })).data.pull_requests[0].number;
 
           const createComment = async (body) => {
               await github.rest.issues.createComment({
