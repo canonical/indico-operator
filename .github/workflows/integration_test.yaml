@@ -51,7 +51,7 @@ jobs:
   integration-test-microk8s:
     name: Integration tests (microk8s)
     runs-on: ubuntu-20.04
-    needs: get-images, build-images
+    needs: [get-images, build-images]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
