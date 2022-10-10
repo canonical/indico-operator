@@ -69,7 +69,7 @@ jobs:
           sudo su -c 'systemctl restart snap.microk8s.daemon-containerd.service && microk8s status --wait-ready'
       - name: Run integration tests
         run: |
-          IMAGES=${{ fromJSON(needs.get-images.outputs.images) }}
+          IMAGES=${{ needs.get-images.outputs.images }}
           echo $IMAGES | jq -c '.[]' | while read image; do echo $image; done
           tox -e integration -- --model testing --indico-image ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.INDICO_IMAGE_NAME }}:${{ github.run_id }} --indico-nginx-image ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.INDICO_NGINX_IMAGE_NAME }}:${{ github.run_id }}
       - name: Dump logs
