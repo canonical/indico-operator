@@ -69,14 +69,14 @@ jobs:
           sudo su -c 'systemctl restart snap.microk8s.daemon-containerd.service && microk8s status --wait-ready'
       - name: Run integration tests
         run: |
-          IMAGES='${{ needs.get-images.outputs.images }}'
+          image_names=$(echo ${{ needs.get-images.outputs.images }} | jq -c '.[]' | sed 's/\"//g'
+          echo $image_names
           ARGS=""
-          echo $IMAGES | jq -c '.[]' | sed 's/\"//g' | while read image_name
+         for image_name in image_names; do
             echo $image_name
+            ARGS="$ARGS --$image_name-image ${{ env.REGISTRY }}/${{ env.OWNER }}/$image_name:${{ github.run_id }}"
             echo $ARGS
-            do ARGS="$ARGS --$image_name-image ${{ env.REGISTRY }}/${{ env.OWNER }}/$image_name:${{ github.run_id }}"
           done
-          echo $ARGS
           tox -e integration -- --model testing $ARGS
       - name: Dump logs
         uses: canonical/charm-logdump-action@main
