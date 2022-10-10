@@ -70,9 +70,12 @@ jobs:
       - name: Run integration tests
         run: |
           IMAGES='${{ needs.get-images.outputs.images }}'
-          echo $IMAGES
-          echo $IMAGES | jq -c '.[]' | while read image; do echo $image; done
-          tox -e integration -- --model testing --indico-image ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.INDICO_IMAGE_NAME }}:${{ github.run_id }} --indico-nginx-image ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.INDICO_NGINX_IMAGE_NAME }}:${{ github.run_id }}
+          ARGS=""
+          echo $IMAGES | jq -c '.[]' | sed 's/\"//g' | while read image_name
+            do ARGS="${ARGS} --${image_name}-image ${{ env.REGISTRY }}/${{ env.OWNER }}/${image_name}:${{ github.run_id }}"
+          done
+          echo $ARGS
+          tox -e integration -- --model testing $ARGS
       - name: Dump logs
         uses: canonical/charm-logdump-action@main
         if: failure()
