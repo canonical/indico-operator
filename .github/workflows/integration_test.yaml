@@ -12,12 +12,23 @@ env:
 
 
 jobs:
+  get-images:
+    name: Get images
+    runs-on: ubuntu-20.04
+    outputs:
+      images: ${{ steps.set-matrix.outputs.images }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        id: set-images
+        run: echo "::set-output name=images::$(ls *.Dockerfile | sed s/\.Dockerfile// |  jq -Rsc '. / "\n" - [""]')"
   build-images:
     name: Build image
     runs-on: ubuntu-20.04
+    needs: get-images
     strategy:
       matrix:
-        image: [indico, indico-nginx]
+        image: ${{ fromJSON(needs.get-images.outputs.images) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -36,7 +47,7 @@ jobs:
           context: .
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ matrix.image }}:${{ github.run_id }}
-          file: indico.Dockerfile
+          file: ${{ matrix.image }}.Dockerfile
 
   integration-test-microk8s:
     name: Integration tests (microk8s)
