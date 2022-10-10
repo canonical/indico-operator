@@ -72,6 +72,7 @@ jobs:
           IMAGES: ${{ fromJSON(needs.get-images.outputs.images) }}
         run: |
           echo $IMAGES
+          for key in "${!IMAGES[@]}"; do echo ${IMAGES[$key]}; done
           tox -e integration -- --model testing --indico-image ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.INDICO_IMAGE_NAME }}:${{ github.run_id }} --indico-nginx-image ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.INDICO_NGINX_IMAGE_NAME }}:${{ github.run_id }}
       - name: Dump logs
         uses: canonical/charm-logdump-action@main
