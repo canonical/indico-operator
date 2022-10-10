@@ -72,7 +72,9 @@ jobs:
           IMAGES='${{ needs.get-images.outputs.images }}'
           ARGS=""
           echo $IMAGES | jq -c '.[]' | sed 's/\"//g' | while read image_name
-            do ARGS="${ARGS} --${image_name}-image ${{ env.REGISTRY }}/${{ env.OWNER }}/${image_name}:${{ github.run_id }}"
+            echo $image_name
+            echo $ARGS
+            do ARGS="$ARGS --$image_name-image ${{ env.REGISTRY }}/${{ env.OWNER }}/$image_name:${{ github.run_id }}"
           done
           echo $ARGS
           tox -e integration -- --model testing $ARGS
