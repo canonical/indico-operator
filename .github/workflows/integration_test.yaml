@@ -7,9 +7,6 @@ on:
 env:
   REGISTRY: ghcr.io
   OWNER: ${{ github.repository_owner }}
-  INDICO_IMAGE_NAME: indico
-  INDICO_NGINX_IMAGE_NAME: indico-nginx
-
 
 jobs:
   get-images:
@@ -71,8 +68,10 @@ jobs:
           " >> /var/snap/microk8s/current/args/containerd-template.toml'
           sudo su -c 'systemctl restart snap.microk8s.daemon-containerd.service && microk8s status --wait-ready'
       - name: Run integration tests
+        env:
+          IMAGES: ${{ fromJSON(needs.get-images.outputs.images) }}
         run: |
-          echo ${{ fromJSON(needs.get-images.outputs.images) }}
+          echo $IMAGES
           tox -e integration -- --model testing --indico-image ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.INDICO_IMAGE_NAME }}:${{ github.run_id }} --indico-nginx-image ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.INDICO_NGINX_IMAGE_NAME }}:${{ github.run_id }}
       - name: Dump logs
         uses: canonical/charm-logdump-action@main
