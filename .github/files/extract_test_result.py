@@ -26,17 +26,26 @@ with open("./test-result.json", encoding="utf-8") as f:
     coverage_result = result["testenvs"]["coverage-report"]["test"]
     coverage_success = coverage_result[0]["retcode"] == 0
     coverage_output = coverage_result[0]["output"]
-    reports = {
-        "lint": {"success": lint_success, "output": no_color(lint_output)},
-        "unit": {"success": unit_success, "output": no_color(unit_output)},
-        "static": {"success": static_success, "output": no_color(static_output)},
-        "coverage": {"success": coverage_success, "output": no_color(coverage_output)}
-    }
-    final_report = {
-        "sha": os.environ["GITHUB_EVENT_PULL_REQUEST_HEAD_SHA"],
-        "number": os.environ["GITHUB_EVENT_NUMBER"],
-        "reports": reports
-    }
-    os.makedirs("report", exist_ok=True)
+
+    sha = os.environ["GITHUB_EVENT_PULL_REQUEST_HEAD_SHA"]
+    reports = []
+    if not lint_success:
+        reports.append(
+            f"Lint checks failed for {sha}\n"
+            f"```\n{no_color(lint_output).strip()}\n```"
+        )
+    if not unit_success:
+        reports.append(
+            f"Unit tests failed for {sha}\n"
+            f"```\n{no_color(unit_output).strip()}\n```"
+        )
+
+    reports.append(
+        f"Test coverage for {sha}\n"
+        f"```\n{no_color(coverage_output).strip()}\n```"
+        "Static code analysis report\n"
+        f"```\n{no_color(static_output).strip()}\n```"
+    )
+    
     with open("report.json", "w+", encoding="utf-8") as o:
-        json.dump(final_report, o, indent=2)
+        json.dump(reports, o, indent=2)
