@@ -7,8 +7,6 @@ on:
 env:
   REGISTRY: ghcr.io
   OWNER: ${{ github.repository_owner }}
-  IMAGE_NAMES: '[indico, indico-nginx]'
-  IMAGE_NAMES_A: [indico, indico-nginx]
   INDICO_IMAGE_NAME: indico
   INDICO_NGINX_IMAGE_NAME: indico-nginx
 
@@ -23,13 +21,15 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+
       - name: Log in to the Container registry
         uses: docker/login-action@v2
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build and push image
+
+      - name: Build and push indico image
         id: build
         uses: docker/build-push-action@v3
         with:
@@ -41,7 +41,7 @@ jobs:
   integration-test-microk8s:
     name: Integration tests (microk8s)
     runs-on: ubuntu-20.04
-    needs: build-images
+    needs: [build-indico-image, build-indico-nginx-image]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -61,10 +61,7 @@ jobs:
           " >> /var/snap/microk8s/current/args/containerd-template.toml'
           sudo su -c 'systemctl restart snap.microk8s.daemon-containerd.service && microk8s status --wait-ready'
       - name: Run integration tests
-        run: |
-          echo ${{ env.IMAGE_NAMES }}
-          echo ${{ env.IMAGE_NAMES_A }}
-          tox -e integration -- --model testing --indico-image ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.INDICO_IMAGE_NAME }}:${{ github.run_id }} --indico-nginx-image ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.INDICO_NGINX_IMAGE_NAME }}:${{ github.run_id }}
+        run: tox -e integration -- --model testing --indico-image ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.INDICO_IMAGE_NAME }}:${{ github.run_id }} --indico-nginx-image ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.INDICO_NGINX_IMAGE_NAME }}:${{ github.run_id }}
       - name: Dump logs
         uses: canonical/charm-logdump-action@main
         if: failure()
