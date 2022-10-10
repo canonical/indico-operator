@@ -20,6 +20,7 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+      - name: Get dockerfiles
         id: set-images
         run: echo "::set-output name=images::$(ls *.Dockerfile | sed s/\.Dockerfile// |  jq -Rsc '. / "\n" - [""]')"
   build-images:
