@@ -32,19 +32,19 @@ with open("./test-result.json", encoding="utf-8") as f:
     if not lint_success:
         reports.append(
             f"Lint checks failed for {sha}\n"
-            f"```{no_color(lint_output).strip()}\n```"
+            f"```\n{no_color(lint_output).strip()}\n```"
         )
     if not unit_success:
         reports.append(
             f"Unit tests failed for {sha}\n"
-            f"```{no_color(unit_output).strip()}\n```"
+            f"```\n{no_color(unit_output).strip()}\n```"
         )
 
     reports.append(
         f"Test coverage for {sha}\n"
-        f"```{no_color(coverage_output).strip()}\n```"
+        f"```\n{no_color(coverage_output).strip()}\n```"
         "Static code analysis report\n"
-        f"```{no_color(static_output).strip()}\n```"
+        f"```\n{no_color(static_output).strip()}\n```"
     )
     
     with open("report.json", "w+", encoding="utf-8") as o:
