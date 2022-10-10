@@ -16,7 +16,7 @@ jobs:
     name: Get images
     runs-on: ubuntu-20.04
     outputs:
-      images: ${{ steps.set-matrix.outputs.images }}
+      images: ${{ steps.set-images.outputs.images }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
