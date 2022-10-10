@@ -70,8 +70,7 @@ jobs:
       - name: Run integration tests
         run: |
           IMAGES=${{ fromJSON(needs.get-images.outputs.images) }}
-          echo $IMAGES
-          for key in "${!IMAGES[@]}"; do echo ${IMAGES[$key]}; done
+          echo $IMAGES | jq -c '.[]' | while read image; do echo $image; done
           tox -e integration -- --model testing --indico-image ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.INDICO_IMAGE_NAME }}:${{ github.run_id }} --indico-nginx-image ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.INDICO_NGINX_IMAGE_NAME }}:${{ github.run_id }}
       - name: Dump logs
         uses: canonical/charm-logdump-action@main
