@@ -4,31 +4,60 @@ on:
   pull_request:
   workflow_call:
 
+env:
+  REGISTRY: ghcr.io
+  OWNER: ${{ github.repository_owner }}
+  INDICO_IMAGE_NAME: indico
+  INDICO_NGINX_IMAGE_NAME: indico-nginx
+
+
 jobs:
   build-indico-image:
     name: Build indico image
     runs-on: ubuntu-20.04
-    outputs:
-      image-id: ${{ steps.build.outputs.imageid }}
     steps:
-      - uses: actions/checkout@v2
-      - uses: ./.github/actions/build_oci_image
-        id: build
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v2
         with:
-          dockerfile: indico.Dockerfile
-          resource-name: indico-image
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push indico image
+        id: build
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.INDICO_IMAGE_NAME }}:${{ github.run_id }}
+          file: indico.Dockerfile
+
   build-indico-nginx-image:
     name: Build nginx image
     runs-on: ubuntu-20.04
-    outputs:
-      image-id: ${{ steps.build.outputs.imageid }}
     steps:
-      - uses: actions/checkout@v2
-      - uses: ./.github/actions/build_oci_image
-        id: build
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v2
         with:
-          dockerfile: indico-nginx.Dockerfile
-          resource-name: indico-nginx-image
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push nginx indico image
+        id: build
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.INDICO_NGINX_IMAGE_NAME }}:${{ github.run_id }}
+          file: indico-nginx.Dockerfile
+
   integration-test-microk8s:
     name: Integration tests (microk8s)
     runs-on: ubuntu-20.04
@@ -40,27 +69,19 @@ jobs:
         uses: charmed-kubernetes/actions-operator@main
         with:
           provider: microk8s
-      - name: Enable microk8s registry
-        # Add a step to wait for the registry to become available after it has
-        # been deployed to avoid any issues with trying to push images to it
-        # before it is ready
+      - name: Configure GHCR in microk8s
         run: |
-          sudo microk8s.enable registry
-          sudo microk8s.kubectl -n container-registry rollout status -w deployment/registry
-      - name: Download all artifacts
-        uses: actions/download-artifact@v3
-      - name: Push indico image to microk8s registry
-        run: |
-          imageId=$(docker load --input indico-image/indico-image.tar | sed -e "s/^Loaded image ID: //")
-          docker tag $imageId localhost:32000/indico:latest
-          docker push localhost:32000/indico:latest
-      - name: Push nginx image to microk8s registry
-        run: |
-          imageId=$(docker load --input indico-nginx-image/indico-nginx-image.tar | sed -e "s/^Loaded image ID: //")
-          docker tag $imageId localhost:32000/indico-nginx:latest
-          docker push localhost:32000/indico-nginx:latest
+          # Adding authentication for ghcr.io for containerd as per https://microk8s.io/docs/registry-private
+          # Note: containerd has to be restarted for the changes to take effect
+          # (https://github.com/containerd/cri/blob/master/docs/registry.md)
+          sudo su -c 'echo "
+          [plugins.\"io.containerd.grpc.v1.cri\".registry.configs.\"ghcr.io\".auth]
+          username = \"${{ github.actor }}\"
+          password = \"${{ secrets.GITHUB_TOKEN }}\"
+          " >> /var/snap/microk8s/current/args/containerd-template.toml'
+          sudo su -c 'systemctl restart snap.microk8s.daemon-containerd.service && microk8s status --wait-ready'
       - name: Run integration tests
-        run: tox -e integration -- --model testing --indico-image localhost:32000/indico:latest --indico-nginx-image localhost:32000/indico-nginx:latest
+        run: tox -e integration -- --model testing --indico-image ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.INDICO_IMAGE_NAME }}:${{ github.run_id }} --indico-nginx-image ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.INDICO_NGINX_IMAGE_NAME }}:${{ github.run_id }}
       - name: Dump logs
         uses: canonical/charm-logdump-action@main
         if: failure()
