@@ -47,6 +47,9 @@ class IndicoOperatorCharm(CharmBase):
             self.on.nginx_prometheus_exporter_pebble_ready, self._on_pebble_ready
         )
         self.framework.observe(
+            self.on.statsd_prometheus_exporter_pebble_ready, self._on_pebble_ready
+        )
+        self.framework.observe(
             self.on.refresh_external_resources_action, self._refresh_external_resources_action
         )
         # self.framework.observe(self.on.update_status, self._refresh_external_resources)
@@ -274,9 +277,9 @@ class IndicoOperatorCharm(CharmBase):
             "summary": "Nginx prometheus exporter",
             "description": "Prometheus exporter for nginx",
             "services": {
-                "exporter": {
+                "nginx-exporter": {
                     "override": "replace",
-                    "summary": "Exporter",
+                    "summary": "Nginx Exporter",
                     "command": (
                         "nginx-prometheus-exporter"
                         " -nginx.scrape-uri=http://localhost:9080/stub_status"
@@ -285,7 +288,7 @@ class IndicoOperatorCharm(CharmBase):
                 },
             },
             "checks": {
-                "exporter-up": {
+                "nginx-exporter-up": {
                     "override": "replace",
                     "level": "alive",
                     "http": {"url": "http://localhost:9113/metrics"},
@@ -299,9 +302,9 @@ class IndicoOperatorCharm(CharmBase):
             "summary": "Statsd prometheus exporter",
             "description": "Prometheus exporter for statsd",
             "services": {
-                "exporter": {
+                "statsd-exporter": {
                     "override": "replace",
-                    "summary": "Exporter",
+                    "summary": "Statsd Exporter",
                     "command": (
                         "statsd_exporter"
                     ),
@@ -309,7 +312,7 @@ class IndicoOperatorCharm(CharmBase):
                 },
             },
             "checks": {
-                "exporter-up": {
+                "statsd-exporter-up": {
                     "override": "replace",
                     "level": "alive",
                     "http": {"url": "http://localhost:9102/metrics"},
