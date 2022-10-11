@@ -30,12 +30,12 @@ with open("./test-result.json", encoding="utf-8") as f:
         "lint": {"success": lint_success, "output": no_color(lint_output)},
         "unit": {"success": unit_success, "output": no_color(unit_output)},
         "static": {"success": static_success, "output": no_color(static_output)},
-        "coverage": {"success": coverage_success, "output": no_color(coverage_output)}
+        "coverage": {"success": coverage_success, "output": no_color(coverage_output)},
     }
     final_report = {
         "sha": os.environ["GITHUB_EVENT_PULL_REQUEST_HEAD_SHA"],
         "number": os.environ["GITHUB_EVENT_NUMBER"],
-        "reports": reports
+        "reports": reports,
     }
     os.makedirs("report", exist_ok=True)
     with open("report.json", "w+", encoding="utf-8") as o:

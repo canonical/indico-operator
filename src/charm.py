@@ -305,9 +305,7 @@ class IndicoOperatorCharm(CharmBase):
                 "statsd-exporter": {
                     "override": "replace",
                     "summary": "Statsd Exporter",
-                    "command": (
-                        "statsd_exporter"
-                    ),
+                    "command": ("statsd_exporter"),
                     "startup": "enabled",
                 },
             },
