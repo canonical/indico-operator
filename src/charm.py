@@ -68,7 +68,7 @@ class IndicoOperatorCharm(CharmBase):
         self.framework.observe(self.on.redis_relation_changed, self._on_config_changed)
         self.ingress = IngressRequires(self, self._make_ingress_config())
         self._metrics_endpoint = MetricsEndpointProvider(
-            self, jobs=[{"static_configs": [{"targets": ["*:9113"]}]}]
+            self, jobs=[{"static_configs": [{"targets": ["localhost:9113", "localhost:9102"]}]}]
         )
         self._grafana_dashboards = GrafanaDashboardProvider(self)
 
@@ -289,6 +289,30 @@ class IndicoOperatorCharm(CharmBase):
                     "override": "replace",
                     "level": "alive",
                     "http": {"url": "http://localhost:9113/metrics"},
+                },
+            },
+        }
+
+    def _get_statsd_prometheus_exporter_pebble_config(self, _):
+        """Generate pebble config for the statsd-prometheus-exporter container."""
+        return {
+            "summary": "Statsd prometheus exporter",
+            "description": "Prometheus exporter for statsd",
+            "services": {
+                "exporter": {
+                    "override": "replace",
+                    "summary": "Exporter",
+                    "command": (
+                        "statsd_exporter"
+                    ),
+                    "startup": "enabled",
+                },
+            },
+            "checks": {
+                "exporter-up": {
+                    "override": "replace",
+                    "level": "alive",
+                    "http": {"url": "http://localhost:9102/metrics"},
                 },
             },
         }
