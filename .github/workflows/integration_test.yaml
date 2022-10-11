@@ -70,13 +70,11 @@ jobs:
       - name: Run integration tests
         run: |
           image_names=$(echo '${{ needs.get-images.outputs.images }}' | jq -c '.[]' | sed 's/\"//g')
-          ARGS=""
+          args=""
           for image_name in $image_names; do
-            echo $image_name
-            ARGS="${ARGS} --${image_name}-image ${{ env.REGISTRY }}/${{ env.OWNER }}/${image_name}:${{ github.run_id }}"
-            echo $ARGS
+            args="${args} --${image_name}-image ${{ env.REGISTRY }}/${{ env.OWNER }}/${image_name}:${{ github.run_id }}"
           done
-          tox -e integration -- --model testing $ARGS
+          tox -e integration -- --model testing $args
       - name: Dump logs
         uses: canonical/charm-logdump-action@main
         if: failure()
