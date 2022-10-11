@@ -36,6 +36,18 @@ async def test_indico_is_up(ops_test: OpsTest, app: Application):
     )
     assert response.status_code == 200
 
+@pytest.mark.asyncio
+@pytest.mark.abort_on_fail
+async def test_prom_exporters_are_up():
+    """Check that the prometheus exporters are up and running.
+
+    Assume that the charm has already been built and is running.
+    """
+    prometheus_targets = ["localhost:9113", "localhost:9102"]
+    # Send request to /metrics for each target and check the response
+    for target in prometheus_targets:
+        response = requests.get(f"http://{target}/metrics")
+        assert response.status_code == 200
 
 @pytest.mark.asyncio
 @pytest.mark.abort_on_fail
