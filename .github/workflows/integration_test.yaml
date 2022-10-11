@@ -19,7 +19,7 @@ jobs:
         uses: actions/checkout@v3
       - name: Get dockerfiles
         id: set-images
-        run: echo "::set-output name=images::$(ls *.Dockerfile | sed s/\.Dockerfile// |  jq -Rsc '. / "\n" - [""]')"
+        run: echo "::set-output name=images::$(ls *.Dockerfile 2> /dev/null | sed s/\.Dockerfile// |  jq -Rsc '. / "\n" - [""]')"
   build-images:
     name: Build image
     runs-on: ubuntu-20.04
