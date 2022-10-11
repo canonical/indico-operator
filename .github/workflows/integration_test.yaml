@@ -70,11 +70,10 @@ jobs:
       - name: Run integration tests
         run: |
           image_names=$(echo '${{ needs.get-images.outputs.images }}' | jq -c '.[]' | sed 's/\"//g')
-          echo $image_names
           ARGS=""
-          for image_name in image_names; do
+          for image_name in $image_names; do
             echo $image_name
-            ARGS="$ARGS --$image_name-image ${{ env.REGISTRY }}/${{ env.OWNER }}/$image_name:${{ github.run_id }}"
+            ARGS="${ARGS} --${image_name}-image ${{ env.REGISTRY }}/${{ env.OWNER }}/${image_name}:${{ github.run_id }}"
             echo $ARGS
           done
           tox -e integration -- --model testing $ARGS
