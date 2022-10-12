@@ -12,8 +12,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
       - name: Check libs
         uses: canonical/charming-actions/check-libraries@1.0.3
         with:
@@ -66,8 +64,6 @@ jobs:
     needs: [ select-branch, publish-images ]
     steps:
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
       - name: Upload charm to charmhub
         uses: canonical/charming-actions/upload-charm@1.0.3
         with:
