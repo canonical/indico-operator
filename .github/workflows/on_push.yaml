@@ -44,7 +44,7 @@ jobs:
     name: Publish images to charmhub
     runs-on: ubuntu-latest
     needs: [ tests, integration-tests ]
-    if: ${{ !failure() && needs.integration-tests.steps.get-images.outputs.images != '[]' }}
+    if: ${{ !failure() }}
     strategy:
       matrix:
         image: ${{ fromJSON(needs.integration-tests.steps.get-images.outputs.images) }}
