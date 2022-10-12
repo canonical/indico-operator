@@ -24,6 +24,7 @@ jobs:
     name: Build image
     runs-on: ubuntu-20.04
     needs: get-images
+    if: ${{ needs.changes.outputs.services != '[]' }}
     strategy:
       matrix:
         image: ${{ fromJSON(needs.get-images.outputs.images) }}
