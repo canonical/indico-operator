@@ -29,9 +29,19 @@ def nginx_prometheus_exporter_image(metadata):
     yield metadata["resources"]["nginx-prometheus-exporter-image"]["upstream-source"]
 
 
+@fixture(scope="module")
+def statsd_prometheus_exporter_image(metadata):
+    """Provides the statsd prometheus exporter image from the metadata."""
+    yield metadata["resources"]["statsd-prometheus-exporter-image"]["upstream-source"]
+
+
 @pytest_asyncio.fixture(scope="module")
 async def app(
-    ops_test: OpsTest, app_name: str, pytestconfig: Config, nginx_prometheus_exporter_image: str
+    ops_test: OpsTest,
+    app_name: str,
+    pytestconfig: Config,
+    nginx_prometheus_exporter_image: str,
+    statsd_prometheus_exporter_image: str,
 ):
     """Indico charm used for integration testing.
 
@@ -49,6 +59,7 @@ async def app(
         "indico-image": pytestconfig.getoption("--indico-image"),
         "indico-nginx-image": pytestconfig.getoption("--indico-nginx-image"),
         "nginx-prometheus-exporter-image": nginx_prometheus_exporter_image,
+        "statsd-prometheus-exporter-image": statsd_prometheus_exporter_image,
     }
     application = await ops_test.model.deploy(
         charm, resources=resources, application_name=app_name
