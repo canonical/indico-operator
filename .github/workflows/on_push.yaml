@@ -41,6 +41,7 @@ jobs:
     name: Run integration tests
     uses: ./.github/workflows/integration_test.yaml
   stuff:
+    runs-on: ubuntu-latest
     needs: [ tests, integration-tests ]
     if: ${{ !failure() }}
     name: stuff
