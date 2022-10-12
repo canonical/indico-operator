@@ -65,7 +65,7 @@ jobs:
           image=${{ env.REGISTRY }}/${{ env.OWNER }}/${{ matrix.image }}:${{ github.run_id }}
           charmName=$(yq '.name' metadata.yaml)
           docker pull $image
-          imageId=$(docker images $image --format "{{.ID}")
+          imageId=$(docker images $image --format "{{.ID}}")
           charmcraft upload-resource $charmName ${{ matrix.image }}-image --image=$imageId --verbosity=trace
   select-channel:
     name: Select target channel
