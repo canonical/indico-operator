@@ -52,12 +52,11 @@ jobs:
     name: Select target branch
     runs-on: ubuntu-latest
     outputs:
-      channel: ${{ steps.extract-branch.outputs.branch }}
+      channel: ${{ env.branch }}
     steps:
       - name: Get target branch
-        shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
         id: extract-branch
+        run: echo "branch=$(echo ${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
   publish-charm:
     name: Publish charm to latest/edge/${{ needs.select-branch.outputs.branch }}
     runs-on: ubuntu-latest
