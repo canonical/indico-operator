@@ -47,6 +47,8 @@ jobs:
   integration-test-microk8s:
     name: Integration tests (microk8s)
     runs-on: ubuntu-20.04
+    outputs:
+      images: ${{ needs.get-images.outputs.images }}
     needs: [get-images, build-images]
     if:  ${{ !failure() }}
     steps:
