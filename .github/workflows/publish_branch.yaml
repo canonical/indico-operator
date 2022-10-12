@@ -47,10 +47,10 @@ jobs:
         env:
           CHARMCRAFT_AUTH:  ${{ secrets.CHARMHUB_TOKEN }}
         run: |
-          docker pull ${{ matrix.image }}
-          imageId=$(docker images ${{ matrix.image }} --format "{{.ID}")
+          image = ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ matrix.image }}:${{ github.run_id }}
+          docker pull $image
+          imageId=$(docker images $image --format "{{.ID}")
           charmcraft upload-resource indico ${{ matrix.image }}-image --image=$imageId --verbosity=trace
-          
   select-branch:
     name: Select target branch
     runs-on: ubuntu-latest
