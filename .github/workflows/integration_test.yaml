@@ -77,7 +77,7 @@ jobs:
           for image_name in $(echo '${{ needs.get-images.outputs.images }}' | jq -cr '.[]'); do
             args="${args} --${image_name}-image ${{ env.REGISTRY }}/${{ env.OWNER }}/${image_name}:${{ github.run_id }}"
           done
-          tox
+          tox -e integration -- --model testing $args
       - name: Dump logs
         uses: canonical/charm-logdump-action@main
         if: failure()
