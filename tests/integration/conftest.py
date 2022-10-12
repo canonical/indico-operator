@@ -51,7 +51,7 @@ async def app(
         "nginx-prometheus-exporter-image": nginx_prometheus_exporter_image,
     }
     application = await ops_test.model.deploy(
-        charm, resources=resources, application_name=app_name
+        charm, resources=resources, application_name=app_name, series="focal"
     )
     await ops_test.model.wait_for_idle()
 
