@@ -6,7 +6,7 @@ on:
     outputs:
       images:
         description: Pushed docker images
-        values: ${{ jobs.get-images.outputs.images }}
+        value: ${{ jobs.get-images.outputs.images }}
 
 env:
   REGISTRY: ghcr.io
