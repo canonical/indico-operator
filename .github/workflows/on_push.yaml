@@ -44,7 +44,8 @@ jobs:
     needs: [ tests, integration-tests ]
     if: ${{ !failure() }}
     name: stuff
-    run: echo ${{ needs.integration-tests.jobs }}
+    steps:
+      - run: echo ${{ needs.integration-tests.jobs }}
   publish-images:
     name: Publish images to charmhub
     runs-on: ubuntu-latest
