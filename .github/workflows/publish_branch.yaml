@@ -46,9 +46,10 @@ jobs:
           CHARMCRAFT_AUTH:  ${{ secrets.CHARMHUB_TOKEN }}
         run: |
           image = ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ matrix.image }}:${{ github.run_id }}
+          charmName = $(yq '.name' metadata.yaml)
           docker pull $image
           imageId=$(docker images $image --format "{{.ID}")
-          charmcraft upload-resource indico ${{ matrix.image }}-image --image=$imageId --verbosity=trace
+          charmcraft upload-resource $charmName ${{ matrix.image }}-image --image=$imageId --verbosity=trace
   select-branch:
     name: Select target branch
     runs-on: ubuntu-latest
