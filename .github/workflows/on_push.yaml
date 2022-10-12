@@ -40,21 +40,14 @@ jobs:
   integration-tests:
     name: Run integration tests
     uses: ./.github/workflows/integration_test.yaml
-  stuff:
-    runs-on: ubuntu-latest
-    needs: [ tests, get-images ]
-    if: ${{ !failure() }}
-    name: stuff
-    steps:
-      - run: echo ${{ needs.get-images.outputs.images }}
   publish-images:
     name: Publish images to charmhub
     runs-on: ubuntu-latest
     needs: [ tests, integration-tests ]
-    if: ${{ !failure() }}
+    if: ${{ !failure() && needs.get-images.outputs.images != '[]' }}
     strategy:
       matrix:
-        image: ${{ fromJSON(needs.get-images.outputs.images) }}
+        image: ${{ fromJSON(needs.integration-tests.outputs.images) }}
     steps:
       - uses: actions/checkout@v3
       - name: Install charmcraft
