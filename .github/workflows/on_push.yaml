@@ -47,7 +47,7 @@ jobs:
     if: ${{ !failure() }}
     strategy:
       matrix:
-        image: ${{ fromJSON(needs.integration-tests.steps.get-images.outputs.images) }}
+        image: ${{ fromJSON(needs.integration-tests.integration-test-microk8s.steps.get-images.outputs.images) }}
     steps:
       - uses: actions/checkout@v3
       - name: Install charmcraft
