@@ -297,7 +297,11 @@ class IndicoOperatorCharm(CharmBase):
         }
 
     def _get_statsd_prometheus_exporter_pebble_config(self, _):
-        """Generate pebble config for the statsd-prometheus-exporter container."""
+        """Generate pebble config for the statsd-prometheus-exporter container.
+
+        Returns:
+            The pebble configuration for the container.
+        """
         return {
             "summary": "Statsd prometheus exporter",
             "description": "Prometheus exporter for statsd",
