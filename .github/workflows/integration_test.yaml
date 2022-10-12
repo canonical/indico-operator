@@ -15,8 +15,7 @@ jobs:
     outputs:
       images: ${{ env.images }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
       - name: Get dockerfiles
         id: set-images
         run: echo "images=$(ls *.Dockerfile 2> /dev/null | sed s/\.Dockerfile// |  jq -Rsc '. / "\n" - [""]')" >> $GITHUB_ENV
@@ -29,8 +28,7 @@ jobs:
       matrix:
         image: ${{ fromJSON(needs.get-images.outputs.images) }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
       - name: Log in to the Container registry
         uses: docker/login-action@v2
         with:
@@ -52,8 +50,7 @@ jobs:
     needs: [get-images, build-images]
     if:  ${{ !failure() }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
       - name: Setup operator environment
         uses: charmed-kubernetes/actions-operator@main
         with:
