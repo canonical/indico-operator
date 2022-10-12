@@ -12,6 +12,8 @@ jobs:
   get-images:
     name: Get images
     runs-on: ubuntu-20.04
+    outputs:
+      images: ${{ env.images }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -22,10 +24,10 @@ jobs:
     name: Build image
     runs-on: ubuntu-20.04
     needs: get-images
-    if: ${{ env.images != '[]' }}
+    if: ${{ needs.get-images.outputs.images != '[]' }}
     strategy:
       matrix:
-        image: ${{ fromJSON(env.images) }}
+        image: ${{ fromJSON(needs.get-images.outputs.images) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
