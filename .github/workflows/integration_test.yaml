@@ -12,22 +12,20 @@ jobs:
   get-images:
     name: Get images
     runs-on: ubuntu-20.04
-    outputs:
-      images: ${{ steps.set-images.outputs.images }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
       - name: Get dockerfiles
         id: set-images
-        run: echo "::set-output name=images::$(ls *.Dockerfile 2> /dev/null | sed s/\.Dockerfile// |  jq -Rsc '. / "\n" - [""]')"
+        run: echo "images=$(ls *.Dockerfile 2> /dev/null | sed s/\.Dockerfile// |  jq -Rsc '. / "\n" - [""]')" >> $GITHUB_ENV
   build-images:
     name: Build image
     runs-on: ubuntu-20.04
     needs: get-images
-    if: ${{ needs.changes.outputs.services != '[]' }}
+    if: ${{ jobs.get-images.env.images != '[]' }}
     strategy:
       matrix:
-        image: ${{ fromJSON(needs.get-images.outputs.images) }}
+        image: ${{ fromJSON(jobs.get-images.env.images) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
