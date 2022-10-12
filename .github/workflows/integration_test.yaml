@@ -22,10 +22,10 @@ jobs:
     name: Build image
     runs-on: ubuntu-20.04
     needs: get-images
-    if: ${{ jobs.get-images.env.images != '[]' }}
+    if: ${{ needs.get-images.env.images != '[]' }}
     strategy:
       matrix:
-        image: ${{ fromJSON(jobs.get-images.env.images) }}
+        image: ${{ fromJSON(needs.get-images.env.images) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
