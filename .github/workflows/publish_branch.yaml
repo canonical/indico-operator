@@ -58,7 +58,7 @@ jobs:
     steps:
       - name: Get target branch
         id: extract-branch
-        run: echo "branch=$(echo ${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+        run: echo "branch=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
   publish-charm:
     name: Publish charm to latest/edge/${{ needs.select-branch.outputs.branch }}
     runs-on: ubuntu-latest
