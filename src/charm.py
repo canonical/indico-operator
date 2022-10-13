@@ -47,6 +47,9 @@ class IndicoOperatorCharm(CharmBase):
             self.on.nginx_prometheus_exporter_pebble_ready, self._on_pebble_ready
         )
         self.framework.observe(
+            self.on.statsd_prometheus_exporter_pebble_ready, self._on_pebble_ready
+        )
+        self.framework.observe(
             self.on.refresh_external_resources_action, self._refresh_external_resources_action
         )
         # self.framework.observe(self.on.update_status, self._refresh_external_resources)
@@ -68,7 +71,7 @@ class IndicoOperatorCharm(CharmBase):
         self.framework.observe(self.on.redis_relation_changed, self._on_config_changed)
         self.ingress = IngressRequires(self, self._make_ingress_config())
         self._metrics_endpoint = MetricsEndpointProvider(
-            self, jobs=[{"static_configs": [{"targets": ["*:9113"]}]}]
+            self, jobs=[{"static_configs": [{"targets": ["localhost:9113", "localhost:9102"]}]}]
         )
         self._grafana_dashboards = GrafanaDashboardProvider(self)
 
@@ -274,9 +277,9 @@ class IndicoOperatorCharm(CharmBase):
             "summary": "Nginx prometheus exporter",
             "description": "Prometheus exporter for nginx",
             "services": {
-                "exporter": {
+                "nginx-exporter": {
                     "override": "replace",
-                    "summary": "Exporter",
+                    "summary": "Nginx Exporter",
                     "command": (
                         "nginx-prometheus-exporter"
                         " -nginx.scrape-uri=http://localhost:9080/stub_status"
@@ -285,10 +288,36 @@ class IndicoOperatorCharm(CharmBase):
                 },
             },
             "checks": {
-                "exporter-up": {
+                "nginx-exporter-up": {
                     "override": "replace",
                     "level": "alive",
                     "http": {"url": "http://localhost:9113/metrics"},
+                },
+            },
+        }
+
+    def _get_statsd_prometheus_exporter_pebble_config(self, _):
+        """Generate pebble config for the statsd-prometheus-exporter container.
+
+        Returns:
+            The pebble configuration for the container.
+        """
+        return {
+            "summary": "Statsd prometheus exporter",
+            "description": "Prometheus exporter for statsd",
+            "services": {
+                "statsd-exporter": {
+                    "override": "replace",
+                    "summary": "Statsd Exporter",
+                    "command": ("statsd_exporter"),
+                    "startup": "enabled",
+                },
+            },
+            "checks": {
+                "statsd-exporter-up": {
+                    "override": "replace",
+                    "level": "alive",
+                    "http": {"url": "http://localhost:9102/metrics"},
                 },
             },
         }
