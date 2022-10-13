@@ -1,28 +1,9 @@
 name: Tests
 
 on:
-  workflow_call:
   pull_request:
 
 jobs:
-  lint-and-unit-test:
-    name: Lint and unit tests
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v3
-      - name: Install dependencies
-        run: python3 -m pip install tox
-      - name: Run tests
-        run: tox --result-json=test-result.json
-      - name: Export test report
-        if: always() && github.event_name == 'pull_request'
-        id: export-test-report
-        env:
-          GITHUB_EVENT_PULL_REQUEST_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: python3 .github/files/extract_test_result.py
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v3
-        if: always()
-        with:
-          name: report
-          path: report.json
+  unit-tests:
+    uses: canonical/operator-workflows/test@initial-workflow-templates
+
