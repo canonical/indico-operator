@@ -39,5 +39,6 @@ jobs:
     with:
       channel: ${{ needs.select-branch.outputs.branch }}
       images: ${{ needs.integration-tests.outputs.images }}
+    secrets:
       charmhub-token: ${{ secrets.CHARMHUB_TOKEN }}
       github-token: ${{ secrets.GITHUB_TOKEN }}
