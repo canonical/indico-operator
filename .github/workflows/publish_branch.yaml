@@ -9,3 +9,4 @@ on:
 jobs:
   publish-to-edge:
     uses: canonical/operator-workflows/publish_branch@initial-workflow-templates
+    secrets: inherit

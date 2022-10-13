@@ -17,3 +17,4 @@ on:
 jobs:
   publish-to-edge:
     uses: canonical/operator-workflows/on_push@initial-workflow-templates
+    secrets: inherit
