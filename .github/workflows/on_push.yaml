@@ -37,6 +37,9 @@ jobs:
   tests:
     name: Run tests
     uses: ./.github/workflows/test.yaml
+  integration-tests:
+    name: Run integration tests
+    uses: ./.github/workflows/integration_test.yaml
   select-channel:
     name: Select target channel
     runs-on: ubuntu-latest
@@ -49,7 +52,7 @@ jobs:
   publish-charm:
     name: Publish
     uses: ./.github/workflows/publish_charm.yaml
-    needs: [ tests, select-channel, publish-images ]
+    needs: [ integration-tests, select-channel, publish-images ]
     with:
       channel: ${{ needs.select-channel.outputs.channel }}
-      images: ${{ needs.tests.outputs.images }}
+      images: ${{ needs.integration-tests.outputs.images }}

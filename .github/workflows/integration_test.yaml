@@ -1,0 +1,86 @@
+name: Integration tests
+
+on:
+  pull_request:
+  workflow_call:
+    outputs:
+      images:
+        description: Pushed docker images
+        value: ${{ jobs.get-images.outputs.images }}
+
+env:
+  REGISTRY: ghcr.io
+  OWNER: ${{ github.repository_owner }}
+
+jobs:
+  get-images:
+    name: Get images
+    runs-on: ubuntu-20.04
+    outputs:
+      images: ${{ env.DOCKER_IMAGES }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Get dockerfiles
+        id: set-images
+        run: echo "DOCKER_IMAGES=$(ls *.Dockerfile 2> /dev/null | sed s/\.Dockerfile// |  jq -Rsc '. / "\n" - [""]')" >> $GITHUB_ENV
+  build-images:
+    name: Build image
+    runs-on: ubuntu-20.04
+    needs: get-images
+    if: ${{ needs.get-images.outputs.images != '[]' }}
+    strategy:
+      matrix:
+        image: ${{ fromJSON(needs.get-images.outputs.images) }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Log in to the Container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push image
+        id: build
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ matrix.image }}:${{ github.run_id }}
+          file: ${{ matrix.image }}.Dockerfile
+
+  integration-test-microk8s:
+    name: Integration tests (microk8s)
+    runs-on: ubuntu-20.04
+    needs: [get-images, build-images]
+    if:  ${{ !failure() }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup operator environment
+        uses: charmed-kubernetes/actions-operator@main
+        with:
+          provider: microk8s
+      - name: Configure GHCR in microk8s
+        run: |
+          # Adding authentication for ghcr.io for containerd as per https://microk8s.io/docs/registry-private
+          # Note: containerd has to be restarted for the changes to take effect
+          # (https://github.com/containerd/cri/blob/master/docs/registry.md)
+          sudo su -c 'echo "
+          [plugins.\"io.containerd.grpc.v1.cri\".registry.configs.\"ghcr.io\".auth]
+          username = \"${{ github.actor }}\"
+          password = \"${{ secrets.GITHUB_TOKEN }}\"
+          " >> /var/snap/microk8s/current/args/containerd-template.toml'
+          sudo su -c 'systemctl restart snap.microk8s.daemon-containerd.service && microk8s status --wait-ready'
+      - name: Run integration tests
+        run: |
+          echo "CHARM_NAME=$(yq '.name' metadata.yaml)" >> $GITHUB_ENV
+          args=""
+          for image_name in $(echo '${{ needs.get-images.outputs.images }}' | jq -cr '.[]'); do
+            args="${args} --${image_name}-image ${{ env.REGISTRY }}/${{ env.OWNER }}/${image_name}:${{ github.run_id }}"
+          done
+          tox -e integration -- --model testing $args
+      - name: Dump logs
+        uses: canonical/charm-logdump-action@main
+        if: failure()
+        with:
+          app: ${{ env.CHARM_NAME }}
+          model: testing
