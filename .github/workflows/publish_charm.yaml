@@ -14,10 +14,10 @@ jobs:
     name: Publish images to charmhub
     runs-on: ubuntu-latest
     needs: tests
-    if: ${{ !failure() && input.images != '[]' }}
+    if: ${{ inputs.images != '[]' }}
     strategy:
       matrix:
-        image: ${{ fromJSON(input.images) }}
+        image: ${{ fromJSON(inputs.images) }}
     steps:
       - uses: actions/checkout@v3
       - name: Install charmcraft
@@ -41,6 +41,7 @@ jobs:
     name: Publish charm to ${{ needs.select-channel.outputs.channel }}
     runs-on: ubuntu-latest
     needs: publish-images
+    if: ${{ !failure() }}
     steps:
       - uses: actions/checkout@v3
       - name: Upload charm to charmhub
