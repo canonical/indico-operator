@@ -16,5 +16,5 @@ on:
 
 jobs:
   publish-to-edge:
-    uses: canonical/operator-workflows/.github/workflows/on_push@initial-workflow-templates
+    uses: canonical/operator-workflows/.github/workflows/on_push.yaml@initial-workflow-templates
     secrets: inherit

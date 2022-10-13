@@ -8,5 +8,5 @@ on:
 
 jobs:
   publish-to-edge:
-    uses: canonical/operator-workflows/.github/workflows/publish_branch@initial-workflow-templates
+    uses: canonical/operator-workflows/.github/workflows/publish_branch.yaml@initial-workflow-templates
     secrets: inherit
