@@ -17,6 +17,8 @@ containers:
     resource: indico-image
   nginx-prometheus-exporter:
     resource: nginx-prometheus-exporter-image
+  statsd-prometheus-exporter:
+    resource: statsd-prometheus-exporter-image
 
 resources:
   indico-image:
@@ -32,6 +34,11 @@ resources:
     description: Prometheus exporter for nginx
     auto-fetch: true
     upstream-source: nginx/nginx-prometheus-exporter:0.10.0
+  statsd-prometheus-exporter-image:
+    type: oci-image
+    description: Prometheus exporter for statsd
+    auto-fetch: true
+    upstream-source: prom/statsd-exporter:v0.22.8
 
 provides:
   grafana-dashboard:

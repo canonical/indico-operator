@@ -56,6 +56,7 @@ class RedisRelationUpdatedEvent(EventBase):
 
 class RedisRelationCharmEvents(CharmEvents):
     """A class to carry custom charm events so requires can react to relation changes."""
+
     redis_relation_updated = EventSource(RedisRelationUpdatedEvent)
 
 
@@ -100,8 +101,8 @@ class RedisProvides(Object):
 
     def _on_relation_changed(self, event):
         """Handle the relation changed event."""
-        event.relation.data[self.model.unit]['hostname'] = self._get_master_ip()
-        event.relation.data[self.model.unit]['port'] = str(self._port)
+        event.relation.data[self.model.unit]["hostname"] = self._get_master_ip()
+        event.relation.data[self.model.unit]["port"] = str(self._port)
         # The reactive Redis charm also exposes 'password'. When tackling
         # https://github.com/canonical/redis-k8s/issues/7 add 'password'
         # field so that it matches the exposed interface information from it.

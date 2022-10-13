@@ -26,7 +26,6 @@ with open("./test-result.json", encoding="utf-8") as f:
     coverage_result = result["testenvs"]["coverage-report"]["test"]
     coverage_success = coverage_result[0]["retcode"] == 0
     coverage_output = coverage_result[0]["output"]
-
     sha = os.environ["GITHUB_EVENT_PULL_REQUEST_HEAD_SHA"]
     reports = []
     if not lint_success:
@@ -46,6 +45,5 @@ with open("./test-result.json", encoding="utf-8") as f:
         "Static code analysis report\n"
         f"```\n{no_color(static_output).strip()}\n```"
     )
-    
     with open("report.json", "w+", encoding="utf-8") as o:
         json.dump(reports, o, indent=2)
