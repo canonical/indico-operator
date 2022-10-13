@@ -9,6 +9,10 @@ on:
       images:
         type: string
 
+env:
+  REGISTRY: ghcr.io
+  OWNER: ${{ github.repository_owner }}
+
 jobs:
   publish-images:
     name: Publish images to charmhub

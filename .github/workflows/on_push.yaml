@@ -14,10 +14,6 @@ on:
       - main
       - track/**
 
-env:
-  REGISTRY: ghcr.io
-  OWNER: ${{ github.repository_owner }}
-
 jobs:
   lib-check:
     # This job is the precondition of all jobs that need the Charmhub token.
