@@ -39,17 +39,23 @@ async def test_indico_is_up(ops_test: OpsTest, app: Application):
 
 @pytest.mark.asyncio
 @pytest.mark.abort_on_fail
-async def test_prom_exporters_are_up():
+async def test_prom_exporters_are_up(app: Application):
     """
     arrange: given charm in its initial state
     act: when the metrics endpoints are scraped
     assert: the response is 200 (HTTP OK)
     """
+    indico_unit = app.units[0]
     prometheus_targets = ["localhost:9113", "localhost:9102"]
     # Send request to /metrics for each target and check the response
     for target in prometheus_targets:
-        response = requests.get(f"http://{target}/metrics")
-        assert response.status_code == 200
+        cmd = f"curl http://{target}/metrics"
+        action = await indico_unit.run(cmd)
+        result = await action.wait()
+        code = result.results.get("return-code")
+        stdout = result.results.get("stdout")
+        stderr = result.results.get("stderr")
+        assert code == 0, f"{cmd} failed ({code}): {stderr or stdout}"
 
 
 @pytest.mark.asyncio
