@@ -1,0 +1,52 @@
+name: Publish charm
+
+on:
+  workflow_call:
+    inputs:
+      channel:
+        required: true
+        type: string
+      images:
+        type: string
+
+jobs:
+  publish-images:
+    name: Publish images to charmhub
+    runs-on: ubuntu-latest
+    needs: tests
+    if: ${{ !failure() && input.images != '[]' }}
+    strategy:
+      matrix:
+        image: ${{ fromJSON(input.images) }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install charmcraft
+        run: sudo snap install charmcraft --classic
+      - name: Log in to the Container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish image
+        env:
+          CHARMCRAFT_AUTH:  ${{ secrets.CHARMHUB_TOKEN }}
+        run: |
+          image=${{ env.REGISTRY }}/${{ env.OWNER }}/${{ matrix.image }}:${{ github.run_id }}
+          charmName=$(yq '.name' metadata.yaml)
+          docker pull $image
+          imageId=$(docker images $image --format "{{.ID}}")
+          charmcraft upload-resource $charmName ${{ matrix.image }}-image --image=$imageId --verbosity=trace
+  publish-charm:
+    name: Publish charm to ${{ needs.select-channel.outputs.channel }}
+    runs-on: ubuntu-latest
+    needs: publish-images
+    steps:
+      - uses: actions/checkout@v3
+      - name: Upload charm to charmhub
+        uses: canonical/charming-actions/upload-charm@2.0.0-rc
+        with:
+          credentials: ${{ secrets.CHARMHUB_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          channel: ${{ inputs.channel }}
+          upload-image: false

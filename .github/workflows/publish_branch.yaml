@@ -20,36 +20,6 @@ jobs:
   tests:
     name: Run tests
     uses: ./.github/workflows/test.yaml
-  integration-tests:
-    name: Run integration tests
-    uses: ./.github/workflows/integration_test.yaml
-  publish-images:
-    name: Publish images to charmhub
-    runs-on: ubuntu-latest
-    needs: [ tests, get-images, integration-tests ]
-    if: ${{ needs.get-images.outputs.images != '[]' }}
-    strategy:
-      matrix:
-        image: ${{ fromJSON(needs.get-images.outputs.images) }}
-    steps:
-      - uses: actions/checkout@v3
-      - name: Install charmcraft
-        run: sudo snap install charmcraft --classic
-      - name: Log in to the Container registry
-        uses: docker/login-action@v2
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Publish image
-        env:
-          CHARMCRAFT_AUTH:  ${{ secrets.CHARMHUB_TOKEN }}
-        run: |
-          image = ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ matrix.image }}:${{ github.run_id }}
-          charmName = $(yq '.name' metadata.yaml)
-          docker pull $image
-          imageId=$(docker images $image --format "{{.ID}}")
-          charmcraft upload-resource $charmName ${{ matrix.image }}-image --image=$imageId --verbosity=trace
   select-branch:
     name: Select target branch
     runs-on: ubuntu-latest
@@ -60,15 +30,9 @@ jobs:
         id: extract-branch
         run: echo "branch=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
   publish-charm:
-    name: Publish charm to latest/edge/${{ needs.select-branch.outputs.branch }}
-    runs-on: ubuntu-latest
-    needs: [ select-branch, publish-images ]
-    steps:
-      - uses: actions/checkout@v3
-      - name: Upload charm to charmhub
-        uses: canonical/charming-actions/upload-charm@1.0.3
-        with:
-          credentials: ${{ secrets.CHARMHUB_TOKEN }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          channel: ${{ needs.select-branch.outputs.branch }}
-          upload-image: false
+    name: Publish
+    uses: ./.github/workflows/publish_charm.yaml
+    needs: [ tests, select-branch, publish-images ]
+    with:
+      channel: ${{ needs.select-branch.outputs.branch }}
+      images: ${{ needs.tests.outputs.images }}
