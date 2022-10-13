@@ -8,6 +8,11 @@ on:
         type: string
       images:
         type: string
+    secrets:
+      charmhub-token:
+        required: true
+      github-token:
+        required: true
 
 env:
   REGISTRY: ghcr.io
@@ -30,10 +35,10 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.github-token }}
       - name: Publish image
         env:
-          CHARMCRAFT_AUTH:  ${{ secrets.CHARMHUB_TOKEN }}
+          CHARMCRAFT_AUTH:  ${{ secrets.charmhub-token }}
         run: |
           image=${{ env.REGISTRY }}/${{ env.OWNER }}/${{ matrix.image }}:${{ github.run_id }}
           charmName=$(yq '.name' metadata.yaml)
@@ -50,7 +55,7 @@ jobs:
       - name: Upload charm to charmhub
         uses: canonical/charming-actions/upload-charm@2.0.0-rc
         with:
-          credentials: ${{ secrets.CHARMHUB_TOKEN }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          credentials: ${{ secrets.charmhub-token }}
+          github-token: ${{ secrets.github-token }}
           channel: ${{ inputs.channel }}
           upload-image: false
