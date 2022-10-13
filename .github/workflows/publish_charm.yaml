@@ -13,7 +13,6 @@ jobs:
   publish-images:
     name: Publish images to charmhub
     runs-on: ubuntu-latest
-    needs: tests
     if: ${{ inputs.images != '[]' }}
     strategy:
       matrix:
