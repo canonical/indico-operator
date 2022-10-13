@@ -5,5 +5,5 @@ on:
 
 jobs:
   integration-tests:
-    uses: canonical/operator-workflows/integration_test@initial-workflow-templates
+    uses: canonical/operator-workflows/.github/workflows/integration_test@initial-workflow-templates
     secrets: inherit

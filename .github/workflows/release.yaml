@@ -19,7 +19,7 @@ on:
 
 jobs:
   promote-charm:
-    uses: canonical/operator-workflows/promete_charm@initial-workflow-templates
+    uses: canonical/operator-workflows/.github/workflows/promete_charm@initial-workflow-templates
     with:
       credentials: ${{ secrets.CHARMHUB_TOKEN }}
       github-token: ${{ secrets.GITHUB_TOKEN }}
