@@ -19,14 +19,8 @@ on:
 
 jobs:
   promote-charm:
-    name: Promote charm
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Release charm to channel
-        uses: canonical/charming-actions/release-charm@1.0.3
-        with:
-          credentials: ${{ secrets.CHARMHUB_TOKEN }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          origin-channel: ${{ github.event.inputs.origin-channel }}
-          destination-channel: ${{ github.event.inputs.destination-channel }}
+    uses: canonical/operator-workflows/.github/workflows/promete_charm.yaml@initial-workflow-templates
+    with:
+      origin-channel: ${{ github.event.inputs.origin-channel }}
+      destination-channel: ${{ github.event.inputs.destination-channel }}
+    secrets: inherit

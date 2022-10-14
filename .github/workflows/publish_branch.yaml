@@ -7,38 +7,6 @@ on:
         required: true
 
 jobs:
-  lib-check:
-    name: Check libraries
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Check libs
-        uses: canonical/charming-actions/check-libraries@1.0.3
-        with:
-          credentials: ${{ secrets.CHARMHUB_TOKEN }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-  tests:
-    name: Run tests
-    uses: ./.github/workflows/test.yaml
-  integration-tests:
-    name: Run integration tests
-    uses: ./.github/workflows/integration_test.yaml
-  select-branch:
-    name: Select target branch
-    runs-on: ubuntu-latest
-    outputs:
-      channel: ${{ env.branch }}
-    steps:
-      - name: Get target branch
-        id: extract-branch
-        run: echo "branch=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
-  publish-charm:
-    name: Publish
-    uses: ./.github/workflows/publish_charm.yaml
-    needs: [ tests, integration-tests, select-branch ]
-    with:
-      channel: ${{ needs.select-branch.outputs.branch }}
-      images: ${{ needs.integration-tests.outputs.images }}
-    secrets:
-      charmhub-token: ${{ secrets.CHARMHUB_TOKEN }}
-      github-token: ${{ secrets.GITHUB_TOKEN }}
+  publish-to-edge:
+    uses: canonical/operator-workflows/.github/workflows/publish_branch.yaml@initial-workflow-templates
+    secrets: inherit
