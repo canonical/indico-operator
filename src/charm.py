@@ -6,6 +6,8 @@
 """Charm for Indico on kubernetes."""
 import logging
 import os
+import random
+import string
 from re import findall
 from typing import Dict, Tuple
 from urllib.parse import urlparse
@@ -347,6 +349,15 @@ class IndicoOperatorCharm(CharmBase):
         available_plugins = [item.split("|")[1].strip() for item in output.split("\n")[3:-2]]
 
         peer_relation = self.model.get_relation("indico-peers")
+
+        # Juju secrets
+        secret_id = peer_relation.data[self.app]["secret-id"]
+        if secret_id:
+            secret = self.model.get_secret(id=secret_id)
+            secret_key = secret.get("secret-key")
+        else:
+            # Legacy
+            secret_key = peer_relation.data[self.app].get("secret-key")
         env_config = {
             "ATTACHMENT_STORAGE": "default",
             "CELERY_BROKER": f"redis://{broker_host}:{broker_port}",
@@ -360,7 +371,7 @@ class IndicoOperatorCharm(CharmBase):
             "INDICO_PUBLIC_SUPPORT_EMAIL": self.config["indico_public_support_email"],
             "INDICO_SUPPORT_EMAIL": self.config["indico_support_email"],
             "REDIS_CACHE_URL": f"redis://{cache_host}:{cache_port}",
-            "SECRET_KEY": peer_relation.data[self.app].get("secret-key"),
+            "SECRET_KEY": secret_key,
             "SERVICE_HOSTNAME": self._get_external_hostname(),
             "SERVICE_PORT": self._get_external_port(),
             "SERVICE_SCHEME": self._get_external_scheme(),
@@ -573,8 +584,27 @@ class IndicoOperatorCharm(CharmBase):
     def _on_leader_elected(self, _) -> None:
         """Handle leader-elected event."""
         peer_relation = self.model.get_relation("indico-peers")
-        if not peer_relation.data[self.app].get("secret-key"):
-            peer_relation.data[self.app].update({"secret-key": repr(os.urandom(32))})
+        # Use new Juju secrets
+        try:
+            if not peer_relation.data[self.app].get("secret-id"):
+                # XXX: Not currently working, as we don't get a return value.
+                secret_value = "".join(
+                    random.choice(string.ascii_letters + string.digits) for _ in range(32)
+                )
+                logging.warning("Secret value %s", secret_value)
+                secret = self.app.add_secret({"secret-key": secret_value})
+                peer_relation.data[self.app]["secret-id"] = secret.id
+                secret.grant(peer_relation.app, relation=peer_relation)
+        except RuntimeError as err:
+            if str(err) == "command not found: secret-add":
+                logging.warning(
+                    "Juju secrets not available, using raw relation data for secret-key"
+                )
+                # Legacy
+                if not peer_relation.data[self.app].get("secret-key"):
+                    peer_relation.data[self.app].update({"secret-key": repr(os.urandom(32))})
+            else:
+                raise
 
 
 if __name__ == "__main__":  # pragma: no cover

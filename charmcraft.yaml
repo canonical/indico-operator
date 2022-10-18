@@ -8,3 +8,7 @@ bases:
     run-on:
     - name: "ubuntu"
       channel: "20.04"
+parts:
+  charm:
+    build-packages:
+      - git
