@@ -7,6 +7,9 @@ on:
       images:
         description: Pushed docker images
         value: ${{ jobs.get-images.outputs.images }}
+  push:
+    branches:
+      - 'ISD-189-indico-chaos-engineering'
 
 env:
   REGISTRY: ghcr.io
@@ -70,6 +73,7 @@ jobs:
           password = \"${{ secrets.GITHUB_TOKEN }}\"
           " >> /var/snap/microk8s/current/args/containerd-template.toml'
           sudo su -c 'systemctl restart snap.microk8s.daemon-containerd.service && microk8s status --wait-ready'
+
       - name: Run integration tests
         run: |
           echo "CHARM_NAME=$(yq '.name' metadata.yaml)" >> $GITHUB_ENV
@@ -77,10 +81,41 @@ jobs:
           for image_name in $(echo '${{ needs.get-images.outputs.images }}' | jq -cr '.[]'); do
             args="${args} --${image_name}-image ${{ env.REGISTRY }}/${{ env.OWNER }}/${image_name}:${{ github.run_id }}"
           done
-          tox -e integration -- --model testing $args
+          tox -e integration -- --model testing --keep-models $args
       - name: Dump logs
         uses: canonical/charm-logdump-action@main
         if: failure()
         with:
           app: ${{ env.CHARM_NAME }}
           model: testing
+
+      - name: Setting up kubeconfig ENV for Github Chaos Action
+        run: echo ::set-env name=KUBE_CONFIG_DATA::$(microk8s config | base64 -w 0)
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+
+      - name: Setup Litmus
+        uses: litmuschaos/github-chaos-actions@master
+        env:
+          INSTALL_LITMUS: true
+
+      - name: Running Litmus pod delete chaos experiment
+        uses: litmuschaos/github-chaos-actions@master
+        env:
+          EXPERIMENT_NAME: pod-delete
+          EXPERIMENT_IMAGE: litmuschaos/go-runner
+          EXPERIMENT_IMAGE_TAG: latest
+          JOB_CLEANUP_POLICY: delete
+          APP_NS: testing
+          APP_LABEL: app.kubernetes.io/name=indico
+          APP_KIND: statefulset
+          IMAGE_PULL_POLICY: Always
+          TOTAL_CHAOS_DURATION: 30
+          CHAOS_INTERVAL: 10
+          FORCE: false
+
+      - name: Uninstall Litmus
+        if: always()
+        uses: litmuschaos/github-chaos-actions@master
+        env:
+          LITMUS_CLEANUP: true
