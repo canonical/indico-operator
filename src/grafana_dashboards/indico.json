@@ -505,29 +505,6 @@
         "prometheus",
         "nginx prometheus exporter"
     ],
-    "templating": {
-        "list": [
-            {
-                "current": {
-                  "selected": false,
-                  "tags": [],
-                  "text": "default",
-                  "value": "default"
-                },
-                "hide": 0,
-                "includeAll": false,
-                "label": "datasource",
-                "multi": false,
-                "name": "prometheusds",
-                "options": [],
-                "query": "prometheus",
-                "refresh": 1,
-                "regex": "",
-                "skipUrlSync": false,
-                "type": "datasource"
-            }
-        ]
-    },
     "time": {
         "from": "now-15m",
         "to": "now"
