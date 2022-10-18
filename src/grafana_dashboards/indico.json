@@ -157,7 +157,7 @@
             "tableColumn": "",
             "targets": [
                 {
-                    "expr": "nginx_up{}",
+                    "expr": "nginx_up{juju_unit=\"$juju_unit\"}",
                     "format": "time_series",
                     "instant": false,
                     "intervalFactor": 1,
@@ -241,7 +241,7 @@
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "irate(nginx_connections_accepted{}[5m])",
+                    "expr": "irate(nginx_connections_accepted{juju_unit=\"$juju_unit\"}[5m])",
                     "format": "time_series",
                     "instant": false,
                     "intervalFactor": 1,
@@ -249,7 +249,7 @@
                     "refId": "A"
                 },
                 {
-                    "expr": "irate(nginx_connections_handled{}[5m])",
+                    "expr": "irate(nginx_connections_handled{juju_unit=\"$juju_unit\"}[5m])",
                     "format": "time_series",
                     "instant": false,
                     "intervalFactor": 1,
@@ -340,28 +340,28 @@
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "nginx_connections_active{}",
+                    "expr": "nginx_connections_active{juju_unit=\"$juju_unit\"}",
                     "format": "time_series",
                     "intervalFactor": 1,
                     "legendFormat": "{{juju_unit}} active",
                     "refId": "A"
                 },
                 {
-                    "expr": "nginx_connections_reading{}",
+                    "expr": "nginx_connections_reading{juju_unit=\"$juju_unit\"}",
                     "format": "time_series",
                     "intervalFactor": 1,
                     "legendFormat": "{{juju_unit}} reading",
                     "refId": "B"
                 },
                 {
-                    "expr": "nginx_connections_waiting{}",
+                    "expr": "nginx_connections_waiting{juju_unit=\"$juju_unit\"}",
                     "format": "time_series",
                     "intervalFactor": 1,
                     "legendFormat": "{{juju_unit}} waiting",
                     "refId": "C"
                 },
                 {
-                    "expr": "nginx_connections_writing{}",
+                    "expr": "nginx_connections_writing{juju_unit=\"$juju_unit\"}",
                     "format": "time_series",
                     "intervalFactor": 1,
                     "legendFormat": "{{juju_unit}} writing",
@@ -448,7 +448,7 @@
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "irate(nginx_http_requests_total{}[5m])",
+                    "expr": "irate(nginx_http_requests_total{juju_unit=\"$juju_unit\"}[5m])",
                     "format": "time_series",
                     "intervalFactor": 1,
                     "legendFormat": "{{juju_unit}} total requests",
