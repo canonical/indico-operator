@@ -6,6 +6,8 @@
 """Charm for Indico on kubernetes."""
 import logging
 import os
+import random
+import string
 from re import findall
 from typing import Dict, Tuple
 from urllib.parse import urlparse
@@ -349,7 +351,7 @@ class IndicoOperatorCharm(CharmBase):
         peer_relation = self.model.get_relation("indico-peers")
 
         # Juju secrets
-        secret_id = peer_relation.data[self.app]['secret-id']
+        secret_id = peer_relation.data[self.app]["secret-id"]
         if secret_id:
             secret = self.model.get_secret(id=secret_id)
             secret_key = secret.get("secret-key")
@@ -585,12 +587,19 @@ class IndicoOperatorCharm(CharmBase):
         # Use new Juju secrets
         try:
             if not peer_relation.data[self.app].get("secret-id"):
-                secret = self.app.add_secret({"secret-key": repr(os.urandom(32))})
+                # XXX: Not currently working, as we don't get a return value.
+                secret_value = "".join(
+                    random.choice(string.ascii_letters + string.digits) for _ in range(32)
+                )
+                logging.warning("Secret value %s", secret_value)
+                secret = self.app.add_secret({"secret-key": secret_value})
                 peer_relation.data[self.app]["secret-id"] = secret.id
                 secret.grant(peer_relation.app, relation=peer_relation)
         except RuntimeError as err:
             if str(err) == "command not found: secret-add":
-                logging.warning("Juju secrets not available, using raw relation data for secret-key")
+                logging.warning(
+                    "Juju secrets not available, using raw relation data for secret-key"
+                )
                 # Legacy
                 if not peer_relation.data[self.app].get("secret-key"):
                     peer_relation.data[self.app].update({"secret-key": repr(os.urandom(32))})
