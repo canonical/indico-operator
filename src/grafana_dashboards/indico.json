@@ -146,7 +146,7 @@
                     "to": "null"
                 }
             ],
-            "repeat": "instance",
+            "repeat": "juju_unit",
             "repeatDirection": "h",
             "sparkline": {
                 "fillColor": "rgba(31, 118, 189, 0.18)",
@@ -157,7 +157,7 @@
             "tableColumn": "",
             "targets": [
                 {
-                    "expr": "nginx_up{instance=~\"$instance\"}",
+                    "expr": "nginx_up{juju_unit=\"$juju_unit\"}",
                     "format": "time_series",
                     "instant": false,
                     "intervalFactor": 1,
@@ -167,7 +167,7 @@
             "thresholds": "1,1",
             "timeFrom": null,
             "timeShift": null,
-            "title": "NGINX Status for $instance",
+            "title": "NGINX Status for $juju_unit",
             "type": "singlestat",
             "valueFontSize": "100%",
             "valueMaps": [
@@ -241,19 +241,19 @@
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "irate(nginx_connections_accepted{instance=~\"$instance\"}[5m])",
+                    "expr": "irate(nginx_connections_accepted{juju_unit=\"$juju_unit\"}[5m])",
                     "format": "time_series",
                     "instant": false,
                     "intervalFactor": 1,
-                    "legendFormat": "{{instance}} accepted",
+                    "legendFormat": "{{juju_unit}} accepted",
                     "refId": "A"
                 },
                 {
-                    "expr": "irate(nginx_connections_handled{instance=~\"$instance\"}[5m])",
+                    "expr": "irate(nginx_connections_handled{juju_unit=\"$juju_unit\"}[5m])",
                     "format": "time_series",
                     "instant": false,
                     "intervalFactor": 1,
-                    "legendFormat": "{{instance}} handled",
+                    "legendFormat": "{{juju_unit}} handled",
                     "refId": "B"
                 }
             ],
@@ -340,31 +340,31 @@
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "nginx_connections_active{instance=~\"$instance\"}",
+                    "expr": "nginx_connections_active{juju_unit=\"$juju_unit\"}",
                     "format": "time_series",
                     "intervalFactor": 1,
-                    "legendFormat": "{{instance}} active",
+                    "legendFormat": "{{juju_unit}} active",
                     "refId": "A"
                 },
                 {
-                    "expr": "nginx_connections_reading{instance=~\"$instance\"}",
+                    "expr": "nginx_connections_reading{juju_unit=\"$juju_unit\"}",
                     "format": "time_series",
                     "intervalFactor": 1,
-                    "legendFormat": "{{instance}} reading",
+                    "legendFormat": "{{juju_unit}} reading",
                     "refId": "B"
                 },
                 {
-                    "expr": "nginx_connections_waiting{instance=~\"$instance\"}",
+                    "expr": "nginx_connections_waiting{juju_unit=\"$juju_unit\"}",
                     "format": "time_series",
                     "intervalFactor": 1,
-                    "legendFormat": "{{instance}} waiting",
+                    "legendFormat": "{{juju_unit}} waiting",
                     "refId": "C"
                 },
                 {
-                    "expr": "nginx_connections_writing{instance=~\"$instance\"}",
+                    "expr": "nginx_connections_writing{juju_unit=\"$juju_unit\"}",
                     "format": "time_series",
                     "intervalFactor": 1,
-                    "legendFormat": "{{instance}} writing",
+                    "legendFormat": "{{juju_unit}} writing",
                     "refId": "D"
                 }
             ],
@@ -448,10 +448,10 @@
             "steppedLine": false,
             "targets": [
                 {
-                    "expr": "irate(nginx_http_requests_total{instance=~\"$instance\"}[5m])",
+                    "expr": "irate(nginx_http_requests_total{juju_unit=\"$juju_unit\"}[5m])",
                     "format": "time_series",
                     "intervalFactor": 1,
-                    "legendFormat": "{{instance}} total requests",
+                    "legendFormat": "{{juju_unit}} total requests",
                     "refId": "A"
                 }
             ],
@@ -505,51 +505,6 @@
         "prometheus",
         "nginx prometheus exporter"
     ],
-    "templating": {
-        "list": [
-            {
-                "current": {
-                  "selected": false,
-                  "tags": [],
-                  "text": "default",
-                  "value": "default"
-                },
-                "hide": 0,
-                "includeAll": false,
-                "label": "datasource",
-                "multi": false,
-                "name": "prometheusds",
-                "options": [],
-                "query": "prometheus",
-                "refresh": 1,
-                "regex": "",
-                "skipUrlSync": false,
-                "type": "datasource"
-            },
-            {
-                "allValue": null,
-                "current": {},
-                "datasource": "${prometheusds}",
-                "definition": "label_values(nginx_up, instance)",
-                "hide": 0,
-                "includeAll": true,
-                "label": "",
-                "multi": true,
-                "name": "instance",
-                "options": [],
-                "query": "label_values(nginx_up, instance)",
-                "refresh": 1,
-                "regex": "",
-                "skipUrlSync": false,
-                "sort": 0,
-                "tagValuesQuery": "",
-                "tags": [],
-                "tagsQuery": "",
-                "type": "query",
-                "useTags": false
-            }
-        ]
-    },
     "time": {
         "from": "now-15m",
         "to": "now"
