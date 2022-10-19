@@ -71,7 +71,7 @@ class IndicoOperatorCharm(CharmBase):
         self.framework.observe(self.on.redis_relation_changed, self._on_config_changed)
         self.ingress = IngressRequires(self, self._make_ingress_config())
         self._metrics_endpoint = MetricsEndpointProvider(
-            self, jobs=[{"static_configs": [{"targets": ["localhost:9113", "localhost:9102"]}]}]
+            self, jobs=[{"static_configs": [{"targets": ["*:9113", "*:9102"]}]}]
         )
         self._grafana_dashboards = GrafanaDashboardProvider(self)
 

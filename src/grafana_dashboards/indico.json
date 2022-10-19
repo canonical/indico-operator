@@ -146,8 +146,6 @@
                     "to": "null"
                 }
             ],
-            "repeat": "juju_unit",
-            "repeatDirection": "h",
             "sparkline": {
                 "fillColor": "rgba(31, 118, 189, 0.18)",
                 "full": false,
