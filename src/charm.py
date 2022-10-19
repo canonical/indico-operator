@@ -143,15 +143,15 @@ class IndicoOperatorCharm(CharmBase):
         if not any(
             rel.app.name.startswith("redis-broker") for rel in self.model.relations["redis"]
         ):
-            self.unit.status = WaitingStatus("Waiting for redis-broker relation")
+            self.unit.status = WaitingStatus("Waiting for redis-broker availability")
             return False
         if not any(
             rel.app.name.startswith("redis-cache") for rel in self.model.relations["redis"]
         ):
-            self.unit.status = WaitingStatus("Waiting for redis-cache relation")
+            self.unit.status = WaitingStatus("Waiting for redis-cache availability")
             return False
         if not self._stored.db_uri:
-            self.unit.status = WaitingStatus("Waiting for database relation")
+            self.unit.status = WaitingStatus("Waiting for database availability")
             return False
         return True
 

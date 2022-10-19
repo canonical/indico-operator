@@ -28,7 +28,7 @@ class TestCharm(unittest.TestCase):
     def test_missing_relations(self):
         self.harness.update_config({"site_url": "foo"})
         self.assertEqual(
-            self.harness.model.unit.status, WaitingStatus("Waiting for redis-broker relation")
+            self.harness.model.unit.status, WaitingStatus("Waiting for redis-broker availability")
         )
         redis_relation_id = self.harness.add_relation("redis", self.harness.charm.app.name)
         self.harness.add_relation_unit(redis_relation_id, "redis-broker/0")
@@ -36,7 +36,7 @@ class TestCharm(unittest.TestCase):
             redis_relation_id, "redis-broker/0", {"something": "just to trigger rel-changed event"}
         )
         self.assertEqual(
-            self.harness.model.unit.status, WaitingStatus("Waiting for redis-cache relation")
+            self.harness.model.unit.status, WaitingStatus("Waiting for redis-cache availability")
         )
         redis_relation_id = self.harness.add_relation("redis", self.harness.charm.app.name)
         self.harness.add_relation_unit(redis_relation_id, "redis-cache/0")
@@ -44,7 +44,7 @@ class TestCharm(unittest.TestCase):
             redis_relation_id, "redis-cache/0", {"something": "just to trigger rel-changed event"}
         )
         self.assertEqual(
-            self.harness.model.unit.status, WaitingStatus("Waiting for database relation")
+            self.harness.model.unit.status, WaitingStatus("Waiting for database availability")
         )
 
     def test_indico_nginx_pebble_ready(self):
@@ -343,7 +343,7 @@ class TestCharm(unittest.TestCase):
         self.harness.container_pebble_ready("indico-nginx")
 
         self.assertEqual(
-            self.harness.model.unit.status, WaitingStatus("Waiting for redis-broker relation")
+            self.harness.model.unit.status, WaitingStatus("Waiting for redis-broker availability")
         )
 
     def test_on_leader_elected(self):
