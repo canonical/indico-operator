@@ -106,6 +106,7 @@ jobs:
           EXPERIMENT_IMAGE: litmuschaos/go-runner
           EXPERIMENT_IMAGE_TAG: latest
           JOB_CLEANUP_POLICY: delete
+          CHAOS_NAMESPACE: testing
           APP_NS: testing
           APP_LABEL: app.kubernetes.io/name=indico
           APP_KIND: statefulset
