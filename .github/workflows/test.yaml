@@ -1,4 +1,4 @@
-name: Tests
+name: Unit and integration tests
 
 on:
   pull_request:
@@ -6,4 +6,7 @@ on:
 jobs:
   unit-tests:
     uses: canonical/operator-workflows/.github/workflows/test.yaml@add-machine-charm-support
+    secrets: inherit
+  integration-tests:
+    uses: canonical/operator-workflows/.github/workflows/integration_test.yaml@add-machine-charm-support
     secrets: inherit
