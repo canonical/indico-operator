@@ -15,5 +15,5 @@ on:
 
 jobs:
   publish-to-edge:
-    uses: canonical/operator-workflows/.github/workflows/on_push.yaml@v1.0.0
+    uses: canonical/operator-workflows/.github/workflows/on_push.yaml@add-machine-charm-support
     secrets: inherit
