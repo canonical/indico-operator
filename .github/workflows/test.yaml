@@ -1,12 +1,9 @@
-name: Unit and integration tests
+name: Tests
 
 on:
   pull_request:
 
 jobs:
   unit-tests:
-    uses: canonical/operator-workflows/.github/workflows/test.yaml@add-machine-charm-support
-    secrets: inherit
-  integration-tests:
-    uses: canonical/operator-workflows/.github/workflows/integration_test.yaml@main
+    uses: canonical/operator-workflows/.github/workflows/test.yaml@add-support-for-running-script-before-integration-tests
     secrets: inherit
