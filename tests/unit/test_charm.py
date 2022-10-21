@@ -30,7 +30,7 @@ class TestCharm(unittest.TestCase):
         self.assertEqual(
             self.harness.model.unit.status, WaitingStatus("Waiting for redis-broker availability")
         )
-        redis_relation_id = self.harness.add_relation("redis", self.harness.charm.app.name)
+        redis_relation_id = self.harness.add_relation("redis", "redis-broker")
         self.harness.add_relation_unit(redis_relation_id, "redis-broker/0")
         self.harness.update_relation_data(
             redis_relation_id, "redis-broker/0", {"something": "just to trigger rel-changed event"}
@@ -38,7 +38,7 @@ class TestCharm(unittest.TestCase):
         self.assertEqual(
             self.harness.model.unit.status, WaitingStatus("Waiting for redis-cache availability")
         )
-        redis_relation_id = self.harness.add_relation("redis", self.harness.charm.app.name)
+        redis_relation_id = self.harness.add_relation("redis", "redis-cache")
         self.harness.add_relation_unit(redis_relation_id, "redis-cache/0")
         self.harness.update_relation_data(
             redis_relation_id, "redis-cache/0", {"something": "just to trigger rel-changed event"}
@@ -431,15 +431,15 @@ class TestCharm(unittest.TestCase):
 
     def set_up_all_relations(self):
         self.harness.charm._stored.db_uri = "db-uri"
-        self.db_relation_id = self.harness.add_relation("db", self.harness.charm.app.name)
+        self.db_relation_id = self.harness.add_relation("db", "postgresql")
         self.harness.add_relation_unit(self.db_relation_id, "postgresql/0")
 
         self.harness.add_relation("indico-peers", self.harness.charm.app.name)
 
-        broker_relation_id = self.harness.add_relation("redis", self.harness.charm.app.name)
+        broker_relation_id = self.harness.add_relation("redis", "redis-broker")
         self.harness.add_relation_unit(broker_relation_id, "redis-broker/0")
 
-        cache_relation_id = self.harness.add_relation("redis", self.harness.charm.app.name)
+        cache_relation_id = self.harness.add_relation("redis", "redis-cache")
         self.harness.add_relation_unit(cache_relation_id, "redis-cache/0")
 
         cache_relation = self.harness.model.get_relation("redis", cache_relation_id)
