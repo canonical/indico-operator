@@ -22,6 +22,8 @@ enterprise deployments.
 ## Deployment options overview
 
 For overall concepts related to using Juju
+
+
 [see the Juju overview page](https://juju.is/). For easy local testing we
 recommend
 [this how to on using MicroK8s with Juju](https://juju.is/docs/microk8s-cloud).
