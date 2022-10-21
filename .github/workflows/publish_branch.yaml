@@ -8,5 +8,5 @@ on:
 
 jobs:
   publish-to-edge:
-    uses: canonical/operator-workflows/.github/workflows/publish_branch.yaml@add-support-for-running-script-before-integration-tests
+    uses: canonical/operator-workflows/.github/workflows/publish_branch.yaml@main
     secrets: inherit
