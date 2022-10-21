@@ -98,6 +98,8 @@ jobs:
         uses: litmuschaos/github-chaos-actions@master
         env:
           INSTALL_LITMUS: true
+          CHAOS_NAMESPACE: testing
+          APP_NS: testing
 
       - name: Running Litmus pod delete chaos experiment
         uses: litmuschaos/github-chaos-actions@master
