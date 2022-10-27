@@ -5,5 +5,5 @@ on:
 
 jobs:
   integration-tests:
-    uses: canonical/operator-workflows/.github/workflows/integration_test.yaml@v1.0.0
+    uses: canonical/operator-workflows/.github/workflows/integration_test.yaml@add-support-for-forks
     secrets: inherit
