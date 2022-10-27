@@ -95,14 +95,14 @@ jobs:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 
       - name: Setup Litmus
-        uses: litmuschaos/github-chaos-actions@master
+        uses: merkata/github-chaos-actions@master
         env:
           INSTALL_LITMUS: true
           CHAOS_NAMESPACE: testing
           APP_NS: testing
 
       - name: Running Litmus pod delete chaos experiment
-        uses: litmuschaos/github-chaos-actions@master
+        uses: merkata/github-chaos-actions@master
         env:
           EXPERIMENT_NAME: pod-delete
           EXPERIMENT_IMAGE: litmuschaos/go-runner
@@ -119,6 +119,6 @@ jobs:
 
       - name: Uninstall Litmus
         if: always()
-        uses: litmuschaos/github-chaos-actions@master
+        uses: merkata/github-chaos-actions@master
         env:
           LITMUS_CLEANUP: true
