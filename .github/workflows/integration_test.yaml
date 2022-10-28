@@ -131,9 +131,3 @@ jobs:
         uses: merkata/github-chaos-actions@master
         env:
           EXPERIMENT_NAME: disk-fill
-
-      - name: Uninstall Litmus
-        if: always()
-        uses: merkata/github-chaos-actions@master
-        env:
-          LITMUS_CLEANUP: true
