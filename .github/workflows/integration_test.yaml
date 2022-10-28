@@ -116,18 +116,3 @@ jobs:
         uses: merkata/github-chaos-actions@master
         env:
           EXPERIMENT_NAME: pod-delete
-
-      - name: Running Litmus pod cpu hog chaos experiment
-        uses: merkata/github-chaos-actions@master
-        env:
-          EXPERIMENT_NAME: pod-cpu-hog
-
-      - name: Running Litmus pod memory hog chaos experiment
-        uses: merkata/github-chaos-actions@master
-        env:
-          EXPERIMENT_NAME: pod-memory-hog
-
-      - name: Running Litmus disk fill chaos experiment
-        uses: merkata/github-chaos-actions@master
-        env:
-          EXPERIMENT_NAME: disk-fill
