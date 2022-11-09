@@ -30,9 +30,9 @@ root:
 
 loggers:
   indico:
-    handlers: [indico, email]
+    handlers: [indico]
   celery:
-    handlers: [celery, email, stderr]
+    handlers: [celery, stderr]
 
 handlers:
   indico:
@@ -54,19 +54,12 @@ handlers:
   stderr:
     class: logging.StreamHandler
     formatter: default
-  email:
-    class: indico.core.logger.FormattedSubjectSMTPHandler
-    formatter: email
-    level: ERROR
 
 formatters:
   default:
     format: '%(asctime)s  %(levelname)-7s  %(request_id)s  %(user_id)-6s  %(name)-25s %(message)s'
   simple:
     format: '%(asctime)s  %(levelname)-7s  %(name)-25s %(message)s'
-  email:
-    append_request_info: true
-    format: "%(asctime)s  %(request_id)s  %(user_id)-6s  %(name)s - %(levelname)s %(filename)s:%(lineno)d -- %(message)s\n\n"
 
 filters:
   indico:
