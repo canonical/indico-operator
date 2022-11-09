@@ -1,2 +1,2 @@
 refresh-external-resources:
-  description: Pull changes from the customization repository and upgrade the external plugins
+  description: Pull changes from the customization repository, reload uWSGI and upgrade the external plugins

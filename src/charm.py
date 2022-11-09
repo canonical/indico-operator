@@ -7,7 +7,7 @@
 import logging
 import os
 from re import findall
-from typing import Dict, Tuple
+from typing import Dict, List, Tuple
 from urllib.parse import urlparse
 
 import ops.lib
@@ -25,6 +25,7 @@ DATABASE_NAME = "indico"
 INDICO_CUSTOMIZATION_DIR = "/srv/indico/custom"
 PORT = 8080
 UBUNTU_SAML_URL = "https://login.ubuntu.com/saml/"
+UWSGI_TOUCH_RELOAD = "/srv/indico/indico.wsgi"
 
 pgsql = ops.lib.use("pgsql", 1, "postgresql-charmers@lists.launchpad.net")
 
@@ -507,6 +508,22 @@ class IndicoOperatorCharm(CharmBase):
         version = findall("[0-9.]+", version_string)
         return version[0] if version else ""
 
+    def _exec_cmd_in_custom_dir(self, container, command: List[str]):
+        """Execute command in indico customization directory.
+
+        Args:
+                container: container in a unit where the command will be executed
+                command: Command to execute. The first item is the name (or path)
+                of the executable, the rest of the items are the arguments.
+        """
+        process = container.exec(
+            command,
+            working_dir=INDICO_CUSTOMIZATION_DIR,
+            user="indico",
+            environment=self._get_http_proxy_configuration(),
+        )
+        process.wait_output()
+
     def _download_customization_changes(self, container):
         """Clone the remote repository with the customization changes."""
         current_remote_url = self._get_current_customization_url()
@@ -531,13 +548,9 @@ class IndicoOperatorCharm(CharmBase):
                     "New URL repo for customization %s. Cloning contents",
                     self.config["customization_sources_url"],
                 )
-                process = container.exec(
-                    ["git", "clone", self.config["customization_sources_url"], "."],
-                    working_dir=INDICO_CUSTOMIZATION_DIR,
-                    user="indico",
-                    environment=self._get_http_proxy_configuration(),
+                self._exec_cmd_in_custom_dir(
+                    container, ["git", "clone", self.config["customization_sources_url"], "."]
                 )
-                process.wait_output()
 
     def _refresh_external_resources(self, _) -> Dict:
         """Pull changes from the remote repository and upgrade external plugins."""
@@ -550,13 +563,12 @@ class IndicoOperatorCharm(CharmBase):
             self._download_customization_changes(container)
             if self.config["customization_sources_url"]:
                 logging.debug("Pulling changes from %s", self.config["customization_sources_url"])
-                process = container.exec(
+                self._exec_cmd_in_custom_dir(
+                    container,
                     ["git", "pull"],
-                    working_dir=INDICO_CUSTOMIZATION_DIR,
-                    user="indico",
-                    environment=self._get_http_proxy_configuration(),
                 )
-                process.wait_output()
+                logging.debug("Reloading uWSGI")
+                self._exec_cmd_in_custom_dir(container, ["touch", UWSGI_TOUCH_RELOAD])
                 results["customization-changes"] = True
             if self.config["external_plugins"]:
                 logging.debug("Upgrading external plugins %s", self.config["external_plugins"])
