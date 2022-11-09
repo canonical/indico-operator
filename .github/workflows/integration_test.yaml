@@ -118,7 +118,7 @@ jobs:
           EXPERIMENT_NAME: pod-delete
 
       - name: Run chaos mesh pod kill action
-        uses: chaos-mesh/chaos-mesh-action@v0.5
+        uses: chaos-mesh/chaos-mesh-action@master
         env:
           CHAOS_MESH_VERSION: v2.4.1
           CFG_BASE64: YXBpVmVyc2lvbjogY2hhb3MtbWVzaC5vcmcvdjFhbHBoYTEKa2luZDogUG9kQ2hhb3MKbWV0YWRhdGE6CiAgbmFtZTogcG9kLWtpbGwtZXhhbXBsZQogIG5hbWVzcGFjZTogY2hhb3MtbWVzaApzcGVjOgogIGFjdGlvbjogcG9kLWtpbGwKICBtb2RlOiBvbmUKICBzZWxlY3RvcjoKICAgIG5hbWVzcGFjZXM6CiAgICAgIC0gdGVzdGluZwogICAgbGFiZWxTZWxlY3RvcnM6CiAgICAgICdhcHAua3ViZXJuZXRlcy5pby9uYW1lJzogJ2luZGljbycK
