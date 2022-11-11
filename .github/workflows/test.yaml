@@ -16,6 +16,6 @@ jobs:
         with:
           dockerfile: "*Dockerfile"
 
-  unit-tests:
-    uses: canonical/operator-workflows/.github/workflows/test.yaml@feat/linters
-    secrets: inherit
+            #unit-tests:
+            #uses: canonical/operator-workflows/.github/workflows/test.yaml@feat/linters
+            #secrets: inherit
