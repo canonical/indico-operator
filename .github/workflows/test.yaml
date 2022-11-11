@@ -7,13 +7,20 @@ on:
       - 'feat/linters'
 
 jobs:
+  shellcheck-lint:
+    runs-on: ubuntu-22.04
+    name: Shell scripts lint
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@master
   docker-lint:
     runs-on: ubuntu-22.04
     name: Dockerfile lint
     steps:
       - uses: actions/checkout@v3
       - name: Check for Dockerfiles
-        run: echo Dockerfiles=$(find . -name "*NoDockerfile") >> $GITHUB_ENV
+        run: echo Dockerfiles=$(find . -name "*Dockerfile") >> $GITHUB_ENV
       - if: ${{ env.Dockerfiles != '' }}
         name: Run hadolint on Dockerfiles
         uses: jbergstroem/hadolint-gh-action@v1
