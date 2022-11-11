@@ -9,13 +9,14 @@ on:
 jobs:
   docker-lint:
     runs-on: ubuntu-22.04
-    container: hadolint/hadolint
     name: Dockerfile lint
     steps:
       - uses: actions/checkout@v3
       - run: echo Dockerfiles=$(find . -name "*Dockerfile") >> $GITHUB_ENV
-      - if: ${{ env.Dockerfile }} != ''
-        run: hadolint ./**/*Dockerfile
+      - uses: jbergstroem/hadolint-gh-action@v1
+        if: ${{ env.Dockerfile }} != ''
+        with:
+          dockerfile: "**/*Dockerfile"
 
             #unit-tests:
             #uses: canonical/operator-workflows/.github/workflows/test.yaml@feat/linters
