@@ -4,6 +4,14 @@ on:
   pull_request:
 
 jobs:
+ docker-lint:
+  name: Dockerfile lint
+  steps:
+    - uses: actions/checkout@v3
+    - uses: hadolint/hadolint-action@v2.0.0
+      with:
+        dockerfile: "*Dockerfile"
+
   unit-tests:
-    uses: canonical/operator-workflows/.github/workflows/test.yaml@main
+    uses: canonical/operator-workflows/.github/workflows/test.yaml@feat/linters
     secrets: inherit
