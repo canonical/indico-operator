@@ -8,8 +8,9 @@ on:
 
 jobs:
   check-for-docker:
-    id: check-for-docker
-    run: echo "Dockerfiles=$(find . -name \"*Dockerfile\")" >> $GITHUB_ENV
+    runs-on: ubuntu-22.04
+    steps:
+      - run: echo "Dockerfiles=$(find . -name \"*Dockerfile\")" >> $GITHUB_ENV
   docker-lint:
     if: ${{ env.Dockerfiles }} != ""
     runs-on: ubuntu-22.04
