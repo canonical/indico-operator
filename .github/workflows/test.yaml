@@ -13,6 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - run: echo Dockerfiles=$(find . -name "*Dockerfile") >> $GITHUB_ENV
+      - uses: actions/checkout@v3
       - uses: hadolint/hadolint-action@v2.0.0
         if: ${{ env.Dockerfile }} != ''
         with:
