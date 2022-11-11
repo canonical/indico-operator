@@ -7,14 +7,18 @@ on:
       - 'feat/linters'
 
 jobs:
+  check-for-docker:
+    id: check-for-docker
+    run: echo "Dockerfiles=$(find . -name \"*Dockerfile\")" >> $GITHUB_ENV
   docker-lint:
+    if: ${{ env.Dockerfiles }} != ""
     runs-on: ubuntu-22.04
     name: Dockerfile lint
     steps:
       - uses: actions/checkout@v3
       - uses: hadolint/hadolint-action@v2.0.0
         with:
-          dockerfile: ./*Dockerfile
+          dockerfile: ${{ env.Dockerfiles }}
 
             #unit-tests:
             #uses: canonical/operator-workflows/.github/workflows/test.yaml@feat/linters
