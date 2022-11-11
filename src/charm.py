@@ -512,9 +512,9 @@ class IndicoOperatorCharm(CharmBase):
         """Execute command in indico customization directory.
 
         Args:
-                container: container in a unit where the command will be executed
-                command: Command to execute. The first item is the name (or path)
-                of the executable, the rest of the items are the arguments.
+            container: container in a unit where the command will be executed
+            command: command to execute. The first item is the name (or path)
+                    of the executable, the rest of the items are the arguments.
         """
         process = container.exec(
             command,
