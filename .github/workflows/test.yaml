@@ -12,9 +12,11 @@ jobs:
     name: Dockerfile lint
     steps:
       - uses: actions/checkout@v3
-      - run: echo Dockerfiles=$(find . -name "*NoDockerfile") >> $GITHUB_ENV
-      - uses: jbergstroem/hadolint-gh-action@v1
-        if: ${{ env.Dockerfile != '' }}
+      - name: Check for Dockerfiles
+        run: echo Dockerfiles=$(find . -name "*Dockerfile") >> $GITHUB_ENV
+      - if: ${{ env.Dockerfile != '' }}
+        name: Run hadoling on Dockerfiles
+        uses: jbergstroem/hadolint-gh-action@v1
         with:
           dockerfile: "${{ env.Dockerfiles }}"
 
