@@ -7,13 +7,13 @@ on:
       - 'feat/linters'
 
 jobs:
- docker-lint:
-  name: Dockerfile lint
-  steps:
-    - uses: actions/checkout@v3
-    - uses: hadolint/hadolint-action@v2.0.0
-      with:
-        dockerfile: "*Dockerfile"
+  docker-lint:
+    name: Dockerfile lint
+    steps:
+      - uses: actions/checkout@v3
+      - uses: hadolint/hadolint-action@v2.0.0
+        with:
+          dockerfile: "*Dockerfile"
 
   unit-tests:
     uses: canonical/operator-workflows/.github/workflows/test.yaml@feat/linters
