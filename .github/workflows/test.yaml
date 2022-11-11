@@ -16,7 +16,7 @@ jobs:
       - uses: jbergstroem/hadolint-gh-action@v1
         if: ${{ env.Dockerfile }} != ''
         with:
-          dockerfile: "**/*Dockerfile"
+          dockerfile: "${{ env.Dockerfile }}"
 
             #unit-tests:
             #uses: canonical/operator-workflows/.github/workflows/test.yaml@feat/linters
