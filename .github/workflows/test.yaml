@@ -3,8 +3,8 @@ name: Tests
 on:
   pull_request:
   push:
-  branches:
-    - 'feat/linters'
+    branches:
+      - 'feat/linters'
 
 jobs:
  docker-lint:
