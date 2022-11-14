@@ -12,17 +12,8 @@ jobs:
     name: Shell scripts lint
     steps:
       - uses: actions/checkout@v3
-      - name: Problem matcher
-        uses: lumaxis/shellcheck-problem-matchers@v1.1.2
-      - name: check ShellCheck
-        run: |
-          echo "The path is at ${{ github.action_path }}"
-          echo "Looking at files under that path in .github"
-          ls ${{ github.action_path}}/.github/
       - name: Run ShellCheck
         uses: ludeeus/action-shellcheck@master
-        with:
-          disable_matcher: true
   docker-lint:
     runs-on: ubuntu-22.04
     name: Dockerfile lint
