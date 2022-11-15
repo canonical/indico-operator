@@ -7,13 +7,6 @@ on:
       - 'feat/linters'
 
 jobs:
-  shellcheck-lint:
-    runs-on: ubuntu-22.04
-    name: Shell scripts lint
-    steps:
-      - uses: actions/checkout@v3
-      - name: Run ShellCheck
-        uses: ludeeus/action-shellcheck@master
   docker-lint:
     runs-on: ubuntu-22.04
     name: Dockerfile lint
@@ -27,6 +20,15 @@ jobs:
         with:
           dockerfile: "${{ env.Dockerfiles }}"
 
+  shellcheck-lint:
+    runs-on: ubuntu-22.04
+    name: Shell scripts lint
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@master
+        with:
+          disable_matcher: true
             #unit-tests:
             #uses: canonical/operator-workflows/.github/workflows/test.yaml@feat/linters
             #secrets: inherit
