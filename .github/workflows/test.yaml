@@ -26,9 +26,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Run ShellCheck
-        uses: ludeeus/action-shellcheck@master
-        with:
-          disable_matcher: true
+        uses: merkata/action-shellcheck@master
             #unit-tests:
             #uses: canonical/operator-workflows/.github/workflows/test.yaml@feat/linters
             #secrets: inherit
