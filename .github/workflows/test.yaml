@@ -25,10 +25,8 @@ jobs:
     name: Shell scripts lint
     steps:
       - uses: actions/checkout@v3
-      - name: Run ShellCheck
-        uses: ludeeus/action-shellcheck@master
-        with:
-          disable_matcher: true
+      - uses: lumaxis/shellcheck-problem-matchers@v1
+      - run: shellcheck -f gcc *.sh
             #unit-tests:
             #uses: canonical/operator-workflows/.github/workflows/test.yaml@feat/linters
             #secrets: inherit
