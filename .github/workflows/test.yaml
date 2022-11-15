@@ -27,7 +27,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Run ShellCheck
         uses: lumaxis/shellcheck-problem-matchers@v1
-        run: shellcheck -f gcc $(find . -name "*.sh" -type f)
+      - run: shellcheck -f gcc $(find . -name "*.sh" -type f)
             #unit-tests:
             #uses: canonical/operator-workflows/.github/workflows/test.yaml@feat/linters
             #secrets: inherit
