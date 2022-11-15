@@ -26,7 +26,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: lumaxis/shellcheck-problem-matchers@v1
-      - run: shellcheck -f gcc *.sh
+      - run: shellcheck -f gcc files/*.sh
             #unit-tests:
             #uses: canonical/operator-workflows/.github/workflows/test.yaml@feat/linters
             #secrets: inherit
