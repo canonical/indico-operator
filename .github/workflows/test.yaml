@@ -27,6 +27,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Gather files to scan
         shell: bash
+        id: gather
         run: |
           declare -a filepaths
           shebangregex="^#! */[^ ]*/(env *)?[abk]*sh"
@@ -73,11 +74,12 @@ jobs:
           done < <(find . \
                         -type f ! -name '*.*' -perm /111 \
                         -print0)
-          echo "filepaths=${filepaths[@]}" >> $GITHUB_ENV 
+          echo "filepaths=${filepaths[@]}" >> $GITHUB_OUTPUT
           set +f # re-enable globbing
-    - name: Run ShellCheck
-      uses: lumaxis/shellcheck-problem-matchers@v1
-    - run: shellcheck -f gcc ${filepaths}
+
+      - name: Run ShellCheck
+        uses: lumaxis/shellcheck-problem-matchers@v1
+      - run: shellcheck -f gcc ${{steps.gather.outputs.filepaths}}
       #unit-tests:
       #uses: canonical/operator-workflows/.github/workflows/test.yaml@feat/linters
       #secrets: inherit
