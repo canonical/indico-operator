@@ -1,0 +1,10 @@
+ignore_files:
+  # Ignore ingress charm library as it uses non compliant terminology:
+  # whitelist.
+  - lib/charms/nginx_ingress_integrator/v0/ingress.py
+rules:
+  # Ignore "master" - the database relation event received from the library
+  # and uwsgi use this terminology.
+  - name: master
+  # Ignore "blacklist" -Indico uses this term
+  - name: blacklist
