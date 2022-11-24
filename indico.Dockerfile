@@ -1,10 +1,10 @@
 FROM ubuntu:jammy as builder
 
 RUN apt update \
-    && apt install -y libpq-dev libxmlsec1-dev pkg-config python3-pip
+    && apt install -y libldap2-dev libpq-dev libsasl2-dev libssl-dev libxmlsec1-dev pkg-config python3-pip
 
 ENV UWSGI_EMBED_PLUGINS=stats_pusher_statsd
-RUN pip install --prefer-binary indico==3.2 indico-plugin-piwik indico-plugin-storage-s3 python3-ldap python3-saml uwsgi
+RUN pip install --prefer-binary indico==3.2 indico-plugin-piwik indico-plugin-storage-s3 python-ldap python3-saml uwsgi
 
 FROM ubuntu:jammy as target
 
@@ -18,7 +18,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     LC_LANG=C.UTF-8
 
 RUN apt update \
-    && apt install -y gettext git libxmlsec1-dev locales postgresql-client python3-pip texlive-xetex
+    && apt install -y build-essential gettext git libxmlsec1-dev locales postgresql-client python3-dev python3-pip texlive-xetex
 
 RUN /bin/bash -c "mkdir -p --mode=775 /srv/indico/{etc,tmp,log,cache,archive,custom}" \
     && /usr/local/bin/indico setup create-symlinks /srv/indico
@@ -35,4 +35,3 @@ COPY files/etc/indico/ /etc/
 RUN chmod +x /srv/indico/start-indico.sh \
     && chown -R indico:indico /srv/indico \
     && chmod 755 /srv/indico
-
