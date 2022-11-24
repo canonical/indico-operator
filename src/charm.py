@@ -476,7 +476,7 @@ class IndicoOperatorCharm(CharmBase):
             config["HTTP_PROXY"] = self.config["http_proxy"]
         if self.config["https_proxy"]:
             config["HTTPS_PROXY"] = self.config["https_proxy"]
-        return config if config else None
+        return config
 
     def _is_ldap_host_valid(self) -> bool:
         """Check if the LDAP hostis currently supported."""
