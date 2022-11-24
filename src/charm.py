@@ -25,6 +25,7 @@ DATABASE_NAME = "indico"
 INDICO_CUSTOMIZATION_DIR = "/srv/indico/custom"
 PORT = 8080
 UBUNTU_SAML_URL = "https://login.ubuntu.com/saml/"
+CANONICAL_LDAP_HOST = "ldap.canonical.com"
 UWSGI_TOUCH_RELOAD = "/srv/indico/indico.wsgi"
 
 pgsql = ops.lib.use("pgsql", 1, "postgresql-charmers@lists.launchpad.net")
@@ -431,6 +432,39 @@ class IndicoOperatorCharm(CharmBase):
                     "identifier_field": "openid",
                 }
             }
+            if self.config["ldap_host"]:
+                _ldap_config = {
+                    "uri": f"ldaps://{self.config['ldap_host']}",
+                    "bind_dn": "cn=Indico Bot,ou=bots,dc=canonical,dc=com",
+                    "bind_password": self.config["ldap_password"],
+                    "timeout": 30,
+                    "verify_cert": True,
+                    "page_size": 1500,
+                    "uid": "cn",
+                    "user_base": "ou=staff,dc=canonical,dc=com",
+                    "user_filter": "(objectClass=canonicalPerson)",
+                    "gid": "cn",
+                    "group_base": "dc=canonical,dc=com",
+                    "group_filter": "(objectClass=organizationalRole)",
+                    "member_of_attr": "ou",
+                    "ad_group_style": True,
+                }
+                identity_providers = {
+                    "ldap": {
+                        "type": "ldap",
+                        "title": "LDAP",
+                        "ldap": _ldap_config,
+                        "mapping": {
+                            "email": "mail",
+                            "affiliation": "company",
+                            "first_name": "givenName",
+                            "last_name": "sn",
+                            "phone": "mobile",
+                        },
+                        "trusted_email": True,
+                        "synced_fields": {"first_name", "last_name", "affiliation", "phone", "address"}
+                    }
+                }
             env_config["INDICO_IDENTITY_PROVIDERS"] = str(identity_providers)
             env_config = {**env_config, **self._get_http_proxy_configuration()}
         return env_config
@@ -444,6 +478,12 @@ class IndicoOperatorCharm(CharmBase):
             config["HTTPS_PROXY"] = self.config["https_proxy"]
         return config if config else None
 
+    def _is_ldap_host_valid(self) -> bool:
+        """Check if the LDAP hostis currently supported."""
+        return (
+            not self.config["ldap_host"] or CANONICAL_LDAP_HOST == self.config["ldap_host"]
+        )
+
     def _is_saml_target_url_valid(self) -> bool:
         """Check if the target SAML URL is currently supported."""
         return (
@@ -452,13 +492,19 @@ class IndicoOperatorCharm(CharmBase):
 
     def _on_config_changed(self, event):
         """Handle changes in configuration."""
-        if not self._are_relations_ready(event):
-            event.defer()
-            return
         if not self._is_saml_target_url_valid():
             self.unit.status = BlockedStatus(
                 f"Invalid saml_target_url option provided. Only {UBUNTU_SAML_URL} is available."
             )
+            event.defer()
+            return
+        if not self._is_ldap_host_valid():
+            self.unit.status = BlockedStatus(
+                f"Invalid ldap_host option provided. Only {CANONICAL_LDAP_HOST} is available."
+            )
+            event.defer()
+            return
+        if not self._are_relations_ready(event):
             event.defer()
             return
         if not self._are_pebble_instances_ready():

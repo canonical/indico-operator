@@ -337,6 +337,22 @@ class TestCharm(unittest.TestCase):
         )
         self.assertTrue("Invalid saml_target_url option" in self.harness.model.unit.status.message)
 
+    def test_config_changed_when_ldap_host_invalid(self):
+        self.set_up_all_relations()
+        self.harness.set_leader(True)
+
+        with patch.object(Container, "exec", return_value=MockExecProcess()):
+            self.harness.container_pebble_ready("indico")
+            self.harness.container_pebble_ready("indico-celery")
+            self.harness.container_pebble_ready("indico-nginx")
+
+        self.harness.update_config({"ldap_host": "ldap.example.com"})
+        self.assertEqual(
+            self.harness.model.unit.status.name,
+            BlockedStatus.name,
+        )
+        self.assertTrue("Invalid ldap_host option" in self.harness.model.unit.status.message)
+
     def test_pebble_ready_when_relations_not_ready(self):
         self.harness.container_pebble_ready("indico")
         self.harness.container_pebble_ready("indico-celery")

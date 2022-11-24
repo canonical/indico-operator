@@ -38,6 +38,14 @@ options:
     type: string
     description: HTTPS proxy URL to be used when installing plugins or downloading customization files, e.g. 'http://squid.example:3128'.
     default: ''
+  ldap_host:
+    type: string
+    description: URL for the LDAP server to use as identity provider. Requires SAML to be configured.
+    default: ''
+  ldap_password:
+    type: string
+    description: LDAP for the LDAP server to use as identity provider.
+    default: ''
   saml_target_url:
     type: string
     description: Target URL for SAML SSO authentication.
