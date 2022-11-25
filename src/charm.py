@@ -443,7 +443,7 @@ class IndicoOperatorCharm(CharmBase):
                     "timeout": 30,
                     "verify_cert": True,
                     "page_size": 1500,
-                    "uid": "cn", # launchpadID
+                    "uid": "launchpadID",
                     "user_base": "ou=staff,dc=canonical,dc=com",
                     "user_filter": "(objectClass=canonicalPerson)",
                     "gid": "ou",
@@ -453,13 +453,13 @@ class IndicoOperatorCharm(CharmBase):
                     "ad_group_style": True,
                 }
                 identity_providers = {
-                    "ubuntu": {
+                    "ubuntu_ldap": {
                         "type": "ldap",
                         "title": "LDAP",
                         "ldap": _ldap_config,
                         "mapping": {
                             "email": "mail",
-                            "affiliation": "company",
+                            "affiliation": "o",
                             "first_name": "givenName",
                             "last_name": "sn",
                             "phone": "mobile",
@@ -469,7 +469,7 @@ class IndicoOperatorCharm(CharmBase):
                     }
                 }
                 provider_map = {
-                    'ubuntu': {'identity_provider': 'ubuntu', 'mapping': {'identifier': 'username'}}
+                    'ubuntu': {'identity_provider': 'ubuntu_ldap', 'mapping': {'identifier': 'username'}}
                 }
                 env_config["INDICO_PROVIDER_MAP"] = str(provider_map)
             env_config["INDICO_IDENTITY_PROVIDERS"] = str(identity_providers)
