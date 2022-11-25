@@ -257,7 +257,6 @@ class IndicoOperatorCharm(CharmBase):
                     "summary": "Nginx service",
                     "command": "/usr/sbin/nginx",
                     "startup": "enabled",
-                    "user": "indico",
                 },
             },
             "checks": {

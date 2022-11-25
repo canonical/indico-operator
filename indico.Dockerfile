@@ -36,7 +36,11 @@ RUN /bin/bash -c "mkdir -p --mode=775 /srv/indico/{archive,cache,custom,etc,log,
     && chown indico:indico /srv/indico  /srv/indico/cache /srv/indico/archive /srv/indico/custom \
     /srv/indico/etc /srv/indico/.local /srv/indico/log /srv/indico/tmp
 
+USER indico
+RUN /srv/indico/.local/bin/indico setup create-symlinks /srv/indico
+
 COPY --chown=indico:indico files/start-indico.sh /srv/indico/
 COPY --chown=indico:indico files/etc/indico/ /etc/
+
 
 RUN chmod +x /srv/indico/start-indico.sh
