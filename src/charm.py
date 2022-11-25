@@ -453,7 +453,7 @@ class IndicoOperatorCharm(CharmBase):
                     "ad_group_style": True,
                 }
                 identity_providers = {
-                    "ldap": {
+                    "ubuntu_ldap": {
                         "type": "ldap",
                         "title": "LDAP",
                         "ldap": _ldap_config,
@@ -468,7 +468,12 @@ class IndicoOperatorCharm(CharmBase):
                         "synced_fields": {"first_name", "last_name", "affiliation", "phone", "address"}
                     }
                 }
+                provider_map = PROVIDER_MAP = {
+                    'ubuntu': {'identity_provider': 'ubuntu_ldap', 'mapping': {'email': 'email'}}
+                }
+                env_config["INDICO_PROVIDER_MAP"] = str(provider_map)
             env_config["INDICO_IDENTITY_PROVIDERS"] = str(identity_providers)
+            
             env_config = {**env_config, **self._get_http_proxy_configuration()}
         return env_config
 

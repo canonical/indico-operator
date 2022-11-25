@@ -43,4 +43,4 @@ COPY --chown=indico:indico files/start-indico.sh /srv/indico/
 COPY --chown=indico:indico files/etc/indico/ /etc/
 
 
-RUN chmod +x /srv/indico/start-indico.sh
+RUN chmod -R +x /srv/indico/.local/bin /srv/indico/start-indico.sh
