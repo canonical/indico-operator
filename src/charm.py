@@ -226,7 +226,7 @@ class IndicoOperatorCharm(CharmBase):
                 "indico-celery": {
                     "override": "replace",
                     "summary": "Indico celery",
-                    "command": "/usr/local/bin/indico celery worker -B",
+                    "command": "/srv/indico/.local/bin/indico celery worker -B",
                     "startup": "enabled",
                     "user": "indico",
                     "environment": indico_env_config,
@@ -239,7 +239,7 @@ class IndicoOperatorCharm(CharmBase):
                     "period": "120s",
                     "timeout": "119s",
                     "exec": {
-                        "command": "/usr/local/bin/indico celery inspect ping",
+                        "command": "/srv/indico/.local/bin/indico celery inspect ping",
                         "environment": indico_env_config,
                     },
                 },
@@ -257,6 +257,7 @@ class IndicoOperatorCharm(CharmBase):
                     "summary": "Nginx service",
                     "command": "/usr/sbin/nginx",
                     "startup": "enabled",
+                    "user": "indico",
                 },
             },
             "checks": {
@@ -343,7 +344,10 @@ class IndicoOperatorCharm(CharmBase):
         broker_port = broker_rel.data[broker_unit].get("port")
 
         available_plugins = []
-        process = container.exec(["indico", "setup", "list-plugins"])
+        process = container.exec(
+            ["/srv/indico/.local/bin/indico", "setup", "list-plugins"],
+            user="indico",
+        )
         output, _ = process.wait_output()
         # Parse output table, discarding header and footer rows and fetching first column value
         available_plugins = [item.split("|")[1].strip() for item in output.split("\n")[3:-2]]
@@ -549,7 +553,10 @@ class IndicoOperatorCharm(CharmBase):
 
     def _get_indico_version(self):
         container = self.unit.get_container("indico")
-        process = container.exec(["/usr/local/bin/indico", "--version"])
+        process = container.exec(
+            ["/srv/indico/.local/bin/indico", "--version"],
+            user="indico",
+        )
         version_string, _ = process.wait_output()
         version = findall("[0-9.]+", version_string)
         return version[0] if version else ""
