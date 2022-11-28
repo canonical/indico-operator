@@ -178,6 +178,7 @@ class TestCharm(unittest.TestCase):
                     "indico_support_email": "example@email.local",
                     "indico_public_support_email": "public@email.local",
                     "indico_no_reply_email": "noreply@email.local",
+                    "ldap_host": "ldap.canonical.com",
                     "saml_target_url": "https://login.ubuntu.com/saml/",
                     "site_url": "https://example.local:8080",
                     "smtp_server": "localhost",
@@ -214,6 +215,15 @@ class TestCharm(unittest.TestCase):
             "s3:bucket=test-bucket,access_key=12345,secret_key=topsecret",
             storage_dict["s3"],
         )
+        auth_providers = literal_eval(updated_plan_env["INDICO_AUTH_PROVIDERS"])
+        self.assertEqual("saml", auth_providers["ubuntu"]["type"])
+        self.assertEqual(
+            "https://example.local:8080",
+            auth_providers["ubuntu"]["saml_config"]["sp"]["entityId"],
+        )
+        identity_providers = literal_eval(updated_plan_env["INDICO_IDENTITY_PROVIDERS"])
+        self.assertEqual("ldap", identity_providers["ubuntu_ldap"]["type"])
+        self.assertTrue("INDICO_PROVIDER_MAP" in updated_plan_env)
         exec_mock.assert_any_call(
             ["git", "clone", "https://example.com/custom", "."],
             working_dir="/srv/indico/custom",
@@ -264,7 +274,8 @@ class TestCharm(unittest.TestCase):
             auth_providers["ubuntu"]["saml_config"]["sp"]["entityId"],
         )
         identity_providers = literal_eval(updated_plan_env["INDICO_IDENTITY_PROVIDERS"])
-        self.assertEqual("saml", identity_providers["ubuntu"]["type"])
+        self.assertEqual("ldap", identity_providers["ubuntu_ldap"]["type"])
+        self.assertTrue("INDICO_PROVIDER_MAP" in updated_plan_env)
 
         with patch.object(Container, "exec", return_value=MockExecProcess()):
             self.harness.update_config({"site_url": "https://example.local"})

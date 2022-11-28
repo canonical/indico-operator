@@ -442,7 +442,7 @@ class IndicoOperatorCharm(CharmBase):
                     "bind_password": self.config["ldap_password"],
                     "timeout": 30,
                     "verify_cert": True,
-                    "page_size": 15000,
+                    "page_size": 1500,
                     "uid": "launchpadID",
                     "user_base": "ou=staff,dc=canonical,dc=com",
                     "user_filter": "(objectClass=canonicalPerson)",
