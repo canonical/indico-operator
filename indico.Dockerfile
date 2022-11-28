@@ -26,21 +26,17 @@ ENV DEBIAN_FRONTEND=noninteractive \
     LC_ALL=C.UTF-8 \
     LC_LANG=C.UTF-8
 
-RUN apt-get update \
-    && apt-get install -y gettext git libxmlsec1-dev locales postgresql-client python3-pip texlive-xetex
+RUN apt update \
+    && apt install -y gettext git libxmlsec1-dev locales postgresql-client python3-pip texlive-xetex
+
+RUN /bin/bash -c "mkdir -p --mode=775 /srv/indico/{etc,tmp,log,cache,archive,custom}" \
+    && /usr/local/bin/indico setup create-symlinks /srv/indico
 
 RUN addgroup --gid ${indico_gid} indico \
     && adduser --system --gid ${indico_gid} --uid ${indico_uid} --home /srv/indico indico
 
-RUN /bin/bash -c "mkdir -p --mode=775 /srv/indico/{archive,cache,custom,etc,log,tmp}" \
-    && chown indico:indico /srv/indico  /srv/indico/cache /srv/indico/archive /srv/indico/custom \
-    /srv/indico/etc /srv/indico/.local /srv/indico/log /srv/indico/tmp
-
-USER indico
-RUN /srv/indico/.local/bin/indico setup create-symlinks /srv/indico
-
 COPY --chown=indico:indico files/start-indico.sh /srv/indico/
 COPY --chown=indico:indico files/etc/indico/ /etc/
 
-
-RUN chmod -R +x /srv/indico/.local/bin /srv/indico/start-indico.sh
+RUN chmod +x /srv/indico/start-indico.sh \
+    && chown -R indico:indico /srv/indico
