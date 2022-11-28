@@ -309,11 +309,11 @@ class TestCharm(unittest.TestCase):
             ["git", "clone", "https://example.com/custom", "."],
             working_dir="/srv/indico/custom",
             user="indico",
-            environment=None,
+            environment={},
         )
         exec_mock.assert_any_call(
             ["pip", "install", "--upgrade", "git+https://example.git/#subdirectory=themes_cern"],
-            environment=None,
+            environment={},
         )
 
     def test_config_changed_when_pebble_not_ready(self):

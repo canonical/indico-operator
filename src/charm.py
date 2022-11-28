@@ -442,15 +442,15 @@ class IndicoOperatorCharm(CharmBase):
                     "bind_password": self.config["ldap_password"],
                     "timeout": 30,
                     "verify_cert": True,
-                    "page_size": 1500,
+                    "page_size": 15000,
                     "uid": "launchpadID",
                     "user_base": "ou=staff,dc=canonical,dc=com",
                     "user_filter": "(objectClass=canonicalPerson)",
-                    "gid": "ou",
-                    "group_base": "dc=canonical,dc=com",
-                    "group_filter": "(objectClass=organizationalRole)",
-                    "member_of_attr": "ou",
-                    "ad_group_style": True,
+                    "gid": "mozillaCustom1",
+                    "group_base": "ou=staff,dc=canonical,dc=com",
+                    "group_filter": "(objectClass=canonicalPerson)",
+                    "member_of_attr": "mozillaCustom1",
+                    "ad_group_style": False,
                 }
                 identity_providers = {
                     "ubuntu_ldap": {
