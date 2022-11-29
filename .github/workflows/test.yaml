@@ -11,6 +11,7 @@ jobs:
     name: Draft publish docs
     runs-on: ubuntu-22.04
     steps:
+      - uses: actions/checkout@v3
       - name: Publish documentation
         uses: canonical/upload-charm-docs@alpha-5
         with:
