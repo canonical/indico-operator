@@ -24,3 +24,26 @@ jobs:
       origin-channel: ${{ github.event.inputs.origin-channel }}
       destination-channel: ${{ github.event.inputs.destination-channel }}
     secrets: inherit
+  draft-publish-docs:
+    if: ${{ github.event.inputs.destination-channel }} == 'latest/edge'
+    name: Draft publish docs
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Publish documentation
+        uses: canonical/upload-charm-docs@alpha-5
+        with:
+          discourse_host: discourse.charmhub.io
+          discourse_api_username: ${{ secrets.DISCOURSE_API_USERNAME }}
+          discourse_api_key: ${{ secrets.DISCOURSE_API_KEY }}
+          draft_mode: true
+  publish-docs:
+    if: ${{ github.event.inputs.destination-channel }} == 'latest/stable'
+    name: Publish docs
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Publish documentation
+        uses: canonical/upload-charm-docs@alpha-5
+        with:
+          discourse_host: discourse.charmhub.io
+          discourse_api_username: ${{ secrets.DISCOURSE_API_USERNAME }}
+          discourse_api_key: ${{ secrets.DISCOURSE_API_KEY }}
