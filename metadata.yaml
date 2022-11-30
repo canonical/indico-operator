@@ -6,6 +6,8 @@ maintainers:
   - launchpad.net/~canonical-is-devops
 issues: https://github.com/canonical/indico-operator/issues
 description: Manage complex conferences, workshops and meetings.
+assumes:
+  - k8s-api
 containers:
   indico:
     resource: indico-image
