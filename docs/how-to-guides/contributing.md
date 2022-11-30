@@ -14,7 +14,7 @@ This document explains the processes and practices recommended for contributing 
 - All enhancements require review before being merged. Code review typically examines
   - code quality
   - test coverage
-  - user experience for Juju administrators of this charm.
+  - user experience for Juju operators of this charm.
 - Please help us out in ensuring easy to review branches by rebasing your pull request branch onto the `main` branch. This also avoids merge commits and creates a linear Git commit history.
 
 ## Developing
@@ -34,14 +34,14 @@ source .tox/unit/bin/activate
 
 ### Testing
 
-```shell
-tox -e fmt           # update your code according to linting rules
-tox -e lint          # code style
-tox -e unit          # unit tests
-# integration tests (see below for building docker images)
-tox -e integration -- --indico-image localhost:32000/indico:latest --indico-nginx-image=localhost:32000/indico-nginx:latest
-tox                  # runs 'lint' and 'unit' environments
-```
+Note that the [indico](indico.Dockerfile) and [indico nginx](indico-nginx.Dockerfile) images need to be built and pushed to microk8s for the tests to run. The should be named `localhost:32000/indico:latest` and `localhost:32000/indico-nginx:latest` so that Kubernetes knows to pull them from the microk8s repository. Note that the microk8s registry needs to be enabled using `microk8s enable registry`. More details regarding the Docker images below. The following commands can then be used to run the tests:
+
+* `tox`: Runs all of the basic checks (`lint`, `unit`, `static`, and `coverage-report`).
+* `tox -e fmt`: Runs formatting using `black` and `isort`.
+* `tox -e lint`: Runs a range of static code analysis to check the code.
+* `tox -e static`: Runs other checks such as `bandit` for security issues.
+* `tox -e unit`: Runs the unit tests.
+* `tox -e integration`: Runs the integration tests.
 
 ## Build charm
 
