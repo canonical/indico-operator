@@ -446,9 +446,9 @@ class IndicoOperatorCharm(CharmBase):
                     "uid": "launchpadID",
                     "user_base": "ou=staff,dc=canonical,dc=com",
                     "user_filter": "(objectClass=canonicalPerson)",
-                    "gid": "mozillaCustom1",
-                    "group_base": "ou=staff,dc=canonical,dc=com",
-                    "group_filter": "(objectClass=canonicalPerson)",
+                    "gid": "cn",
+                    "group_base": "dc=canonical,dc=com",
+                    "group_filter": "(objectClass=canonicalTeam)",
                     "member_of_attr": "mozillaCustom1",
                     "ad_group_style": False,
                 }
