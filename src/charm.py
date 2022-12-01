@@ -15,10 +15,10 @@ from charms.grafana_k8s.v0.grafana_dashboard import GrafanaDashboardProvider
 from charms.nginx_ingress_integrator.v0.ingress import IngressRequires
 from charms.prometheus_k8s.v0.prometheus_scrape import MetricsEndpointProvider
 from charms.redis_k8s.v0.redis import RedisRelationCharmEvents, RedisRequires
-from ops.charm import ActionEvent, CharmBase
+from ops.charm import ActionEvent, CharmBase, HookEvent, PebbleReadyEvent
 from ops.framework import StoredState
 from ops.main import main
-from ops.model import ActiveStatus, BlockedStatus, MaintenanceStatus, WaitingStatus
+from ops.model import ActiveStatus, BlockedStatus, Container, MaintenanceStatus, WaitingStatus
 from ops.pebble import ExecError
 
 DATABASE_NAME = "indico"
@@ -76,8 +76,12 @@ class IndicoOperatorCharm(CharmBase):
         )
         self._grafana_dashboards = GrafanaDashboardProvider(self)
 
-    def _on_database_relation_joined(self, event: pgsql.DatabaseRelationJoinedEvent):
-        """Handle db-relation-joined."""
+    def _on_database_relation_joined(self, event: pgsql.DatabaseRelationJoinedEvent) -> None:
+        """Handle db-relation-joined.
+
+        Args:
+            event: Event triggering the database relation joined handler.
+        """
         if self.model.unit.is_leader():
             # Provide requirements to the PostgreSQL server.
             event.database = DATABASE_NAME
@@ -88,8 +92,12 @@ class IndicoOperatorCharm(CharmBase):
             event.defer()
             return
 
-    def _on_master_changed(self, event: pgsql.MasterChangedEvent):
-        """Handle changes in the primary database unit."""
+    def _on_master_changed(self, event: pgsql.MasterChangedEvent) -> None:
+        """Handle changes in the primary database unit.
+
+        Args:
+            event: Event triggering the database master changed handler.
+        """
         if event.database != DATABASE_NAME:
             # Leader has not yet set requirements. Wait until next
             # event, or risk connecting to an incorrect database.
@@ -100,16 +108,24 @@ class IndicoOperatorCharm(CharmBase):
             return
         self._on_config_changed(event)
 
-    def _make_ingress_config(self):
-        """Return ingress configuration."""
+    def _make_ingress_config(self) -> Dict:
+        """Create minimal ingress configuration.
+
+        Returns:
+            Minimal ingress configuration with hostname, service name and service port.
+        """
         return {
             "service-hostname": self._get_external_hostname(),
             "service-name": self.app.name,
             "service-port": 8080,
         }
 
-    def _are_pebble_instances_ready(self):
-        """Check if all pebble instances are ready."""
+    def _are_pebble_instances_ready(self) -> bool:
+        """Checks if all pebble instances are up and containers available.
+
+        Returns:
+            If the containers are up and available.
+        """
         return all(
             [
                 self.unit.get_container(container_name).can_connect()
@@ -118,29 +134,51 @@ class IndicoOperatorCharm(CharmBase):
         )
 
     def _is_configuration_valid(self) -> Tuple[bool, str]:
-        """Validate charm configuration."""
+        """Validate charm configuration.
+
+        Returns:
+            Tuple containing as first element whether the configuration is valid.
+            and a string with the error, if any, as second element.
+        """
         site_url = self.config["site_url"]
         if site_url and not urlparse(site_url).hostname:
             return False, "Configuration option site_url is not valid"
         return True, ""
 
-    def _get_external_hostname(self):
-        """Extract and return hostname from site_url."""
+    def _get_external_hostname(self) -> str:
+        """Extract and return hostname from site_url or default to [application name].local.
+
+        Returns:
+            The site URL defined as part of the site_url configuration or a default value.
+        """
         site_url = self.config["site_url"]
         return urlparse(site_url).hostname if site_url else f"{self.app.name}.local"
 
-    def _get_external_scheme(self):
-        """Extract and return schema from site_url."""
+    def _get_external_scheme(self) -> str:
+        """Extract and return schema from site_url.
+
+        Returns:
+            The HTTP schema.
+        """
         site_url = self.config["site_url"]
         return urlparse(site_url).scheme if site_url else "http"
 
-    def _get_external_port(self):
-        """Extract and return port from site_url."""
+    def _get_external_port(self) -> int:
+        """Extract and return port from site_url.
+
+        Returns:
+            The port number.
+        """
         site_url = self.config["site_url"]
         return urlparse(site_url).port
 
-    def _are_relations_ready(self, _):
-        """Handle the on pebble ready event for Indico."""
+    def _are_relations_ready(self, _) -> bool:
+        """Checks if the needed relations are established.
+
+        Returns:
+            If the needed relations have been established.
+        """
+
         if not any(
             rel.app.name.startswith("redis-broker") for rel in self.model.relations["redis"]
         ):
@@ -156,15 +194,23 @@ class IndicoOperatorCharm(CharmBase):
             return False
         return True
 
-    def _on_pebble_ready(self, event):
-        """Handle the on pebble ready event for the containers."""
+    def _on_pebble_ready(self, event: PebbleReadyEvent) -> None:
+        """Handle the on pebble ready event for the containers.
+
+        Args:
+            event: Event triggering the pebble ready handler.
+        """
         if not self._are_relations_ready(event) or not event.workload.can_connect():
             event.defer()
             return
         self._config_pebble(event.workload)
 
-    def _config_pebble(self, container):
-        """Apply pebble changes."""
+    def _config_pebble(self, container: Container) -> None:
+        """Apply pebble configurations to a container.
+
+        Args:
+            container: Container to be configured.
+        """
         self.unit.status = MaintenanceStatus(f"Adding {container.name} layer to pebble")
         if container.name in ["indico", "indico-celery"]:
             plugins = (
@@ -190,8 +236,12 @@ class IndicoOperatorCharm(CharmBase):
         else:
             self.unit.status = WaitingStatus("Waiting for pebble")
 
-    def _get_indico_pebble_config(self, container):
-        """Generate pebble config for the indico container."""
+    def _get_indico_pebble_config(self, container: Container) -> Dict:
+        """Generate pebble config for the indico container.
+
+        Returns:
+            The pebble configuration for the container.
+        """
         indico_env_config = self._get_indico_env_config(container)
         return {
             "summary": "Indico layer",
@@ -215,8 +265,12 @@ class IndicoOperatorCharm(CharmBase):
             },
         }
 
-    def _get_indico_celery_pebble_config(self, container):
-        """Generate pebble config for the indico-celery container."""
+    def _get_indico_celery_pebble_config(self, container: Container) -> Dict:
+        """Generate pebble config for the indico-celery container.
+
+        Returns:
+            The pebble configuration for the container.
+        """
         indico_env_config = self._get_indico_env_config(container)
         return {
             "summary": "Indico celery layer",
@@ -245,8 +299,12 @@ class IndicoOperatorCharm(CharmBase):
             },
         }
 
-    def _get_indico_nginx_pebble_config(self, _):
-        """Generate pebble config for the indico-nginx container."""
+    def _get_indico_nginx_pebble_config(self, _) -> Dict:
+        """Generate pebble config for the indico-nginx container.
+
+        Returns:
+            The pebble configuration for the container.
+        """
         return {
             "summary": "Indico nginx layer",
             "description": "Indico nginx layer",
@@ -272,8 +330,12 @@ class IndicoOperatorCharm(CharmBase):
             },
         }
 
-    def _get_nginx_prometheus_exporter_pebble_config(self, _):
-        """Generate pebble config for the nginx-prometheus-exporter container."""
+    def _get_nginx_prometheus_exporter_pebble_config(self, _) -> Dict:
+        """Generate pebble config for the nginx-prometheus-exporter container.
+
+        Returns:
+            The pebble configuration for the container.
+        """
         return {
             "summary": "Nginx prometheus exporter",
             "description": "Prometheus exporter for nginx",
@@ -297,7 +359,7 @@ class IndicoOperatorCharm(CharmBase):
             },
         }
 
-    def _get_statsd_prometheus_exporter_pebble_config(self, _):
+    def _get_statsd_prometheus_exporter_pebble_config(self, _) -> Dict:
         """Generate pebble config for the statsd-prometheus-exporter container.
 
         Returns:
@@ -323,8 +385,15 @@ class IndicoOperatorCharm(CharmBase):
             },
         }
 
-    def _get_indico_env_config(self, container):
-        """Return an envConfig with some core configuration."""
+    def _get_indico_env_config(self, container: Container) -> Dict:
+        """Return an envConfig with some core configuration.
+
+        Args:
+            container: Container for which the configuration will be retrieved.
+
+        Returns:
+            Dictionary with the environment variables for the container.
+        """
         cache_rel = next(
             rel for rel in self.model.relations["redis"] if rel.app.name.startswith("redis-cache")
         )
@@ -435,8 +504,12 @@ class IndicoOperatorCharm(CharmBase):
             env_config = {**env_config, **self._get_http_proxy_configuration()}
         return env_config
 
-    def _get_http_proxy_configuration(self):
-        """Generate http proxy config."""
+    def _get_http_proxy_configuration(self) -> Dict:
+        """Generate http proxy config.
+
+        Returns:
+            Map containing the HTTP_PROXY environment variables.
+        """
         config = {}
         if self.config["http_proxy"]:
             config["HTTP_PROXY"] = self.config["http_proxy"]
@@ -450,8 +523,12 @@ class IndicoOperatorCharm(CharmBase):
             not self.config["saml_target_url"] or UBUNTU_SAML_URL == self.config["saml_target_url"]
         )
 
-    def _on_config_changed(self, event):
-        """Handle changes in configuration."""
+    def _on_config_changed(self, event: HookEvent) -> None:
+        """Handle changes in configuration.
+
+        Args:
+            event: Event triggering the configuration change handler.
+        """
         if not self._are_relations_ready(event):
             event.defer()
             return
@@ -492,8 +569,13 @@ class IndicoOperatorCharm(CharmBase):
             pass
         return remote_url.rstrip()
 
-    def _install_plugins(self, container, plugins):
-        """Install the external plugins."""
+    def _install_plugins(self, container: Container, plugins: List[str]) -> None:
+        """Install the external plugins.
+
+        Args:
+            container: Container where the plugins will be installed.
+            plugins: List of plugins to be installed.
+        """
         if plugins:
             process = container.exec(
                 ["pip", "install", "--upgrade"] + plugins,
@@ -501,18 +583,23 @@ class IndicoOperatorCharm(CharmBase):
             )
             process.wait_output()
 
-    def _get_indico_version(self):
+    def _get_indico_version(self) -> str:
+        """Retrieve the current version of Indico.
+
+        Returns:
+            The indico version installed.
+        """
         container = self.unit.get_container("indico")
         process = container.exec(["/usr/local/bin/indico", "--version"])
         version_string, _ = process.wait_output()
         version = findall("[0-9.]+", version_string)
         return version[0] if version else ""
 
-    def _exec_cmd_in_custom_dir(self, container, command: List[str]):
+    def _exec_cmd_in_custom_dir(self, container: Container, command: List[str]) -> None:
         """Execute command in indico customization directory.
 
         Args:
-            container: container in a unit where the command will be executed
+            container: Container in which the command will be executed.
             command: command to execute. The first item is the name (or path)
                     of the executable, the rest of the items are the arguments.
         """
@@ -524,8 +611,12 @@ class IndicoOperatorCharm(CharmBase):
         )
         process.wait_output()
 
-    def _download_customization_changes(self, container):
-        """Clone the remote repository with the customization changes."""
+    def _download_customization_changes(self, container: Container) -> None:
+        """Clone the remote repository with the customization changes.
+
+        Args:
+            container: Container in which the download will be performed.
+        """
         current_remote_url = self._get_current_customization_url()
         if current_remote_url != self.config["customization_sources_url"]:
             logging.debug(
@@ -553,7 +644,11 @@ class IndicoOperatorCharm(CharmBase):
                 )
 
     def _refresh_external_resources(self, _) -> Dict:
-        """Pull changes from the remote repository and upgrade external plugins."""
+        """Pull changes from the remote repository and upgrade external plugins.
+
+        Returns:
+            Dictionary containing the execution results for each of the operations executed.
+        """
         results = {
             "customization-changes": False,
             "plugin-updates": [],
@@ -578,7 +673,11 @@ class IndicoOperatorCharm(CharmBase):
         return results
 
     def _refresh_external_resources_action(self, event: ActionEvent) -> None:
-        """Refresh external resources and report action result."""
+        """Refresh external resources and report action result.
+
+        Args:
+            event: Event triggering the refresh action.
+        """
         results = self._refresh_external_resources(event)
         event.set_results(results)
 
