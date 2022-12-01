@@ -173,10 +173,10 @@ class IndicoOperatorCharm(CharmBase):
         return urlparse(site_url).port
 
     def _are_relations_ready(self, _) -> bool:
-        """Checks if the needed relations are stablished.
+        """Checks if the needed relations are established.
 
         Returns:
-            If the needed relations have been stablished.
+            If the needed relations have been established.
         """
 
         if not any(
@@ -392,7 +392,7 @@ class IndicoOperatorCharm(CharmBase):
             container: Container for which the configuration will be retrieved.
 
         Returns:
-            Dictionary with the environmental variables for the container.
+            Dictionary with the environment variables for the container.
         """
         cache_rel = next(
             rel for rel in self.model.relations["redis"] if rel.app.name.startswith("redis-cache")
@@ -508,7 +508,7 @@ class IndicoOperatorCharm(CharmBase):
         """Generate http proxy config.
 
         Returns:
-            Map containing the HTTP_PROXY environmental variables.
+            Map containing the HTTP_PROXY environment variables.
         """
         config = {}
         if self.config["http_proxy"]:
