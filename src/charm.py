@@ -516,10 +516,10 @@ class IndicoOperatorCharm(CharmBase):
                 }
             }
             env_config["INDICO_IDENTITY_PROVIDERS"] = str(identity_providers)
-            env_config = {**env_config, **(self._get_http_proxy_configuration() or {})}
+            env_config = {**env_config, **self._get_http_proxy_configuration()}
         return env_config
 
-    def _get_http_proxy_configuration(self) -> Optional[Dict]:
+    def _get_http_proxy_configuration(self) -> Dict[str, str]:
         """Generate http proxy config.
 
         Returns:
@@ -530,7 +530,7 @@ class IndicoOperatorCharm(CharmBase):
             config["HTTP_PROXY"] = self.config["http_proxy"]
         if self.config["https_proxy"]:
             config["HTTPS_PROXY"] = self.config["https_proxy"]
-        return config if config else None
+        return config
 
     def _is_saml_target_url_valid(self) -> bool:
         """Check if the target SAML URL is currently supported."""

@@ -1,6 +1,7 @@
 # Copyright 2022 Canonical Ltd.
 # See LICENSE file for licensing details.
 
+import typing
 import unittest
 from ast import literal_eval
 from unittest.mock import MagicMock, patch
@@ -309,11 +310,11 @@ class TestCharm(unittest.TestCase):
             ["git", "clone", "https://example.com/custom", "."],
             working_dir="/srv/indico/custom",
             user="indico",
-            environment=None,
+            environment={},
         )
         exec_mock.assert_any_call(
             ["pip", "install", "--upgrade", "git+https://example.git/#subdirectory=themes_cern"],
-            environment=None,
+            environment={},
         )
 
     def test_config_changed_when_pebble_not_ready(self):
@@ -399,7 +400,6 @@ class TestCharm(unittest.TestCase):
             "database connection string should change after database master changed",
         )
 
-    @unittest.skip("not needed right now")
     def test_refresh_external_resources_when_customization_and_plugins_set(self):
         self.harness.disable_hooks()
         self.set_up_all_relations()
@@ -416,17 +416,19 @@ class TestCharm(unittest.TestCase):
                     "external_plugins": "git+https://example.git/#subdirectory=themes_cern",
                 }
             )
-            self.harness.charm.on.update_status.emit()
+
+            charm: IndicoOperatorCharm = typing.cast(IndicoOperatorCharm, self.harness.charm)
+            charm._refresh_external_resources(MagicMock())
 
         exec_mock.assert_any_call(
             ["git", "pull"],
             working_dir="/srv/indico/custom",
             user="indico",
-            environment=None,
+            environment={},
         )
         exec_mock.assert_any_call(
             ["pip", "install", "--upgrade", "git+https://example.git/#subdirectory=themes_cern"],
-            environment=None,
+            environment={},
         )
 
     def set_up_all_relations(self):
