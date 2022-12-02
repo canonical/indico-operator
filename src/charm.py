@@ -186,14 +186,12 @@ class IndicoOperatorCharm(CharmBase):
             If the needed relations have been established.
         """
         if not any(
-            rel.app and rel.app.name.startswith("redis-broker")
-            for rel in self.model.relations["redis"]
+            rel.app.name.startswith("redis-broker") for rel in self.model.relations["redis"]
         ):
             self.unit.status = WaitingStatus("Waiting for redis-broker availability")
             return False
         if not any(
-            rel.app and rel.app.name.startswith("redis-cache")
-            for rel in self.model.relations["redis"]
+            rel.app.name.startswith("redis-cache") for rel in self.model.relations["redis"]
         ):
             self.unit.status = WaitingStatus("Waiting for redis-cache availability")
             return False
@@ -443,9 +441,7 @@ class IndicoOperatorCharm(CharmBase):
             "INDICO_PUBLIC_SUPPORT_EMAIL": self.config["indico_public_support_email"],
             "INDICO_SUPPORT_EMAIL": self.config["indico_support_email"],
             "REDIS_CACHE_URL": f"redis://{cache_host}:{cache_port}",
-            "SECRET_KEY": (
-                peer_relation.data[self.app].get("secret-key") if peer_relation else None
-            ),
+            "SECRET_KEY": peer_relation.data[self.app].get("secret-key"),
             "SERVICE_HOSTNAME": self._get_external_hostname(),
             "SERVICE_PORT": self._get_external_port(),
             "SERVICE_SCHEME": self._get_external_scheme(),
@@ -699,8 +695,6 @@ class IndicoOperatorCharm(CharmBase):
     def _on_leader_elected(self, _) -> None:
         """Handle leader-elected event."""
         peer_relation = self.model.get_relation("indico-peers")
-        if not peer_relation:
-            return
         if not peer_relation.data[self.app].get("secret-key"):
             peer_relation.data[self.app].update({"secret-key": repr(os.urandom(32))})
 
