@@ -186,7 +186,7 @@ class IndicoOperatorCharm(CharmBase):
             If the needed relations have been established.
         """
 
-        if not not any(
+        if not any(
             rel.app and rel.app.name.startswith("redis-broker")
             for rel in self.model.relations["redis"]
         ):
