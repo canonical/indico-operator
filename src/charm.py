@@ -170,14 +170,14 @@ class IndicoOperatorCharm(CharmBase):
         site_url = self.config["site_url"]
         return urlparse(site_url).scheme if site_url else "http"
 
-    def _get_external_port(self) -> int:
+    def _get_external_port(self) -> Optional[int]:
         """Extract and return port from site_url.
 
         Returns:
             The port number.
         """
         site_url = self.config["site_url"]
-        return urlparse(site_url).port or 0
+        return urlparse(site_url).port
 
     def _are_relations_ready(self, _) -> bool:
         """Check if the needed relations are established.
@@ -185,7 +185,6 @@ class IndicoOperatorCharm(CharmBase):
         Returns:
             If the needed relations have been established.
         """
-
         if not any(
             rel.app and rel.app.name.startswith("redis-broker")
             for rel in self.model.relations["redis"]
