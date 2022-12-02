@@ -15,7 +15,8 @@ async def test_active(app: Application):
 
     Assume that the charm has already been built and is running.
     """
-    assert app.units[0].workload_status == ActiveStatus.name
+    # Application actually does have units
+    assert app.units[0].workload_status == ActiveStatus.name  # type: ignore
 
 
 @pytest.mark.asyncio
@@ -25,6 +26,7 @@ async def test_indico_is_up(ops_test: OpsTest, app: Application):
 
     Assume that the charm has already been built and is running.
     """
+    assert ops_test.model
     # Read the IP address of indico
     status = await ops_test.model.get_status()
     unit = list(status.applications[app.name].units)[0]
@@ -45,7 +47,8 @@ async def test_prom_exporters_are_up(app: Application):
     act: when the metrics endpoints are scraped
     assert: the response is 200 (HTTP OK)
     """
-    indico_unit = app.units[0]
+    # Application actually does have units
+    indico_unit = app.units[0]  # type: ignore
     prometheus_targets = ["localhost:9113", "localhost:9102"]
     # Send request to /metrics for each target and check the response
     for target in prometheus_targets:
@@ -66,7 +69,8 @@ async def test_health_checks(app: Application):
     Assume that the charm has already been built and is running.
     """
     container_list = ["indico", "indico-nginx", "indico-celery"]
-    indico_unit = app.units[0]
+    # Application actually does have units
+    indico_unit = app.units[0]  # type: ignore
     for container in container_list:
         cmd = f"PEBBLE_SOCKET=/charm/containers/{container}/pebble.socket /charm/bin/pebble checks"
         action = await indico_unit.run(cmd)

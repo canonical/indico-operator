@@ -7,7 +7,7 @@
 import logging
 import os
 from re import findall
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 from urllib.parse import urlparse
 
 import ops.lib
@@ -77,7 +77,10 @@ class IndicoOperatorCharm(CharmBase):
         )
         self._grafana_dashboards = GrafanaDashboardProvider(self)
 
-    def _on_database_relation_joined(self, event: pgsql.DatabaseRelationJoinedEvent) -> None:
+    # pgsql.DatabaseRelationJoinedEvent is actually defined
+    def _on_database_relation_joined(
+        self, event: pgsql.DatabaseRelationJoinedEvent  # type: ignore
+    ) -> None:
         """Handle db-relation-joined.
 
         Args:
@@ -93,7 +96,8 @@ class IndicoOperatorCharm(CharmBase):
             event.defer()
             return
 
-    def _on_master_changed(self, event: pgsql.MasterChangedEvent) -> None:
+    # pgsql.MasterChangedEvent is actually defined
+    def _on_master_changed(self, event: pgsql.MasterChangedEvent) -> None:  # type: ignore
         """Handle changes in the primary database unit.
 
         Args:
@@ -153,7 +157,9 @@ class IndicoOperatorCharm(CharmBase):
             The site URL defined as part of the site_url configuration or a default value.
         """
         site_url = self.config["site_url"]
-        return urlparse(site_url).hostname if site_url else f"{self.app.name}.local"
+        if not site_url or not (hostname := urlparse(site_url).hostname):
+            return f"{self.app.name}.local"
+        return hostname
 
     def _get_external_scheme(self) -> str:
         """Extract and return schema from site_url.
@@ -164,7 +170,7 @@ class IndicoOperatorCharm(CharmBase):
         site_url = self.config["site_url"]
         return urlparse(site_url).scheme if site_url else "http"
 
-    def _get_external_port(self) -> int:
+    def _get_external_port(self) -> Optional[int]:
         """Extract and return port from site_url.
 
         Returns:
@@ -180,16 +186,19 @@ class IndicoOperatorCharm(CharmBase):
             If the needed relations have been established.
         """
         if not any(
-            rel.app.name.startswith("redis-broker") for rel in self.model.relations["redis"]
+            rel.app and rel.app.name.startswith("redis-broker")
+            for rel in self.model.relations["redis"]
         ):
             self.unit.status = WaitingStatus("Waiting for redis-broker availability")
             return False
         if not any(
-            rel.app.name.startswith("redis-cache") for rel in self.model.relations["redis"]
+            rel.app and rel.app.name.startswith("redis-cache")
+            for rel in self.model.relations["redis"]
         ):
             self.unit.status = WaitingStatus("Waiting for redis-cache availability")
             return False
-        if not self._stored.db_uri:
+        # mypy misinterprets this line, reports something about function overloading
+        if not self._stored.db_uri:  # type: ignore
             self.unit.status = WaitingStatus("Waiting for database availability")
             return False
         return True
@@ -395,14 +404,18 @@ class IndicoOperatorCharm(CharmBase):
             Dictionary with the environment variables for the container.
         """
         cache_rel = next(
-            rel for rel in self.model.relations["redis"] if rel.app.name.startswith("redis-cache")
+            rel
+            for rel in self.model.relations["redis"]
+            if rel.app and rel.app.name.startswith("redis-cache")
         )
         cache_unit = next(unit for unit in cache_rel.data if unit.name.startswith("redis-cache"))
         cache_host = cache_rel.data[cache_unit].get("hostname")
         cache_port = cache_rel.data[cache_unit].get("port")
 
         broker_rel = next(
-            rel for rel in self.model.relations["redis"] if rel.app.name.startswith("redis-broker")
+            rel
+            for rel in self.model.relations["redis"]
+            if rel.app and rel.app.name.startswith("redis-broker")
         )
         broker_unit = next(
             unit for unit in broker_rel.data if unit.name.startswith("redis-broker")
@@ -430,7 +443,9 @@ class IndicoOperatorCharm(CharmBase):
             "INDICO_PUBLIC_SUPPORT_EMAIL": self.config["indico_public_support_email"],
             "INDICO_SUPPORT_EMAIL": self.config["indico_support_email"],
             "REDIS_CACHE_URL": f"redis://{cache_host}:{cache_port}",
-            "SECRET_KEY": peer_relation.data[self.app].get("secret-key"),
+            "SECRET_KEY": (
+                peer_relation.data[self.app].get("secret-key") if peer_relation else None
+            ),
             "SERVICE_HOSTNAME": self._get_external_hostname(),
             "SERVICE_PORT": self._get_external_port(),
             "SERVICE_SCHEME": self._get_external_scheme(),
@@ -504,7 +519,7 @@ class IndicoOperatorCharm(CharmBase):
             env_config = {**env_config, **self._get_http_proxy_configuration()}
         return env_config
 
-    def _get_http_proxy_configuration(self) -> Dict:
+    def _get_http_proxy_configuration(self) -> Dict[str, str]:
         """Generate http proxy config.
 
         Returns:
@@ -515,7 +530,7 @@ class IndicoOperatorCharm(CharmBase):
             config["HTTP_PROXY"] = self.config["http_proxy"]
         if self.config["https_proxy"]:
             config["HTTPS_PROXY"] = self.config["https_proxy"]
-        return config if config else None
+        return config
 
     def _is_saml_target_url_valid(self) -> bool:
         """Check if the target SAML URL is currently supported."""
@@ -684,7 +699,7 @@ class IndicoOperatorCharm(CharmBase):
     def _on_leader_elected(self, _) -> None:
         """Handle leader-elected event."""
         peer_relation = self.model.get_relation("indico-peers")
-        if not peer_relation.data[self.app].get("secret-key"):
+        if peer_relation and not peer_relation.data[self.app].get("secret-key"):
             peer_relation.data[self.app].update({"secret-key": repr(os.urandom(32))})
 
 
