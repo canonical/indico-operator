@@ -37,6 +37,7 @@ class IndicoOperatorCharm(CharmBase):
     on = RedisRelationCharmEvents()
 
     def __init__(self, *args):
+        """Construct."""
         super().__init__(*args)
 
         self.framework.observe(self.on.config_changed, self._on_config_changed)
@@ -125,7 +126,7 @@ class IndicoOperatorCharm(CharmBase):
         }
 
     def _are_pebble_instances_ready(self) -> bool:
-        """Checks if all pebble instances are up and containers available.
+        """Check if all pebble instances are up and containers available.
 
         Returns:
             If the containers are up and available.
@@ -179,7 +180,7 @@ class IndicoOperatorCharm(CharmBase):
         return urlparse(site_url).port or 0
 
     def _are_relations_ready(self, _) -> bool:
-        """Checks if the needed relations are established.
+        """Check if the needed relations are established.
 
         Returns:
             If the needed relations have been established.
