@@ -399,7 +399,7 @@ class TestCharm(unittest.TestCase):
             "database connection string should change after database master changed",
         )
 
-    @unittest.skip
+    @unittest.skip("not needed right now")
     def test_refresh_external_resources_when_customization_and_plugins_set(self):
         self.harness.disable_hooks()
         self.set_up_all_relations()

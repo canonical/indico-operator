@@ -45,3 +45,8 @@ docstring-convention = "google"
 copyright-check = "True"
 copyright-author = "Canonical Ltd."
 copyright-regexp = "Copyright\\s\\d{4}([-,]\\d{4})*\\s+%(author)s"
+
+[tool.mypy]
+ignore_missing_imports = true
+explicit_package_bases = true
+namespace_packages = true
