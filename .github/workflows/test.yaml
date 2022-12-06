@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Publish documentation
-        uses: canonical/upload-charm-docs@alpha-5
+        uses: canonical/upload-charm-docs@main
         with:
           discourse_host: discourse.charmhub.io
           discourse_api_username: ${{ secrets.DISCOURSE_API_USERNAME }}
