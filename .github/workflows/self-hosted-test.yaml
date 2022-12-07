@@ -1,0 +1,10 @@
+name: Tests
+
+on:
+  pull_request:
+
+  publish-docs:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v3
+      - run: echo hi
