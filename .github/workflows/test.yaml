@@ -7,3 +7,15 @@ jobs:
   unit-tests:
     uses: canonical/operator-workflows/.github/workflows/test.yaml@main
     secrets: inherit
+  draft-publish-docs:
+    name: Draft publish docs
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - name: Publish documentation
+        uses: canonical/upload-charm-docs@main
+        with:
+          discourse_host: discourse.charmhub.io
+          discourse_api_username: ${{ secrets.DISCOURSE_API_USERNAME }}
+          discourse_api_key: ${{ secrets.DISCOURSE_API_KEY }}
+          dry_run: true
