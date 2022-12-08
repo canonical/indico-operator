@@ -1,12 +1,12 @@
 # Charm Architecture
 
-At its core, [Indico](https://getindico.io/) is a [Flask](https://flask.palletsprojects.com/) application that requires connections to [PostgreSQL](https://www.postgresql.org/), [Redis](https://redis.io/), and [Celery](https://docs.celeryq.dev/en/stable/).
+At its core, [Indico](https://getindico.io/) is a [Flask](https://flask.palletsprojects.com/) application that integrates with [PostgreSQL](https://www.postgresql.org/), [Redis](https://redis.io/), and [Celery](https://docs.celeryq.dev/en/stable/).
 
-In designing the charm, we've leveraged the [sidecar](https://kubernetes.io/blog/2015/06/the-distributed-system-toolkit-patterns/#example-1-sidecar-containers) pattern to allow us to run multiple containers in each pod with [Pebble](https://juju.is/docs/sdk/pebble) running as the workload container’s entrypoint.
+The charm design leverages the [sidecar](https://kubernetes.io/blog/2015/06/the-distributed-system-toolkit-patterns/#example-1-sidecar-containers) pattern to allow multiple containers in each pod with [Pebble](https://juju.is/docs/sdk/pebble) running as the workload container’s entrypoint.
 
 Pebble is a lightweight, API-driven process supervisor that is responsible for configuring processes to run in a container and controlling those processes throughout the workload lifecycle.
 
-Pebble `services` are configured by means of [layers](https://github.com/canonical/pebble#layer-specification), and the following containers represent each one a layer forming the effective Pebble configuration, or `plan`:
+Pebble `services` are configured through [layers](https://github.com/canonical/pebble#layer-specification), and the following containers represent each one a layer forming the effective Pebble configuration, or `plan`:
 
 1. An [NGINX](https://www.nginx.com/) container, which can be used to efficiently serve static resources, as well as be the incoming point for all web traffic to the pod.
 2. The [Indico](https://getindico.io/) container itself, which has a [uWSGI](https://uwsgi-docs.readthedocs.io/en/latest/) server configured in HTTP mode.
@@ -14,7 +14,7 @@ Pebble `services` are configured by means of [layers](https://github.com/canonic
 4. A [NGINX Prometheus Exporter](https://github.com/nginxinc/nginx-prometheus-exporter) container that can be used to provide statistics on web traffic.
 5. A [StatsD exporter](https://github.com/prometheus/statsd_exporter) container that can be used to collect [statistics](https://uwsgi-docs.readthedocs.io/en/latest/PushingStats.html) from uWSGI.
 
-As a result, if you run a `kubectl get pods` on a namespace named for the Juju model you've deployed the indico charm into, you'll see something like the following:
+As a result, if you run a `kubectl get pods` on a namespace named for the Juju model you've deployed the Indico charm into, you'll see something like the following:
 
 ```bash
 NAME                             READY   STATUS    RESTARTS   AGE
@@ -31,7 +31,7 @@ Configuration files for the containers can be found in [the files directory of t
 
 ### NGINX
 
-This container is the entry point for all web traffic to the pod (on port `8080`), and it serves some static files directly and forwards non-static requests to the Indico container (on port `8081`).
+This container is the entry point for all web traffic to the pod (on port `8080`). Serves some static files directly and forwards non-static requests to the Indico container (on port `8081`).
 
 The reason for that is since NGINX provides cache static content, reverse proxy, and load balance among multiple application servers, as well as other features it can be used in front of uWSGI server to significantly reduce server and network load.
 
@@ -39,7 +39,9 @@ The workload that this container is running is defined in the [NGINX dockerfile 
 
 ### Indico
 
-The uWSGI server is started in HTTP mode (port `8081`) so NGINX can forward non-static traffic to it to be handled by the Indico application.
+Indico is a Flask application which means a [WSGI](https://wsgi.readthedocs.io/en/latest/what.html) application. A WSGI server is used to run it and uWSGI is the most popular one.
+
+The uWSGI server is started in HTTP mode (port `8081`) serving Indico Application so NGINX can forward non-static traffic to it.
 
 The workload that this container is running is defined in the [indico dockerfile in the charm repository](https://github.com/canonical/indico-operator/blob/main/indico.Dockerfile).
 
@@ -73,6 +75,12 @@ The images defined in [NGINX dockerfile](https://github.com/canonical/indico-ope
 This is done by publishing a resource to Charmhub as described in the [Juju SDK How-to guides](https://juju.is/docs/sdk/publishing).
 
 ## Integrations
+
+### Ingress
+
+The Indico charm also supports being integrated with [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/#what-is-ingress) by using [NGINX Ingress Integrator](https://charmhub.io/nginx-ingress-integrator/).
+
+In this case, an existing Ingress controller is required. For more information, see [Adding the Ingress Relation to a Charm](https://charmhub.io/nginx-ingress-integrator/docs/adding-ingress-relation).
 
 ### PostgreSQL
 
