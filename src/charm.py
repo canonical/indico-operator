@@ -52,6 +52,9 @@ class IndicoOperatorCharm(CharmBase):
             self.on.statsd_prometheus_exporter_pebble_ready, self._on_pebble_ready
         )
         self.framework.observe(
+            self.on.celery_prometheus_exporter_pebble_ready, self._on_pebble_ready
+        )
+        self.framework.observe(
             self.on.refresh_external_resources_action, self._refresh_external_resources_action
         )
         # self.framework.observe(self.on.update_status, self._refresh_external_resources)
@@ -72,8 +75,9 @@ class IndicoOperatorCharm(CharmBase):
         self.redis = RedisRequires(self, self._stored)
         self.framework.observe(self.on.redis_relation_changed, self._on_config_changed)
         self.ingress = IngressRequires(self, self._make_ingress_config())
+        # 9113 for NGINX, 9102 for StatsD and 9808 for Celery Prometheus exporters
         self._metrics_endpoint = MetricsEndpointProvider(
-            self, jobs=[{"static_configs": [{"targets": ["*:9113", "*:9102"]}]}]
+            self, jobs=[{"static_configs": [{"targets": ["*:9113", "*:9102", "*:9808"]}]}]
         )
         self._grafana_dashboards = GrafanaDashboardProvider(self)
 
@@ -288,7 +292,7 @@ class IndicoOperatorCharm(CharmBase):
                 "indico-celery": {
                     "override": "replace",
                     "summary": "Indico celery",
-                    "command": "/usr/local/bin/indico celery worker -B",
+                    "command": "/usr/local/bin/indico celery worker -B -E",
                     "startup": "enabled",
                     "user": "indico",
                     "environment": indico_env_config,
@@ -335,6 +339,38 @@ class IndicoOperatorCharm(CharmBase):
                     "override": "replace",
                     "level": "alive",
                     "http": {"url": "http://localhost:8080/health"},
+                },
+            },
+        }
+
+    def _get_celery_prometheus_exporter_pebble_config(self, container) -> Dict:
+        """Generate pebble config for the celery-prometheus-exporter container.
+
+        Returns:
+            The pebble configuration for the container.
+        """
+        return {
+            "summary": "Celery prometheus exporter",
+            "description": "Prometheus exporter for celery",
+            "services": {
+                "celery-exporter": {
+                    "override": "replace",
+                    "summary": "Celery Exporter",
+                    "command": (
+                        "python"
+                        " /app/cli.py"
+                        f" --broker-url={self._get_celery_backed()}"
+                        "--retry-interval=5"
+                    ),
+                    "environment": {"CE_ACCEPT_CONTENT": "json,pickle"},
+                    "startup": "enabled",
+                },
+            },
+            "checks": {
+                "celery-exporter-up": {
+                    "override": "replace",
+                    "level": "alive",
+                    "http": {"url": "http://localhost:9808/metrics"},
                 },
             },
         }
@@ -394,6 +430,24 @@ class IndicoOperatorCharm(CharmBase):
             },
         }
 
+    def _get_celery_backed(self) -> str:
+        """Generate Celery Backend URL formed by Redis broker host and port.
+
+        Returns:
+            Celery Backend URL as expected by Indico and Celery Prometheus Exporter.
+        """
+        broker_rel = next(
+            rel
+            for rel in self.model.relations["redis"]
+            if rel.app and rel.app.name.startswith("redis-broker")
+        )
+        broker_unit = next(
+            unit for unit in broker_rel.data if unit.name.startswith("redis-broker")
+        )
+        broker_host = broker_rel.data[broker_unit].get("hostname")
+        broker_port = broker_rel.data[broker_unit].get("port")
+        return f"redis://{broker_host}:{broker_port}"
+
     def _get_indico_env_config(self, container: Container) -> Dict:
         """Return an envConfig with some core configuration.
 
@@ -412,17 +466,6 @@ class IndicoOperatorCharm(CharmBase):
         cache_host = cache_rel.data[cache_unit].get("hostname")
         cache_port = cache_rel.data[cache_unit].get("port")
 
-        broker_rel = next(
-            rel
-            for rel in self.model.relations["redis"]
-            if rel.app and rel.app.name.startswith("redis-broker")
-        )
-        broker_unit = next(
-            unit for unit in broker_rel.data if unit.name.startswith("redis-broker")
-        )
-        broker_host = broker_rel.data[broker_unit].get("hostname")
-        broker_port = broker_rel.data[broker_unit].get("port")
-
         available_plugins = []
         process = container.exec(["indico", "setup", "list-plugins"])
         output, _ = process.wait_output()
@@ -430,9 +473,10 @@ class IndicoOperatorCharm(CharmBase):
         available_plugins = [item.split("|")[1].strip() for item in output.split("\n")[3:-2]]
 
         peer_relation = self.model.get_relation("indico-peers")
+
         env_config = {
             "ATTACHMENT_STORAGE": "default",
-            "CELERY_BROKER": f"redis://{broker_host}:{broker_port}",
+            "CELERY_BROKER": self._get_celery_backed(),
             "CUSTOMIZATION_DEBUG": self.config["customization_debug"],
             "ENABLE_ROOMBOOKING": self.config["enable_roombooking"],
             "INDICO_AUTH_PROVIDERS": str({}),
@@ -458,6 +502,10 @@ class IndicoOperatorCharm(CharmBase):
                 "default": "fs:/srv/indico/archive",
             },
         }
+
+        # Required for monitoring Celery
+        celery_config = {"worker_send_task_events": True, "task_send_sent_event": True}
+        env_config["CELERY_CONFIG"] = str(celery_config)
 
         # Piwik settings can't be configured using the config file for the time being:
         # https://github.com/indico/indico-plugins/issues/182

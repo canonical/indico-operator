@@ -49,7 +49,8 @@ async def test_prom_exporters_are_up(app: Application):
     """
     # Application actually does have units
     indico_unit = app.units[0]  # type: ignore
-    prometheus_targets = ["localhost:9113", "localhost:9102"]
+    # 9113 for NGINX, 9102 for StatsD and 9808 for Celery Prometheus exporters
+    prometheus_targets = ["localhost:9113", "localhost:9102", "localhost:9808"]
     # Send request to /metrics for each target and check the response
     for target in prometheus_targets:
         cmd = f"curl http://{target}/metrics"
