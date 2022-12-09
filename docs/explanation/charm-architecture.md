@@ -25,6 +25,8 @@ This shows there are 6 containers - the five named above, as well as a container
 
 And if you run `kubectl describe pod indico-0`, all the containers will have as Command ```/charm/bin/pebble```. That's because Pebble is responsible for the processes startup as explained above.
 
+## Code Overview
+
 ## Containers
 
 Configuration files for the containers can be found in [the files directory of the charm repository](https://github.com/canonical/indico-operator/tree/main/files).
@@ -39,17 +41,17 @@ The workload that this container is running is defined in the [NGINX dockerfile 
 
 ### Indico
 
-Indico is a Flask application which means a [WSGI](https://wsgi.readthedocs.io/en/latest/what.html) application. A WSGI server is used to run it and uWSGI is the most popular one.
+Indico is a Flask application run by the uWSGI server, one of the most popular servers for these applications.
 
 The uWSGI server is started in HTTP mode (port `8081`) serving Indico Application so NGINX can forward non-static traffic to it.
 
-The workload that this container is running is defined in the [indico dockerfile in the charm repository](https://github.com/canonical/indico-operator/blob/main/indico.Dockerfile).
+The workload that this container is running is defined in the [Indico dockerfile in the charm repository](https://github.com/canonical/indico-operator/blob/main/indico.Dockerfile).
 
 ### Celery
 
-The Celery is used to process tasks created by the Indico application such as sending e-mails, survey notifications, event reminders, etc.
+The Celery is used to process tasks asynchronously created by the Indico application such as sending e-mails, survey notifications, event reminders, etc.
 
-The Celery container runs the same workload as the Indico container, as defined in the [indico dockerfile in the charm repository](https://github.com/canonical/indico-operator/blob/main/indico.Dockerfile).
+The Celery container runs the same workload as the Indico container, as defined in the [Indico dockerfile in the charm repository](https://github.com/canonical/indico-operator/blob/main/indico.Dockerfile).
 
 ### NGINX Prometheus Exporter
 
@@ -76,6 +78,14 @@ This is done by publishing a resource to Charmhub as described in the [Juju SDK 
 
 ## Integrations
 
+### COS
+
+To bring visibility and control about the Indico charm state, it is possible to integrate with [COS](https://charmhub.io/topics/canonical-observability-stack), a Juju-based observability stack consisting of [Prometheus](https://charmhub.io/prometheus-k8s), [Loki](https://charmhub.io/loki-k8s), [Alertmanager](https://charmhub.io/alertmanager-k8s) and [Grafana](https://charmhub.io/grafana-k8s).
+
+NGINX Prometheus Exporter and StatsD exporter offer metrics that can be used to gather useful data about Indico application state and performance.
+
+There are also Grafana dashboards available for them.
+
 ### Ingress
 
 The Indico charm also supports being integrated with [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/#what-is-ingress) by using [NGINX Ingress Integrator](https://charmhub.io/nginx-ingress-integrator/).
@@ -88,7 +98,10 @@ PostgreSQL is an open-source object-relational database used by Indico as a sour
 
 ### Redis
 
-Redis is an open-source in-memory data structure store used as a cache backend. Copies of frequently accessed data are stored and used if satisfy the request. Otherwise, the application will handle it. This configuration helps to reduce the number of queries and improve response latency.
+Redis is an open-source in-memory data structure store used here as two independent containers:
+
+1. Cache backend: Copies of frequently accessed data are stored and used if satisfy the request. Otherwise, the application will handle it. This configuration helps to reduce the number of queries and improve response latency.
+2. Message broker: Used for communication between Indico and the Celery background workers.
 
 ## Juju Events
 
@@ -96,8 +109,40 @@ Accordingly to the [Juju SDK](https://juju.is/docs/sdk/event): "an event is a da
 
 For this charm, the following events are observed:
 
-1. [<container name>_pebble_ready](https://juju.is/docs/sdk/container-name-pebble-ready-event): fired on Kubernetes charms when the requested container is ready. Action: wait for the integrations, and configure the containers.
-2. [config_changed](https://juju.is/docs/sdk/config-changed-event): usually fired in response to a configuration change using the GUI or CLI. Action: wait for the integrations, validate the configuration, update Ingress, and restart the containers.
-3. [leader_elected](https://juju.is/docs/sdk/leader-elected-event): is emitted for a unit that is elected as leader. Action: guarantee that all Indico workers have the same [secret key](https://docs.getindico.io/en/latest/config/settings/?highlight=secret_key#SECRET_KEY) that is used to sign tokens in URLs.
-4. [refresh_external_resources_action](https://charmhub.io/indico/actions): fired when refresh-external-resources action is requested. Action: Pull changes from the customization repository, reload uWSGI and upgrade the external plugins.
-5. [master_changed](https://github.com/canonical/ops-lib-pgsql): PostgreSQLClient custom event for when the connection details to the master database on this relation change. Action: Update the database connection string configuration and emit config_changed event.
+1. [<container name>_pebble_ready](https://juju.is/docs/sdk/container-name-pebble-ready-event): fired on Kubernetes charms when the requested container is ready.
+Action: wait for the integrations, and configure the containers.
+2. [config_changed](https://juju.is/docs/sdk/config-changed-event): usually fired in response to a configuration change using the CLI.
+Action: wait for the integrations, validate the configuration, update Ingress, and restart the containers.
+3. [database_relation_joined](https://github.com/canonical/ops-lib-pgsql): for when the PostgreSQL relation has been joined.
+Action: if the unit is the leader, add the extensions [`pg_trgm:public`](https://www.postgresql.org/docs/current/pgtrgm.html) and [`unaccent:public`](https://www.postgresql.org/docs/current/unaccent.html).
+4. [leader_elected](https://juju.is/docs/sdk/leader-elected-event): is emitted for a unit that is elected as leader.
+Action: guarantee that all Indico workers have the same [secret key](https://docs.getindico.io/en/latest/config/settings/?highlight=secret_key#SECRET_KEY) that is used to sign tokens in URLs.
+5. [master_changed](https://github.com/canonical/ops-lib-pgsql): PostgreSQLClient custom event for when the connection details to the master database on this relation change.
+Action: Update the database connection string configuration and emit config_changed event.
+6. [redis_relation_changed](https://github.com/canonical/redis-k8s-operator): Fired when Redis is changed (host, for example).
+Action: Same as config_changed.
+7. [refresh_external_resources_action](https://charmhub.io/indico/actions): fired when refresh-external-resources action is executed.
+Action: Pull changes from the customization repository, reload uWSGI and upgrade the external plugins.
+
+## Charm Code Overview
+
+The `src/charm.py` is the default entry point for a charm and has the IndicoOperatorCharm Python class which inherits from CharmBase.
+
+CharmBase is the base class from which all Charms are formed, defined by [Ops](https://juju.is/docs/sdk/ops) (Python framework for developing charms).
+
+See more information in [Charm](https://juju.is/docs/sdk/constructs#heading--charm).
+
+The `__init__` method guarantees that the charm observes all events relevant to its operation and handles them.
+
+Take, for example, when a configuration is changed by using the CLI.
+
+1. User runs the command
+```bash
+juju config smtp_login=user1
+```
+2. A `config-changed` event is emitted
+3. In the `__init__` method is defined how to handle this event like this:
+```python
+self.framework.observe(self.on.config_changed, self._on_config_changed)
+```
+4. The method `_on_config_changed`, for its turn,  will take the necessary actions such as waiting for all the relations to be ready and then configuring the containers.
