@@ -78,13 +78,9 @@ This is done by publishing a resource to Charmhub as described in the [Juju SDK 
 
 ## Integrations
 
-### COS
+### Grafana
 
-To bring visibility and control about the Indico charm state, it is possible to integrate with [COS](https://charmhub.io/topics/canonical-observability-stack), a Juju-based observability stack consisting of [Prometheus](https://charmhub.io/prometheus-k8s), [Loki](https://charmhub.io/loki-k8s), [Alertmanager](https://charmhub.io/alertmanager-k8s) and [Grafana](https://charmhub.io/grafana-k8s).
-
-NGINX Prometheus Exporter and StatsD exporter offer metrics that can be used to gather useful data about Indico application state and performance.
-
-There are also Grafana dashboards available for them.
+Grafana is an open-source visualization tools that allows to query, visualize, alert on, and visualize metrics from mixed datasources in configurable dashboards for observability. This charms is shipped with its own Grafana dashboard and supports integration with the [Grafana Operator](https://charmhub.io/grafana-k8s) to simplify observability.
 
 ### Ingress
 
@@ -92,9 +88,17 @@ The Indico charm also supports being integrated with [Ingress](https://kubernete
 
 In this case, an existing Ingress controller is required. For more information, see [Adding the Ingress Relation to a Charm](https://charmhub.io/nginx-ingress-integrator/docs/adding-ingress-relation).
 
+### Loki
+
+Loki is an open-source fully-featured logging system. This charms is shipped with support for the [Loki Operator](https://charmhub.io/loki-k8s) to collect the generated logs.
+
 ### PostgreSQL
 
 PostgreSQL is an open-source object-relational database used by Indico as a source of all the data needed for its goal: event organization, archival, and collaboration.
+
+### Prometheus
+
+Prometheus is an open-source systems monitoring and alerting toolkit with a dimensional data model, flexible query language, efficient time series database and modern alerting approach. This charm is shipped with a Prometheus exporter, alerts and support for integrating with the [Prometheus Operator](https://charmhub.io/prometheus-k8s) to automatically scrape the targets.
 
 ### Redis
 
