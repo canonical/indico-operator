@@ -25,8 +25,6 @@ This shows there are 6 containers - the five named above, as well as a container
 
 And if you run `kubectl describe pod indico-0`, all the containers will have as Command ```/charm/bin/pebble```. That's because Pebble is responsible for the processes startup as explained above.
 
-## Code Overview
-
 ## Containers
 
 Configuration files for the containers can be found in [the files directory of the charm repository](https://github.com/canonical/indico-operator/tree/main/files).
