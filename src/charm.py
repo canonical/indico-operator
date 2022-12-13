@@ -18,7 +18,14 @@ from charms.redis_k8s.v0.redis import RedisRelationCharmEvents, RedisRequires
 from ops.charm import ActionEvent, CharmBase, HookEvent, PebbleReadyEvent
 from ops.framework import StoredState
 from ops.main import main
-from ops.model import ActiveStatus, BlockedStatus, Container, MaintenanceStatus, WaitingStatus
+from ops.model import (
+    ActiveStatus,
+    BlockedStatus,
+    Container,
+    MaintenanceStatus,
+    Relation,
+    WaitingStatus,
+)
 from ops.pebble import ExecError
 
 DATABASE_NAME = "indico"
@@ -189,16 +196,10 @@ class IndicoOperatorCharm(CharmBase):
         Returns:
             If the needed relations have been established.
         """
-        if not any(
-            rel.app and rel.app.name.startswith("redis-broker")
-            for rel in self.model.relations["redis"]
-        ):
+        if self._get_redis_broker_rel() is None:
             self.unit.status = WaitingStatus("Waiting for redis-broker availability")
             return False
-        if not any(
-            rel.app and rel.app.name.startswith("redis-cache")
-            for rel in self.model.relations["redis"]
-        ):
+        if self._get_redis_cache_rel() is None:
             self.unit.status = WaitingStatus("Waiting for redis-cache availability")
             return False
         # mypy misinterprets this line, reports something about function overloading
@@ -359,7 +360,7 @@ class IndicoOperatorCharm(CharmBase):
                     "command": (
                         "python"
                         " /app/cli.py"
-                        f" --broker-url={self._get_celery_backed()}"
+                        f" --broker-url={self._get_celery_backend()}"
                         " --retry-interval=5"
                     ),
                     "environment": {"CE_ACCEPT_CONTENT": "json,pickle"},
@@ -430,17 +431,43 @@ class IndicoOperatorCharm(CharmBase):
             },
         }
 
-    def _get_celery_backed(self) -> str:
+    def _get_redis_broker_rel(self) -> Relation:
+        """Get Redis Broker relation.
+
+        Returns:
+            Relation between indico and redis-broker. If not found, returns None.
+        """
+        return next(
+            (
+                rel
+                for rel in self.model.relations["redis"]
+                if rel.app and rel.app.name.startswith("redis-broker")
+            ),
+            None,
+        )
+
+    def _get_redis_cache_rel(self) -> Relation:
+        """Get Redis Cache relation.
+
+        Returns:
+            Relation between indico and redis-cache. If not found, returns None.
+        """
+        return next(
+            (
+                rel
+                for rel in self.model.relations["redis"]
+                if rel.app and rel.app.name.startswith("redis-cache")
+            ),
+            None,
+        )
+
+    def _get_celery_backend(self) -> str:
         """Generate Celery Backend URL formed by Redis broker host and port.
 
         Returns:
             Celery Backend URL as expected by Indico and Celery Prometheus Exporter.
         """
-        broker_rel = next(
-            rel
-            for rel in self.model.relations["redis"]
-            if rel.app and rel.app.name.startswith("redis-broker")
-        )
+        broker_rel = self._get_redis_broker_rel()
         broker_unit = next(
             unit for unit in broker_rel.data if unit.name.startswith("redis-broker")
         )
@@ -457,11 +484,7 @@ class IndicoOperatorCharm(CharmBase):
         Returns:
             Dictionary with the environment variables for the container.
         """
-        cache_rel = next(
-            rel
-            for rel in self.model.relations["redis"]
-            if rel.app and rel.app.name.startswith("redis-cache")
-        )
+        cache_rel = self._get_redis_cache_rel()
         cache_unit = next(unit for unit in cache_rel.data if unit.name.startswith("redis-cache"))
         cache_host = cache_rel.data[cache_unit].get("hostname")
         cache_port = cache_rel.data[cache_unit].get("port")
@@ -476,7 +499,7 @@ class IndicoOperatorCharm(CharmBase):
 
         env_config = {
             "ATTACHMENT_STORAGE": "default",
-            "CELERY_BROKER": self._get_celery_backed(),
+            "CELERY_BROKER": self._get_celery_backend(),
             "CUSTOMIZATION_DEBUG": self.config["customization_debug"],
             "ENABLE_ROOMBOOKING": self.config["enable_roombooking"],
             "INDICO_AUTH_PROVIDERS": str({}),

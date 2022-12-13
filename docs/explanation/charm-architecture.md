@@ -22,7 +22,7 @@ NAME                             READY   STATUS    RESTARTS   AGE
 indico-0                         7/7     Running   0         6h4m
 ```
 
-This shows there are 7 containers - the five named above, as well as a container for the charm code itself.
+This shows there are 7 containers - the six named above, as well as a container for the charm code itself.
 
 And if you run `kubectl describe pod indico-0`, all the containers will have as Command ```/charm/bin/pebble```. That's because Pebble is responsible for the processes startup as explained above.
 
