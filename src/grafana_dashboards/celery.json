@@ -1,5 +1,14 @@
 {
-  "__inputs": [],
+  "__inputs": [
+    {
+        "name": "prometheusds",
+        "label": "Prometheus",
+        "description": "",
+        "type": "datasource",
+        "pluginId": "prometheus",
+        "pluginName": "Prometheus"
+    }
+  ],
   "__requires": [],
   "annotations": {
     "list": []
@@ -10,7 +19,26 @@
   "graphTooltip": 0,
   "hideControls": false,
   "id": null,
-  "links": [],
+  "links": [
+      {
+          "icon": "doc",
+          "tags": [],
+          "targetBlank": true,
+          "title": "Docs",
+          "tooltip": "Official documentation of Indico Operator",
+          "type": "link",
+          "url": "https://charmhub.io/indico"
+      },
+      {
+        "icon": "info",
+        "tags": [],
+        "targetBlank": true,
+        "title": "GitHub",
+        "tooltip": "Celery Prometheus Exporter",
+        "type": "link",
+        "url": "https://github.com/danihodovic/celery-exporter"
+      }
+  ],
   "panels": [
     {
       "collapse": false,
@@ -33,7 +61,7 @@
     },
     {
       "columns": [],
-      "datasource": "$datasource",
+      "datasource": "${prometheusds}",
       "gridPos": {
         "h": 8,
         "w": 12,
@@ -52,11 +80,6 @@
           "alias": "Time",
           "dateFormat": "YYYY-MM-DD HH:mm:ss",
           "pattern": "Time",
-          "type": "hidden"
-        },
-        {
-          "alias": "Job",
-          "pattern": "job",
           "type": "hidden"
         },
         {
@@ -117,7 +140,7 @@
       ],
       "targets": [
         {
-          "expr": "sum (\n  round(\n    increase(\n      celery_task_succeeded_total{\n        name=~\"$task\",\n        job=~\"celery|celery-exporter\",\n      }[$__range]\n    )\n  )\n) by (name)\n/(sum (\n  round(\n    increase(\n      celery_task_succeeded_total{\n        name=~\"$task\",\n        job=~\"celery|celery-exporter\",\n      }[$__range]\n    )\n  )\n) by (name)\n+sum (\n  round(\n    increase(\n      celery_task_failed_total{\n        name=~\"$task\",\n        job=~\"celery|celery-exporter\",\n      }[$__range]\n    )\n  )\n) by (name)\n) > -1\n",
+          "expr": "sum (\n  round(\n    increase(\n      celery_task_succeeded_total{\n        name=~\"$task\",\n      }[$__range]\n    )\n  )\n) by (name)\n/(sum (\n  round(\n    increase(\n      celery_task_succeeded_total{\n        name=~\"$task\",\n      }[$__range]\n    )\n  )\n) by (name)\n+sum (\n  round(\n    increase(\n      celery_task_failed_total{\n        name=~\"$task\",\n      }[$__range]\n    )\n  )\n) by (name)\n) > -1\n",
           "format": "table",
           "instant": true,
           "intervalFactor": 2,
@@ -125,7 +148,7 @@
           "refId": "A"
         },
         {
-          "expr": "sum (\n  round(\n    increase(\n      celery_task_succeeded_total{\n        name=~\"$task\",\n        job=~\"celery|celery-exporter\",\n      }[$__range]\n    )\n  )\n) by (name) > 0\n",
+          "expr": "sum (\n  round(\n    increase(\n      celery_task_succeeded_total{\n        name=~\"$task\",\n      }[$__range]\n    )\n  )\n) by (name) > 0\n",
           "format": "table",
           "instant": true,
           "intervalFactor": 2,
@@ -133,7 +156,7 @@
           "refId": "B"
         },
         {
-          "expr": "sum (\n  round(\n    increase(\n      celery_task_failed_total{\n        name=~\"$task\",\n        job=~\"celery|celery-exporter\",\n      }[$__range]\n    )\n  )\n) by (name) > 0\n",
+          "expr": "sum (\n  round(\n    increase(\n      celery_task_failed_total{\n        name=~\"$task\",\n      }[$__range]\n    )\n  )\n) by (name) > 0\n",
           "format": "table",
           "instant": true,
           "intervalFactor": 2,
@@ -141,7 +164,7 @@
           "refId": "C"
         },
         {
-          "expr": "sum (\n  round(\n    increase(\n      celery_task_sent_total{\n        name=~\"$task\",\n        job=~\"celery|celery-exporter\",\n      }[$__range]\n    )\n  )\n) by (name) > 0\n",
+          "expr": "sum (\n  round(\n    increase(\n      celery_task_sent_total{\n        name=~\"$task\",\n      }[$__range]\n    )\n  )\n) by (name) > 0\n",
           "format": "table",
           "instant": true,
           "intervalFactor": 2,
@@ -149,7 +172,7 @@
           "refId": "D"
         },
         {
-          "expr": "sum (\n  round(\n    increase(\n      celery_task_received_total{\n        name=~\"$task\",\n        job=~\"celery|celery-exporter\",\n      }[$__range]\n    )\n  )\n) by (name) > 0\n",
+          "expr": "sum (\n  round(\n    increase(\n      celery_task_received_total{\n        name=~\"$task\",\n      }[$__range]\n    )\n  )\n) by (name) > 0\n",
           "format": "table",
           "instant": true,
           "intervalFactor": 2,
@@ -157,7 +180,7 @@
           "refId": "E"
         },
         {
-          "expr": "sum (\n  round(\n    increase(\n      celery_task_rejected_total{\n        name=~\"$task\",\n        job=~\"celery|celery-exporter\",\n      }[$__range]\n    )\n  )\n) by (name) > 0\n",
+          "expr": "sum (\n  round(\n    increase(\n      celery_task_rejected_total{\n        name=~\"$task\",\n      }[$__range]\n    )\n  )\n) by (name) > 0\n",
           "format": "table",
           "instant": true,
           "intervalFactor": 2,
@@ -165,7 +188,7 @@
           "refId": "F"
         },
         {
-          "expr": "sum (\n  round(\n    increase(\n      celery_task_retried_total{\n        name=~\"$task\",\n        job=~\"celery|celery-exporter\",\n      }[$__range]\n    )\n  )\n) by (name) > 0\n",
+          "expr": "sum (\n  round(\n    increase(\n      celery_task_retried_total{\n        name=~\"$task\",\n      }[$__range]\n    )\n  )\n) by (name) > 0\n",
           "format": "table",
           "instant": true,
           "intervalFactor": 2,
@@ -173,7 +196,7 @@
           "refId": "G"
         },
         {
-          "expr": "sum (\n  round(\n    increase(\n      celery_task_revoked_total{\n        name=~\"$task\",\n        job=~\"celery|celery-exporter\",\n      }[$__range]\n    )\n  )\n) by (name) > 0\n",
+          "expr": "sum (\n  round(\n    increase(\n      celery_task_revoked_total{\n        name=~\"$task\",\n      }[$__range]\n    )\n  )\n) by (name) > 0\n",
           "format": "table",
           "instant": true,
           "intervalFactor": 2,
@@ -188,7 +211,7 @@
     },
     {
       "columns": [],
-      "datasource": "$datasource",
+      "datasource": "${prometheusds}",
       "gridPos": {
         "h": 8,
         "w": 12,
@@ -221,7 +244,7 @@
       ],
       "targets": [
         {
-          "expr": "round(\n  sum (\n    increase(\n      celery_task_failed_total{\n        name=~\"$task\",\n        job=~\"celery|celery-exporter\"\n      }[$__range]\n    )\n  ) by (name, exception) > 0\n)\n",
+          "expr": "round(\n  sum (\n    increase(\n      celery_task_failed_total{\n        name=~\"$task\",\n      }[$__range]\n    )\n  ) by (name, exception) > 0\n)\n",
           "format": "table",
           "instant": true,
           "intervalFactor": 2,
@@ -239,7 +262,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "$datasource",
+      "datasource": "${prometheusds}",
       "fill": 10,
       "fillGradient": 0,
       "gridPos": {
@@ -279,49 +302,49 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum (\n  round(\n    increase(\n      celery_task_succeeded_total{\n        name=~\"$task\",\n        job=~\"celery|celery-exporter\",\n      }[10m]\n    )\n  )\n) by (name)\n",
+          "expr": "sum (\n  round(\n    increase(\n      celery_task_succeeded_total{\n        name=~\"$task\",\n      }[10m]\n    )\n  )\n) by (name)\n",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "Succeeded - {{ name }}",
           "refId": "A"
         },
         {
-          "expr": "sum (\n  round(\n    increase(\n      celery_task_failed_total{\n        name=~\"$task\",\n        job=~\"celery|celery-exporter\",\n      }[10m]\n    )\n  )\n) by (name)\n",
+          "expr": "sum (\n  round(\n    increase(\n      celery_task_failed_total{\n        name=~\"$task\",\n      }[10m]\n    )\n  )\n) by (name)\n",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "Failed - {{ name }}",
           "refId": "B"
         },
         {
-          "expr": "sum (\n  round(\n    increase(\n      celery_task_sent_total{\n        name=~\"$task\",\n        job=~\"celery|celery-exporter\",\n      }[10m]\n    )\n  )\n) by (name)\n",
+          "expr": "sum (\n  round(\n    increase(\n      celery_task_sent_total{\n        name=~\"$task\",\n      }[10m]\n    )\n  )\n) by (name)\n",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "Sent - {{ name }}",
           "refId": "C"
         },
         {
-          "expr": "sum (\n  round(\n    increase(\n      celery_task_received_total{\n        name=~\"$task\",\n        job=~\"celery|celery-exporter\",\n      }[10m]\n    )\n  )\n) by (name)\n",
+          "expr": "sum (\n  round(\n    increase(\n      celery_task_received_total{\n        name=~\"$task\",\n      }[10m]\n    )\n  )\n) by (name)\n",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "Received - {{ name }}",
           "refId": "D"
         },
         {
-          "expr": "sum (\n  round(\n    increase(\n      celery_task_retried_total{\n        name=~\"$task\",\n        job=~\"celery|celery-exporter\",\n      }[10m]\n    )\n  )\n) by (name)\n",
+          "expr": "sum (\n  round(\n    increase(\n      celery_task_retried_total{\n        name=~\"$task\",\n      }[10m]\n    )\n  )\n) by (name)\n",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "Retried - {{ name }}",
           "refId": "E"
         },
         {
-          "expr": "sum (\n  round(\n    increase(\n      celery_task_rejected_total{\n        name=~\"$task\",\n        job=~\"celery|celery-exporter\",\n      }[10m]\n    )\n  )\n) by (name)\n",
+          "expr": "sum (\n  round(\n    increase(\n      celery_task_rejected_total{\n        name=~\"$task\",\n      }[10m]\n    )\n  )\n) by (name)\n",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "Rejected - {{ name }}",
           "refId": "F"
         },
         {
-          "expr": "sum (\n  round(\n    increase(\n      celery_task_revoked_total{\n        name=~\"$task\",\n        job=~\"celery|celery-exporter\",\n      }[10m]\n    )\n  )\n) by (name)\n",
+          "expr": "sum (\n  round(\n    increase(\n      celery_task_revoked_total{\n        name=~\"$task\",\n      }[10m]\n    )\n  )\n) by (name)\n",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "Revoked - {{ name }}",
@@ -369,7 +392,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "$datasource",
+      "datasource": "${prometheusds}",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -407,28 +430,28 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "histogram_quantile(0.50,\n  sum(\n    irate(\n      celery_task_runtime_bucket{\n        name=~\"$task\",\n        job=~\"celery|celery-exporter\"\n      }[$__rate_interval]\n    ) > 0\n  ) by (name, job, le)\n)\n",
+          "expr": "histogram_quantile(0.50,\n  sum(\n    irate(\n      celery_task_runtime_bucket{\n        name=~\"$task\",\n      }[$__rate_interval]\n    ) > 0\n  ) by (name, le)\n)\n",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "50 - {{ name }}",
           "refId": "A"
         },
         {
-          "expr": "histogram_quantile(0.95,\n  sum(\n    irate(\n      celery_task_runtime_bucket{\n        name=~\"$task\",\n        job=~\"celery|celery-exporter\"\n      }[$__rate_interval]\n    ) > 0\n  ) by (name, job, le)\n)\n",
+          "expr": "histogram_quantile(0.95,\n  sum(\n    irate(\n      celery_task_runtime_bucket{\n        name=~\"$task\",\n      }[$__rate_interval]\n    ) > 0\n  ) by (name, le)\n)\n",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "95 - {{ name }}",
           "refId": "B"
         },
         {
-          "expr": "histogram_quantile(0.99,\n  sum(\n    irate(\n      celery_task_runtime_bucket{\n        name=~\"$task\",\n        job=~\"celery|celery-exporter\"\n      }[$__rate_interval]\n    ) > 0\n  ) by (name, job, le)\n)\n",
+          "expr": "histogram_quantile(0.99,\n  sum(\n    irate(\n      celery_task_runtime_bucket{\n        name=~\"$task\",\n      }[$__rate_interval]\n    ) > 0\n  ) by (name, le)\n)\n",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "99 - {{ name }}",
           "refId": "C"
         },
         {
-          "expr": "histogram_quantile(0.999,\n  sum(\n    irate(\n      celery_task_runtime_bucket{\n        name=~\"$task\",\n        job=~\"celery|celery-exporter\"\n      }[$__rate_interval]\n    ) > 0\n  ) by (name, job, le)\n)\n",
+          "expr": "histogram_quantile(0.999,\n  sum(\n    irate(\n      celery_task_runtime_bucket{\n        name=~\"$task\",\n      }[$__rate_interval]\n    ) > 0\n  ) by (name, le)\n)\n",
           "format": "time_series",
           "intervalFactor": 2,
           "legendFormat": "99.9 - {{ name }}",
@@ -483,23 +506,9 @@
   "templating": {
     "list": [
       {
-        "current": {
-          "text": "Prometheus",
-          "value": "Prometheus"
-        },
-        "hide": 0,
-        "label": null,
-        "name": "datasource",
-        "options": [],
-        "query": "prometheus",
-        "refresh": 1,
-        "regex": "",
-        "type": "datasource"
-      },
-      {
         "allValue": null,
         "current": {},
-        "datasource": "$datasource",
+        "datasource": "${prometheusds}",
         "hide": 0,
         "includeAll": false,
         "label": null,
@@ -548,7 +557,7 @@
     ]
   },
   "timezone": "utc",
-  "title": "Celery / Tasks / By Task",
-  "uid": "celery-tasks-by-task-32s3",
+  "title": "Indico Celery",
+  "uid": "indico-celery-32s3",
   "version": 0
 }

@@ -343,7 +343,7 @@ class IndicoOperatorCharm(CharmBase):
             },
         }
 
-    def _get_celery_prometheus_exporter_pebble_config(self, container) -> Dict:
+    def _get_celery_prometheus_exporter_pebble_config(self, _) -> Dict:
         """Generate pebble config for the celery-prometheus-exporter container.
 
         Returns:
@@ -360,7 +360,7 @@ class IndicoOperatorCharm(CharmBase):
                         "python"
                         " /app/cli.py"
                         f" --broker-url={self._get_celery_backed()}"
-                        "--retry-interval=5"
+                        " --retry-interval=5"
                     ),
                     "environment": {"CE_ACCEPT_CONTENT": "json,pickle"},
                     "startup": "enabled",
@@ -370,7 +370,7 @@ class IndicoOperatorCharm(CharmBase):
                 "celery-exporter-up": {
                     "override": "replace",
                     "level": "alive",
-                    "http": {"url": "http://localhost:9808/metrics"},
+                    "http": {"url": "http://localhost:9808/health"},
                 },
             },
         }
