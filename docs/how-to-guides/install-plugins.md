@@ -1,6 +1,6 @@
 This charm supports installing both official and custom plugins for Indico, from pypi and from a git repositories.
 
-The following plugins are already packed as part of the charm `piwik` and `storage-s3`. The list of available official plugins can be found [here](https://github.com/indico/indico-plugins).
+The `piwik` and `storage-s3` plugins are already packed as part of the charm. The list of available official plugins can be found [here](https://github.com/indico/indico-plugins).
 
 To install additional plugins, provide the configuration `external_plugins` as a comma separated list with the desired packages to be installed. Each element should be compatible with pip:  e.g. `juju config [charm_name] external_plugins=git+https://github.com/indico/indico-plugins-cern.git/#subdirectory=themes_cern,indico-plugin-themes-legacy`.
 
