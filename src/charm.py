@@ -431,7 +431,7 @@ class IndicoOperatorCharm(CharmBase):
             },
         }
 
-    def _get_redis_broker_rel(self) -> Relation:
+    def _get_redis_broker_rel(self) -> Optional[Relation]:
         """Get Redis Broker relation.
 
         Returns:
@@ -446,7 +446,7 @@ class IndicoOperatorCharm(CharmBase):
             None,
         )
 
-    def _get_redis_cache_rel(self) -> Relation:
+    def _get_redis_cache_rel(self) -> Optional[Relation]:
         """Get Redis Cache relation.
 
         Returns:
@@ -467,12 +467,14 @@ class IndicoOperatorCharm(CharmBase):
         Returns:
             Celery Backend URL as expected by Indico and Celery Prometheus Exporter.
         """
-        broker_rel = self._get_redis_broker_rel()
-        broker_unit = next(
-            unit for unit in broker_rel.data if unit.name.startswith("redis-broker")
-        )
-        broker_host = broker_rel.data[broker_unit].get("hostname")
-        broker_port = broker_rel.data[broker_unit].get("port")
+        broker_host = ""
+        broker_port = ""
+        if (broker_rel := self._get_redis_broker_rel()) is not None:
+            broker_unit = next(
+                unit for unit in broker_rel.data if unit.name.startswith("redis-broker")
+            )
+            broker_host = broker_rel.data[broker_unit].get("hostname")
+            broker_port = broker_rel.data[broker_unit].get("port")
         return f"redis://{broker_host}:{broker_port}"
 
     def _get_indico_env_config(self, container: Container) -> Dict:
@@ -484,10 +486,14 @@ class IndicoOperatorCharm(CharmBase):
         Returns:
             Dictionary with the environment variables for the container.
         """
-        cache_rel = self._get_redis_cache_rel()
-        cache_unit = next(unit for unit in cache_rel.data if unit.name.startswith("redis-cache"))
-        cache_host = cache_rel.data[cache_unit].get("hostname")
-        cache_port = cache_rel.data[cache_unit].get("port")
+        cache_host = ""
+        cache_port = ""
+        if (cache_rel := self._get_redis_cache_rel()) is not None:
+            cache_unit = next(
+                unit for unit in cache_rel.data if unit.name.startswith("redis-cache")
+            )
+            cache_host = cache_rel.data[cache_unit].get("hostname")
+            cache_port = cache_rel.data[cache_unit].get("port")
 
         available_plugins = []
         process = container.exec(["indico", "setup", "list-plugins"])

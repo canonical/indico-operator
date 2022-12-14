@@ -15,7 +15,7 @@
   },
   "description": "A dashboard that monitors Celery. It is created using the Celery-mixin for the the (Celery-exporter)[https://github.com/danihodovic/celery-exporter]",
   "editable": true,
-  "gnetId": 17508,
+  "gnetId": null,
   "graphTooltip": 0,
   "hideControls": false,
   "id": null,
@@ -495,7 +495,7 @@
       ]
     }
   ],
-  "refresh": "",
+  "refresh": "5s",
   "rows": [],
   "schemaVersion": 14,
   "style": "dark",
