@@ -56,7 +56,7 @@ The Celery container runs the same workload as the Indico container, as defined 
 
 This container runs the `nginx/nginx-prometheus-exporter` image.
 
-The `NGINX Prometheus Exporter` is started with `-nginx.scrape-uri=http://localhost:9080/stub_status` so will scrap metrics from the NGINX container.
+The `NGINX Prometheus Exporter` is started with `-nginx.scrape-uri=http://localhost:9080/stub_status` so will scrape metrics from the NGINX container.
 
 This has been configured in the NGINX container to return NGINX's [stub_status](http://nginx.org/en/docs/http/ngx_http_stub_status_module.html). The exporter listens on port `9113` and metrics about web traffic to the pod can be scraped by Prometheus there.
 
@@ -75,7 +75,7 @@ This container runs the `danihodovic/celery-exporter` image.
 
 The `Celery Prometheus Exporter` is started with:
 
-- `--broker-url=`: scrap metrics from the Redis (broker) container.
+- `--broker-url=`: scrape metrics from the Redis (broker) container.
 - `--retry-interval=5`: retry after 5 seconds in case of errors communicating with the broker.
 
 Since Indico Celery serializers are set to work with [Pickle](https://docs.python.org/3/library/pickle.html) instead of [JSON](https://www.json.org/), the environment variable `CE_ACCEPT_CONTENT` is set to `"json,pickle"` so the exporter will be able to read the data.
@@ -94,7 +94,7 @@ This is done by publishing a resource to Charmhub as described in the [Juju SDK 
 
 ### Grafana
 
-Grafana is an open-source visualization tools that allows to query, visualize, alert on, and visualize metrics from mixed datasources in configurable dashboards for observability. This charms is shipped with its own Grafana dashboard and supports integration with the [Grafana Operator](https://charmhub.io/grafana-k8s) to simplify observability.
+Grafana is an open-source visualization tool that allows to query, visualize, alert on, and visualize metrics from mixed datasources in configurable dashboards for observability. This charm is shipped with its own Grafana dashboard and supports integration with the [Grafana Operator](https://charmhub.io/grafana-k8s) to simplify observability.
 
 ### Ingress
 
@@ -104,7 +104,7 @@ In this case, an existing Ingress controller is required. For more information, 
 
 ### Loki
 
-Loki is an open-source fully-featured logging system. This charms is shipped with support for the [Loki Operator](https://charmhub.io/loki-k8s) to collect the generated logs.
+Loki is an open-source fully-featured logging system. This charm is shipped with support for the [Loki Operator](https://charmhub.io/loki-k8s) to collect the generated logs.
 
 ### PostgreSQL
 
@@ -112,7 +112,7 @@ PostgreSQL is an open-source object-relational database used by Indico as a sour
 
 ### Prometheus
 
-Prometheus is an open-source systems monitoring and alerting toolkit with a dimensional data model, flexible query language, efficient time series database and modern alerting approach. This charm is shipped with a Prometheus exporter, alerts and support for integrating with the [Prometheus Operator](https://charmhub.io/prometheus-k8s) to automatically scrape the targets.
+Prometheus is an open-source system monitoring and alerting toolkit with a dimensional data model, flexible query language, efficient time series database, and modern alerting approach. This charm is shipped with a Prometheus exporter, alerts, and support for integrating with the [Prometheus Operator](https://charmhub.io/prometheus-k8s) to automatically scrape the targets.
 
 ### Redis
 
