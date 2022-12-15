@@ -28,9 +28,12 @@ from ops.model import (
 )
 from ops.pebble import ExecError
 
+CELERY_PROMEXP_PORT = "9808"
 DATABASE_NAME = "indico"
 INDICO_CUSTOMIZATION_DIR = "/srv/indico/custom"
 PORT = 8080
+NGINX_PROMEXP_PORT = "9113"
+STATSD_PROMEXP_PORT = "9102"
 UBUNTU_SAML_URL = "https://login.ubuntu.com/saml/"
 UWSGI_TOUCH_RELOAD = "/srv/indico/indico.wsgi"
 
@@ -82,9 +85,21 @@ class IndicoOperatorCharm(CharmBase):
         self.redis = RedisRequires(self, self._stored)
         self.framework.observe(self.on.redis_relation_changed, self._on_config_changed)
         self.ingress = IngressRequires(self, self._make_ingress_config())
-        # 9113 for NGINX, 9102 for StatsD and 9808 for Celery Prometheus exporters
         self._metrics_endpoint = MetricsEndpointProvider(
-            self, jobs=[{"static_configs": [{"targets": ["*:9113", "*:9102", "*:9808"]}]}]
+            self,
+            jobs=[
+                {
+                    "static_configs": [
+                        {
+                            "targets": [
+                                f"*:{NGINX_PROMEXP_PORT}",
+                                f"*:{STATSD_PROMEXP_PORT}",
+                                f"*:{CELERY_PROMEXP_PORT}",
+                            ]
+                        }
+                    ]
+                }
+            ],
         )
         self._grafana_dashboards = GrafanaDashboardProvider(self)
 
@@ -431,20 +446,31 @@ class IndicoOperatorCharm(CharmBase):
             },
         }
 
+    def _get_redis_rel(self, name) -> Optional[Relation]:
+        """Get Redis relation.
+
+        Args:
+            name: Relation name to look up as prefix.
+
+        Returns:
+            Relation between indico and redis accordingly to name. If not found, returns None.
+        """
+        return next(
+            (
+                rel
+                for rel in self.model.relations["redis"]
+                if rel.app and rel.app.name.startswith(name)
+            ),
+            None,
+        )
+
     def _get_redis_broker_rel(self) -> Optional[Relation]:
         """Get Redis Broker relation.
 
         Returns:
             Relation between indico and redis-broker. If not found, returns None.
         """
-        return next(
-            (
-                rel
-                for rel in self.model.relations["redis"]
-                if rel.app and rel.app.name.startswith("redis-broker")
-            ),
-            None,
-        )
+        return self._get_redis_rel("redis-broker")
 
     def _get_redis_cache_rel(self) -> Optional[Relation]:
         """Get Redis Cache relation.
@@ -452,14 +478,7 @@ class IndicoOperatorCharm(CharmBase):
         Returns:
             Relation between indico and redis-cache. If not found, returns None.
         """
-        return next(
-            (
-                rel
-                for rel in self.model.relations["redis"]
-                if rel.app and rel.app.name.startswith("redis-cache")
-            ),
-            None,
-        )
+        return self._get_redis_rel("redis-cache")
 
     def _get_celery_backend(self) -> str:
         """Generate Celery Backend URL formed by Redis broker host and port.
