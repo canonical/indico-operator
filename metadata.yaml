@@ -15,6 +15,8 @@ containers:
     resource: indico-nginx-image
   indico-celery:
     resource: indico-image
+  celery-prometheus-exporter:
+    resource: celery-prometheus-exporter-image
   nginx-prometheus-exporter:
     resource: nginx-prometheus-exporter-image
   statsd-prometheus-exporter:
@@ -29,6 +31,11 @@ resources:
     type: oci-image
     description: Docker image for nginx Indico
     auto-fetch: true
+  celery-prometheus-exporter-image:
+    type: oci-image
+    description: Prometheus exporter for celery
+    auto-fetch: true
+    upstream-source: danihodovic/celery-exporter:0.5.8
   nginx-prometheus-exporter-image:
     type: oci-image
     description: Prometheus exporter for nginx
