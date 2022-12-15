@@ -18,12 +18,22 @@ from charms.redis_k8s.v0.redis import RedisRelationCharmEvents, RedisRequires
 from ops.charm import ActionEvent, CharmBase, HookEvent, PebbleReadyEvent
 from ops.framework import StoredState
 from ops.main import main
-from ops.model import ActiveStatus, BlockedStatus, Container, MaintenanceStatus, WaitingStatus
+from ops.model import (
+    ActiveStatus,
+    BlockedStatus,
+    Container,
+    MaintenanceStatus,
+    Relation,
+    WaitingStatus,
+)
 from ops.pebble import ExecError
 
+CELERY_PROMEXP_PORT = "9808"
 DATABASE_NAME = "indico"
 INDICO_CUSTOMIZATION_DIR = "/srv/indico/custom"
 PORT = 8080
+NGINX_PROMEXP_PORT = "9113"
+STATSD_PROMEXP_PORT = "9102"
 UBUNTU_SAML_URL = "https://login.ubuntu.com/saml/"
 UWSGI_TOUCH_RELOAD = "/srv/indico/indico.wsgi"
 
@@ -52,6 +62,9 @@ class IndicoOperatorCharm(CharmBase):
             self.on.statsd_prometheus_exporter_pebble_ready, self._on_pebble_ready
         )
         self.framework.observe(
+            self.on.celery_prometheus_exporter_pebble_ready, self._on_pebble_ready
+        )
+        self.framework.observe(
             self.on.refresh_external_resources_action, self._refresh_external_resources_action
         )
         # self.framework.observe(self.on.update_status, self._refresh_external_resources)
@@ -73,7 +86,20 @@ class IndicoOperatorCharm(CharmBase):
         self.framework.observe(self.on.redis_relation_changed, self._on_config_changed)
         self.ingress = IngressRequires(self, self._make_ingress_config())
         self._metrics_endpoint = MetricsEndpointProvider(
-            self, jobs=[{"static_configs": [{"targets": ["*:9113", "*:9102"]}]}]
+            self,
+            jobs=[
+                {
+                    "static_configs": [
+                        {
+                            "targets": [
+                                f"*:{NGINX_PROMEXP_PORT}",
+                                f"*:{STATSD_PROMEXP_PORT}",
+                                f"*:{CELERY_PROMEXP_PORT}",
+                            ]
+                        }
+                    ]
+                }
+            ],
         )
         self._grafana_dashboards = GrafanaDashboardProvider(self)
 
@@ -185,16 +211,10 @@ class IndicoOperatorCharm(CharmBase):
         Returns:
             If the needed relations have been established.
         """
-        if not any(
-            rel.app and rel.app.name.startswith("redis-broker")
-            for rel in self.model.relations["redis"]
-        ):
+        if self._get_redis_broker_rel() is None:
             self.unit.status = WaitingStatus("Waiting for redis-broker availability")
             return False
-        if not any(
-            rel.app and rel.app.name.startswith("redis-cache")
-            for rel in self.model.relations["redis"]
-        ):
+        if self._get_redis_cache_rel() is None:
             self.unit.status = WaitingStatus("Waiting for redis-cache availability")
             return False
         # mypy misinterprets this line, reports something about function overloading
@@ -288,7 +308,7 @@ class IndicoOperatorCharm(CharmBase):
                 "indico-celery": {
                     "override": "replace",
                     "summary": "Indico celery",
-                    "command": "/usr/local/bin/indico celery worker -B",
+                    "command": "/usr/local/bin/indico celery worker -B -E",
                     "startup": "enabled",
                     "user": "indico",
                     "environment": indico_env_config,
@@ -335,6 +355,38 @@ class IndicoOperatorCharm(CharmBase):
                     "override": "replace",
                     "level": "alive",
                     "http": {"url": "http://localhost:8080/health"},
+                },
+            },
+        }
+
+    def _get_celery_prometheus_exporter_pebble_config(self, _) -> Dict:
+        """Generate pebble config for the celery-prometheus-exporter container.
+
+        Returns:
+            The pebble configuration for the container.
+        """
+        return {
+            "summary": "Celery prometheus exporter",
+            "description": "Prometheus exporter for celery",
+            "services": {
+                "celery-exporter": {
+                    "override": "replace",
+                    "summary": "Celery Exporter",
+                    "command": (
+                        "python"
+                        " /app/cli.py"
+                        f" --broker-url={self._get_celery_backend()}"
+                        " --retry-interval=5"
+                    ),
+                    "environment": {"CE_ACCEPT_CONTENT": "json,pickle"},
+                    "startup": "enabled",
+                },
+            },
+            "checks": {
+                "celery-exporter-up": {
+                    "override": "replace",
+                    "level": "alive",
+                    "http": {"url": "http://localhost:9808/health"},
                 },
             },
         }
@@ -394,6 +446,56 @@ class IndicoOperatorCharm(CharmBase):
             },
         }
 
+    def _get_redis_rel(self, name) -> Optional[Relation]:
+        """Get Redis relation.
+
+        Args:
+            name: Relation name to look up as prefix.
+
+        Returns:
+            Relation between indico and redis accordingly to name. If not found, returns None.
+        """
+        return next(
+            (
+                rel
+                for rel in self.model.relations["redis"]
+                if rel.app and rel.app.name.startswith(name)
+            ),
+            None,
+        )
+
+    def _get_redis_broker_rel(self) -> Optional[Relation]:
+        """Get Redis Broker relation.
+
+        Returns:
+            Relation between indico and redis-broker. If not found, returns None.
+        """
+        return self._get_redis_rel("redis-broker")
+
+    def _get_redis_cache_rel(self) -> Optional[Relation]:
+        """Get Redis Cache relation.
+
+        Returns:
+            Relation between indico and redis-cache. If not found, returns None.
+        """
+        return self._get_redis_rel("redis-cache")
+
+    def _get_celery_backend(self) -> str:
+        """Generate Celery Backend URL formed by Redis broker host and port.
+
+        Returns:
+            Celery Backend URL as expected by Indico and Celery Prometheus Exporter.
+        """
+        broker_host = ""
+        broker_port = ""
+        if (broker_rel := self._get_redis_broker_rel()) is not None:
+            broker_unit = next(
+                unit for unit in broker_rel.data if unit.name.startswith("redis-broker")
+            )
+            broker_host = broker_rel.data[broker_unit].get("hostname")
+            broker_port = broker_rel.data[broker_unit].get("port")
+        return f"redis://{broker_host}:{broker_port}"
+
     def _get_indico_env_config(self, container: Container) -> Dict:
         """Return an envConfig with some core configuration.
 
@@ -403,25 +505,14 @@ class IndicoOperatorCharm(CharmBase):
         Returns:
             Dictionary with the environment variables for the container.
         """
-        cache_rel = next(
-            rel
-            for rel in self.model.relations["redis"]
-            if rel.app and rel.app.name.startswith("redis-cache")
-        )
-        cache_unit = next(unit for unit in cache_rel.data if unit.name.startswith("redis-cache"))
-        cache_host = cache_rel.data[cache_unit].get("hostname")
-        cache_port = cache_rel.data[cache_unit].get("port")
-
-        broker_rel = next(
-            rel
-            for rel in self.model.relations["redis"]
-            if rel.app and rel.app.name.startswith("redis-broker")
-        )
-        broker_unit = next(
-            unit for unit in broker_rel.data if unit.name.startswith("redis-broker")
-        )
-        broker_host = broker_rel.data[broker_unit].get("hostname")
-        broker_port = broker_rel.data[broker_unit].get("port")
+        cache_host = ""
+        cache_port = ""
+        if (cache_rel := self._get_redis_cache_rel()) is not None:
+            cache_unit = next(
+                unit for unit in cache_rel.data if unit.name.startswith("redis-cache")
+            )
+            cache_host = cache_rel.data[cache_unit].get("hostname")
+            cache_port = cache_rel.data[cache_unit].get("port")
 
         available_plugins = []
         process = container.exec(["indico", "setup", "list-plugins"])
@@ -430,9 +521,10 @@ class IndicoOperatorCharm(CharmBase):
         available_plugins = [item.split("|")[1].strip() for item in output.split("\n")[3:-2]]
 
         peer_relation = self.model.get_relation("indico-peers")
+
         env_config = {
             "ATTACHMENT_STORAGE": "default",
-            "CELERY_BROKER": f"redis://{broker_host}:{broker_port}",
+            "CELERY_BROKER": self._get_celery_backend(),
             "CUSTOMIZATION_DEBUG": self.config["customization_debug"],
             "ENABLE_ROOMBOOKING": self.config["enable_roombooking"],
             "INDICO_AUTH_PROVIDERS": str({}),
@@ -458,6 +550,10 @@ class IndicoOperatorCharm(CharmBase):
                 "default": "fs:/srv/indico/archive",
             },
         }
+
+        # Required for monitoring Celery
+        celery_config = {"worker_send_task_events": True, "task_send_sent_event": True}
+        env_config["CELERY_CONFIG"] = str(celery_config)
 
         # Piwik settings can't be configured using the config file for the time being:
         # https://github.com/indico/indico-plugins/issues/182

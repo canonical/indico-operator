@@ -7,6 +7,8 @@ import requests
 from ops.model import ActiveStatus, Application
 from pytest_operator.plugin import OpsTest
 
+from charm import CELERY_PROMEXP_PORT, NGINX_PROMEXP_PORT, STATSD_PROMEXP_PORT
+
 
 @pytest.mark.asyncio
 @pytest.mark.abort_on_fail
@@ -49,7 +51,11 @@ async def test_prom_exporters_are_up(app: Application):
     """
     # Application actually does have units
     indico_unit = app.units[0]  # type: ignore
-    prometheus_targets = ["localhost:9113", "localhost:9102"]
+    prometheus_targets = [
+        f"localhost:{NGINX_PROMEXP_PORT}",
+        f"localhost:{STATSD_PROMEXP_PORT}",
+        f"localhost:{CELERY_PROMEXP_PORT}",
+    ]
     # Send request to /metrics for each target and check the response
     for target in prometheus_targets:
         cmd = f"curl http://{target}/metrics"

@@ -64,6 +64,8 @@ class TestCharm(unittest.TestCase):
         self.harness.set_leader(True)
 
         with patch.object(Container, "exec", return_value=MockExecProcess()):
+            self.harness.container_pebble_ready("celery-prometheus-exporter")
+            self.assertEqual(self.harness.model.unit.status, WaitingStatus("Waiting for pebble"))
             self.harness.container_pebble_ready("statsd-prometheus-exporter")
             self.assertEqual(self.harness.model.unit.status, WaitingStatus("Waiting for pebble"))
             self.harness.container_pebble_ready("nginx-prometheus-exporter")
@@ -163,6 +165,7 @@ class TestCharm(unittest.TestCase):
         self.harness.set_leader(True)
 
         with patch.object(Container, "exec", return_value=MockExecProcess()) as exec_mock:
+            self.harness.container_pebble_ready("celery-prometheus-exporter")
             self.harness.container_pebble_ready("statsd-prometheus-exporter")
             self.harness.container_pebble_ready("nginx-prometheus-exporter")
             self.harness.container_pebble_ready("indico")
@@ -278,6 +281,7 @@ class TestCharm(unittest.TestCase):
         self.harness.set_leader(True)
 
         with patch.object(Container, "exec", return_value=MockExecProcess()):
+            self.harness.container_pebble_ready("celery-prometheus-exporter")
             self.harness.container_pebble_ready("statsd-prometheus-exporter")
             self.harness.container_pebble_ready("nginx-prometheus-exporter")
             self.harness.container_pebble_ready("indico")
@@ -294,6 +298,7 @@ class TestCharm(unittest.TestCase):
         self.harness.set_leader(True)
 
         with patch.object(Container, "exec", return_value=MockExecProcess()) as exec_mock:
+            self.harness.container_pebble_ready("celery-prometheus-exporter")
             self.harness.container_pebble_ready("statsd-prometheus-exporter")
             self.harness.container_pebble_ready("nginx-prometheus-exporter")
             self.harness.container_pebble_ready("indico")
