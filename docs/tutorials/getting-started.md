@@ -122,7 +122,9 @@ Run `juju status` to see the same Ingress IP in the `nginx-ingress-integrator` m
 nginx-ingress-integrator                                active      1  nginx-ingress-integrator  stable    45  10.152.183.233  no       Ingress IP(s): 127.0.0.1, Service IP(s): 10.152.183.66
 ```
 
-The browser uses entries in the /etc/hosts file to override what is returned by a DNS server. 
+The browser uses entries in the /etc/hosts file to override what is returned by a DNS server.
+
+Usually a charm default hostname is the application name but since Indico requires a "." in the hostname for the app to respond, so the charm configures the default to `indico.local`.
 
 The default hostname for the Indico application is `indico.local`. To resolve it to your Ingress IP, edit [`/etc/hosts`](https://manpages.ubuntu.com/manpages/kinetic/man5/hosts.5.html) file and add the following line accordingly:
 
