@@ -17,6 +17,6 @@ jobs:
           discourse_api_key: ${{ secrets.DISCOURSE_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch_name: upload-charm-docs
-          dry_run: true
+          dry_run: false
       - name: Show index page
         run: echo '${{ steps.publishDocumentation.outputs.index_url }}'
