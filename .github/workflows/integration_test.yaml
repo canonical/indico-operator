@@ -5,5 +5,9 @@ on:
 
 jobs:
   integration-tests:
-    uses: canonical/operator-workflows/.github/workflows/integration_test.yaml@main
+    uses: canonical/operator-workflows/.github/workflows/integration_test.yaml@ISD-302-make-chaos-tests-reusable-in-operator-workflows-for-charm-repos
     secrets: inherit
+    with:
+      chaos-enabled: true
+      chaos-experiments: pod-delete
+      chaos-app-label: app.kubernetes.io/name=indico
