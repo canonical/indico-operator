@@ -112,7 +112,7 @@ jobs:
           CHAOS_NAMESPACE: testing
           APP_NS: testing
 
-      - name: Running Litmus pod delete chaos experiment
+      - name: Run Litmus pod delete chaos experiment
         uses: merkata/github-chaos-actions@master
         env:
           EXPERIMENT_NAME: pod-delete
