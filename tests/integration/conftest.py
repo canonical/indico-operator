@@ -60,7 +60,7 @@ async def app(
         ops_test.model.deploy("postgresql-k8s"),
         ops_test.model.deploy("redis-k8s", "redis-broker"),
         ops_test.model.deploy("redis-k8s", "redis-cache"),
-        ops_test.model.deploy("nginx-ingress-integrator"),
+        ops_test.model.deploy("nginx-ingress-integrator", trust=True),
     )
 
     charm = await ops_test.build_charm(".")
