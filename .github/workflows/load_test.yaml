@@ -6,7 +6,7 @@ on:
 
 jobs:
   load-tests:
-    uses: canonical/operator-workflows/.github/workflows/load_test.yaml
+    uses: canonical/operator-workflows/.github/workflows/integration_test.yaml@main
     with:
       load-test-enabled: true
     secrets: inherit
