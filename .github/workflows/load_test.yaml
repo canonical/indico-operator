@@ -1,0 +1,11 @@
+name: Load tests
+
+on:
+  pull_request:
+
+jobs:
+  integration-tests:
+    uses: canonical/operator-workflows/.github/workflows/integration_test.yaml@load-tests
+    with:
+      load-test-enabled: true
+    secrets: inherit

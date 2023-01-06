@@ -17,6 +17,6 @@ const params = {
 };
 
 export default function () {
-  http.get(`http://${__ENV.MY_HOSTNAME}`, params);
+  http.get(`http://${__ENV.LOAD_TEST_HOSTNAME}`, params);
   sleep(1);
 }
