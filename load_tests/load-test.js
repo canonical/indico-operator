@@ -17,6 +17,6 @@ const params = {
 };
 
 export default function () {
-  http.get('http://indico.local', params);
+  http.get('http://localhost', params);
   sleep(1);
 }
