@@ -1,6 +1,10 @@
 # Copyright 2022 Canonical Ltd.
 # See LICENSE file for licensing details.
 
+"""Fixtures for Indico charm integration tests."""
+
+# pylint:disable=redefined-outer-name
+
 import asyncio
 from pathlib import Path
 
@@ -14,7 +18,7 @@ from pytest_operator.plugin import OpsTest
 @fixture(scope="module")
 def metadata():
     """Provides charm metadata."""
-    yield yaml.safe_load(Path("./metadata.yaml").read_text())
+    yield yaml.safe_load(Path("./metadata.yaml").read_text("utf-8"))
 
 
 @fixture(scope="module")
@@ -49,7 +53,7 @@ async def app(
     nginx_prometheus_exporter_image: str,
     statsd_prometheus_exporter_image: str,
     celery_prometheus_exporter_image: str,
-):
+):  # pylint:disable=R0913
     """Indico charm used for integration testing.
 
     Builds the charm and deploys it and the relations it depends on.
