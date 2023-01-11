@@ -8,5 +8,4 @@ jobs:
     uses: canonical/operator-workflows/.github/workflows/integration_test.yaml@load-tests
     secrets: inherit
     with:
-      chaos-enabled: false
       load-test-enabled: true
