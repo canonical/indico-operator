@@ -11,3 +11,7 @@ jobs:
       chaos-enabled: true
       chaos-experiments: pod-delete
       chaos-app-label: app.kubernetes.io/name=indico
+      zap-dast-enabled: true
+      zap-target-port: 8080
+      zap-before-command: "curl -H \"Host: indico.local\" $ZAP_TARGET:8080/bootstrap --data-raw 'csrf_token=00000000-0000-0000-0000-000000000000&first_name=admin&last_name=admin&email=admin%40admin.com&username=admin&password=lunarlobster&confirm_password=lunarlobster&affiliation=Canonical'"
+      zap-options: '-T 60 -z "-addoninstall jython" --hook "/zap/wrk/tests/zap/hook.py"'
