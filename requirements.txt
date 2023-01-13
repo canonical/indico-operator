@@ -1,2 +1,2 @@
-ops==2.0.0rc2
+git+https://github.com/canonical/operator@2.0.0rc2
 ops-lib-pgsql

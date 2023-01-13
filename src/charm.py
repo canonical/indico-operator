@@ -815,8 +815,8 @@ class IndicoOperatorCharm(CharmBase):
             and self._has_secrets()
             and not peer_relation.data[self.app].get("secret-id")
         ):
-            secret_id = self.app.add_secret({"secret-key": secret_value})
-            peer_relation.data[self.app].update({"secret-id": secret_id})
+            secret = self.app.add_secret({"secret-key": secret_value})
+            peer_relation.data[self.app].update({"secret-id": secret.id})
 
     def _has_secrets(self) -> bool:
         juju_version = JujuVersion.from_environ()
