@@ -133,12 +133,12 @@ class TestCharm(unittest.TestCase):
         self.assertEqual("db-uri", updated_plan_env["INDICO_DB_URI"])
         self.assertEqual("redis://broker-host:1010", updated_plan_env["CELERY_BROKER"])
         peer_relation = self.harness.model.get_relation("indico-peers")
-        self.assertIsNotNone(
-            self.harness.get_relation_data(peer_relation.id, self.harness.charm.app.name).get(
-                "secret-id"
-            )
-        )
-        self.assertIsNotNone(updated_plan_env["SECRET_KEY"])
+        secret_id = self.harness.get_relation_data(
+            peer_relation.id, self.harness.charm.app.name
+        ).get("secret-id")
+        secret = self.harness.model.get_secret(id=secret_id)
+        secret_value = secret.get_content().get("secret-key")
+        self.assertEqual(secret_value, updated_plan_env["SECRET_KEY"])
         self.assertEqual("indico.local", updated_plan_env["SERVICE_HOSTNAME"])
         self.assertIsNone(updated_plan_env["SERVICE_PORT"])
         self.assertEqual("redis://cache-host:1011", updated_plan_env["REDIS_CACHE_URL"])
