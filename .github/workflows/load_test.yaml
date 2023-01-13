@@ -9,4 +9,5 @@ jobs:
     uses: canonical/operator-workflows/.github/workflows/integration_test.yaml@main
     with:
       load-test-enabled: true
+      load-test-run-args: "-e LOAD_TEST_HOST=localhost"
     secrets: inherit

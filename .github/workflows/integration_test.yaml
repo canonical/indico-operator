@@ -9,3 +9,4 @@ jobs:
     secrets: inherit
     with:
       load-test-enabled: true
+      load-test-run-args: "-e LOAD_TEST_HOST=localhost"
