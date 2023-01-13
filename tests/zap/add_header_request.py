@@ -1,3 +1,4 @@
+# pylint: skip-file
 headers = dict({"Host": "indico.local"})
 
 

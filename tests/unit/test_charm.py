@@ -1,6 +1,10 @@
 # Copyright 2022 Canonical Ltd.
 # See LICENSE file for licensing details.
 
+"""Indico charm unit tests."""
+
+# pylint:disable=protected-access
+
 import typing
 import unittest
 from ast import literal_eval
@@ -12,21 +16,26 @@ from ops.testing import Harness
 from tests.unit._patched_charm import IndicoOperatorCharm, pgsql_patch
 
 
-class MockExecProcess(object):
-    wait_output = MagicMock(return_value=("", None))
-
-
 class TestCharm(unittest.TestCase):
+    """Indico charm unit tests."""
+
     def setUp(self):
+        """Set up test environment."""
         pgsql_patch.start()
         self.harness = Harness(IndicoOperatorCharm)
         self.addCleanup(self.harness.cleanup)
         self.harness.begin()
 
     def tearDown(self):
+        """Tear down test environment."""
         pgsql_patch.stop()
 
     def test_missing_relations(self):
+        """
+        arrange: charm created
+        act: trigger a configuration update
+        assert: the charm is in waiting status until all relations have been set
+        """
         self.harness.update_config({"site_url": "foo"})
         self.assertEqual(
             self.harness.model.unit.status, WaitingStatus("Waiting for redis-broker availability")
@@ -48,41 +57,62 @@ class TestCharm(unittest.TestCase):
             self.harness.model.unit.status, WaitingStatus("Waiting for database availability")
         )
 
-    def test_indico_nginx_pebble_ready(self):
+    @patch.object(Container, "exec")
+    def test_indico_nginx_pebble_ready(self, mock_exec):
+        """
+        arrange: charm created
+        act: trigger container pebble ready event for nginx container
+        assert: the container and the service are running
+        """
+        mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=("", None)))
+
         self.set_up_all_relations()
         self.harness.set_leader(True)
 
-        with patch.object(Container, "exec", return_value=MockExecProcess()):
-            self.harness.container_pebble_ready("indico-nginx")
+        self.harness.container_pebble_ready("indico-nginx")
 
         service = self.harness.model.unit.get_container("indico-nginx").get_service("indico-nginx")
         self.assertTrue(service.is_running())
         self.assertEqual(self.harness.model.unit.status, WaitingStatus("Waiting for pebble"))
 
-    def test_all_pebble_services_ready(self):
+    @patch.object(Container, "exec")
+    def test_all_pebble_services_ready(self, mock_exec):
+        """
+        arrange: charm created and relations established
+        act: trigger container pebble ready event for all containers
+        assert: the containers and the services are running and the charm reaches active status
+        """
+        mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=("", None)))
+
         self.set_up_all_relations()
         self.harness.set_leader(True)
 
-        with patch.object(Container, "exec", return_value=MockExecProcess()):
-            self.harness.container_pebble_ready("celery-prometheus-exporter")
-            self.assertEqual(self.harness.model.unit.status, WaitingStatus("Waiting for pebble"))
-            self.harness.container_pebble_ready("statsd-prometheus-exporter")
-            self.assertEqual(self.harness.model.unit.status, WaitingStatus("Waiting for pebble"))
-            self.harness.container_pebble_ready("nginx-prometheus-exporter")
-            self.assertEqual(self.harness.model.unit.status, WaitingStatus("Waiting for pebble"))
-            self.harness.container_pebble_ready("indico")
-            self.assertEqual(self.harness.model.unit.status, WaitingStatus("Waiting for pebble"))
-            self.harness.container_pebble_ready("indico-celery")
-            self.assertEqual(self.harness.model.unit.status, WaitingStatus("Waiting for pebble"))
-            self.harness.container_pebble_ready("indico-nginx")
-            self.assertEqual(self.harness.model.unit.status, ActiveStatus())
+        self.harness.container_pebble_ready("celery-prometheus-exporter")
+        self.assertEqual(self.harness.model.unit.status, WaitingStatus("Waiting for pebble"))
+        self.harness.container_pebble_ready("statsd-prometheus-exporter")
+        self.assertEqual(self.harness.model.unit.status, WaitingStatus("Waiting for pebble"))
+        self.harness.container_pebble_ready("nginx-prometheus-exporter")
+        self.assertEqual(self.harness.model.unit.status, WaitingStatus("Waiting for pebble"))
+        self.harness.container_pebble_ready("indico")
+        self.assertEqual(self.harness.model.unit.status, WaitingStatus("Waiting for pebble"))
+        self.harness.container_pebble_ready("indico-celery")
+        self.assertEqual(self.harness.model.unit.status, WaitingStatus("Waiting for pebble"))
+        self.harness.container_pebble_ready("indico-nginx")
+        self.assertEqual(self.harness.model.unit.status, ActiveStatus())
 
-    def test_indico_pebble_ready(self):
+    @patch.object(Container, "exec")
+    def test_indico_pebble_ready(self, mock_exec):
+        """
+        arrange: charm created and relations established
+        act: trigger container pebble ready event for the Indico container
+        assert: the container and the service are running and properly configured
+        """
+        mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=("", None)))
+
         self.set_up_all_relations()
         self.harness.set_leader(True)
 
-        with patch.object(Container, "exec", return_value=MockExecProcess()):
-            self.harness.container_pebble_ready("indico")
+        self.harness.container_pebble_ready("indico")
 
         updated_plan = self.harness.get_container_pebble_plan("indico").to_dict()
         updated_plan_env = updated_plan["services"]["indico"]["environment"]
@@ -116,12 +146,19 @@ class TestCharm(unittest.TestCase):
         self.assertTrue(service.is_running())
         self.assertEqual(self.harness.model.unit.status, WaitingStatus("Waiting for pebble"))
 
-    def test_indico_celery_pebble_ready(self):
+    @patch.object(Container, "exec")
+    def test_indico_celery_pebble_ready(self, mock_exec):
+        """
+        arrange: charm created and relations established
+        act: trigger container pebble ready event for the Celery container
+        assert: the container and the service are running and properly configured
+        """
+        mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=("", None)))
+
         self.set_up_all_relations()
         self.harness.set_leader(True)
 
-        with patch.object(Container, "exec", return_value=MockExecProcess()):
-            self.harness.container_pebble_ready("indico-celery")
+        self.harness.container_pebble_ready("indico-celery")
 
         updated_plan = self.harness.get_container_pebble_plan("indico-celery").to_dict()
         updated_plan_env = updated_plan["services"]["indico-celery"]["environment"]
@@ -160,38 +197,45 @@ class TestCharm(unittest.TestCase):
         self.assertTrue(service.is_running())
         self.assertEqual(self.harness.model.unit.status, WaitingStatus("Waiting for pebble"))
 
-    def test_config_changed(self):
+    @patch.object(Container, "exec")
+    def test_config_changed(self, mock_exec):  # pylint: disable=R0915
+        """
+        arrange: charm created and relations established
+        act: trigger a valid configuration change for the charm
+        assert: the container and the service are running and properly configured
+        """
+        mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=("", None)))
+
         self.set_up_all_relations()
         self.harness.set_leader(True)
 
-        with patch.object(Container, "exec", return_value=MockExecProcess()) as exec_mock:
-            self.harness.container_pebble_ready("celery-prometheus-exporter")
-            self.harness.container_pebble_ready("statsd-prometheus-exporter")
-            self.harness.container_pebble_ready("nginx-prometheus-exporter")
-            self.harness.container_pebble_ready("indico")
-            self.harness.container_pebble_ready("indico-celery")
-            self.harness.container_pebble_ready("indico-nginx")
-            self.harness.update_config(
-                {
-                    "customization_debug": True,
-                    "customization_sources_url": "https://example.com/custom",
-                    "enable_roombooking": True,
-                    "external_plugins": "git+https://example.git/#subdirectory=themes_cern",
-                    "http_proxy": "http://squid.internal:3128",
-                    "https_proxy": "https://squid.internal:3128",
-                    "indico_support_email": "example@email.local",
-                    "indico_public_support_email": "public@email.local",
-                    "indico_no_reply_email": "noreply@email.local",
-                    "saml_target_url": "https://login.ubuntu.com/saml/",
-                    "site_url": "https://example.local:8080",
-                    "smtp_server": "localhost",
-                    "smtp_port": 8025,
-                    "smtp_login": "user",
-                    "smtp_password": "pass",
-                    "smtp_use_tls": False,
-                    "s3_storage": "s3:bucket=test-bucket,access_key=12345,secret_key=topsecret",
-                }
-            )
+        self.harness.container_pebble_ready("celery-prometheus-exporter")
+        self.harness.container_pebble_ready("statsd-prometheus-exporter")
+        self.harness.container_pebble_ready("nginx-prometheus-exporter")
+        self.harness.container_pebble_ready("indico")
+        self.harness.container_pebble_ready("indico-celery")
+        self.harness.container_pebble_ready("indico-nginx")
+        self.harness.update_config(
+            {
+                "customization_debug": True,
+                "customization_sources_url": "https://example.com/custom",
+                "enable_roombooking": True,
+                "external_plugins": "git+https://example.git/#subdirectory=themes_cern",
+                "http_proxy": "http://squid.internal:3128",
+                "https_proxy": "https://squid.internal:3128",
+                "indico_support_email": "example@email.local",
+                "indico_public_support_email": "public@email.local",
+                "indico_no_reply_email": "noreply@email.local",
+                "saml_target_url": "https://login.ubuntu.com/saml/",
+                "site_url": "https://example.local:8080",
+                "smtp_server": "localhost",
+                "smtp_port": 8025,
+                "smtp_login": "user",
+                "smtp_password": "pass",
+                "smtp_use_tls": False,
+                "s3_storage": "s3:bucket=test-bucket,access_key=12345,secret_key=topsecret",
+            }
+        )
 
         updated_plan = self.harness.get_container_pebble_plan("indico").to_dict()
         updated_plan_env = updated_plan["services"]["indico"]["environment"]
@@ -218,7 +262,7 @@ class TestCharm(unittest.TestCase):
             "s3:bucket=test-bucket,access_key=12345,secret_key=topsecret",
             storage_dict["s3"],
         )
-        exec_mock.assert_any_call(
+        mock_exec.assert_any_call(
             ["git", "clone", "https://example.com/custom", "."],
             working_dir="/srv/indico/custom",
             user="indico",
@@ -227,7 +271,7 @@ class TestCharm(unittest.TestCase):
                 "HTTPS_PROXY": "https://squid.internal:3128",
             },
         )
-        exec_mock.assert_any_call(
+        mock_exec.assert_any_call(
             ["pip", "install", "--upgrade", "git+https://example.git/#subdirectory=themes_cern"],
             environment={
                 "HTTP_PROXY": "http://squid.internal:3128",
@@ -270,71 +314,96 @@ class TestCharm(unittest.TestCase):
         identity_providers = literal_eval(updated_plan_env["INDICO_IDENTITY_PROVIDERS"])
         self.assertEqual("saml", identity_providers["ubuntu"]["type"])
 
-        with patch.object(Container, "exec", return_value=MockExecProcess()):
-            self.harness.update_config({"site_url": "https://example.local"})
+        self.harness.update_config({"site_url": "https://example.local"})
         self.assertEqual(
             "example.local", self.harness.charm.ingress.config_dict["service-hostname"]
         )
 
-    def test_config_changed_when_config_invalid(self):
+    @patch.object(Container, "exec")
+    def test_config_changed_when_config_invalid(self, mock_exec):
+        """
+        arrange: charm created and relations established
+        act: trigger an invalid site URL configuration change for the charm
+        assert: the unit reaches blocked status
+        """
+        mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=("", None)))
+
         self.set_up_all_relations()
         self.harness.set_leader(True)
 
-        with patch.object(Container, "exec", return_value=MockExecProcess()):
-            self.harness.container_pebble_ready("celery-prometheus-exporter")
-            self.harness.container_pebble_ready("statsd-prometheus-exporter")
-            self.harness.container_pebble_ready("nginx-prometheus-exporter")
-            self.harness.container_pebble_ready("indico")
-            self.harness.container_pebble_ready("indico-celery")
-            self.harness.container_pebble_ready("indico-nginx")
+        self.harness.container_pebble_ready("celery-prometheus-exporter")
+        self.harness.container_pebble_ready("statsd-prometheus-exporter")
+        self.harness.container_pebble_ready("nginx-prometheus-exporter")
+        self.harness.container_pebble_ready("indico")
+        self.harness.container_pebble_ready("indico-celery")
+        self.harness.container_pebble_ready("indico-nginx")
         self.harness.update_config({"site_url": "example.local"})
         self.assertEqual(
             self.harness.model.unit.status,
             BlockedStatus("Configuration option site_url is not valid"),
         )
 
-    def test_config_changed_when_http_proxy_config_not_present(self):
+    @patch.object(Container, "exec")
+    def test_config_changed_with_external_resources(self, mock_exec):
+        """
+        arrange: charm created and relations established
+        act: configure the customization resources and external plugins
+        assert: the sources are downloaded and the plugins installed
+        """
+        mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=("", None)))
+
         self.set_up_all_relations()
         self.harness.set_leader(True)
 
-        with patch.object(Container, "exec", return_value=MockExecProcess()) as exec_mock:
-            self.harness.container_pebble_ready("celery-prometheus-exporter")
-            self.harness.container_pebble_ready("statsd-prometheus-exporter")
-            self.harness.container_pebble_ready("nginx-prometheus-exporter")
-            self.harness.container_pebble_ready("indico")
-            self.harness.container_pebble_ready("indico-celery")
-            self.harness.container_pebble_ready("indico-nginx")
-            self.harness.update_config(
-                {
-                    "customization_sources_url": "https://example.com/custom",
-                    "external_plugins": "git+https://example.git/#subdirectory=themes_cern",
-                }
-            )
+        self.harness.container_pebble_ready("celery-prometheus-exporter")
+        self.harness.container_pebble_ready("statsd-prometheus-exporter")
+        self.harness.container_pebble_ready("nginx-prometheus-exporter")
+        self.harness.container_pebble_ready("indico")
+        self.harness.container_pebble_ready("indico-celery")
+        self.harness.container_pebble_ready("indico-nginx")
+        self.harness.update_config(
+            {
+                "customization_sources_url": "https://example.com/custom",
+                "external_plugins": "git+https://example.git/#subdirectory=themes_cern",
+            }
+        )
 
-        exec_mock.assert_any_call(
+        mock_exec.assert_any_call(
             ["git", "clone", "https://example.com/custom", "."],
             working_dir="/srv/indico/custom",
             user="indico",
             environment={},
         )
-        exec_mock.assert_any_call(
+        mock_exec.assert_any_call(
             ["pip", "install", "--upgrade", "git+https://example.git/#subdirectory=themes_cern"],
             environment={},
         )
 
     def test_config_changed_when_pebble_not_ready(self):
+        """
+        arrange: charm created and relations established but ppebble is not ready yet
+        act: trigger a configuration change for the charm
+        assert: the charm is still in waiting status
+        """
         self.set_up_all_relations()
         self.harness.update_config({"indico_support_email": "example@email.local"})
         self.assertEqual(self.harness.model.unit.status, WaitingStatus("Waiting for pebble"))
 
-    def test_config_changed_when_saml_target_url_invalid(self):
+    @patch.object(Container, "exec")
+    def test_config_changed_when_saml_target_url_invalid(self, mock_exec):
+        """
+        arrange: charm created and relations established
+        act: trigger an invalid SAML URL configuration change for the charm
+        assert: the unit reaches blocked status
+        """
+        mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=("", None)))
+
         self.set_up_all_relations()
         self.harness.set_leader(True)
 
-        with patch.object(Container, "exec", return_value=MockExecProcess()):
-            self.harness.container_pebble_ready("indico")
-            self.harness.container_pebble_ready("indico-celery")
-            self.harness.container_pebble_ready("indico-nginx")
+        self.harness.container_pebble_ready("indico")
+        self.harness.container_pebble_ready("indico-celery")
+        self.harness.container_pebble_ready("indico-nginx")
 
         self.harness.update_config({"saml_target_url": "sample.com/saml"})
         self.assertEqual(
@@ -344,6 +413,11 @@ class TestCharm(unittest.TestCase):
         self.assertTrue("Invalid saml_target_url option" in self.harness.model.unit.status.message)
 
     def test_pebble_ready_when_relations_not_ready(self):
+        """
+        arrange: charm created
+        act: trigger the pebble ready events
+        assert: the unit reaches waiting status
+        """
         self.harness.container_pebble_ready("indico")
         self.harness.container_pebble_ready("indico-celery")
         self.harness.container_pebble_ready("indico-nginx")
@@ -353,6 +427,11 @@ class TestCharm(unittest.TestCase):
         )
 
     def test_on_leader_elected(self):
+        """
+        arrange: charm created
+        act: trigger the leader elected event
+        assert: the peer relation containers the secret-key
+        """
         rel_id = self.harness.add_relation("indico-peers", self.harness.charm.app.name)
         self.harness.set_leader(True)
         secret_key = self.harness.get_relation_data(rel_id, self.harness.charm.app.name).get(
@@ -367,6 +446,11 @@ class TestCharm(unittest.TestCase):
         )
 
     def test_db_relations(self):
+        """
+        arrange: charm created
+        act: establish relations
+        assert: the database connection data is interchanged, including the required extensions
+        """
         self.set_up_all_relations()
         self.harness.set_leader(True)
         # testing harness not re-emits deferred events, manually trigger that
@@ -405,40 +489,50 @@ class TestCharm(unittest.TestCase):
             "database connection string should change after database master changed",
         )
 
-    def test_refresh_external_resources_when_customization_and_plugins_set(self):
+    @patch.object(Container, "exec")
+    def test_refresh_external_resources_when_customization_and_plugins_set(self, mock_exec):
+        """
+        arrange: charm created and relations established
+        act: configure the external resources and trigger the refresh action
+        assert: the customization sources are pulled and the plugins upgraded
+        """
+        mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=("", None)))
+
         self.harness.disable_hooks()
         self.set_up_all_relations()
         self.harness.set_leader(True)
 
-        with patch.object(Container, "exec", return_value=MockExecProcess()) as exec_mock:
-            self.harness.container_pebble_ready("nginx-prometheus-exporter")
-            self.harness.container_pebble_ready("indico")
-            self.harness.container_pebble_ready("indico-celery")
-            self.harness.container_pebble_ready("indico-nginx")
-            self.harness.update_config(
-                {
-                    "customization_sources_url": "https://example.com/custom",
-                    "external_plugins": "git+https://example.git/#subdirectory=themes_cern",
-                }
-            )
+        self.harness.container_pebble_ready("nginx-prometheus-exporter")
+        self.harness.container_pebble_ready("indico")
+        self.harness.container_pebble_ready("indico-celery")
+        self.harness.container_pebble_ready("indico-nginx")
+        self.harness.update_config(
+            {
+                "customization_sources_url": "https://example.com/custom",
+                "external_plugins": "git+https://example.git/#subdirectory=themes_cern",
+            }
+        )
 
-            charm: IndicoOperatorCharm = typing.cast(IndicoOperatorCharm, self.harness.charm)
-            charm._refresh_external_resources(MagicMock())
+        charm: IndicoOperatorCharm = typing.cast(IndicoOperatorCharm, self.harness.charm)
+        charm._refresh_external_resources(MagicMock())
 
-        exec_mock.assert_any_call(
+        mock_exec.assert_any_call(
             ["git", "pull"],
             working_dir="/srv/indico/custom",
             user="indico",
             environment={},
         )
-        exec_mock.assert_any_call(
+        mock_exec.assert_any_call(
             ["pip", "install", "--upgrade", "git+https://example.git/#subdirectory=themes_cern"],
             environment={},
         )
 
     def set_up_all_relations(self):
+        """Set up all relations for the charm."""
         self.harness.charm._stored.db_uri = "db-uri"
-        self.db_relation_id = self.harness.add_relation("db", "postgresql")
+        self.db_relation_id = self.harness.add_relation(  # pylint: disable=W0201
+            "db", "postgresql"
+        )
         self.harness.add_relation_unit(self.db_relation_id, "postgresql/0")
 
         self.harness.add_relation("indico-peers", self.harness.charm.app.name)

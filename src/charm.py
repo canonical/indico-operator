@@ -76,7 +76,7 @@ class IndicoOperatorCharm(CharmBase):
             redis_relation={},
         )
 
-        self.db = pgsql.PostgreSQLClient(self, "db")
+        self.db = pgsql.PostgreSQLClient(self, "db")  # pylint: disable=C0103
         self.framework.observe(
             self.db.on.database_relation_joined, self._on_database_relation_joined
         )
@@ -158,10 +158,8 @@ class IndicoOperatorCharm(CharmBase):
             If the containers are up and available.
         """
         return all(
-            [
-                self.unit.get_container(container_name).can_connect()
-                for container_name in self.model.unit.containers
-            ]
+            self.unit.get_container(container_name).can_connect()
+            for container_name in self.model.unit.containers
         )
 
     def _is_configuration_valid(self) -> Tuple[bool, str]:
@@ -677,7 +675,6 @@ class IndicoOperatorCharm(CharmBase):
             remote_url, _ = process.wait_output()
         except ExecError as ex:
             logging.debug(ex)
-            pass
         return remote_url.rstrip()
 
     def _install_plugins(self, container: Container, plugins: List[str]) -> None:

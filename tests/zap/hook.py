@@ -1,3 +1,4 @@
+# pylint: skip-file
 def zap_started(zap, target):
     print(
         zap.script.load(
