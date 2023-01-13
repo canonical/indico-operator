@@ -17,6 +17,7 @@ from charms.prometheus_k8s.v0.prometheus_scrape import MetricsEndpointProvider
 from charms.redis_k8s.v0.redis import RedisRelationCharmEvents, RedisRequires
 from ops.charm import ActionEvent, CharmBase, HookEvent, PebbleReadyEvent
 from ops.framework import StoredState
+from ops.jujuversion import JujuVersion
 from ops.main import main
 from ops.model import (
     ActiveStatus,
@@ -522,6 +523,15 @@ class IndicoOperatorCharm(CharmBase):
 
         peer_relation = self.model.get_relation("indico-peers")
 
+        secret_value = None
+        if peer_relation and not self._has_secrets():
+            secret_value = peer_relation.data[self.app].get("secret-key")
+        elif peer_relation and self._has_secrets():
+            secret_id = peer_relation.data[self.app].get("secret-id")
+            if secret_id:
+                secret = self.model.get_secret(id=secret_id)
+                secret_value = secret.get_content().get("secret-key")
+
         env_config = {
             "ATTACHMENT_STORAGE": "default",
             "CELERY_BROKER": self._get_celery_backend(),
@@ -535,9 +545,7 @@ class IndicoOperatorCharm(CharmBase):
             "INDICO_PUBLIC_SUPPORT_EMAIL": self.config["indico_public_support_email"],
             "INDICO_SUPPORT_EMAIL": self.config["indico_support_email"],
             "REDIS_CACHE_URL": f"redis://{cache_host}:{cache_port}",
-            "SECRET_KEY": (
-                peer_relation.data[self.app].get("secret-key") if peer_relation else None
-            ),
+            "SECRET_KEY": secret_value,
             "SERVICE_HOSTNAME": self._get_external_hostname(),
             "SERVICE_PORT": self._get_external_port(),
             "SERVICE_SCHEME": self._get_external_scheme(),
@@ -795,8 +803,26 @@ class IndicoOperatorCharm(CharmBase):
     def _on_leader_elected(self, _) -> None:
         """Handle leader-elected event."""
         peer_relation = self.model.get_relation("indico-peers")
-        if peer_relation and not peer_relation.data[self.app].get("secret-key"):
-            peer_relation.data[self.app].update({"secret-key": repr(os.urandom(32))})
+        secret_value = repr(os.urandom(32))
+        if (
+            peer_relation
+            and not self._has_secrets()
+            and not peer_relation.data[self.app].get("secret-key")
+        ):
+            peer_relation.data[self.app].update({"secret-key": secret_value})
+        elif (
+            peer_relation
+            and self._has_secrets()
+            and not peer_relation.data[self.app].get("secret-id")
+        ):
+            secret_id = self.app.add_secret({"secret-key": secret_value})
+            peer_relation.data[self.app].update({"secret-id": secret_id})
+
+    def _has_secrets(self) -> bool:
+        juju_version = JujuVersion.from_environ()
+        # Because we're only using secrets in a peer relation we don't need to
+        # check if the other end of a relation also supports secrets...
+        return juju_version.has_secrets
 
 
 if __name__ == "__main__":  # pragma: no cover
