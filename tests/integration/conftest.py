@@ -3,8 +3,6 @@
 
 """Fixtures for Indico charm integration tests."""
 
-# pylint:disable=redefined-outer-name
-
 import asyncio
 from pathlib import Path
 
@@ -15,32 +13,32 @@ from pytest import Config, fixture
 from pytest_operator.plugin import OpsTest
 
 
-@fixture(scope="module")
-def metadata():
+@fixture(scope="module", name="metadata")
+def metadata_fixture():
     """Provides charm metadata."""
     yield yaml.safe_load(Path("./metadata.yaml").read_text("utf-8"))
 
 
-@fixture(scope="module")
-def app_name(metadata):
+@fixture(scope="module", name="app_name")
+def app_name_fixture(metadata):
     """Provides app name from the metadata."""
     yield metadata["name"]
 
 
-@fixture(scope="module")
-def nginx_prometheus_exporter_image(metadata):
+@fixture(scope="module", name="nginx_prometheus_exporter_image")
+def nginx_prometheus_exporter_image_fixture(metadata):
     """Provides the nginx prometheus exporter image from the metadata."""
     yield metadata["resources"]["nginx-prometheus-exporter-image"]["upstream-source"]
 
 
-@fixture(scope="module")
-def statsd_prometheus_exporter_image(metadata):
+@fixture(scope="module", name="statsd_prometheus_exporter_image")
+def statsd_prometheus_exporter_image_fixture(metadata):
     """Provides the statsd prometheus exporter image from the metadata."""
     yield metadata["resources"]["statsd-prometheus-exporter-image"]["upstream-source"]
 
 
-@fixture(scope="module")
-def celery_prometheus_exporter_image(metadata):
+@fixture(scope="module", name="celery_prometheus_exporter_image")
+def celery_prometheus_exporter_image_fixture(metadata):
     """Provides the celery prometheus exporter image from the metadata."""
     yield metadata["resources"]["celery-prometheus-exporter-image"]["upstream-source"]
 
@@ -64,6 +62,7 @@ async def app(
         ops_test.model.deploy("postgresql-k8s"),
         ops_test.model.deploy("redis-k8s", "redis-broker"),
         ops_test.model.deploy("redis-k8s", "redis-cache"),
+        ops_test.model.deploy("nginx-ingress-integrator", trust=True),
     )
 
     charm = await ops_test.build_charm(".")
@@ -86,6 +85,7 @@ async def app(
         ops_test.model.add_relation(app_name, "postgresql-k8s:db"),
         ops_test.model.add_relation(app_name, "redis-broker"),
         ops_test.model.add_relation(app_name, "redis-cache"),
+        ops_test.model.add_relation(app_name, "nginx-ingress-integrator"),
     )
     await ops_test.model.wait_for_idle(status="active")
 
