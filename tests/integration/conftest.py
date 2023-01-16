@@ -5,6 +5,7 @@
 
 import asyncio
 from pathlib import Path
+from typing import Dict
 
 import pytest_asyncio
 import yaml
@@ -47,7 +48,7 @@ async def app(
     ops_test: OpsTest,
     app_name: str,
     pytestconfig: Config,
-    prometheus_exporter_images: dict[str, str],
+    prometheus_exporter_images: Dict[str, str],
 ):
     """Indico charm used for integration testing.
 
