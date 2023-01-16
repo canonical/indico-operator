@@ -495,7 +495,7 @@ class IndicoOperatorCharm(CharmBase):
             broker_port = broker_rel.data[broker_unit].get("port")
         return f"redis://{broker_host}:{broker_port}"
 
-    def _get_indico_secret_key_from_relation(self) -> str | None:
+    def _get_indico_secret_key_from_relation(self) -> Optional[str]:
         """Return the Indico secret key needed to deploy multiple Indico instances.
 
         Returns:
