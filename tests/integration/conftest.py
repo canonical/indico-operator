@@ -25,22 +25,21 @@ def app_name_fixture(metadata):
     yield metadata["name"]
 
 
-@fixture(scope="module", name="nginx_prometheus_exporter_image")
-def nginx_prometheus_exporter_image_fixture(metadata):
-    """Provides the nginx prometheus exporter image from the metadata."""
-    yield metadata["resources"]["nginx-prometheus-exporter-image"]["upstream-source"]
-
-
-@fixture(scope="module", name="statsd_prometheus_exporter_image")
-def statsd_prometheus_exporter_image_fixture(metadata):
-    """Provides the statsd prometheus exporter image from the metadata."""
-    yield metadata["resources"]["statsd-prometheus-exporter-image"]["upstream-source"]
-
-
-@fixture(scope="module", name="celery_prometheus_exporter_image")
-def celery_prometheus_exporter_image_fixture(metadata):
-    """Provides the celery prometheus exporter image from the metadata."""
-    yield metadata["resources"]["celery-prometheus-exporter-image"]["upstream-source"]
+@fixture(scope="module", name="prometheus_exporter_images")
+def prometheus_exporter_images_fixture(metadata):
+    """Provides Prometheus exporter images from the metadata."""
+    prometheus_exporter_images = {
+        "nginx-prometheus-exporter-image": metadata["resources"][
+            "nginx-prometheus-exporter-image"
+        ]["upstream-source"],
+        "statsd-prometheus-exporter-image": metadata["resources"][
+            "statsd-prometheus-exporter-image"
+        ]["upstream-source"],
+        "celery-prometheus-exporter-image": metadata["resources"][
+            "celery-prometheus-exporter-image"
+        ]["upstream-source"],
+    }
+    yield prometheus_exporter_images
 
 
 @pytest_asyncio.fixture(scope="module")
@@ -48,10 +47,8 @@ async def app(
     ops_test: OpsTest,
     app_name: str,
     pytestconfig: Config,
-    nginx_prometheus_exporter_image: str,
-    statsd_prometheus_exporter_image: str,
-    celery_prometheus_exporter_image: str,
-):  # pylint:disable=R0913
+    prometheus_exporter_images: dict[str, str],
+):
     """Indico charm used for integration testing.
 
     Builds the charm and deploys it and the relations it depends on.
@@ -69,10 +66,9 @@ async def app(
     resources = {
         "indico-image": pytestconfig.getoption("--indico-image"),
         "indico-nginx-image": pytestconfig.getoption("--indico-nginx-image"),
-        "nginx-prometheus-exporter-image": nginx_prometheus_exporter_image,
-        "statsd-prometheus-exporter-image": statsd_prometheus_exporter_image,
-        "celery-prometheus-exporter-image": celery_prometheus_exporter_image,
     }
+    resources.update(prometheus_exporter_images)
+
     application = await ops_test.model.deploy(
         charm, resources=resources, application_name=app_name, series="focal"
     )
