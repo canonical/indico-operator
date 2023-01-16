@@ -2,9 +2,11 @@
 # Copyright 2022 Canonical Ltd.
 # See LICENSE file for licensing details.
 
+"""Helper functions for integration tests."""
+
 from typing import Optional
 
-from ops.model import Application, Relation
+from ops.model import Application
 from pytest_operator.plugin import OpsTest
 
 
@@ -15,21 +17,24 @@ async def deploy_related_charm(
     raise_on_error: bool = True,
     trust: bool = False,
 ) -> Application:
+    """Deploy a charm related to our main app, if it's not already deployed."""
     assert ops_test.model
     instance_name = instance_name or charm_name
     if instance_name not in ops_test.model.applications:
-        instance = await ops_test.model.deploy(charm_name, instance_name)
-        await ops_test.model.wait_for_idle(raise_on_error=raise_on_error, trust=trust)
+        instance = await ops_test.model.deploy(charm_name, instance_name, trust=trust)
+        await ops_test.model.wait_for_idle(raise_on_error=raise_on_error)
         return instance
     return ops_test.model.applications[instance_name]
 
 
+# pylint: disable=dangerous-default-value
 async def deploy_app(
     ops_test: OpsTest,
     app_name: str,
     series: str,
     resources: dict = {},
 ) -> Application:
+    """Deploy our main app, if it's not already deployed."""
     assert ops_test.model
     if app_name not in ops_test.model.applications:
         charm = await ops_test.build_charm(".")
@@ -46,12 +51,9 @@ async def app_add_relation(
     app_name: str,
     relation_id: str,
 ):
+    """Relate to applications if the relation does not already exists."""
     assert ops_test.model
     assert ops_test.model.relations
 
-    # this function is defined here to be typed
-    def rmatch(rel: Relation, relation_id: str) -> bool:
-        return rel.matches(relation_id)
-
-    if not any(filter(lambda x: rmatch(x, relation_id), ops_test.model.relations)):
-        await ops_test.model.add_relation(app_name, relation_id),
+    if not any(filter(lambda x: x.matches(relation_id), ops_test.model.relations)):  # type: ignore
+        await ops_test.model.add_relation(app_name, relation_id)
