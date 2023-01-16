@@ -1,6 +1,9 @@
 # pylint: skip-file
+import logging
+
+
 def zap_started(zap, target):
-    print(
+    logging.info(
         zap.script.load(
             "Add Header Script",
             "httpsender",
@@ -8,12 +11,9 @@ def zap_started(zap, target):
             "/zap/wrk/tests/zap/add_header_request.py",
         )
     )
-    print(zap.script.enable("Add Header Script"))
+    logging.info(zap.script.enable("Add Header Script"))
 
 
 def zap_pre_shutdown(zap):
-    print("script.listEngines")
-    print(zap.script.list_engines)
-    print()
-    print("script.listScripts")
-    print(zap.script.list_scripts)
+    logging.info(f"script.listEngines: {zap.script.list_engines}")
+    logging.info(f"script.listScripts: {zap.script.list_scripts}")
