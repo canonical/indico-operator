@@ -5,13 +5,13 @@
 
 import asyncio
 from pathlib import Path
-from typing import Optional
 
 import pytest_asyncio
 import yaml
-from ops.model import Application
 from pytest import Config, fixture
 from pytest_operator.plugin import OpsTest
+
+from tests.integration.helpers import app_add_relation, deploy_app, deploy_related_charm
 
 
 @fixture(scope="module", name="metadata")
@@ -44,53 +44,6 @@ def celery_prometheus_exporter_image_fixture(metadata):
     yield metadata["resources"]["celery-prometheus-exporter-image"]["upstream-source"]
 
 
-async def _deploy_related_charm(
-    ops_test: OpsTest,
-    charm_name: str,
-    instance_name: Optional[str] = None,
-    raise_on_error: bool = True,
-) -> Application:
-    assert ops_test.model
-    instance_name = instance_name or charm_name
-    if instance_name not in ops_test.model.applications:
-        instance = await ops_test.model.deploy(charm_name, instance_name)
-        await ops_test.model.wait_for_idle(raise_on_error=raise_on_error)
-        return instance
-    return ops_test.model.applications[instance_name]
-
-
-async def _deploy_app(
-    ops_test: OpsTest,
-    app_name: str,
-    series: str,
-    resources: dict = {},
-) -> Application:
-    assert ops_test.model
-    if app_name not in ops_test.model.applications:
-        charm = await ops_test.build_charm(".")
-        application = await ops_test.model.deploy(
-            charm, resources=resources, application_name=app_name, series=series
-        )
-        await ops_test.model.wait_for_idle()
-        return application
-    return ops_test.model.applications[app_name]
-
-
-async def _app_add_relation(
-    ops_test: OpsTest,
-    app_name: str,
-    relation_id: str,
-):
-    assert ops_test.model
-    assert ops_test.model.relations
-
-    # I need to have the full relation_id to check if it exist
-    assert len(relation_id.split(":")) == 2
-
-    if not any(filter(lambda x: x.matches(relation_id), ops_test.model.relations)):
-        await ops_test.model.add_relation(app_name, relation_id),
-
-
 @pytest_asyncio.fixture(scope="module")
 async def app(
     ops_test: OpsTest,
@@ -107,14 +60,14 @@ async def app(
     assert ops_test.model
     # Deploy relations to speed up overall execution
     await asyncio.gather(
-        _deploy_related_charm(ops_test, "postgresql-k8s", raise_on_error=False),
-        _deploy_related_charm(ops_test, "redis-k8s", "redis-broker"),
-        _deploy_related_charm(ops_test, "redis-k8s", "redis-cache"),
-        _deploy_related_charm(ops_test, "nginx-ingress-integrator", trust=True),
+        deploy_related_charm(ops_test, "postgresql-k8s", raise_on_error=False),
+        deploy_related_charm(ops_test, "redis-k8s", "redis-broker"),
+        deploy_related_charm(ops_test, "redis-k8s", "redis-cache"),
+        deploy_related_charm(ops_test, "nginx-ingress-integrator", trust=True),
     )
     await ops_test.model.wait_for_idle()
 
-    application = await _deploy_app(
+    application = await deploy_app(
         ops_test,
         app_name,
         series="focal",
@@ -129,10 +82,10 @@ async def app(
     await ops_test.model.wait_for_idle()
 
     await asyncio.gather(
-        _app_add_relation(ops_test, app_name, "postgresql-k8s:db"),
-        _app_add_relation(ops_test, app_name, "redis-broker:redis"),
-        _app_add_relation(ops_test, app_name, "redis-cache:redis"),
-        _app_add_relation(ops_test, app_name, "nginx-ingress-integrator"),
+        app_add_relation(ops_test, app_name, "postgresql-k8s:db"),
+        app_add_relation(ops_test, app_name, "redis-broker:redis"),
+        app_add_relation(ops_test, app_name, "redis-cache:redis"),
+        app_add_relation(ops_test, app_name, "nginx-ingress-integrator"),
     )
     await ops_test.model.wait_for_idle(status="active")
 
