@@ -13,6 +13,8 @@ from ops.model import WaitingStatus
 from pytest import Config, fixture
 from pytest_operator.plugin import OpsTest
 
+from tests.integration.helpers import app_add_relation, deploy_app, deploy_related_charm
+
 
 @fixture(scope="module", name="metadata")
 def metadata_fixture():
@@ -57,21 +59,24 @@ async def app(
     assert ops_test.model
     # Deploy relations to speed up overall execution
     await asyncio.gather(
-        ops_test.model.deploy("postgresql-k8s"),
-        ops_test.model.deploy("redis-k8s", "redis-broker"),
-        ops_test.model.deploy("redis-k8s", "redis-cache"),
-        ops_test.model.deploy("nginx-ingress-integrator", trust=True),
+        deploy_related_charm(ops_test, "postgresql-k8s", raise_on_error=False),
+        deploy_related_charm(ops_test, "redis-k8s", "redis-broker"),
+        deploy_related_charm(ops_test, "redis-k8s", "redis-cache"),
+        deploy_related_charm(ops_test, "nginx-ingress-integrator", trust=True),
     )
+    await ops_test.model.wait_for_idle()
 
-    charm = await ops_test.build_charm(".")
-    resources = {
-        "indico-image": pytestconfig.getoption("--indico-image"),
-        "indico-nginx-image": pytestconfig.getoption("--indico-nginx-image"),
-    }
-    resources.update(prometheus_exporter_images)
-
-    application = await ops_test.model.deploy(
-        charm, resources=resources, application_name=app_name, series="focal"
+    application = await deploy_app(
+        ops_test,
+        app_name,
+        series="focal",
+        resources={
+            "indico-image": pytestconfig.getoption("--indico-image"),
+            "indico-nginx-image": pytestconfig.getoption("--indico-nginx-image"),
+            "nginx-prometheus-exporter-image": nginx_prometheus_exporter_image,
+            "statsd-prometheus-exporter-image": statsd_prometheus_exporter_image,
+            "celery-prometheus-exporter-image": celery_prometheus_exporter_image,
+        },
     )
     await ops_test.model.wait_for_idle()
 
@@ -79,10 +84,10 @@ async def app(
     expected_name = WaitingStatus.name  # type: ignore
     assert ops_test.model.applications[app_name].units[0].workload_status == expected_name
     await asyncio.gather(
-        ops_test.model.add_relation(app_name, "postgresql-k8s:db"),
-        ops_test.model.add_relation(app_name, "redis-broker"),
-        ops_test.model.add_relation(app_name, "redis-cache"),
-        ops_test.model.add_relation(app_name, "nginx-ingress-integrator"),
+        app_add_relation(ops_test, app_name, "postgresql-k8s:db"),
+        app_add_relation(ops_test, app_name, "redis-broker:redis"),
+        app_add_relation(ops_test, app_name, "redis-cache:redis"),
+        app_add_relation(ops_test, app_name, "nginx-ingress-integrator"),
     )
     await ops_test.model.wait_for_idle(status="active")
 
