@@ -1,7 +1,7 @@
 # Copyright 2022 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-"""Fixtures for WordPress charm tests."""
+"""Fixtures for Indico charm tests."""
 
 
 def pytest_addoption(parser):
