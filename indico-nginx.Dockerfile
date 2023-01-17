@@ -6,7 +6,7 @@ ARG nginx_gid=2001
 ARG nginx_uid=2001
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends libpq-dev python3-pip \
+    && apt-get install -y libpq-dev python3-pip \
     && rm /var/lib/apt/lists/* \
     && addgroup --gid ${nginx_gid} nginx \
     && adduser --system --gid ${nginx_gid} --uid ${nginx_uid} --home /srv/indico --disabled-login nginx
