@@ -12,3 +12,4 @@ jobs:
       chaos-experiments: pod-delete
       chaos-app-label: app.kubernetes.io/name=indico
       load-test-enabled: true
+      load-test-run-args: "-e LOAD_TEST_HOST=localhost"
