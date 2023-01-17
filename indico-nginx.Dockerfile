@@ -6,7 +6,7 @@ ARG nginx_gid=2001
 ARG nginx_uid=2001
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends libpq-dev python3-pip \
+    && apt-get install -y libpq-dev python3-pip \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
     && addgroup --gid ${nginx_gid} nginx \
@@ -17,7 +17,7 @@ RUN python3 -m pip install --no-cache-dir --prefer-binary indico==3.2 indico-plu
 FROM ubuntu:jammy
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends nginx \
+    && apt-get install -y nginx \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
