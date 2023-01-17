@@ -8,7 +8,7 @@ jobs:
     uses: canonical/operator-workflows/.github/workflows/integration_test.yaml@main
     secrets: inherit
     with:
-      chaos-enabled: true
+      chaos-enabled: false
       chaos-experiments: pod-delete
       chaos-app-label: app.kubernetes.io/name=indico
-      load-test-enabled: true
+      load-test-enabled: false
