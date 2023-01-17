@@ -445,7 +445,7 @@ class IndicoOperatorCharm(CharmBase):
             },
         }
 
-    def _get_redis_rel(self, name) -> Optional[Relation]:
+    def _get_redis_rel(self, name: str) -> Optional[Relation]:
         """Get Redis relation.
 
         Args:
@@ -479,21 +479,38 @@ class IndicoOperatorCharm(CharmBase):
         """
         return self._get_redis_rel("redis-cache")
 
+    def _get_redis_backend(self, name: str) -> str:
+        """Generate Redis Backend URL formed by Redis broker host and port for a given relation.
+
+        Args:
+            name: Relation name to look up as prefix.
+
+        Returns:
+            Cache Backend URL as expected by Indico.
+        """
+        broker_host = ""
+        broker_port = ""
+        if (broker_rel := self._get_redis_rel(name)) is not None:
+            broker_unit = next(unit for unit in broker_rel.data if unit.name.startswith(name))
+            broker_host = broker_rel.data[broker_unit].get("hostname")
+            broker_port = broker_rel.data[broker_unit].get("port")
+        return f"redis://{broker_host}:{broker_port}"
+
+    def _get_cache_backend(self) -> str:
+        """Generate cache Backend URL formed by Redis broker host and port.
+
+        Returns:
+            Cache Backend URL as expected by Indico.
+        """
+        return self._get_redis_backend("redis-cache")
+
     def _get_celery_backend(self) -> str:
         """Generate Celery Backend URL formed by Redis broker host and port.
 
         Returns:
             Celery Backend URL as expected by Indico and Celery Prometheus Exporter.
         """
-        broker_host = ""
-        broker_port = ""
-        if (broker_rel := self._get_redis_broker_rel()) is not None:
-            broker_unit = next(
-                unit for unit in broker_rel.data if unit.name.startswith("redis-broker")
-            )
-            broker_host = broker_rel.data[broker_unit].get("hostname")
-            broker_port = broker_rel.data[broker_unit].get("port")
-        return f"redis://{broker_host}:{broker_port}"
+        return self._get_redis_backend("redis-broker")
 
     def _get_installed_plugins(self, container: Container) -> List[str]:
         """Return plugins currently installed.
@@ -521,15 +538,6 @@ class IndicoOperatorCharm(CharmBase):
         Returns:
             Dictionary with the environment variables for the container.
         """
-        cache_host = ""
-        cache_port = ""
-        if (cache_rel := self._get_redis_cache_rel()) is not None:
-            cache_unit = next(
-                unit for unit in cache_rel.data if unit.name.startswith("redis-cache")
-            )
-            cache_host = cache_rel.data[cache_unit].get("hostname")
-            cache_port = cache_rel.data[cache_unit].get("port")
-
         available_plugins = self._get_installed_plugins(container)
         peer_relation = self.model.get_relation("indico-peers")
 
@@ -545,7 +553,7 @@ class IndicoOperatorCharm(CharmBase):
             "INDICO_NO_REPLY_EMAIL": self.config["indico_no_reply_email"],
             "INDICO_PUBLIC_SUPPORT_EMAIL": self.config["indico_public_support_email"],
             "INDICO_SUPPORT_EMAIL": self.config["indico_support_email"],
-            "REDIS_CACHE_URL": f"redis://{cache_host}:{cache_port}",
+            "REDIS_CACHE_URL": self._get_cache_backend(),
             "SECRET_KEY": (
                 peer_relation.data[self.app].get("secret-key") if peer_relation else None
             ),
