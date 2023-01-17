@@ -26,8 +26,8 @@ ENV DEBIAN_FRONTEND=noninteractive \
     LC_ALL=C.UTF-8 \
     LC_LANG=C.UTF-8
 
-RUN apt update \
-    && apt install -y gettext git libxmlsec1-dev locales postgresql-client python3-pip texlive-xetex \
+RUN apt-get update \
+    && apt-get install -y gettext git libxmlsec1-dev locales postgresql-client python3-pip texlive-xetex \
     && rm -rf /var/lib/apt/lists/* \
     && addgroup --gid ${indico_gid} indico \
     && adduser --system --gid ${indico_gid} --uid ${indico_uid} --home /srv/indico indico \
