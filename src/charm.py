@@ -495,6 +495,23 @@ class IndicoOperatorCharm(CharmBase):
             broker_port = broker_rel.data[broker_unit].get("port")
         return f"redis://{broker_host}:{broker_port}"
 
+    def _get_installed_plugins(self, container: Container) -> List[str]:
+        """Return plugins currently installed.
+
+        Args:
+            container: Container for which the installed plugins will be retrieved.
+
+        Returns:
+            List containing the installed plugins.
+        """
+        process = container.exec(
+            ["/srv/indico/.local/bin/indico", "setup", "list-plugins"],
+            user="indico",
+        )
+        output, _ = process.wait_output()
+        # Parse output table, discarding header and footer rows and fetching first column value
+        return [item.split("|")[1].strip() for item in output.split("\n")[3:-2]]
+
     def _get_indico_env_config(self, container: Container) -> Dict:
         """Return an envConfig with some core configuration.
 
@@ -513,15 +530,7 @@ class IndicoOperatorCharm(CharmBase):
             cache_host = cache_rel.data[cache_unit].get("hostname")
             cache_port = cache_rel.data[cache_unit].get("port")
 
-        available_plugins = []
-        process = container.exec(
-            ["/srv/indico/.local/bin/indico", "setup", "list-plugins"],
-            user="indico",
-        )
-        output, _ = process.wait_output()
-        # Parse output table, discarding header and footer rows and fetching first column value
-        available_plugins = [item.split("|")[1].strip() for item in output.split("\n")[3:-2]]
-
+        available_plugins = self._get_installed_plugins(container)
         peer_relation = self.model.get_relation("indico-peers")
 
         env_config = {
