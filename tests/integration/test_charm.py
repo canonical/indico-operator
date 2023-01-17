@@ -2,10 +2,14 @@
 # Copyright 2022 Canonical Ltd.
 # See LICENSE file for licensing details.
 
+"""Indico charm integration tests."""
+
 import pytest
 import requests
 from ops.model import ActiveStatus, Application
 from pytest_operator.plugin import OpsTest
+
+from charm import CELERY_PROMEXP_PORT, NGINX_PROMEXP_PORT, STATSD_PROMEXP_PORT
 
 
 @pytest.mark.asyncio
@@ -15,7 +19,8 @@ async def test_active(app: Application):
 
     Assume that the charm has already been built and is running.
     """
-    assert app.units[0].workload_status == ActiveStatus.name
+    # Application actually does have units
+    assert app.units[0].workload_status == ActiveStatus.name  # type: ignore
 
 
 @pytest.mark.asyncio
@@ -25,6 +30,7 @@ async def test_indico_is_up(ops_test: OpsTest, app: Application):
 
     Assume that the charm has already been built and is running.
     """
+    assert ops_test.model
     # Read the IP address of indico
     status = await ops_test.model.get_status()
     unit = list(status.applications[app.name].units)[0]
@@ -32,7 +38,7 @@ async def test_indico_is_up(ops_test: OpsTest, app: Application):
     # Send request to bootstrap page and set Host header to app_name (which the application
     # expects)
     response = requests.get(
-        f"http://{address}:8080/bootstrap", headers={"Host": f"{app.name}.local"}
+        f"http://{address}:8080/bootstrap", headers={"Host": f"{app.name}.local"}, timeout=10
     )
     assert response.status_code == 200
 
@@ -45,8 +51,13 @@ async def test_prom_exporters_are_up(app: Application):
     act: when the metrics endpoints are scraped
     assert: the response is 200 (HTTP OK)
     """
-    indico_unit = app.units[0]
-    prometheus_targets = ["localhost:9113", "localhost:9102"]
+    # Application actually does have units
+    indico_unit = app.units[0]  # type: ignore
+    prometheus_targets = [
+        f"localhost:{NGINX_PROMEXP_PORT}",
+        f"localhost:{STATSD_PROMEXP_PORT}",
+        f"localhost:{CELERY_PROMEXP_PORT}",
+    ]
     # Send request to /metrics for each target and check the response
     for target in prometheus_targets:
         cmd = f"curl http://{target}/metrics"
@@ -66,7 +77,8 @@ async def test_health_checks(app: Application):
     Assume that the charm has already been built and is running.
     """
     container_list = ["indico", "indico-nginx", "indico-celery"]
-    indico_unit = app.units[0]
+    # Application actually does have units
+    indico_unit = app.units[0]  # type: ignore
     for container in container_list:
         cmd = f"PEBBLE_SOCKET=/charm/containers/{container}/pebble.socket /charm/bin/pebble checks"
         action = await indico_unit.run(cmd)
