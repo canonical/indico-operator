@@ -57,3 +57,17 @@ async def app_add_relation(
 
     if not any(filter(lambda x: x.matches(relation_id), ops_test.model.relations)):  # type: ignore
         await ops_test.model.add_relation(app_name, relation_id)
+
+
+async def get_unit_address(ops_test: OpsTest, app_name: str) -> str:
+    """Get unit IP address.
+    Args:
+        ops_test: The ops test framework instance
+        app_name: The name of the app
+    Returns:
+        IP address of the first unit
+    """
+    assert ops_test.model
+    status = await ops_test.model.get_status()
+    unit = list(status.applications[app_name].units)[0]
+    return status["applications"][app_name]["units"][unit]["address"]

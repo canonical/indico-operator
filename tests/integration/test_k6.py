@@ -13,6 +13,8 @@ import pytest
 from ops.model import Application
 from pytest_operator.plugin import OpsTest
 
+from tests.integration.helpers import get_unit_address
+
 
 @pytest.mark.asyncio
 @pytest.mark.abort_on_fail
@@ -24,9 +26,7 @@ async def test_load(ops_test: OpsTest, app: Application):
 
     assert ops_test.model
 
-    status = await ops_test.model.get_status()
-    unit = list(status.applications[app.name].units)[0]
-    indico_address = status["applications"][app.name]["units"][unit]["address"]
+    indico_address = await get_unit_address(ops_test, app.name)
 
     tmpdir = tempfile.mkdtemp(dir=os.environ["TOX_WORK_DIR"])
     with open(
