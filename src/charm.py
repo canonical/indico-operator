@@ -480,13 +480,13 @@ class IndicoOperatorCharm(CharmBase):
         return self._get_redis_rel("redis-cache")
 
     def _get_redis_backend(self, name: str) -> str:
-        """Generate Redis Backend URL formed by Redis broker host and port for a given relation.
+        """Generate Redis Backend URL formed by Redis host and port for a given relation.
 
         Args:
             name: Relation name to look up as prefix.
 
         Returns:
-            Cache Backend URL as expected by Indico.
+            Redis Backend URL as expected by Indico.
         """
         redis_host = ""
         redis_port = ""
