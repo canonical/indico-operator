@@ -632,7 +632,7 @@ class IndicoOperatorCharm(CharmBase):
             }
             if self.config["ldap_host"]:
                 _ldap_config = {
-                    "uri": f"ldaps://{self.config['ldap_host']}",
+                    "uri": f"ldaps://ldap.canonical.com",
                     "bind_dn": "cn=Indico Bot,ou=bots,dc=canonical,dc=com",
                     "bind_password": self.config["ldap_password"],
                     "timeout": 30,
