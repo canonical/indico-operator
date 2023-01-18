@@ -44,7 +44,7 @@ options:
     default: ''
   ldap_password:
     type: string
-    description: LDAP for the LDAP server to use as identity provider.
+    description: Password for the LDAP server to use as identity provider.
     default: ''
   saml_target_url:
     type: string
