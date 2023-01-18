@@ -688,7 +688,7 @@ class IndicoOperatorCharm(CharmBase):
         return config
 
     def _is_ldap_host_valid(self) -> bool:
-        """Check if the LDAP hostis currently supported."""
+        """Check if the LDAP host is currently supported."""
         return not self.config["ldap_host"] or CANONICAL_LDAP_HOST == self.config["ldap_host"]
 
     def _is_saml_target_url_valid(self) -> bool:
