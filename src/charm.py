@@ -657,10 +657,9 @@ class IndicoOperatorCharm(CharmBase):
                             "affiliation": "o",
                             "first_name": "givenName",
                             "last_name": "sn",
-                            "phone": "mobile",
                         },
                         "trusted_email": True,
-                        "synced_fields": {"first_name", "last_name", "affiliation", "phone"},
+                        "synced_fields": {"first_name", "last_name", "affiliation"},
                     }
                 }
                 provider_map = {

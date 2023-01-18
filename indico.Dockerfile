@@ -32,8 +32,7 @@ RUN apt-get update \
     && addgroup --gid ${indico_gid} indico \
     && adduser --system --gid ${indico_gid} --uid ${indico_uid} --home /srv/indico indico \
     && /bin/bash -c "mkdir -p --mode=775 /srv/indico/{archive,cache,custom,etc,log,tmp}" \
-    && chown indico:indico /srv/indico  /srv/indico/cache /srv/indico/archive /srv/indico/custom \
-    /srv/indico/etc /srv/indico/.local /srv/indico/log /srv/indico/tmp
+    && /bin/bash -c "chown indico:indico /srv/indico /srv/indico/{archive,cache,custom,etc,log,tmp,.local}"
 
 USER indico
 RUN /srv/indico/.local/bin/indico setup create-symlinks /srv/indico
