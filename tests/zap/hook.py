@@ -1,8 +1,14 @@
-# pylint: skip-file
+# pylint: disable=missing-module-docstring,invalid-name,unused-argument
 import logging
 
 
 def zap_started(zap, target):
+    """Actions when starts
+
+    Args:
+        zap (ZAPv2): ZAPv2 instance
+        target (string): Target being scanned
+    """
     logging.info(
         zap.script.load(
             "Add Header Script",
@@ -15,5 +21,12 @@ def zap_started(zap, target):
 
 
 def zap_pre_shutdown(zap):
-    logging.info(f"script.listEngines: {zap.script.list_engines}")
-    logging.info(f"script.listScripts: {zap.script.list_scripts}")
+    """Actions before shutdown
+
+    Args:
+        zap (ZAPv2): ZAPv2 instance
+    Returns:
+        None
+    """
+    logging.info("script.listEngines: %s", zap.script.list_engines)
+    logging.info("script.listScripts: %s", zap.script.list_scripts)
