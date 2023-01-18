@@ -28,14 +28,14 @@ from ops.model import (
 )
 from ops.pebble import ExecError
 
+CANONICAL_LDAP_HOST = "ldap.canonical.com"
 CELERY_PROMEXP_PORT = "9808"
 DATABASE_NAME = "indico"
 INDICO_CUSTOMIZATION_DIR = "/srv/indico/custom"
-PORT = 8080
 NGINX_PROMEXP_PORT = "9113"
+PORT = 8080
 STATSD_PROMEXP_PORT = "9102"
 UBUNTU_SAML_URL = "https://login.ubuntu.com/saml/"
-CANONICAL_LDAP_HOST = "ldap.canonical.com"
 UWSGI_TOUCH_RELOAD = "/srv/indico/indico.wsgi"
 
 pgsql = ops.lib.use("pgsql", 1, "postgresql-charmers@lists.launchpad.net")
