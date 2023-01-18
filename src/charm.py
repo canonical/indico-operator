@@ -615,10 +615,10 @@ class IndicoOperatorCharm(CharmBase):
                     ),
                 },
             }
-            auth_providers = {"ubuntu": {"type": "saml", "saml_config": saml_config}}
+            auth_providers = {"saml_auth_provider": {"type": "saml", "saml_config": saml_config}}
             env_config["INDICO_AUTH_PROVIDERS"] = str(auth_providers)
             identity_providers = {
-                "ubuntu": {
+                "saml_identity_provider": {
                     "type": "saml",
                     "trusted_email": True,
                     "mapping": {
@@ -648,7 +648,7 @@ class IndicoOperatorCharm(CharmBase):
                     "ad_group_style": False,
                 }
                 identity_providers = {
-                    "ubuntu_ldap": {
+                    "ldap_identity_provider": {
                         "type": "ldap",
                         "title": "LDAP",
                         "ldap": _ldap_config,
@@ -663,8 +663,8 @@ class IndicoOperatorCharm(CharmBase):
                     }
                 }
                 provider_map = {
-                    "ubuntu": {
-                        "identity_provider": "ubuntu_ldap",
+                    "ldap_provider": {
+                        "identity_provider": "ldap_identity_provider",
                         "mapping": {"identifier": "username"},
                     }
                 }
