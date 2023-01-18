@@ -488,13 +488,13 @@ class IndicoOperatorCharm(CharmBase):
         Returns:
             Cache Backend URL as expected by Indico.
         """
-        broker_host = ""
-        broker_port = ""
-        if (broker_rel := self._get_redis_rel(name)) is not None:
-            broker_unit = next(unit for unit in broker_rel.data if unit.name.startswith(name))
-            broker_host = broker_rel.data[broker_unit].get("hostname")
-            broker_port = broker_rel.data[broker_unit].get("port")
-        return f"redis://{broker_host}:{broker_port}"
+        redis_host = ""
+        redis_port = ""
+        if (redis_rel := self._get_redis_rel(name)) is not None:
+            redis_unit = next(unit for unit in redis_rel.data if unit.name.startswith(name))
+            redis_host = redis_rel.data[redis_unit].get("hostname")
+            redis_port = redis_rel.data[redis_unit].get("port")
+        return f"redis://{redis_host}:{redis_port}"
 
     def _get_cache_backend(self) -> str:
         """Generate cache Backend URL formed by Redis broker host and port.
