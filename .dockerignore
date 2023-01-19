@@ -3,3 +3,4 @@
 
 # Include the files directory
 !files/*
+!tests/integration/files/*
