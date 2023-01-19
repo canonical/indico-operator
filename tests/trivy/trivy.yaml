@@ -1,1 +1,3 @@
 exit-code: 0
+scan:
+  offline-scan: true
