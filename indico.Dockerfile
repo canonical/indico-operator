@@ -43,7 +43,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 RUN apt-get update \
     && apt-get install -y \
         gettext \
-        git.core \
+        git-core \
         libxmlsec1-dev \
         locales \
         postgresql-client \
