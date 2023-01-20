@@ -47,7 +47,7 @@ RUN apt-get update \
         dvisvgm \
         fonts-droid-fallback \
         gettext \
-        git \
+        git-core \
         libc-devtools \
         libglib2.0-data \
         libldap-common \
