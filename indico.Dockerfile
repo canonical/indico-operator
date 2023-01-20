@@ -39,8 +39,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     LANG=C.UTF-8 \
     LC_ALL=C.UTF-8 \
     LC_LANG=C.UTF-8
-    
-RUN exit 
+
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         dbus \
