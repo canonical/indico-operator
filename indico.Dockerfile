@@ -39,11 +39,13 @@ ENV DEBIAN_FRONTEND=noninteractive \
     LANG=C.UTF-8 \
     LC_ALL=C.UTF-8 \
     LC_LANG=C.UTF-8
-
+    
+RUN exit 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         dbus \
         dvisvgm \
+        fonts-droid-fallback \
         gettext \
         git \
         libc-devtools \
@@ -54,9 +56,11 @@ RUN apt-get update \
         lmodern \
         locales \
         postgresql-client \
+        publicsuffix \
         python3-dev \
         python3-pip \
         shared-mime-info \
+        tex-gyre \
         texlive-fonts-recommended \
         texlive-plain-generic \
         texlive-xetex \
