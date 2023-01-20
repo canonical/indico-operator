@@ -16,7 +16,7 @@ RUN apt-get update \
     && adduser --system --gid ${nginx_gid} --uid ${nginx_uid} --home /srv/indico --disabled-login nginx
 USER nginx
 RUN python3 -m pip install --no-cache-dir --no-warn-script-location --prefer-binary \
-    indico~=3.2 \
+    indico==3.2 \
     indico-plugin-piwik \
     indico-plugin-storage-s3
 
