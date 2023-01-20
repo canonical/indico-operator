@@ -264,13 +264,13 @@ class TestCharm(unittest.TestCase):
             storage_dict["s3"],
         )
         auth_providers = literal_eval(updated_plan_env["INDICO_AUTH_PROVIDERS"])
-        self.assertEqual("saml", auth_providers["saml_auth_provider"]["type"])
+        self.assertEqual("saml", auth_providers["saml"]["type"])
         self.assertEqual(
             "https://example.local:8080",
-            auth_providers["saml_auth_provider"]["saml_config"]["sp"]["entityId"],
+            auth_providers["saml"]["saml_config"]["sp"]["entityId"],
         )
         identity_providers = literal_eval(updated_plan_env["INDICO_IDENTITY_PROVIDERS"])
-        self.assertEqual("ldap", identity_providers["ldap_identity_provider"]["type"])
+        self.assertEqual("ldap", identity_providers["ldap"]["type"])
         self.assertTrue("INDICO_PROVIDER_MAP" in updated_plan_env)
         mock_exec.assert_any_call(
             ["git", "clone", "https://example.com/custom", "."],
@@ -316,13 +316,13 @@ class TestCharm(unittest.TestCase):
             storage_dict["s3"],
         )
         auth_providers = literal_eval(updated_plan_env["INDICO_AUTH_PROVIDERS"])
-        self.assertEqual("saml", auth_providers["saml_auth_provider"]["type"])
+        self.assertEqual("saml", auth_providers["saml"]["type"])
         self.assertEqual(
             "https://example.local:8080",
-            auth_providers["saml_auth_provider"]["saml_config"]["sp"]["entityId"],
+            auth_providers["saml"]["saml_config"]["sp"]["entityId"],
         )
         identity_providers = literal_eval(updated_plan_env["INDICO_IDENTITY_PROVIDERS"])
-        self.assertEqual("ldap", identity_providers["ldap_identity_provider"]["type"])
+        self.assertEqual("ldap", identity_providers["ldap"]["type"])
         self.assertTrue("INDICO_PROVIDER_MAP" in updated_plan_env)
 
         self.harness.update_config({"site_url": "https://example.local"})
