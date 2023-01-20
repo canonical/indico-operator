@@ -41,27 +41,13 @@ ENV DEBIAN_FRONTEND=noninteractive \
     LC_LANG=C.UTF-8
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        dbus \
-        dvisvgm \
-        fonts-droid-fallback \
+    && apt-get install -y \
         gettext \
-        git-core \
-        libc-devtools \
-        libglib2.0-data \
-        libldap-common \
+        git.core \
         libxmlsec1-dev \
-        libsasl2-modules \
-        lmodern \
         locales \
         postgresql-client \
-        publicsuffix \
-        python3-dev \
         python3-pip \
-        shared-mime-info \
-        tex-gyre \
-        texlive-fonts-recommended \
-        texlive-plain-generic \
         texlive-xetex \
     && rm -rf /var/lib/apt/lists/* \
     && addgroup --gid ${indico_gid} indico \
