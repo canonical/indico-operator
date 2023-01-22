@@ -1,2 +1,24 @@
 refresh-external-resources:
   description: Pull changes from the customization repository, reload uWSGI and upgrade the external plugins
+add-user:
+  description: Add a user to Indico
+  params:
+    email:
+      type: string
+      description: User email.
+    password:
+      type: string
+      description: User password.
+    first-name:
+      type: string
+      description: User firstname.
+    last-name:
+      type: string
+      description: User lastname.
+    affiliation:
+      type: string
+      description: User affiliation.
+    is-admin:
+      type: boolean
+      description: Should the newly created user be an admin ?
+  required: [email, password]

@@ -44,6 +44,9 @@ RUN python3 -m pip install --no-cache-dir --no-warn-script-location --prefer-bin
     && /bin/bash -c "chown indico:indico /srv/indico /srv/indico/{archive,cache,custom,etc,log,tmp,.local}" \
     && /srv/indico/.local/bin/indico setup create-symlinks /srv/indico
 
+# Add "indico user autocreate" command
+COPY --chown=indico:indico files/src/indico/cli/user.py /srv/indico/.local/lib/python3.10/site-packages/indico/cli/user.py
+
 COPY --chown=indico:indico files/start-indico.sh /srv/indico/
 COPY --chown=indico:indico files/etc/indico/ /etc/
 
