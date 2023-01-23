@@ -13,7 +13,7 @@ from ops.model import WaitingStatus
 from pytest import Config, fixture
 from pytest_operator.plugin import OpsTest
 
-from tests.integration.helpers import app_add_relation, deploy_app, deploy_related_charm
+from tests.integration.helpers import deploy_app, deploy_related_charm, relate_app
 
 
 @fixture(scope="module", name="metadata")
@@ -84,10 +84,10 @@ async def app(
     expected_name = WaitingStatus.name  # type: ignore
     assert ops_test.model.applications[app_name].units[0].workload_status == expected_name
     await asyncio.gather(
-        app_add_relation(ops_test, app_name, "postgresql-k8s:db"),
-        app_add_relation(ops_test, app_name, "redis-broker:redis"),
-        app_add_relation(ops_test, app_name, "redis-cache:redis"),
-        app_add_relation(ops_test, app_name, "nginx-ingress-integrator"),
+        relate_app(ops_test, app_name, "postgresql-k8s:db"),
+        relate_app(ops_test, app_name, "redis-broker:redis"),
+        relate_app(ops_test, app_name, "redis-cache:redis"),
+        relate_app(ops_test, app_name, "nginx-ingress-integrator"),
     )
     await ops_test.model.wait_for_idle(status="active")
 

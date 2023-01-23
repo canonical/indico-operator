@@ -2,7 +2,10 @@
 # Copyright 2022 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-"""Helper functions for integration tests."""
+"""Helper functions for integration tests.
+
+These helper functions will deploy charms or add relations only if they do not already exists.
+"""
 
 from typing import Optional
 
@@ -27,15 +30,16 @@ async def deploy_related_charm(
     return ops_test.model.applications[instance_name]
 
 
-# pylint: disable=dangerous-default-value
 async def deploy_app(
     ops_test: OpsTest,
     app_name: str,
     series: str,
-    resources: dict = {},
+    resources: Optional[dict] = None,
 ) -> Application:
     """Deploy our main app, if it's not already deployed."""
     assert ops_test.model
+    if resources is None:
+        resources = {}
     if app_name not in ops_test.model.applications:
         charm = await ops_test.build_charm(".")
         application = await ops_test.model.deploy(
@@ -46,7 +50,7 @@ async def deploy_app(
     return ops_test.model.applications[app_name]
 
 
-async def app_add_relation(
+async def relate_app(
     ops_test: OpsTest,
     app_name: str,
     relation_id: str,
@@ -55,5 +59,5 @@ async def app_add_relation(
     assert ops_test.model
     assert ops_test.model.relations
 
-    if not any(filter(lambda x: x.matches(relation_id), ops_test.model.relations)):  # type: ignore
+    if not any(relation for relation in ops_test.model.relations if relation.matches(relation_id)):
         await ops_test.model.add_relation(app_name, relation_id)
