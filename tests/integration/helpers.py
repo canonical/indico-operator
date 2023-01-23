@@ -80,7 +80,7 @@ async def relate_app(
 
     Args:
         ops_test: The pytest operator plugin instance.
-        app_name: The application name that will be part of the realtion.
+        app_name: The application name that will be part of the relation.
         relation_id: The relation identifier.
 
     Returns:
