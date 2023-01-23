@@ -4,7 +4,15 @@ ARG indico_gid=2000
 ARG indico_uid=2000
 
 RUN apt-get update \
-    && apt-get install -y libldap2-dev libpq-dev libsasl2-dev libssl-dev libxmlsec1-dev pkg-config python3-pip \
+    && apt-get install -y --no-install-recommends \
+        build-essential \
+        libldap2-dev \
+        libpq-dev \
+        libsasl2-dev \
+        libxmlsec1-dev \
+        pkg-config \
+        python3-dev \
+        python3-pip \
     && rm -rf /var/lib/apt/lists/* \
     && addgroup --gid ${indico_gid} indico \
     && adduser --system --gid ${indico_gid} --uid ${indico_uid} --home /srv/indico indico
@@ -12,7 +20,13 @@ RUN apt-get update \
 ENV UWSGI_EMBED_PLUGINS=stats_pusher_statsd
 
 USER indico
-RUN python3 -m pip install --no-cache-dir --prefer-binary indico==3.2 indico-plugin-piwik indico-plugin-storage-s3 python-ldap python3-saml uwsgi
+RUN python3 -m pip install --no-cache-dir --no-warn-script-location --prefer-binary \
+    indico==3.2 \
+    indico-plugin-piwik \
+    indico-plugin-storage-s3 \
+    python-ldap \
+    python3-saml \
+    uwsgi
 
 FROM ubuntu:jammy as target
 
@@ -27,7 +41,14 @@ ENV DEBIAN_FRONTEND=noninteractive \
     LC_LANG=C.UTF-8
 
 RUN apt-get update \
-    && apt-get install -y gettext git libxmlsec1-dev locales postgresql-client python3-pip texlive-xetex \
+    && apt-get install -y \
+        gettext \
+        git-core \
+        libxmlsec1-dev \
+        locales \
+        postgresql-client \
+        python3-pip \
+        texlive-xetex \
     && rm -rf /var/lib/apt/lists/* \
     && addgroup --gid ${indico_gid} indico \
     && adduser --system --gid ${indico_gid} --uid ${indico_uid} --home /srv/indico indico \
