@@ -41,13 +41,18 @@ ENV DEBIAN_FRONTEND=noninteractive \
     LC_LANG=C.UTF-8
 
 RUN apt-get update \
-    && apt-get install -y \
-        gettext \
+    && apt-get install -y --no-install-recommends \
+        build-essential \
+        ca-certificates \
         git-core \
+        libglib2.0-data \
         libxmlsec1-dev \
-        locales \
         postgresql-client \
+        python3-dev \
         python3-pip \
+        shared-mime-info \
+        texlive-fonts-recommended \
+        texlive-plain-generic \
         texlive-xetex \
     && rm -rf /var/lib/apt/lists/* \
     && addgroup --gid ${indico_gid} indico \
