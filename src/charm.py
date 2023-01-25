@@ -925,8 +925,8 @@ class IndicoOperatorCharm(CharmBase):
 
         cmd = [
             "/srv/indico/.local/bin/indico",
-            "user",
             "autocreate",
+            "user",
             event.params["email"],
             event.params["password"],
         ]

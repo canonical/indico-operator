@@ -32,20 +32,21 @@ RUN apt-get update \
     && addgroup --gid ${indico_gid} indico \
     && adduser --system --gid ${indico_gid} --uid ${indico_uid} --home /srv/indico indico
 
+# Add our plugins
+COPY --chown=indico:indico plugins /srv/indico/plugins
+
 USER indico
 RUN python3 -m pip install --no-cache-dir --no-warn-script-location --prefer-binary \
     indico==3.2.0 \
     indico-plugin-piwik \
     indico-plugin-storage-s3 \
-    python-ldap \
     python3-saml \
+    python-ldap \
+    /srv/indico/plugins/autocreate \
     uwsgi \
     && /bin/bash -c "mkdir -p --mode=775 /srv/indico/{archive,cache,custom,etc,log,tmp}" \
     && /bin/bash -c "chown indico:indico /srv/indico /srv/indico/{archive,cache,custom,etc,log,tmp,.local}" \
     && /srv/indico/.local/bin/indico setup create-symlinks /srv/indico
-
-# Add "indico user autocreate" command
-COPY --chown=indico:indico files/src/indico/cli/user.py /srv/indico/.local/lib/python3.10/site-packages/indico/cli/user.py
 
 COPY --chown=indico:indico files/start-indico.sh /srv/indico/
 COPY --chown=indico:indico files/etc/indico/ /etc/
