@@ -29,11 +29,12 @@ from ops.model import (
 )
 from ops.pebble import ExecError
 
+CANONICAL_LDAP_HOST = "ldap.canonical.com"
 CELERY_PROMEXP_PORT = "9808"
 DATABASE_NAME = "indico"
 INDICO_CUSTOMIZATION_DIR = "/srv/indico/custom"
-PORT = 8080
 NGINX_PROMEXP_PORT = "9113"
+PORT = 8080
 STATSD_PROMEXP_PORT = "9102"
 UBUNTU_SAML_URL = "https://login.ubuntu.com/saml/"
 UWSGI_TOUCH_RELOAD = "/srv/indico/indico.wsgi"
@@ -307,7 +308,7 @@ class IndicoOperatorCharm(CharmBase):
                 "indico-celery": {
                     "override": "replace",
                     "summary": "Indico celery",
-                    "command": "/usr/local/bin/indico celery worker -B -E",
+                    "command": "/srv/indico/.local/bin/indico celery worker -B -E",
                     "startup": "enabled",
                     "user": "indico",
                     "environment": indico_env_config,
@@ -320,7 +321,7 @@ class IndicoOperatorCharm(CharmBase):
                     "period": "120s",
                     "timeout": "119s",
                     "exec": {
-                        "command": "/usr/local/bin/indico celery inspect ping",
+                        "command": "/srv/indico/.local/bin/indico celery inspect ping",
                         "environment": indico_env_config,
                     },
                 },
@@ -445,7 +446,7 @@ class IndicoOperatorCharm(CharmBase):
             },
         }
 
-    def _get_redis_rel(self, name) -> Optional[Relation]:
+    def _get_redis_rel(self, name: str) -> Optional[Relation]:
         """Get Redis relation.
 
         Args:
@@ -479,21 +480,55 @@ class IndicoOperatorCharm(CharmBase):
         """
         return self._get_redis_rel("redis-cache")
 
+    def _get_redis_backend(self, name: str) -> str:
+        """Generate Redis Backend URL formed by Redis host and port for a given relation.
+
+        Args:
+            name: Relation name to look up as prefix.
+
+        Returns:
+            Redis Backend URL as expected by Indico.
+        """
+        redis_host = ""
+        redis_port = ""
+        if (redis_rel := self._get_redis_rel(name)) is not None:
+            redis_unit = next(unit for unit in redis_rel.data if unit.name.startswith(name))
+            redis_host = redis_rel.data[redis_unit].get("hostname")
+            redis_port = redis_rel.data[redis_unit].get("port")
+        return f"redis://{redis_host}:{redis_port}"
+
+    def _get_cache_backend(self) -> str:
+        """Generate cache Backend URL formed by Redis broker host and port.
+
+        Returns:
+            Cache Backend URL as expected by Indico.
+        """
+        return self._get_redis_backend("redis-cache")
+
     def _get_celery_backend(self) -> str:
         """Generate Celery Backend URL formed by Redis broker host and port.
 
         Returns:
             Celery Backend URL as expected by Indico and Celery Prometheus Exporter.
         """
-        broker_host = ""
-        broker_port = ""
-        if (broker_rel := self._get_redis_broker_rel()) is not None:
-            broker_unit = next(
-                unit for unit in broker_rel.data if unit.name.startswith("redis-broker")
-            )
-            broker_host = broker_rel.data[broker_unit].get("hostname")
-            broker_port = broker_rel.data[broker_unit].get("port")
-        return f"redis://{broker_host}:{broker_port}"
+        return self._get_redis_backend("redis-broker")
+
+    def _get_installed_plugins(self, container: Container) -> List[str]:
+        """Return plugins currently installed.
+
+        Args:
+            container: Container for which the installed plugins will be retrieved.
+
+        Returns:
+            List containing the installed plugins.
+        """
+        process = container.exec(
+            ["/srv/indico/.local/bin/indico", "setup", "list-plugins"],
+            user="indico",
+        )
+        output, _ = process.wait_output()
+        # Parse output table, discarding header and footer rows and fetching first column value
+        return [item.split("|")[1].strip() for item in output.split("\n")[3:-2]]
 
     def _get_indico_secret_key_from_relation(self) -> Optional[str]:
         """Return the Indico secret key needed to deploy multiple Indico instances.
@@ -523,20 +558,8 @@ class IndicoOperatorCharm(CharmBase):
         Returns:
             Dictionary with the environment variables for the container.
         """
-        cache_host = ""
-        cache_port = ""
-        if (cache_rel := self._get_redis_cache_rel()) is not None:
-            cache_unit = next(
-                unit for unit in cache_rel.data if unit.name.startswith("redis-cache")
-            )
-            cache_host = cache_rel.data[cache_unit].get("hostname")
-            cache_port = cache_rel.data[cache_unit].get("port")
-
-        available_plugins = []
-        process = container.exec(["indico", "setup", "list-plugins"])
-        output, _ = process.wait_output()
-        # Parse output table, discarding header and footer rows and fetching first column value
-        available_plugins = [item.split("|")[1].strip() for item in output.split("\n")[3:-2]]
+        available_plugins = self._get_installed_plugins(container)
+        peer_relation = self.model.get_relation("indico-peers")
 
         env_config = {
             "ATTACHMENT_STORAGE": "default",
@@ -550,7 +573,7 @@ class IndicoOperatorCharm(CharmBase):
             "INDICO_NO_REPLY_EMAIL": self.config["indico_no_reply_email"],
             "INDICO_PUBLIC_SUPPORT_EMAIL": self.config["indico_public_support_email"],
             "INDICO_SUPPORT_EMAIL": self.config["indico_support_email"],
-            "REDIS_CACHE_URL": f"redis://{cache_host}:{cache_port}",
+            "REDIS_CACHE_URL": self._get_cache_backend(),
             "SECRET_KEY": self._get_indico_secret_key_from_relation(),
             "SERVICE_HOSTNAME": self._get_external_hostname(),
             "SERVICE_PORT": self._get_external_port(),
@@ -610,10 +633,10 @@ class IndicoOperatorCharm(CharmBase):
                     ),
                 },
             }
-            auth_providers = {"ubuntu": {"type": "saml", "saml_config": saml_config}}
+            auth_providers = {"saml": {"type": "saml", "saml_config": saml_config}}
             env_config["INDICO_AUTH_PROVIDERS"] = str(auth_providers)
             identity_providers = {
-                "ubuntu": {
+                "saml": {
                     "type": "saml",
                     "trusted_email": True,
                     "mapping": {
@@ -625,7 +648,47 @@ class IndicoOperatorCharm(CharmBase):
                     "identifier_field": "openid",
                 }
             }
+            if self.config["ldap_host"]:
+                _ldap_config = {
+                    "uri": "ldaps://ldap.canonical.com",
+                    "bind_dn": "cn=Indico Bot,ou=bots,dc=canonical,dc=com",
+                    "bind_password": self.config["ldap_password"],
+                    "timeout": 30,
+                    "verify_cert": True,
+                    "page_size": 1500,
+                    "uid": "launchpadID",
+                    "user_base": "ou=staff,dc=canonical,dc=com",
+                    "user_filter": "(objectClass=canonicalPerson)",
+                    "gid": "cn",
+                    "group_base": "dc=canonical,dc=com",
+                    "group_filter": "(objectClass=canonicalTeam)",
+                    "member_of_attr": "mozillaCustom1",
+                    "ad_group_style": False,
+                }
+                identity_providers = {
+                    "ldap": {
+                        "type": "ldap",
+                        "title": "LDAP",
+                        "ldap": _ldap_config,
+                        "mapping": {
+                            "email": "mail",
+                            "affiliation": "o",
+                            "first_name": "givenName",
+                            "last_name": "sn",
+                        },
+                        "trusted_email": True,
+                        "synced_fields": {"first_name", "last_name", "affiliation"},
+                    }
+                }
+                provider_map = {
+                    "saml": {
+                        "identity_provider": "ldap",
+                        "mapping": {"identifier": "username"},
+                    }
+                }
+                env_config["INDICO_PROVIDER_MAP"] = str(provider_map)
             env_config["INDICO_IDENTITY_PROVIDERS"] = str(identity_providers)
+
             env_config = {**env_config, **self._get_http_proxy_configuration()}
         return env_config
 
@@ -641,6 +704,10 @@ class IndicoOperatorCharm(CharmBase):
         if self.config["https_proxy"]:
             config["HTTPS_PROXY"] = self.config["https_proxy"]
         return config
+
+    def _is_ldap_host_valid(self) -> bool:
+        """Check if the LDAP host is currently supported."""
+        return not self.config["ldap_host"] or CANONICAL_LDAP_HOST == self.config["ldap_host"]
 
     def _is_saml_target_url_valid(self) -> bool:
         """Check if the target SAML URL is currently supported."""
@@ -661,6 +728,15 @@ class IndicoOperatorCharm(CharmBase):
             self.unit.status = BlockedStatus(
                 f"Invalid saml_target_url option provided. Only {UBUNTU_SAML_URL} is available."
             )
+            event.defer()
+            return
+        if not self._is_ldap_host_valid():
+            self.unit.status = BlockedStatus(
+                f"Invalid ldap_host option provided. Only {CANONICAL_LDAP_HOST} is available."
+            )
+            event.defer()
+            return
+        if not self._are_relations_ready(event):
             event.defer()
             return
         if not self._are_pebble_instances_ready():
@@ -714,7 +790,10 @@ class IndicoOperatorCharm(CharmBase):
             The indico version installed.
         """
         container = self.unit.get_container("indico")
-        process = container.exec(["/usr/local/bin/indico", "--version"])
+        process = container.exec(
+            ["/srv/indico/.local/bin/indico", "--version"],
+            user="indico",
+        )
         version_string, _ = process.wait_output()
         version = findall("[0-9.]+", version_string)
         return version[0] if version else ""

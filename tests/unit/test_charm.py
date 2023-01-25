@@ -275,6 +275,7 @@ class TestCharm(unittest.TestCase):
                 "indico_support_email": "example@email.local",
                 "indico_public_support_email": "public@email.local",
                 "indico_no_reply_email": "noreply@email.local",
+                "ldap_host": "ldap.canonical.com",
                 "saml_target_url": "https://login.ubuntu.com/saml/",
                 "site_url": "https://example.local:8080",
                 "smtp_server": "localhost",
@@ -311,6 +312,15 @@ class TestCharm(unittest.TestCase):
             "s3:bucket=test-bucket,access_key=12345,secret_key=topsecret",
             storage_dict["s3"],
         )
+        auth_providers = literal_eval(updated_plan_env["INDICO_AUTH_PROVIDERS"])
+        self.assertEqual("saml", auth_providers["saml"]["type"])
+        self.assertEqual(
+            "https://example.local:8080",
+            auth_providers["saml"]["saml_config"]["sp"]["entityId"],
+        )
+        identity_providers = literal_eval(updated_plan_env["INDICO_IDENTITY_PROVIDERS"])
+        self.assertEqual("ldap", identity_providers["ldap"]["type"])
+        self.assertTrue("INDICO_PROVIDER_MAP" in updated_plan_env)
         mock_exec.assert_any_call(
             ["git", "clone", "https://example.com/custom", "."],
             working_dir="/srv/indico/custom",
@@ -355,13 +365,14 @@ class TestCharm(unittest.TestCase):
             storage_dict["s3"],
         )
         auth_providers = literal_eval(updated_plan_env["INDICO_AUTH_PROVIDERS"])
-        self.assertEqual("saml", auth_providers["ubuntu"]["type"])
+        self.assertEqual("saml", auth_providers["saml"]["type"])
         self.assertEqual(
             "https://example.local:8080",
-            auth_providers["ubuntu"]["saml_config"]["sp"]["entityId"],
+            auth_providers["saml"]["saml_config"]["sp"]["entityId"],
         )
         identity_providers = literal_eval(updated_plan_env["INDICO_IDENTITY_PROVIDERS"])
-        self.assertEqual("saml", identity_providers["ubuntu"]["type"])
+        self.assertEqual("ldap", identity_providers["ldap"]["type"])
+        self.assertTrue("INDICO_PROVIDER_MAP" in updated_plan_env)
 
         self.harness.update_config({"site_url": "https://example.local"})
         self.assertEqual(
@@ -460,6 +471,28 @@ class TestCharm(unittest.TestCase):
             BlockedStatus.name,
         )
         self.assertTrue("Invalid saml_target_url option" in self.harness.model.unit.status.message)
+
+    @patch.object(Container, "exec")
+    def test_config_changed_when_ldap_host_invalid(self, mock_exec):
+        """
+        arrange: charm created and relations established
+        act: trigger an invalid LDAP host configuration change for the charm
+        assert: the unit reaches blocked status
+        """
+        mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=("", None)))
+        self.set_up_all_relations()
+        self.harness.set_leader(True)
+
+        self.harness.container_pebble_ready("indico")
+        self.harness.container_pebble_ready("indico-celery")
+        self.harness.container_pebble_ready("indico-nginx")
+
+        self.harness.update_config({"ldap_host": "ldap.example.com"})
+        self.assertEqual(
+            self.harness.model.unit.status.name,
+            BlockedStatus.name,
+        )
+        self.assertTrue("Invalid ldap_host option" in self.harness.model.unit.status.message)
 
     def test_pebble_ready_when_relations_not_ready(self):
         """
