@@ -19,4 +19,4 @@ jobs:
       zap-target: localhost
       zap-target-port: 80
       trivy-fs-enabled: true
-      trivy-image-config: "tests/trivy/trivy.yaml"
+      trivy-image-config: "trivy.yaml"
