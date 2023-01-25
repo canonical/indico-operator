@@ -559,7 +559,6 @@ class IndicoOperatorCharm(CharmBase):
             Dictionary with the environment variables for the container.
         """
         available_plugins = self._get_installed_plugins(container)
-        peer_relation = self.model.get_relation("indico-peers")
 
         env_config = {
             "ATTACHMENT_STORAGE": "default",
