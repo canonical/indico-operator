@@ -10,6 +10,7 @@ import unittest
 from ast import literal_eval
 from unittest.mock import MagicMock, patch
 
+from ops.jujuversion import JujuVersion
 from ops.model import ActiveStatus, BlockedStatus, Container, WaitingStatus
 from ops.testing import Harness
 
@@ -100,15 +101,16 @@ class TestCharm(unittest.TestCase):
         self.harness.container_pebble_ready("indico-nginx")
         self.assertEqual(self.harness.model.unit.status, ActiveStatus())
 
+    @patch.object(JujuVersion, "from_environ")
     @patch.object(Container, "exec")
-    def test_indico_pebble_ready(self, mock_exec):
+    def test_indico_pebble_ready_when_secrets_not_enabled(self, mock_exec, mock_juju_env):
         """
-        arrange: charm created and relations established
+        arrange: charm created, secrets not supported and relations established
         act: trigger container pebble ready event for the Indico container
         assert: the container and the service are running and properly configured
         """
+        mock_juju_env.return_value = MagicMock(has_secrets=False)
         mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=("", None)))
-
         self.set_up_all_relations()
         self.harness.set_leader(True)
 
@@ -125,6 +127,53 @@ class TestCharm(unittest.TestCase):
             ),
             updated_plan_env["SECRET_KEY"],
         )
+        self.assertEqual("indico.local", updated_plan_env["SERVICE_HOSTNAME"])
+        self.assertIsNone(updated_plan_env["SERVICE_PORT"])
+        self.assertEqual("redis://cache-host:1011", updated_plan_env["REDIS_CACHE_URL"])
+        self.assertFalse(updated_plan_env["ENABLE_ROOMBOOKING"])
+        self.assertEqual("support-tech@mydomain.local", updated_plan_env["INDICO_SUPPORT_EMAIL"])
+        self.assertEqual("support@mydomain.local", updated_plan_env["INDICO_PUBLIC_SUPPORT_EMAIL"])
+        self.assertEqual("noreply@mydomain.local", updated_plan_env["INDICO_NO_REPLY_EMAIL"])
+        self.assertEqual("", updated_plan_env["SMTP_SERVER"])
+        self.assertEqual(25, updated_plan_env["SMTP_PORT"])
+        self.assertEqual("", updated_plan_env["SMTP_LOGIN"])
+        self.assertEqual("", updated_plan_env["SMTP_PASSWORD"])
+        self.assertTrue(updated_plan_env["SMTP_USE_TLS"])
+        self.assertFalse(updated_plan_env["CUSTOMIZATION_DEBUG"])
+        self.assertEqual("default", updated_plan_env["ATTACHMENT_STORAGE"])
+        storage_dict = literal_eval(updated_plan_env["STORAGE_DICT"])
+        self.assertEqual("fs:/srv/indico/archive", storage_dict["default"])
+
+        service = self.harness.model.unit.get_container("indico").get_service("indico")
+        self.assertTrue(service.is_running())
+        self.assertEqual(self.harness.model.unit.status, WaitingStatus("Waiting for pebble"))
+
+    @patch.object(JujuVersion, "from_environ")
+    @patch.object(Container, "exec")
+    def test_indico_pebble_ready_when_secrets_enabled(self, mock_exec, mock_juju_env):
+        """
+        arrange: charm created, secrets supported and relations established
+        act: trigger container pebble ready event for the Indico container
+        assert: the container and the service are running and properly configured
+        """
+        mock_juju_env.return_value = MagicMock(has_secrets=True)
+        mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=("", None)))
+        self.set_up_all_relations()
+        self.harness.set_leader(True)
+
+        self.harness.container_pebble_ready("indico")
+
+        updated_plan = self.harness.get_container_pebble_plan("indico").to_dict()
+        updated_plan_env = updated_plan["services"]["indico"]["environment"]
+        self.assertEqual("db-uri", updated_plan_env["INDICO_DB_URI"])
+        self.assertEqual("redis://broker-host:1010", updated_plan_env["CELERY_BROKER"])
+        peer_relation = self.harness.model.get_relation("indico-peers")
+        secret_id = self.harness.get_relation_data(
+            peer_relation.id, self.harness.charm.app.name
+        ).get("secret-id")
+        secret = self.harness.model.get_secret(id=secret_id)
+        secret_value = secret.get_content().get("secret-key")
+        self.assertEqual(secret_value, updated_plan_env["SECRET_KEY"])
         self.assertEqual("indico.local", updated_plan_env["SERVICE_HOSTNAME"])
         self.assertIsNone(updated_plan_env["SERVICE_PORT"])
         self.assertEqual("redis://cache-host:1011", updated_plan_env["REDIS_CACHE_URL"])
@@ -459,12 +508,14 @@ class TestCharm(unittest.TestCase):
             self.harness.model.unit.status, WaitingStatus("Waiting for redis-broker availability")
         )
 
-    def test_on_leader_elected(self):
+    @patch.object(JujuVersion, "from_environ")
+    def test_on_leader_elected_when_secrets_not_supported(self, mock_juju_env):
         """
-        arrange: charm created
+        arrange: charm created and secrets not supported
         act: trigger the leader elected event
         assert: the peer relation containers the secret-key
         """
+        mock_juju_env.return_value = MagicMock(has_secrets=False)
         rel_id = self.harness.add_relation("indico-peers", self.harness.charm.app.name)
         self.harness.set_leader(True)
         secret_key = self.harness.get_relation_data(rel_id, self.harness.charm.app.name).get(
@@ -476,6 +527,26 @@ class TestCharm(unittest.TestCase):
         self.assertEqual(
             secret_key,
             self.harness.get_relation_data(rel_id, self.harness.charm.app.name).get("secret-key"),
+        )
+
+    @patch.object(JujuVersion, "from_environ")
+    def test_on_leader_elected_when_secrets_supported(self, mock_juju_env):
+        """
+        arrange: charm created and secrets supported
+        act: trigger the leader elected event
+        assert: the peer relation containers the secret-key
+        """
+        mock_juju_env.return_value = MagicMock(has_secrets=True)
+        rel_id = self.harness.add_relation("indico-peers", self.harness.charm.app.name)
+        self.harness.set_leader(True)
+        secret_id = self.harness.get_relation_data(rel_id, self.harness.charm.app.name).get(
+            "secret-id"
+        )
+        self.harness.set_leader(False)
+        self.harness.set_leader(True)
+        self.assertEqual(
+            secret_id,
+            self.harness.get_relation_data(rel_id, self.harness.charm.app.name).get("secret-id"),
         )
 
     def test_db_relations(self):

@@ -11,6 +11,7 @@ RUN apt-get update \
         libpq-dev \
         python3-dev \
         python3-pip \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
     && addgroup --gid ${nginx_gid} nginx \
     && adduser --system --gid ${nginx_gid} --uid ${nginx_uid} --home /srv/indico --disabled-login nginx
@@ -24,6 +25,7 @@ FROM ubuntu:jammy
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends nginx \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /srv/indico/.local/lib/python3.10/site-packages/indico/web/static /srv/indico/static

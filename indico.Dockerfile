@@ -13,6 +13,7 @@ RUN apt-get update \
         pkg-config \
         python3-dev \
         python3-pip \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
     && addgroup --gid ${indico_gid} indico \
     && adduser --system --gid ${indico_gid} --uid ${indico_uid} --home /srv/indico indico
@@ -55,6 +56,7 @@ RUN apt-get update \
         texlive-fonts-recommended \
         texlive-plain-generic \
         texlive-xetex \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
     && addgroup --gid ${indico_gid} indico \
     && adduser --system --gid ${indico_gid} --uid ${indico_uid} --home /srv/indico indico \
