@@ -8,10 +8,12 @@
 import typing
 import unittest
 from ast import literal_eval
-from unittest.mock import MagicMock, patch
+from unittest.mock import DEFAULT, MagicMock, patch
 
 from ops.jujuversion import JujuVersion
+from ops.charm import ActionEvent
 from ops.model import ActiveStatus, BlockedStatus, Container, WaitingStatus
+from ops.pebble import ExecError
 from ops.testing import Harness
 
 from tests.unit._patched_charm import IndicoOperatorCharm, pgsql_patch
@@ -654,3 +656,147 @@ class TestCharm(unittest.TestCase):
         broker_relation = self.harness.model.get_relation("redis", broker_relation_id)
         broker_unit = self.harness.model.get_unit("redis-broker/0")
         broker_relation.data = {broker_unit: {"hostname": "broker-host", "port": 1010}}
+
+    @patch.object(Container, "exec")
+    def test_add_user(self, mock_exec):
+        """
+        arrange: an email and a password
+        act: when the _on_add_user_action method is executed
+        assert: the indico command to add the user is executed with the appropriate parameters.
+        """
+
+        mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=("", None)))
+
+        self.set_up_all_relations()
+        self.harness.set_leader(True)
+
+        self.harness.container_pebble_ready("celery-prometheus-exporter")
+        self.harness.container_pebble_ready("statsd-prometheus-exporter")
+        self.harness.container_pebble_ready("nginx-prometheus-exporter")
+        self.harness.container_pebble_ready("indico")
+        self.harness.container_pebble_ready("indico-celery")
+        self.harness.container_pebble_ready("indico-nginx")
+        self.harness.disable_hooks()
+
+        container = self.harness.model.unit.get_container("indico")
+
+        charm: IndicoOperatorCharm = typing.cast(IndicoOperatorCharm, self.harness.charm)
+
+        email = "sample@email.com"
+        password = "somepassword"  # nosec
+        first_name = "some_firstname"
+        last_name = "some_lastname"
+        affiliation = "some_affiliation"
+        event = MagicMock(spec=ActionEvent)
+        event.params = {
+            "email": email,
+            "password": password,
+            "first-name": first_name,
+            "last-name": last_name,
+            "affiliation": affiliation,
+            "is-admin": True,
+        }
+
+        def event_store_failure(arg):
+            event.fail_message = arg
+
+        event.fail = event_store_failure
+
+        indico_env_config = charm._get_indico_env_config_str(container)
+        cmd = [
+            "/srv/indico/.local/bin/indico",
+            "user",
+            "autocreate",
+            email,
+            password,
+            f"--first-name='{first_name}'",
+            f"--last-name='{last_name}'",
+            f"--affiliation='{affiliation}'",
+            "--admin",
+        ]
+
+        charm._add_user_action(event)
+
+        mock_exec.assert_any_call(
+            cmd,
+            user="indico",
+            working_dir="/srv/indico",
+            environment=indico_env_config,
+        )
+
+    @patch.object(Container, "exec")
+    def test_add_user_fail(self, mock_exec):
+        """
+        arrange: an email and a password
+        act: when the _on_add_user_action method is executed
+        assert: the indico command to add the user is executed with the appropriate parameters.
+        """
+
+        mock_wo = MagicMock(
+            return_value=("", None),
+        )
+
+        # I'm disabling unused-argument here because some could be passed to the mock
+        def mock_wo_side_effect(*args, **kwargs):  # pylint: disable=unused-argument
+            if isinstance(mock_wo.cmd, list) and "autocreate" in mock_wo.cmd:
+                raise ExecError(command=mock_wo.cmd, exit_code=42, stdout="CRASH", stderr="")
+            return DEFAULT
+
+        mock_wo.side_effect = mock_wo_side_effect
+
+        # I'm disabling unused-argument here because some could be passed to the mock
+        def mock_exec_side_effect(*args, **kwargs):  # pylint: disable=unused-argument
+            mock_wo.cmd = args[0]
+            return DEFAULT
+
+        mock_exec.side_effect = mock_exec_side_effect
+        mock_exec.return_value = MagicMock(
+            wait_output=mock_wo,
+        )
+
+        self.set_up_all_relations()
+        self.harness.set_leader(True)
+
+        self.harness.container_pebble_ready("celery-prometheus-exporter")
+        self.harness.container_pebble_ready("statsd-prometheus-exporter")
+        self.harness.container_pebble_ready("nginx-prometheus-exporter")
+        self.harness.container_pebble_ready("indico")
+        self.harness.container_pebble_ready("indico-celery")
+        self.harness.container_pebble_ready("indico-nginx")
+        self.harness.disable_hooks()
+
+        container = self.harness.model.unit.get_container("indico")
+
+        charm: IndicoOperatorCharm = typing.cast(IndicoOperatorCharm, self.harness.charm)
+
+        email = "sample@email.com"
+        password = "somepassword"  # nosec
+        event = MagicMock(spec=ActionEvent)
+        event.params = {
+            "email": email,
+            "password": password,
+        }
+
+        def event_store_failure(arg):
+            event.fail_message = arg
+
+        event.fail = event_store_failure
+
+        indico_env_config = charm._get_indico_env_config_str(container)
+        cmd = [
+            "/srv/indico/.local/bin/indico",
+            "user",
+            "autocreate",
+            email,
+            password,
+        ]
+
+        charm._add_user_action(event)
+        assert event.fail_message == "Failed to create user sample@email.com: CRASH"
+
+        mock_exec.assert_any_call(
+            cmd,
+            user="indico",
+            working_dir="/srv/indico",
+            environment=indico_env_config,
+        )
