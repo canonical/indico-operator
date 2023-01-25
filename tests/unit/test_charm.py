@@ -705,8 +705,8 @@ class TestCharm(unittest.TestCase):
         indico_env_config = charm._get_indico_env_config_str(container)
         cmd = [
             "/srv/indico/.local/bin/indico",
-            "user",
             "autocreate",
+            "user",
             email,
             password,
             f"--first-name='{first_name}'",
@@ -785,8 +785,8 @@ class TestCharm(unittest.TestCase):
         indico_env_config = charm._get_indico_env_config_str(container)
         cmd = [
             "/srv/indico/.local/bin/indico",
-            "user",
             "autocreate",
+            "user",
             email,
             password,
         ]
