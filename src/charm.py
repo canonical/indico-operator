@@ -537,9 +537,7 @@ class IndicoOperatorCharm(CharmBase):
             Indico secret key.
         """
         peer_relation = self.model.get_relation("indico-peers")
-        if not peer_relation:
-            return None
-        secret_value = None
+        assert peer_relation is not None
         if not self._has_secrets():
             secret_value = peer_relation.data[self.app].get("secret-key")
         else:
