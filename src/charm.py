@@ -537,7 +537,7 @@ class IndicoOperatorCharm(CharmBase):
             Indico secret key.
         """
         peer_relation = self.model.get_relation("indico-peers")
-        assert peer_relation is not None
+        assert peer_relation is not None  # nosec
         if not self._has_secrets():
             secret_value = peer_relation.data[self.app].get("secret-key")
         else:
@@ -592,7 +592,7 @@ class IndicoOperatorCharm(CharmBase):
         # Piwik settings can't be configured using the config file for the time being:
         # https://github.com/indico/indico-plugins/issues/182
         if self.config["s3_storage"]:
-            env_config["STORAGE_DICT"].update({"s3": self.config["s3_storage"]})
+            env_config["STORAGE_DICT"].update({"s3": self.config["s3_storage"]})  # type:ignore
             env_config["ATTACHMENT_STORAGE"] = "s3"
         env_config["STORAGE_DICT"] = str(env_config["STORAGE_DICT"])
 
