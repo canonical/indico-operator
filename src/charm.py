@@ -918,7 +918,7 @@ class IndicoOperatorCharm(CharmBase):
         """Add a new user to Indico.
 
         Args:
-            event: Event triggering the add_user action.
+            event: Event triggered by the add_user action
         """
         container = self.unit.get_container("indico")
         indico_env_config = self._get_indico_env_config_str(container)
