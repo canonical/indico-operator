@@ -1,4 +1,3 @@
-import sys
 import click
 from indico.cli.core import cli_group
 from indico.core.db import db
