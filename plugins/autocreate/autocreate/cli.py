@@ -1,3 +1,4 @@
+import sys
 import click
 from indico.cli.core import cli_group
 from indico.core.db import db
@@ -18,10 +19,10 @@ def cli():
 @click.option("--last-name", help="Last name of the user", type=str)
 @click.option("--affiliation", help="Affiliation of the user", type=str)
 @click.option("--admin/--no-admin", "grant_admin", is_flag=True, help="Grant admin rights")
-def autocreate(email, password, first_name, last_name, affiliation, grant_admin):
+@click.pass_context
+def autocreate(ctx, email, password, first_name, last_name, affiliation, grant_admin):
     """Create a new user non-interactively."""
 
-    user_type = "user" if not grant_admin else "admin"
     email = email.lower()
     username = email
     first_name = first_name or "unknown"
@@ -29,13 +30,16 @@ def autocreate(email, password, first_name, last_name, affiliation, grant_admin)
     affiliation = affiliation or "unknown"
 
     if User.query.filter(User.all_emails == email, ~User.is_deleted, ~User.is_pending).has_rows():
-        return
+        click.secho('This user does already exist', fg='red')
+        ctx.exit(1)
 
     if password == "":
-        return
+        click.secho('Password should not be empty', fg='red')
+        ctx.exit(1)
 
     if Identity.query.filter_by(provider="indico", identifier=username).has_rows():
         click.secho("Username already exists", fg="red")
+        ctx.exit(1)
 
     identity = Identity(provider="indico", identifier=username, password=password)
     user = create_user(
