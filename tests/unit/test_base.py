@@ -6,6 +6,7 @@
 # pylint:disable=protected-access
 
 import unittest
+from typing import List
 
 from ops.testing import Harness
 
@@ -50,7 +51,7 @@ class TestBase(unittest.TestCase):
         broker_unit = self.harness.model.get_unit("redis-broker/0")
         broker_relation.data = {broker_unit: {"hostname": "broker-host", "port": 1010}}
 
-    def is_ready(self, apps: list[str]):
+    def is_ready(self, apps: List[str]):
         """Waiting for all applications to be ready."""
         for app_name in apps:
             self.harness.container_pebble_ready(app_name)
