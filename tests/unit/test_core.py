@@ -5,33 +5,17 @@
 
 # pylint:disable=protected-access
 
-import typing
-import unittest
 from ast import literal_eval
-from unittest.mock import DEFAULT, MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 from ops.jujuversion import JujuVersion
-from ops.charm import ActionEvent
 from ops.model import ActiveStatus, BlockedStatus, Container, WaitingStatus
-from ops.pebble import ExecError
-from ops.testing import Harness
 
-from tests.unit._patched_charm import IndicoOperatorCharm, pgsql_patch
+from tests.unit.test_base import TestBase
 
 
-class TestCharm(unittest.TestCase):
+class TestCore(TestBase):
     """Indico charm unit tests."""
-
-    def setUp(self):
-        """Set up test environment."""
-        pgsql_patch.start()
-        self.harness = Harness(IndicoOperatorCharm)
-        self.addCleanup(self.harness.cleanup)
-        self.harness.begin()
-
-    def tearDown(self):
-        """Tear down test environment."""
-        pgsql_patch.stop()
 
     def test_missing_relations(self):
         """
@@ -260,12 +244,17 @@ class TestCharm(unittest.TestCase):
         self.set_up_all_relations()
         self.harness.set_leader(True)
 
-        self.harness.container_pebble_ready("celery-prometheus-exporter")
-        self.harness.container_pebble_ready("statsd-prometheus-exporter")
-        self.harness.container_pebble_ready("nginx-prometheus-exporter")
-        self.harness.container_pebble_ready("indico")
-        self.harness.container_pebble_ready("indico-celery")
-        self.harness.container_pebble_ready("indico-nginx")
+        # pylint: disable=duplicate-code
+        self.is_ready(
+            [
+                "celery-prometheus-exporter",
+                "statsd-prometheus-exporter",
+                "nginx-prometheus-exporter",
+                "indico",
+                "indico-celery",
+                "indico-nginx",
+            ]
+        )
         self.harness.update_config(
             {
                 "customization_debug": True,
@@ -393,12 +382,17 @@ class TestCharm(unittest.TestCase):
         self.set_up_all_relations()
         self.harness.set_leader(True)
 
-        self.harness.container_pebble_ready("celery-prometheus-exporter")
-        self.harness.container_pebble_ready("statsd-prometheus-exporter")
-        self.harness.container_pebble_ready("nginx-prometheus-exporter")
-        self.harness.container_pebble_ready("indico")
-        self.harness.container_pebble_ready("indico-celery")
-        self.harness.container_pebble_ready("indico-nginx")
+        # pylint: disable=duplicate-code
+        self.is_ready(
+            [
+                "celery-prometheus-exporter",
+                "statsd-prometheus-exporter",
+                "nginx-prometheus-exporter",
+                "indico",
+                "indico-celery",
+                "indico-nginx",
+            ]
+        )
         self.harness.update_config({"site_url": "example.local"})
         self.assertEqual(
             self.harness.model.unit.status,
@@ -417,12 +411,17 @@ class TestCharm(unittest.TestCase):
         self.set_up_all_relations()
         self.harness.set_leader(True)
 
-        self.harness.container_pebble_ready("celery-prometheus-exporter")
-        self.harness.container_pebble_ready("statsd-prometheus-exporter")
-        self.harness.container_pebble_ready("nginx-prometheus-exporter")
-        self.harness.container_pebble_ready("indico")
-        self.harness.container_pebble_ready("indico-celery")
-        self.harness.container_pebble_ready("indico-nginx")
+        # pylint: disable=duplicate-code
+        self.is_ready(
+            [
+                "celery-prometheus-exporter",
+                "statsd-prometheus-exporter",
+                "nginx-prometheus-exporter",
+                "indico",
+                "indico-celery",
+                "indico-nginx",
+            ]
+        )
         self.harness.update_config(
             {
                 "customization_sources_url": "https://example.com/custom",
@@ -463,9 +462,13 @@ class TestCharm(unittest.TestCase):
         self.set_up_all_relations()
         self.harness.set_leader(True)
 
-        self.harness.container_pebble_ready("indico")
-        self.harness.container_pebble_ready("indico-celery")
-        self.harness.container_pebble_ready("indico-nginx")
+        self.is_ready(
+            [
+                "indico",
+                "indico-celery",
+                "indico-nginx",
+            ]
+        )
 
         self.harness.update_config({"saml_target_url": "sample.com/saml"})
         self.assertEqual(
@@ -485,9 +488,13 @@ class TestCharm(unittest.TestCase):
         self.set_up_all_relations()
         self.harness.set_leader(True)
 
-        self.harness.container_pebble_ready("indico")
-        self.harness.container_pebble_ready("indico-celery")
-        self.harness.container_pebble_ready("indico-nginx")
+        self.is_ready(
+            [
+                "indico",
+                "indico-celery",
+                "indico-nginx",
+            ]
+        )
 
         self.harness.update_config({"ldap_host": "ldap.example.com"})
         self.assertEqual(
@@ -502,9 +509,13 @@ class TestCharm(unittest.TestCase):
         act: trigger the pebble ready events
         assert: the unit reaches waiting status
         """
-        self.harness.container_pebble_ready("indico")
-        self.harness.container_pebble_ready("indico-celery")
-        self.harness.container_pebble_ready("indico-nginx")
+        self.is_ready(
+            [
+                "indico",
+                "indico-celery",
+                "indico-nginx",
+            ]
+        )
 
         self.assertEqual(
             self.harness.model.unit.status, WaitingStatus("Waiting for redis-broker availability")
@@ -593,210 +604,4 @@ class TestCharm(unittest.TestCase):
             self.harness.charm._stored.db_uri,
             "postgresql://new_master",
             "database connection string should change after database master changed",
-        )
-
-    @patch.object(Container, "exec")
-    def test_refresh_external_resources_when_customization_and_plugins_set(self, mock_exec):
-        """
-        arrange: charm created and relations established
-        act: configure the external resources and trigger the refresh action
-        assert: the customization sources are pulled and the plugins upgraded
-        """
-        mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=("", None)))
-
-        self.harness.disable_hooks()
-        self.set_up_all_relations()
-        self.harness.set_leader(True)
-
-        self.harness.container_pebble_ready("nginx-prometheus-exporter")
-        self.harness.container_pebble_ready("indico")
-        self.harness.container_pebble_ready("indico-celery")
-        self.harness.container_pebble_ready("indico-nginx")
-        self.harness.update_config(
-            {
-                "customization_sources_url": "https://example.com/custom",
-                "external_plugins": "git+https://example.git/#subdirectory=themes_cern",
-            }
-        )
-
-        charm: IndicoOperatorCharm = typing.cast(IndicoOperatorCharm, self.harness.charm)
-        charm._refresh_external_resources(MagicMock())
-
-        mock_exec.assert_any_call(
-            ["git", "pull"],
-            working_dir="/srv/indico/custom",
-            user="indico",
-            environment={},
-        )
-        mock_exec.assert_any_call(
-            ["pip", "install", "--upgrade", "git+https://example.git/#subdirectory=themes_cern"],
-            environment={},
-        )
-
-    def set_up_all_relations(self):
-        """Set up all relations for the charm."""
-        self.harness.charm._stored.db_uri = "db-uri"
-        self.db_relation_id = self.harness.add_relation(  # pylint: disable=W0201
-            "db", "postgresql"
-        )
-        self.harness.add_relation_unit(self.db_relation_id, "postgresql/0")
-
-        self.harness.add_relation("indico-peers", self.harness.charm.app.name)
-
-        broker_relation_id = self.harness.add_relation("redis", "redis-broker")
-        self.harness.add_relation_unit(broker_relation_id, "redis-broker/0")
-
-        cache_relation_id = self.harness.add_relation("redis", "redis-cache")
-        self.harness.add_relation_unit(cache_relation_id, "redis-cache/0")
-
-        cache_relation = self.harness.model.get_relation("redis", cache_relation_id)
-        cache_unit = self.harness.model.get_unit("redis-cache/0")
-        cache_relation.data = {cache_unit: {"hostname": "cache-host", "port": 1011}}
-
-        broker_relation = self.harness.model.get_relation("redis", broker_relation_id)
-        broker_unit = self.harness.model.get_unit("redis-broker/0")
-        broker_relation.data = {broker_unit: {"hostname": "broker-host", "port": 1010}}
-
-    @patch.object(Container, "exec")
-    def test_add_user(self, mock_exec):
-        """
-        arrange: an email and a password
-        act: when the _on_add_user_action method is executed
-        assert: the indico command to add the user is executed with the appropriate parameters.
-        """
-
-        mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=("", None)))
-
-        self.set_up_all_relations()
-        self.harness.set_leader(True)
-
-        self.harness.container_pebble_ready("celery-prometheus-exporter")
-        self.harness.container_pebble_ready("statsd-prometheus-exporter")
-        self.harness.container_pebble_ready("nginx-prometheus-exporter")
-        self.harness.container_pebble_ready("indico")
-        self.harness.container_pebble_ready("indico-celery")
-        self.harness.container_pebble_ready("indico-nginx")
-        self.harness.disable_hooks()
-
-        container = self.harness.model.unit.get_container("indico")
-
-        charm: IndicoOperatorCharm = typing.cast(IndicoOperatorCharm, self.harness.charm)
-
-        email = "sample@email.com"
-        password = "somepassword"  # nosec
-        first_name = "some_firstname"
-        last_name = "some_lastname"
-        affiliation = "some_affiliation"
-        event = MagicMock(spec=ActionEvent)
-        event.params = {
-            "email": email,
-            "password": password,
-            "first-name": first_name,
-            "last-name": last_name,
-            "affiliation": affiliation,
-            "is-admin": True,
-        }
-
-        def event_store_failure(arg):
-            event.fail_message = arg
-
-        event.fail = event_store_failure
-
-        indico_env_config = charm._get_indico_env_config_str(container)
-        cmd = [
-            "/srv/indico/.local/bin/indico",
-            "autocreate",
-            "user",
-            email,
-            password,
-            f"--first-name='{first_name}'",
-            f"--last-name='{last_name}'",
-            f"--affiliation='{affiliation}'",
-            "--admin",
-        ]
-
-        charm._add_user_action(event)
-
-        mock_exec.assert_any_call(
-            cmd,
-            user="indico",
-            working_dir="/srv/indico",
-            environment=indico_env_config,
-        )
-
-    @patch.object(Container, "exec")
-    def test_add_user_fail(self, mock_exec):
-        """
-        arrange: an email and a password
-        act: when the _on_add_user_action method is executed
-        assert: the indico command to add the user is executed with the appropriate parameters.
-        """
-
-        mock_wo = MagicMock(
-            return_value=("", None),
-        )
-
-        # I'm disabling unused-argument here because some could be passed to the mock
-        def mock_wo_side_effect(*args, **kwargs):  # pylint: disable=unused-argument
-            if isinstance(mock_wo.cmd, list) and "autocreate" in mock_wo.cmd:
-                raise ExecError(command=mock_wo.cmd, exit_code=42, stdout="CRASH", stderr="")
-            return DEFAULT
-
-        mock_wo.side_effect = mock_wo_side_effect
-
-        # I'm disabling unused-argument here because some could be passed to the mock
-        def mock_exec_side_effect(*args, **kwargs):  # pylint: disable=unused-argument
-            mock_wo.cmd = args[0]
-            return DEFAULT
-
-        mock_exec.side_effect = mock_exec_side_effect
-        mock_exec.return_value = MagicMock(
-            wait_output=mock_wo,
-        )
-
-        self.set_up_all_relations()
-        self.harness.set_leader(True)
-
-        self.harness.container_pebble_ready("celery-prometheus-exporter")
-        self.harness.container_pebble_ready("statsd-prometheus-exporter")
-        self.harness.container_pebble_ready("nginx-prometheus-exporter")
-        self.harness.container_pebble_ready("indico")
-        self.harness.container_pebble_ready("indico-celery")
-        self.harness.container_pebble_ready("indico-nginx")
-        self.harness.disable_hooks()
-
-        container = self.harness.model.unit.get_container("indico")
-
-        charm: IndicoOperatorCharm = typing.cast(IndicoOperatorCharm, self.harness.charm)
-
-        email = "sample@email.com"
-        password = "somepassword"  # nosec
-        event = MagicMock(spec=ActionEvent)
-        event.params = {
-            "email": email,
-            "password": password,
-        }
-
-        def event_store_failure(arg):
-            event.fail_message = arg
-
-        event.fail = event_store_failure
-
-        indico_env_config = charm._get_indico_env_config_str(container)
-        cmd = [
-            "/srv/indico/.local/bin/indico",
-            "autocreate",
-            "user",
-            email,
-            password,
-        ]
-
-        charm._add_user_action(event)
-        assert event.fail_message == "Failed to create user sample@email.com: CRASH"
-
-        mock_exec.assert_any_call(
-            cmd,
-            user="indico",
-            working_dir="/srv/indico",
-            environment=indico_env_config,
         )
