@@ -111,7 +111,7 @@ class TestActions(TestBase):
         event.fail = event_store_failure
 
         indico_env_config = charm._get_indico_env_config_str(container)
-        cmd = [
+        expected_cmd = [
             "/srv/indico/.local/bin/indico",
             "autocreate",
             "user",
@@ -126,7 +126,7 @@ class TestActions(TestBase):
         charm._add_user_action(event)
 
         mock_exec.assert_any_call(
-            cmd,
+            expected_cmd,
             user="indico",
             working_dir="/srv/indico",
             environment=indico_env_config,
@@ -195,7 +195,7 @@ class TestActions(TestBase):
         event.fail = event_store_failure
 
         indico_env_config = charm._get_indico_env_config_str(container)
-        cmd = [
+        expected_cmd = [
             "/srv/indico/.local/bin/indico",
             "autocreate",
             "user",
@@ -207,7 +207,7 @@ class TestActions(TestBase):
         assert event.fail_message == "Failed to create user sample@email.com: CRASH"
 
         mock_exec.assert_any_call(
-            cmd,
+            expected_cmd,
             user="indico",
             working_dir="/srv/indico",
             environment=indico_env_config,
