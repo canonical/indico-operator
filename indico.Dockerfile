@@ -47,8 +47,11 @@ RUN apt-get update \
         ca-certificates \
         git-core \
         libglib2.0-data \
+        libldap2-dev \
         libpq-dev \
+        libsasl2-dev \
         libxmlsec1-dev \
+        pkg-config \
         postgresql-client \
         python3-dev \
         python3-pip \
