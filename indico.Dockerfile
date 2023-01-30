@@ -22,7 +22,7 @@ ENV UWSGI_EMBED_PLUGINS=stats_pusher_statsd
 
 USER indico
 RUN python3 -m pip install --no-cache-dir --no-warn-script-location --prefer-binary \
-    indico==3.2 \
+    indico==3.2.0 \
     indico-plugin-piwik \
     indico-plugin-storage-s3 \
     python-ldap \
