@@ -1,4 +1,4 @@
-FROM ubuntu:jammy as builder
+FROM ubuntu:jammy
 
 ARG indico_gid=2000
 ARG indico_uid=2000
