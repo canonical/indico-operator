@@ -4,6 +4,7 @@
 
 """Indico charm integration tests."""
 
+import juju.action
 import pytest
 import requests
 from ops.model import ActiveStatus, Application
@@ -94,3 +95,25 @@ async def test_health_checks(app: Application):
             assert stdout.count("0/3") == 1
         else:
             assert stdout.count("0/3") == 2
+
+
+@pytest.mark.asyncio
+@pytest.mark.abort_on_fail
+async def test_add_admin(app: Application):
+    """Test the add-admin action.
+
+    Assume that the charm has already been built and is running.
+    """
+
+    assert app.units[0]  # type: ignore
+
+    email = "sample@email.com"
+    password = "somepassword"  # nosec
+
+    action: juju.action.Action = await app.units[0].run_action(  # type: ignore
+        "add-admin", email=email, password=password
+    )
+    await action.wait()
+    assert action.status == "completed"
+    assert action.results["user"] == email
+    assert f'Admin with email "{email}" correctly created' in action.results["output"]
