@@ -4,6 +4,7 @@ from indico.core.db import db
 from indico.modules.auth import Identity
 from indico.modules.users import User
 from indico.modules.users.operations import create_user
+from indico.modules.users.util import search_users
 
 
 @cli_group(name="autocreate")
@@ -11,29 +12,25 @@ def cli():
     """Create users non-interactively."""
 
 
-@cli.command("user")
+@cli.command("admin")
 @click.argument("email", type=str)
 @click.argument("password", type=str)
-@click.option("--first-name", help="First name of the user", type=str)
-@click.option("--last-name", help="Last name of the user", type=str)
-@click.option("--affiliation", help="Affiliation of the user", type=str)
-@click.option("--admin/--no-admin", "grant_admin", is_flag=True, help="Grant admin rights")
 @click.pass_context
-def autocreate(ctx, email, password, first_name, last_name, affiliation, grant_admin):
-    """Create a new user non-interactively."""
+def create_admin(ctx, email, password):
+    """Create a new admin user non-interactively."""
 
     email = email.lower()
     username = email
-    first_name = first_name or "unknown"
-    last_name = last_name or "unknown"
-    affiliation = affiliation or "unknown"
+    first_name = "unknown"
+    last_name = "unknown"
+    affiliation = "unknown"
 
     if User.query.filter(User.all_emails == email, ~User.is_deleted, ~User.is_pending).has_rows():
-        click.secho('This user does already exist', fg='red')
+        click.secho("This user already exists", fg="red")
         ctx.exit(1)
 
     if password == "":
-        click.secho('Password should not be empty', fg='red')
+        click.secho("Password should not be empty", fg="red")
         ctx.exit(1)
 
     if Identity.query.filter_by(provider="indico", identifier=username).has_rows():
@@ -46,7 +43,24 @@ def autocreate(ctx, email, password, first_name, last_name, affiliation, grant_a
         {"first_name": first_name, "last_name": last_name, "affiliation": affiliation},
         identity,
     )
-    user.is_admin = grant_admin
+    user.is_admin = True
 
     db.session.add(user)
     db.session.commit()
+
+    # search the created user
+    res = search_users(
+        exact=True,
+        include_deleted=False,
+        include_pending=False,
+        include_blocked=False,
+        external=False,
+        allow_system_user=False,
+        email=email,
+    )
+
+    if not res:
+        click.secho("Admin was not correctly created", fg="red")
+        ctx.exit(1)
+
+    click.secho(f'Admin with email "{res.pop().email}" correctly created', fg="green")

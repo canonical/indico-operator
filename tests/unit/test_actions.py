@@ -62,10 +62,10 @@ class TestActions(TestBase):
         )
 
     @patch.object(Container, "exec")
-    def test_add_user(self, mock_exec):
+    def test_add_admin(self, mock_exec):
         """
         arrange: an email and a password
-        act: when the _on_add_user_action method is executed
+        act: when the _on_add_admin_action method is executed
         assert: the indico command to add the user is executed with the appropriate parameters.
         """
 
@@ -92,17 +92,10 @@ class TestActions(TestBase):
 
         email = "sample@email.com"
         password = "somepassword"  # nosec
-        first_name = "some_firstname"
-        last_name = "some_lastname"
-        affiliation = "some_affiliation"
         event = MagicMock(spec=ActionEvent)
         event.params = {
             "email": email,
             "password": password,
-            "first-name": first_name,
-            "last-name": last_name,
-            "affiliation": affiliation,
-            "is-admin": True,
         }
 
         def event_store_failure(arg):
@@ -114,16 +107,12 @@ class TestActions(TestBase):
         expected_cmd = [
             "/srv/indico/.local/bin/indico",
             "autocreate",
-            "user",
+            "admin",
             email,
             password,
-            f"--first-name='{first_name}'",
-            f"--last-name='{last_name}'",
-            f"--affiliation='{affiliation}'",
-            "--admin",
         ]
 
-        charm._add_user_action(event)
+        charm._add_admin_action(event)
 
         mock_exec.assert_any_call(
             expected_cmd,
@@ -133,10 +122,10 @@ class TestActions(TestBase):
         )
 
     @patch.object(Container, "exec")
-    def test_add_user_fail(self, mock_exec):
+    def test_add_admin_fail(self, mock_exec):
         """
         arrange: an email and a password
-        act: when the _on_add_user_action method is executed
+        act: when the _on_add_admin_action method is executed
         assert: the indico command to add the user is executed with the appropriate parameters.
         """
 
@@ -198,13 +187,13 @@ class TestActions(TestBase):
         expected_cmd = [
             "/srv/indico/.local/bin/indico",
             "autocreate",
-            "user",
+            "admin",
             email,
             password,
         ]
 
-        charm._add_user_action(event)
-        assert event.fail_message == "Failed to create user sample@email.com: CRASH"
+        charm._add_admin_action(event)
+        assert event.fail_message == "Failed to create admin sample@email.com: CRASH"
 
         mock_exec.assert_any_call(
             expected_cmd,

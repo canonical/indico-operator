@@ -1,8 +1,8 @@
-from indico.core import signals
-from indico.core.plugins import IndicoPlugin
+"""Connect our CLI plugin to the existing Indico's CLI."""
 
 from autocreate.cli import cli
-from autocreate import _
+from indico.core import signals
+from indico.core.plugins import IndicoPlugin
 
 
 class AutocreatePlugin(IndicoPlugin):

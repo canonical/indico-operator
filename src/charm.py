@@ -72,7 +72,7 @@ class IndicoOperatorCharm(CharmBase):
             self.on.refresh_external_resources_action, self._refresh_external_resources_action
         )
         # self.framework.observe(self.on.update_status, self._refresh_external_resources)
-        self.framework.observe(self.on.add_user_action, self._add_user_action)
+        self.framework.observe(self.on.add_admin_action, self._add_admin_action)
 
         self._stored.set_default(
             db_conn_str=None,
@@ -694,9 +694,7 @@ class IndicoOperatorCharm(CharmBase):
 
     def _get_indico_env_config_str(self, container: Container) -> Dict[str, str]:
         indico_env_config = self._get_indico_env_config(container)
-        for key in indico_env_config:
-            indico_env_config[key] = str(indico_env_config[key])
-        return indico_env_config
+        return {k: str(v) for k, v in indico_env_config.items()}
 
     def _get_http_proxy_configuration(self) -> Dict[str, str]:
         """Generate http proxy config.
@@ -914,11 +912,11 @@ class IndicoOperatorCharm(CharmBase):
         # check if the other end of a relation also supports secrets...
         return juju_version.has_secrets
 
-    def _add_user_action(self, event: ActionEvent) -> None:
+    def _add_admin_action(self, event: ActionEvent) -> None:
         """Add a new user to Indico.
 
         Args:
-            event: Event triggered by the add_user action
+            event: Event triggered by the add_admin action
         """
         container = self.unit.get_container("indico")
         indico_env_config = self._get_indico_env_config_str(container)
@@ -926,18 +924,10 @@ class IndicoOperatorCharm(CharmBase):
         cmd = [
             "/srv/indico/.local/bin/indico",
             "autocreate",
-            "user",
+            "admin",
             event.params["email"],
             event.params["password"],
         ]
-        if event.params.get("first-name"):
-            cmd.append(f"--first-name='{event.params.get('first-name')}'")
-        if event.params.get("last-name"):
-            cmd.append(f"--last-name='{event.params.get('last-name')}'")
-        if event.params.get("affiliation"):
-            cmd.append(f"--affiliation='{event.params.get('affiliation')}'")
-        if event.params.get("is-admin"):
-            cmd.append("--admin")
 
         if container.can_connect():
             process = container.exec(
@@ -947,14 +937,14 @@ class IndicoOperatorCharm(CharmBase):
                 environment=indico_env_config,
             )
             try:
-                process.wait_output()
-                event.set_results({"user": f"{event.params['email']}"})
+                output = process.wait_output()
+                event.set_results({"user": f"{event.params['email']}", "output": output})
             except ExecError as ex:
-                logger.exception("Action add-user failed")
+                logger.exception("Action add-admin failed")
 
                 event.fail(
                     # Parameter validation errors are printed to stdout
-                    f"Failed to create user {event.params['email']}: {ex.stdout}"  # type: ignore
+                    f"Failed to create admin {event.params['email']}: {ex.stdout}"  # type: ignore
                 )
 
 
