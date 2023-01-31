@@ -110,6 +110,7 @@ async def test_add_admin(app: Application):
     assert app.units[0]  # type: ignore
 
     email = "sample@email.com"
+    # This is a test password
     password = "somepassword"  # nosec
 
     # Application actually does have units
