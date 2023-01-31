@@ -940,11 +940,11 @@ class IndicoOperatorCharm(CharmBase):
                 output = process.wait_output()
                 event.set_results({"user": f"{event.params['email']}", "output": output})
             except ExecError as ex:
-                logger.exception("Action add-admin failed")
+                logger.exception("Action add-admin failed: %s", ex.stdout)
 
                 event.fail(
                     # Parameter validation errors are printed to stdout
-                    f"Failed to create admin {event.params['email']}: {ex.stdout}"  # type: ignore
+                    f"Failed to create admin {event.params['email']}: {ex.stdout!r}"
                 )
 
 
