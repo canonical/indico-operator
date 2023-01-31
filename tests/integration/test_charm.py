@@ -100,9 +100,10 @@ async def test_health_checks(app: Application):
 @pytest.mark.asyncio
 @pytest.mark.abort_on_fail
 async def test_add_admin(app: Application):
-    """Test the add-admin action.
-
-    Assume that the charm has already been built and is running.
+    """
+    arrange: given charm in its initial state
+    act: run the add-admin action
+    assert: check the output in the action result
     """
 
     # Application actually does have units
