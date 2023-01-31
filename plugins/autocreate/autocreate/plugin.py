@@ -19,5 +19,5 @@ class AutocreatePlugin(IndicoPlugin):
         super().init()
         self.connect(signals.plugin.cli, self._extend_indico_cli)
 
-    def _extend_indico_cli(self, sender, **kwargs):
+    def _extend_indico_cli(self):
         return cli

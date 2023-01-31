@@ -2,6 +2,8 @@
 # Copyright 2023 Canonical Ltd.
 # See LICENSE file for licensing details.
 
+"""Create users non-interactively."""
+
 import click
 from indico.cli.core import cli_group
 from indico.core.db import db
@@ -49,8 +51,10 @@ def create_admin(ctx, email, password):
     )
     user.is_admin = True
 
-    db.session.add(user)
-    db.session.commit()
+    # db.session has add()
+    db.session.add(user)  # pylint: disable=no-member
+    # db.session has commit()
+    db.session.commit()  # pylint: disable=no-member
 
     # search the created user
     res = search_users(
