@@ -1,3 +1,7 @@
+#!/usr/bin/env python3
+# Copyright 2023 Canonical Ltd.
+# See LICENSE file for licensing details.
+
 """Connect our CLI plugin to the existing Indico's CLI."""
 
 from autocreate.cli import cli

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright 2022 Canonical Ltd.
+# Copyright 2023 Canonical Ltd.
 # See LICENSE file for licensing details.
 
 """Indico charm integration tests."""
@@ -105,11 +105,13 @@ async def test_add_admin(app: Application):
     Assume that the charm has already been built and is running.
     """
 
+    # Application actually does have units
     assert app.units[0]  # type: ignore
 
     email = "sample@email.com"
     password = "somepassword"  # nosec
 
+    # Application actually does have units
     action: juju.action.Action = await app.units[0].run_action(  # type: ignore
         "add-admin", email=email, password=password
     )

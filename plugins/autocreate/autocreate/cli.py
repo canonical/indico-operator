@@ -1,3 +1,7 @@
+#!/usr/bin/env python3
+# Copyright 2023 Canonical Ltd.
+# See LICENSE file for licensing details.
+
 import click
 from indico.cli.core import cli_group
 from indico.core.db import db
