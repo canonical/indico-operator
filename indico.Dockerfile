@@ -35,7 +35,6 @@ RUN apt-get update \
 # Add our plugins
 COPY --chown=indico:indico plugins /srv/indico/plugins
 
-USER indico
 RUN python3 -m pip install --no-cache-dir --no-warn-script-location --prefer-binary \
     indico==3.2.0 \
     indico-plugin-piwik \
@@ -45,8 +44,8 @@ RUN python3 -m pip install --no-cache-dir --no-warn-script-location --prefer-bin
     /srv/indico/plugins/autocreate \
     uwsgi \
     && /bin/bash -c "mkdir -p --mode=775 /srv/indico/{archive,cache,custom,etc,log,tmp}" \
-    && /bin/bash -c "chown indico:indico /srv/indico /srv/indico/{archive,cache,custom,etc,log,tmp,.local}" \
-    && /srv/indico/.local/bin/indico setup create-symlinks /srv/indico
+    && /bin/bash -c "chown indico:indico /srv/indico /srv/indico/{archive,cache,custom,etc,log,tmp}" \
+    && indico setup create-symlinks /srv/indico
 
 COPY --chown=indico:indico files/start-indico.sh /srv/indico/
 COPY --chown=indico:indico files/etc/indico/ /etc/

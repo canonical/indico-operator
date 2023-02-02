@@ -304,10 +304,10 @@ class TestCore(TestBase):
             storage_dict["s3"],
         )
         auth_providers = literal_eval(updated_plan_env["INDICO_AUTH_PROVIDERS"])
-        self.assertEqual("saml", auth_providers["saml"]["type"])
+        self.assertEqual("saml", auth_providers["ubuntu"]["type"])
         self.assertEqual(
             "https://example.local:8080",
-            auth_providers["saml"]["saml_config"]["sp"]["entityId"],
+            auth_providers["ubuntu"]["saml_config"]["sp"]["entityId"],
         )
         identity_providers = literal_eval(updated_plan_env["INDICO_IDENTITY_PROVIDERS"])
         self.assertEqual("ldap", identity_providers["ldap"]["type"])
@@ -356,10 +356,10 @@ class TestCore(TestBase):
             storage_dict["s3"],
         )
         auth_providers = literal_eval(updated_plan_env["INDICO_AUTH_PROVIDERS"])
-        self.assertEqual("saml", auth_providers["saml"]["type"])
+        self.assertEqual("saml", auth_providers["ubuntu"]["type"])
         self.assertEqual(
             "https://example.local:8080",
-            auth_providers["saml"]["saml_config"]["sp"]["entityId"],
+            auth_providers["ubuntu"]["saml_config"]["sp"]["entityId"],
         )
         identity_providers = literal_eval(updated_plan_env["INDICO_IDENTITY_PROVIDERS"])
         self.assertEqual("ldap", identity_providers["ldap"]["type"])
