@@ -655,7 +655,7 @@ class IndicoOperatorCharm(CharmBase):
                     "user_filter": "(objectClass=canonicalPerson)",
                     "gid": "cn",
                     "group_base": "dc=canonical,dc=com",
-                    "group_filter": "(objectClass=canonicalTeam)",
+                    "group_filter": "(objectClass=groupofnames)",
                     "member_of_attr": "memberof",
                     "ad_group_style": False,
                 }
