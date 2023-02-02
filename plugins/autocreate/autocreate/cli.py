@@ -71,4 +71,10 @@ def create_admin(ctx, email, password):
         click.secho("Admin was not correctly created", fg="red")
         ctx.exit(1)
 
-    click.secho(f'Admin with email "{res.pop().email}" correctly created', fg="green")
+    user = res.pop()
+
+    if not user.is_admin:
+        click.secho("Created user is not admin", fg="red")
+        ctx.exit(1)
+
+    click.secho(f'Admin with email "{user.email}" correctly created', fg="green")

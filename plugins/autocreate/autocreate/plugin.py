@@ -19,5 +19,7 @@ class AutocreatePlugin(IndicoPlugin):
         super().init()
         self.connect(signals.plugin.cli, self._extend_indico_cli)
 
-    def _extend_indico_cli(self):
+    # We need thos arguments when extending indico's CLI
+    # pylint: disable=unused-argument
+    def _extend_indico_cli(self, *args, **kwargs):
         return cli
