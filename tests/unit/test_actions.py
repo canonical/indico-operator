@@ -133,10 +133,12 @@ class TestActions(TestBase):
             return_value=("", None),
         )
 
+        stdout_mock = "CRASH"
+
         # I'm disabling unused-argument here because some could be passed to the mock
         def mock_wo_side_effect(*args, **kwargs):  # pylint: disable=unused-argument
             if isinstance(mock_wo.cmd, list) and "autocreate" in mock_wo.cmd:
-                raise ExecError(command=mock_wo.cmd, exit_code=42, stdout="CRASH", stderr="")
+                raise ExecError(command=mock_wo.cmd, exit_code=42, stdout=stdout_mock, stderr="")
             return DEFAULT
 
         mock_wo.side_effect = mock_wo_side_effect
@@ -193,7 +195,7 @@ class TestActions(TestBase):
         ]
 
         charm._add_admin_action(event)
-        assert event.fail_message == "Failed to create admin sample@email.com: CRASH"
+        assert event.fail_message == f"Failed to create admin {email}: '{stdout_mock}'"
 
         mock_exec.assert_any_call(
             expected_cmd,
