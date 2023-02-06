@@ -906,7 +906,7 @@ class IndicoOperatorCharm(CharmBase):
         indico_env_config = self._get_indico_env_config_str(container)
 
         cmd = [
-            "/srv/indico/.local/bin/indico",
+            "/usr/local/bin/indico",
             "autocreate",
             "admin",
             event.params["email"],

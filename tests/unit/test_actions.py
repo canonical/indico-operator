@@ -105,7 +105,7 @@ class TestActions(TestBase):
 
         indico_env_config = charm._get_indico_env_config_str(container)
         expected_cmd = [
-            "/srv/indico/.local/bin/indico",
+            "/usr/local/bin/indico",
             "autocreate",
             "admin",
             email,
@@ -187,7 +187,7 @@ class TestActions(TestBase):
 
         indico_env_config = charm._get_indico_env_config_str(container)
         expected_cmd = [
-            "/srv/indico/.local/bin/indico",
+            "/usr/local/bin/indico",
             "autocreate",
             "admin",
             email,
