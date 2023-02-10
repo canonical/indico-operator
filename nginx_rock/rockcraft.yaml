@@ -1,0 +1,38 @@
+name: indico-nginx
+summary: Indico nginx rock
+description: Nginx OCI image for the Indico charm
+version: "1.0"
+base: bare
+build-base: ubuntu:22.04
+license: Apache-2.0
+platforms:
+  amd64:
+parts:
+  add-user:
+    plugin: nil
+    overlay-script: |
+      addgroup --gid 2000 nginx
+      adduser --system --gid 2000 --uid 2000 --no-create-home --disabled-login nginx
+  indico:
+    build-packages:
+      - build-essential
+      - libpq-dev
+      - python3-dev
+      - python3-pip
+    stage-packages:
+      - nginx
+    source: .
+    plugin: python
+    python-packages:
+      - indico==3.2.0
+    organize:
+      usr/local/lib/python3.10/dist-packages/indico/web/static: srv/indico/static
+    override-build: |
+      rm $CRAFT_PART_INSTALL/etc/nginx/nginx.conf
+    prime:
+      - srv/indico/static/*
+  copy-config:
+    plugin: dump
+    source: .
+    prime:
+      - etc/nginx/nginx.conf

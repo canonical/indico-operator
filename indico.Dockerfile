@@ -33,7 +33,7 @@ RUN apt-get update \
     && adduser --system --gid ${indico_gid} --uid ${indico_uid} --home /srv/indico indico
 
 # Add our plugins
-COPY --chown=indico:indico plugins /srv/indico/plugins
+COPY --chown=indico:indico indico_rock/plugins /srv/indico/plugins
 
 RUN python3 -m pip install --no-cache-dir --no-warn-script-location --prefer-binary \
     indico==3.2.0 \
@@ -45,10 +45,11 @@ RUN python3 -m pip install --no-cache-dir --no-warn-script-location --prefer-bin
     uwsgi \
     && /bin/bash -c "mkdir -p --mode=775 /srv/indico/{archive,cache,custom,etc,log,tmp}" \
     && /bin/bash -c "chown indico:indico /srv/indico /srv/indico/{archive,cache,custom,etc,log,tmp}" \
-    && indico setup create-symlinks /srv/indico
+    && cp /usr/local/lib/python3.10/dist-packages/indico/web/indico.wsgi /srv/indico/indico.wsgi
+    && ln -s /usr/local/lib/python3.10/dist-packages/indico/web/static /srv/indico/static
 
-COPY --chown=indico:indico files/start-indico.sh /srv/indico/
-COPY --chown=indico:indico files/etc/indico/ /etc/
+COPY --chown=indico:indico indico_rock/start-indico.sh /srv/indico/
+COPY --chown=indico:indico indico_rock/etc/indico/ /etc/
 
 RUN chmod +x /srv/indico/start-indico.sh \
     && chown -R indico:indico /srv/indico
