@@ -18,3 +18,5 @@ jobs:
   publish-to-edge:
     uses: canonical/operator-workflows/.github/workflows/test_and_publish_charm.yaml@release-libs
     secrets: inherit
+    with:
+      trivy-image-config: "trivy.yaml"

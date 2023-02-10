@@ -29,6 +29,8 @@ from ops.model import (
 )
 from ops.pebble import ExecError
 
+logger = logging.getLogger(__name__)
+
 CANONICAL_LDAP_HOST = "ldap.canonical.com"
 CELERY_PROMEXP_PORT = "9808"
 DATABASE_NAME = "indico"
@@ -70,6 +72,7 @@ class IndicoOperatorCharm(CharmBase):
             self.on.refresh_external_resources_action, self._refresh_external_resources_action
         )
         # self.framework.observe(self.on.update_status, self._refresh_external_resources)
+        self.framework.observe(self.on.add_admin_action, self._add_admin_action)
 
         self._stored.set_default(
             db_conn_str=None,
@@ -308,7 +311,7 @@ class IndicoOperatorCharm(CharmBase):
                 "indico-celery": {
                     "override": "replace",
                     "summary": "Indico celery",
-                    "command": "/srv/indico/.local/bin/indico celery worker -B -E",
+                    "command": "/usr/local/bin/indico celery worker -B -E",
                     "startup": "enabled",
                     "user": "indico",
                     "environment": indico_env_config,
@@ -321,7 +324,7 @@ class IndicoOperatorCharm(CharmBase):
                     "period": "120s",
                     "timeout": "119s",
                     "exec": {
-                        "command": "/srv/indico/.local/bin/indico celery inspect ping",
+                        "command": "/usr/local/bin/indico celery inspect ping",
                         "environment": indico_env_config,
                     },
                 },
@@ -522,10 +525,7 @@ class IndicoOperatorCharm(CharmBase):
         Returns:
             List containing the installed plugins.
         """
-        process = container.exec(
-            ["/srv/indico/.local/bin/indico", "setup", "list-plugins"],
-            user="indico",
-        )
+        process = container.exec(["indico", "setup", "list-plugins"], user="indico")
         output, _ = process.wait_output()
         # Parse output table, discarding header and footer rows and fetching first column value
         return [item.split("|")[1].strip() for item in output.split("\n")[3:-2]]
@@ -630,10 +630,10 @@ class IndicoOperatorCharm(CharmBase):
                     ),
                 },
             }
-            auth_providers = {"saml": {"type": "saml", "saml_config": saml_config}}
+            auth_providers = {"ubuntu": {"type": "saml", "saml_config": saml_config}}
             env_config["INDICO_AUTH_PROVIDERS"] = str(auth_providers)
             identity_providers = {
-                "saml": {
+                "ubuntu": {
                     "type": "saml",
                     "trusted_email": True,
                     "mapping": {
@@ -658,8 +658,8 @@ class IndicoOperatorCharm(CharmBase):
                     "user_filter": "(objectClass=canonicalPerson)",
                     "gid": "cn",
                     "group_base": "dc=canonical,dc=com",
-                    "group_filter": "(objectClass=canonicalTeam)",
-                    "member_of_attr": "mozillaCustom1",
+                    "group_filter": "(objectClass=groupofnames)",
+                    "member_of_attr": "memberof",
                     "ad_group_style": False,
                 }
                 identity_providers = {
@@ -678,16 +678,19 @@ class IndicoOperatorCharm(CharmBase):
                     }
                 }
                 provider_map = {
-                    "saml": {
+                    "ubuntu": {
                         "identity_provider": "ldap",
                         "mapping": {"identifier": "username"},
                     }
                 }
                 env_config["INDICO_PROVIDER_MAP"] = str(provider_map)
             env_config["INDICO_IDENTITY_PROVIDERS"] = str(identity_providers)
-
             env_config = {**env_config, **self._get_http_proxy_configuration()}
         return env_config
+
+    def _get_indico_env_config_str(self, container: Container) -> Dict[str, str]:
+        indico_env_config = self._get_indico_env_config(container)
+        return {env_name: str(value) for env_name, value in indico_env_config.items()}
 
     def _get_http_proxy_configuration(self) -> Dict[str, str]:
         """Generate http proxy config.
@@ -731,9 +734,6 @@ class IndicoOperatorCharm(CharmBase):
             self.unit.status = BlockedStatus(
                 f"Invalid ldap_host option provided. Only {CANONICAL_LDAP_HOST} is available."
             )
-            event.defer()
-            return
-        if not self._are_relations_ready(event):
             event.defer()
             return
         if not self._are_pebble_instances_ready():
@@ -787,10 +787,7 @@ class IndicoOperatorCharm(CharmBase):
             The indico version installed.
         """
         container = self.unit.get_container("indico")
-        process = container.exec(
-            ["/srv/indico/.local/bin/indico", "--version"],
-            user="indico",
-        )
+        process = container.exec(["indico", "--version"], user="indico")
         version_string, _ = process.wait_output()
         version = findall("[0-9.]+", version_string)
         return version[0] if version else ""
@@ -824,15 +821,9 @@ class IndicoOperatorCharm(CharmBase):
                 INDICO_CUSTOMIZATION_DIR,
                 current_remote_url,
             )
-            process = container.exec(
-                ["rm", "-rf", INDICO_CUSTOMIZATION_DIR],
-                user="indico",
-            )
+            process = container.exec(["rm", "-rf", INDICO_CUSTOMIZATION_DIR], user="indico")
             process.wait_output()
-            process = container.exec(
-                ["mkdir", INDICO_CUSTOMIZATION_DIR],
-                user="indico",
-            )
+            process = container.exec(["mkdir", INDICO_CUSTOMIZATION_DIR], user="indico")
             process.wait_output()
             if self.config["customization_sources_url"]:
                 logging.debug(
@@ -904,6 +895,41 @@ class IndicoOperatorCharm(CharmBase):
         # Because we're only using secrets in a peer relation we don't need to
         # check if the other end of a relation also supports secrets...
         return juju_version.has_secrets
+
+    def _add_admin_action(self, event: ActionEvent) -> None:
+        """Add a new user to Indico.
+
+        Args:
+            event: Event triggered by the add_admin action
+        """
+        container = self.unit.get_container("indico")
+        indico_env_config = self._get_indico_env_config_str(container)
+
+        cmd = [
+            "/usr/local/bin/indico",
+            "autocreate",
+            "admin",
+            event.params["email"],
+            event.params["password"],
+        ]
+
+        if container.can_connect():
+            process = container.exec(
+                cmd,
+                user="indico",
+                working_dir="/srv/indico",
+                environment=indico_env_config,
+            )
+            try:
+                output = process.wait_output()
+                event.set_results({"user": f"{event.params['email']}", "output": output})
+            except ExecError as ex:
+                logger.exception("Action add-admin failed: %s", ex.stdout)
+
+                event.fail(
+                    # Parameter validation errors are printed to stdout
+                    f"Failed to create admin {event.params['email']}: {ex.stdout!r}"
+                )
 
 
 if __name__ == "__main__":  # pragma: no cover
