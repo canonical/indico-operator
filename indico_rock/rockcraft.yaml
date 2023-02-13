@@ -2,7 +2,7 @@ name: indico
 summary: Indico rock
 description: Indico OCI image for the Indico charm
 version: "1.0"
-base: bare
+base: ubuntu:22.04
 build-base: ubuntu:22.04
 license: Apache-2.0
 env:
@@ -16,11 +16,9 @@ parts:
   add-user:
     plugin: nil
     overlay-script: |
-      addgroup --gid 2000 indico
-      adduser --system --gid 2000 --uid 2000 --home /srv/indico indico
+      groupadd -R $CRAFT_OVERLAY --gid 2000 indico
+      useradd -R $CRAFT_OVERLAY --system --gid 2000 --uid 2000 --home /srv/indico indico
   indico:
-    after:
-      - add-user
     build-packages:
       - build-essential
       - libldap2-dev
@@ -49,7 +47,7 @@ parts:
       - texlive-fonts-recommended
       - texlive-plain-generic
       - texlive-xetex
-    source: .
+    source: plugins
     plugin: python
     python-packages:
       - indico==3.2.0
@@ -58,11 +56,11 @@ parts:
       - python3-saml
       - python-ldap
       - uwsgi
-      - plugins/autocreate
+      - ./autocreate
     override-build: |
       craftctl default
       /bin/bash -c "mkdir -p --mode=775 srv/indico/{archive,cache,custom,etc,log,tmp}"
-      /bin/bash -c "chown indico:indico srv/indico srv/indico/{archive,cache,custom,etc,log,tmp}"
+      /bin/bash -c "chown 2000:2000 srv/indico srv/indico/{archive,cache,custom,etc,log,tmp}"
       cp $CRAFT_PART_INSTALL/lib/python3.10/site-packages/indico/web/indico.wsgi srv/indico/indico.wsgi
       cp -R $CRAFT_PART_INSTALL/lib/python3.10/site-packages/indico/web/static srv/indico/static
   copy-config:
