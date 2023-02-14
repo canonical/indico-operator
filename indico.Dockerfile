@@ -49,7 +49,7 @@ RUN python3 -m pip install --no-cache-dir --no-warn-script-location --prefer-bin
     && ln -s /usr/local/lib/python3.10/dist-packages/indico/web/static /srv/indico/static
 
 COPY --chown=indico:indico indico_rock/start-indico.sh /srv/indico/
-COPY --chown=indico:indico indico_rock/etc/indico/ /etc/
+COPY --chown=indico:indico indico_rock/etc/ /etc/
 
 RUN chmod +x /srv/indico/start-indico.sh \
     && chown -R indico:indico /srv/indico
