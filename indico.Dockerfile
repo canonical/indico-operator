@@ -45,7 +45,7 @@ RUN python3 -m pip install --no-cache-dir --no-warn-script-location --prefer-bin
     uwsgi \
     && /bin/bash -c "mkdir -p --mode=775 /srv/indico/{archive,cache,custom,etc,log,tmp}" \
     && /bin/bash -c "chown indico:indico /srv/indico /srv/indico/{archive,cache,custom,etc,log,tmp}" \
-    && cp /usr/local/lib/python3.10/dist-packages/indico/web/indico.wsgi /srv/indico/indico.wsgi
+    && cp /usr/local/lib/python3.10/dist-packages/indico/web/indico.wsgi /srv/indico/indico.wsgi \
     && ln -s /usr/local/lib/python3.10/dist-packages/indico/web/static /srv/indico/static
 
 COPY --chown=indico:indico indico_rock/start-indico.sh /srv/indico/
