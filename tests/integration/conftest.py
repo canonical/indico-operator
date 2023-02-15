@@ -9,6 +9,7 @@ from typing import Dict
 
 import pytest_asyncio
 import yaml
+from ops.model import WaitingStatus
 from pytest import Config, fixture
 from pytest_operator.plugin import OpsTest
 
@@ -73,6 +74,9 @@ async def app(
     )
 
     await dependencies
+    # Add required relations, mypy has difficulty with WaitingStatus
+    expected_name = WaitingStatus.name  # type: ignore
+    assert ops_test.model.applications[app_name].units[0].workload_status == expected_name
     await asyncio.gather(
         ops_test.model.add_relation(app_name, "postgresql-k8s:db"),
         ops_test.model.add_relation(app_name, "redis-broker"),
