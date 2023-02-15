@@ -9,3 +9,4 @@ __pycache__/
 .vscode
 .mypy_cache
 *.egg-info/
+*/*.rock
