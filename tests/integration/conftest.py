@@ -55,24 +55,24 @@ async def app(
     """
     assert ops_test.model
     # Deploy relations to speed up overall execution
-    await asyncio.gather(
+    dependencies = asyncio.gather(
         ops_test.model.deploy("postgresql-k8s"),
         ops_test.model.deploy("redis-k8s", "redis-broker"),
         ops_test.model.deploy("redis-k8s", "redis-cache"),
         ops_test.model.deploy("nginx-ingress-integrator", trust=True),
     )
 
-    charm = await ops_test.build_charm(".")
     resources = {
         "indico-image": pytestconfig.getoption("--indico-image"),
         "indico-nginx-image": pytestconfig.getoption("--indico-nginx-image"),
     }
     resources.update(prometheus_exporter_images)
-
+    charm = await ops_test.build_charm(".")
     application = await ops_test.model.deploy(
         charm, resources=resources, application_name=app_name, series="focal"
     )
 
+    await dependencies
     await asyncio.gather(
         ops_test.model.add_relation(app_name, "postgresql-k8s:db"),
         ops_test.model.add_relation(app_name, "redis-broker"),
