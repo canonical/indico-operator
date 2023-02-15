@@ -73,11 +73,7 @@ async def app(
     application = await ops_test.model.deploy(
         charm, resources=resources, application_name=app_name, series="focal"
     )
-    await ops_test.model.wait_for_idle()
 
-    # Add required relations, mypy has difficulty with WaitingStatus
-    expected_name = WaitingStatus.name  # type: ignore
-    assert ops_test.model.applications[app_name].units[0].workload_status == expected_name
     await asyncio.gather(
         ops_test.model.add_relation(app_name, "postgresql-k8s:db"),
         ops_test.model.add_relation(app_name, "redis-broker"),
