@@ -64,6 +64,11 @@ parts:
       /bin/bash -c "chown 2000:2000 srv/indico srv/indico/{archive,cache,custom,etc,log,tmp}"
       cp $CRAFT_PART_INSTALL/usr/local/lib/python3.10/dist-packages/indico/web/indico.wsgi srv/indico/indico.wsgi
       cp -R $CRAFT_PART_INSTALL/usr/local/lib/python3.10/dist-packages/indico/web/static srv/indico/static
+      # Replace shebangs in Python executables to match the path in the resulting OCI image
+      # This can be removed when switching to the python plugin, currently not working due to
+      # https://github.com/canonical/rockcraft/issues/194
+      find . -name "indico"
+      sed -i 's/#!\/root\/parts\/indico\/install\/usr\/bin\/python3/#!\/usr\/bin\/python3/' usr/local/bin/
   copy-config:
     plugin: dump
     source: .
