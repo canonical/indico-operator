@@ -67,8 +67,7 @@ parts:
       # Replace shebangs in Python executables to match the path in the resulting OCI image
       # This can be removed when switching to the python plugin, currently not working due to
       # https://github.com/canonical/rockcraft/issues/194
-      find . -name "indico"
-      sed -i 's/#!\/root\/parts\/indico\/install\/usr\/bin\/python3/#!\/usr\/bin\/python3/' usr/local/bin/
+      find ./usr/local/bin/ -maxdepth 1 -type f | xargs sed -i 's/#!\/root\/parts\/indico\/install\/usr\/bin\/python3/#!\/usr\/bin\/python3/'
   copy-config:
     plugin: dump
     source: .
