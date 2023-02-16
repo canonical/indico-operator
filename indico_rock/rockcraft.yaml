@@ -30,6 +30,7 @@ parts:
       - pkg-config
       - python3-dev
     stage-packages:
+      - bash
       - build-essential
       - ca-certificates
       - git-core
@@ -38,6 +39,7 @@ parts:
       - libpq-dev
       - libsasl2-dev
       - libxmlsec1-dev
+      - locales
       - pkg-config
       - postgresql-client
       - python3-dev
@@ -58,6 +60,7 @@ parts:
         python-ldap \
         uwsgi \
         ./autocreate
+      # locale-gen C.UTF-8
     override-prime: |
       craftctl default
       /bin/bash -c "mkdir -p --mode=775 srv/indico/{archive,cache,custom,etc,log,tmp}"
