@@ -9,7 +9,6 @@ env:
   - LANG: C.UTF-8
   - LC_ALL: C.UTF-8
   - LC_LANG: C.UTF-8
-  - UWSGI_EMBED_PLUGINS: stats_pusher_statsd
 platforms:
   amd64:
 parts:
@@ -29,6 +28,7 @@ parts:
       - libxmlsec1-dev
       - pkg-config
       - python3-dev
+      - wget
     stage-packages:
       - bash
       - build-essential
@@ -52,7 +52,7 @@ parts:
     plugin: nil
     override-build: |
       craftctl default
-      python3 -m pip install --no-cache-dir --no-warn-script-location --prefer-binary \
+      UWSGI_EMBED_PLUGINS=stats_pusher_statsd python3 -m pip install --no-cache-dir --no-warn-script-location --prefer-binary \
         indico==3.2.0 \
         indico-plugin-piwik \
         indico-plugin-storage-s3 \
@@ -60,7 +60,6 @@ parts:
         python-ldap \
         uwsgi \
         ./autocreate
-      # locale-gen C.UTF-8
     override-prime: |
       craftctl default
       /bin/bash -c "mkdir -p --mode=775 srv/indico/{archive,cache,custom,etc,log,tmp}"
@@ -71,6 +70,9 @@ parts:
       # This can be removed when switching to the python plugin, currently not working due to
       # https://github.com/canonical/rockcraft/issues/194
       find ./usr/local/bin/ -maxdepth 1 -type f | xargs sed -i 's/#!\/root\/parts\/indico\/install\/usr\/bin\/python3/#!\/usr\/bin\/python3/'
+      # Copy root certificates
+      mkdir -p etc/ssl/certs/
+      cp /etc/ssl/certs/ca-certificates.crt etc/ssl/certs/
   copy-config:
     plugin: dump
     source: .
