@@ -659,7 +659,7 @@ class IndicoOperatorCharm(CharmBase):
                     "gid": "cn",
                     "group_base": "dc=canonical,dc=com",
                     "group_filter": "(objectClass=groupofnames)",
-                    "member_of_attr": "memberof",
+                    "member_of_attr": "memberOf",
                     "ad_group_style": False,
                 }
                 identity_providers = {
