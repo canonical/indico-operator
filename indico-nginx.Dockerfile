@@ -24,7 +24,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /usr/local/lib/python3.10/dist-packages/indico/web/static /srv/indico/static
-COPY nginx_rock/etc/nginx/nginx.conf /etc/nginx/nginx.conf
+COPY nginx_rock/etc/nginx.conf /etc/nginx/nginx.conf
 
 ARG nginx_gid=2001
 ARG nginx_uid=2001
