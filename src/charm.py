@@ -349,11 +349,6 @@ class IndicoOperatorCharm(CharmBase):
                 },
             },
             "checks": {
-                "nginx-up": {
-                    "override": "replace",
-                    "level": "ready",
-                    "exec": {"command": "service nginx status"},
-                },
                 "nginx-ready": {
                     "override": "replace",
                     "level": "alive",

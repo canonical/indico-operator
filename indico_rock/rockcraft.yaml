@@ -1,0 +1,90 @@
+name: indico
+summary: Indico rock
+description: Indico OCI image for the Indico charm
+version: "1.0"
+base: bare
+build-base: ubuntu:22.04
+license: Apache-2.0
+env:
+  - LANG: C.UTF-8
+  - LC_ALL: C.UTF-8
+  - LC_LANG: C.UTF-8
+platforms:
+  amd64:
+parts:
+  add-user:
+    plugin: nil
+    overlay-script: |
+      mkdir $CRAFT_OVERLAY/etc
+      chmod 755 $CRAFT_OVERLAY/etc
+      groupadd -R $CRAFT_OVERLAY --gid 2000 indico
+      useradd -R $CRAFT_OVERLAY --system --gid 2000 --uid 2000 --home /srv/indico indico
+  indico:
+    build-packages:
+      - build-essential
+      - libldap2-dev
+      - libpq-dev
+      - libsasl2-dev
+      - libxmlsec1-dev
+      - pkg-config
+      - python3-dev
+      - wget
+    stage-packages:
+      - bash
+      - build-essential
+      - ca-certificates
+      - git-core
+      - libglib2.0-data
+      - libldap2-dev
+      - libpq-dev
+      - libsasl2-dev
+      - libxmlsec1-dev
+      - locales
+      - pkg-config
+      - postgresql-client
+      - python3-dev
+      - python3-pip
+      - shared-mime-info
+      - texlive-fonts-recommended
+      - texlive-plain-generic
+      - texlive-xetex
+    source: plugins
+    plugin: nil
+    override-build: |
+      craftctl default
+      UWSGI_EMBED_PLUGINS=stats_pusher_statsd python3 -m pip install --no-cache-dir --no-warn-script-location --prefer-binary \
+        indico==3.2.0 \
+        indico-plugin-piwik \
+        indico-plugin-storage-s3 \
+        python3-saml \
+        python-ldap \
+        uwsgi \
+        ./autocreate
+    override-prime: |
+      craftctl default
+      /bin/bash -c "mkdir -p --mode=775 srv/indico/{archive,cache,custom,etc,log,tmp}"
+      /bin/bash -c "chown 2000:2000 srv/indico srv/indico/{archive,cache,custom,etc,log,tmp}"
+      cp $CRAFT_PART_INSTALL/usr/local/lib/python3.10/dist-packages/indico/web/indico.wsgi srv/indico/indico.wsgi
+      cp -R $CRAFT_PART_INSTALL/usr/local/lib/python3.10/dist-packages/indico/web/static srv/indico/static
+      # Replace shebangs in Python executables to match the path in the resulting OCI image
+      # This can be removed when switching to the python plugin, currently not working due to
+      # https://github.com/canonical/rockcraft/issues/194
+      find ./usr/local/bin/ -maxdepth 1 -type f | xargs sed -i 's/#!\/root\/parts\/indico\/install\/usr\/bin\/python3/#!\/usr\/bin\/python3/'
+      # Copy root certificates
+      mkdir -p etc/ssl/certs/
+      cp /etc/ssl/certs/ca-certificates.crt etc/ssl/certs/
+  copy-config:
+    plugin: dump
+    source: .
+    organize:
+      start-indico.sh: srv/indico/start-indico.sh
+    permissions:
+      - owner: 2000
+        group: 2000
+      - path: srv/indico/start-indico.sh
+        mode: 544
+      - path: etc/
+        mode: 755
+    prime:
+      - etc/*
+      - srv/indico/start-indico.sh
