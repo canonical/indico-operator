@@ -1,3 +1,8 @@
 # https://avd.aquasec.com/nvd/cve-2021-33026
 # Flask-Caching - disputed vurlnerability
 CVE-2021-33026
+# ignore pebble CVEs until https://github.com/canonical/pebble/pull/194 is merged
+CVE-2021-43565
+CVE-2022-27191
+CVE-2022-29526
+CVE-2022-28948
