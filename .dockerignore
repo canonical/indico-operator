@@ -2,4 +2,5 @@
 *
 
 # Include the files directory
-!files/*
+!nginx_rock/*
+!indico_rock/*

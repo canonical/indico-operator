@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-# Copyright 2022 Canonical Ltd.
+# Copyright 2023 Canonical Ltd.
 # See LICENSE file for licensing details.
 
 """Indico charm integration tests."""
 
+import juju.action
 import pytest
 import requests
 from ops.model import ActiveStatus, Application
@@ -90,7 +91,30 @@ async def test_health_checks(app: Application):
         # When executing the checks, `0/3` means there are 0 errors of 3.
         # Each check has it's own `0/3`, so we will count `n` times,
         # where `n` is the number of checks for that container.
-        if container != "indico-nginx":
-            assert stdout.count("0/3") == 1
-        else:
-            assert stdout.count("0/3") == 2
+        assert stdout.count("0/3") == 1
+
+
+@pytest.mark.asyncio
+@pytest.mark.abort_on_fail
+async def test_add_admin(app: Application):
+    """
+    arrange: given charm in its initial state
+    act: run the add-admin action
+    assert: check the output in the action result
+    """
+
+    # Application actually does have units
+    assert app.units[0]  # type: ignore
+
+    email = "sample@email.com"
+    # This is a test password
+    password = "somepassword"  # nosec
+
+    # Application actually does have units
+    action: juju.action.Action = await app.units[0].run_action(  # type: ignore
+        "add-admin", email=email, password=password
+    )
+    await action.wait()
+    assert action.status == "completed"
+    assert action.results["user"] == email
+    assert f'Admin with email "{email}" correctly created' in action.results["output"]
