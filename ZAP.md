@@ -10,4 +10,25 @@ Indico returns a "Bad Request" error in case of malformed input.
 
 ## 10049-3 IGNORE  (Storable and Cacheable Content)
 
-Managed by request header Cache-Control 'no-cache,private'.
+The response does not contain sensitive, personal or user-specific information.
+
+## 10049-3 IGNORE  (Sub Resource Integrity Attribute Missing)
+
+To be worked.
+
+## 10109    IGNORE  (Modern Web Application)
+
+The Ajax Spider scan is not a good fit for the integration test.
+
+## 90033    IGNORE  (Loosely Scoped Cookie)
+
+Specifying Domain is less restrictive than omitting it.
+Read more in [Cookies](https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies)
+
+## 10049-1 IGNORE  (Non-Storable Content)
+
+The response does contain sensitive, personal or user-specific information.
+
+## 10027   IGNORE  (Information Disclosure - Suspicious Comments)
+
+The comments does not contain sensitive information.
