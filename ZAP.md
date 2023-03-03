@@ -23,12 +23,17 @@ The Ajax Spider scan is not a good fit for the integration test.
 ## 90033    IGNORE  (Loosely Scoped Cookie)
 
 Specifying Domain is less restrictive than omitting it.
-Read more in [Cookies](https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies)
+Read more about in [Cookies](https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies).
 
 ## 10049-1 IGNORE  (Non-Storable Content)
 
-The response does contain sensitive, personal or user-specific information.
+The response contains sensitive, personal or user-specific information.
 
 ## 10027   IGNORE  (Information Disclosure - Suspicious Comments)
 
 The comments does not contain sensitive information.
+
+## 10054   IGNORE  (Cookie without SameSite Attribute)
+
+We are not setting this one because "The cookie-sending behavior if SameSite is not specified is SameSite=Lax. Previously the default was that cookies were sent for all requests."
+Read more about int [SameSite](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite)
