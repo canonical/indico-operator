@@ -36,4 +36,14 @@ The comments does not contain sensitive information.
 ## 10054   IGNORE  (Cookie without SameSite Attribute)
 
 We are not setting this one because "The cookie-sending behavior if SameSite is not specified is SameSite=Lax. Previously the default was that cookies were sent for all requests."
-Read more about int [SameSite](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite)
+Read more about int [SameSite](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite).
+
+## 10110   IGNORE  (Dangerous JS Functions)
+
+False positive by getting "eval" string.
+
+More information in [eval](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval).
+
+## 10063-1 IGNORE  (Permissions Policy Header Not Set)
+
+Permissions are features offered by the browser through an API. You have to specify every permission separately, so setting a value for this header could negatively impact the user experience.

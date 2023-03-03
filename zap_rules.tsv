@@ -1,7 +1,3 @@
-# zap-baseline rule configuration file
-# Change WARN to IGNORE to ignore rule or FAIL to fail if rule matches
-# Only the rule identifiers are used - the names are just for info
-# You can add your own messages to each rule by appending them after a tab on each line.
 10202   IGNORE  (Absence of Anti-CSRF Tokens)
 10031   IGNORE  (User Controllable HTML Element Attribute (Potential XSS))
 10049-3 IGNORE  (Storable and Cacheable Content)
@@ -11,4 +7,6 @@
 10049-1 IGNORE  (Non-Storable Content)
 10027   IGNORE  (Information Disclosure - Suspicious Comments)
 10054   IGNORE  (Cookie without SameSite Attribute)
+10110   IGNORE  (Dangerous JS Functions)
+10063-1 IGNORE  (Permissions Policy Header Not Set)
 
