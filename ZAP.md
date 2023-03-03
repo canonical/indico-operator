@@ -14,7 +14,7 @@ The response does not contain sensitive, personal or user-specific information.
 
 ## 10049-3 IGNORE  (Sub Resource Integrity Attribute Missing)
 
-To be worked.
+SRI is not needed in this case.
 
 ## 10109    IGNORE  (Modern Web Application)
 
