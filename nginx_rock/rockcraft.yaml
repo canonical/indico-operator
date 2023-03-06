@@ -27,7 +27,7 @@ parts:
     plugin: nil
     override-build: |
       craftctl default
-      rm $CRAFT_PART_INSTALL/etc/nginx/nginx.conf $CRAFT_PART_INSTALL/etc/nginx/common_headers.conf
+      rm $CRAFT_PART_INSTALL/etc/nginx/nginx.conf
     override-prime: |
       craftctl default
       mkdir run
