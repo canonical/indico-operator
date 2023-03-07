@@ -18,5 +18,6 @@ jobs:
       zap-cmd-options: '-T 60 -z "-addoninstall jython" --hook "/zap/wrk/tests/zap/hook.py"'
       zap-target: localhost
       zap-target-port: 80
+      zap-rules-file-name: "zap_rules.tsv"
       trivy-fs-enabled: true
       trivy-image-config: "trivy.yaml"

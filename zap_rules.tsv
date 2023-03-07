@@ -1,0 +1,12 @@
+10202	IGNORE	(Absence of Anti-CSRF Tokens)
+10031	IGNORE	(User Controllable HTML Element Attribute (Potential XSS))
+10049-3	IGNORE	(Storable and Cacheable Content)
+90003	IGNORE	(Sub Resource Integrity Attribute Missing)
+10109	IGNORE	(Modern Web Application)
+90033	IGNORE	(Loosely Scoped Cookie)
+10049-1	IGNORE	(Non-Storable Content)
+10027	IGNORE	(Information Disclosure - Suspicious Comments)
+10054	IGNORE	(Cookie without SameSite Attribute)
+10110	IGNORE	(Dangerous JS Functions)
+10063-1	IGNORE	(Permissions Policy Header Not Set)
+
