@@ -73,6 +73,7 @@ class IndicoOperatorCharm(CharmBase):
         )
         # self.framework.observe(self.on.update_status, self._refresh_external_resources)
         self.framework.observe(self.on.add_admin_action, self._add_admin_action)
+        self.framework.observe(self.on.anonymize_user_action, self._anonymize_user_action)
 
         self._stored.set_default(
             db_conn_str=None,
@@ -924,6 +925,40 @@ class IndicoOperatorCharm(CharmBase):
                 event.fail(
                     # Parameter validation errors are printed to stdout
                     f"Failed to create admin {event.params['email']}: {ex.stdout!r}"
+                )
+
+    def _anonymize_user_action(self, event: ActionEvent) -> None:
+        """Anonymize user in Indico.
+
+        Args:
+            event: Event triggered by the anonymize-user action
+        """
+        container = self.unit.get_container("indico")
+        indico_env_config = self._get_indico_env_config_str(container)
+
+        cmd = [
+            "/usr/local/bin/indico",
+            "anonymize",
+            "user",
+            event.params["email"],
+        ]
+
+        if container.can_connect():
+            process = container.exec(
+                cmd,
+                user="indico",
+                working_dir="/srv/indico",
+                environment=indico_env_config,
+            )
+            try:
+                output = process.wait_output()
+                event.set_results({"user": f"{event.params['email']}", "output": output})
+            except ExecError as ex:
+                logger.exception("Action anonymize-user failed: %s", ex.stdout)
+
+                event.fail(
+                    # Parameter validation errors are printed to stdout
+                    f"Failed to anonymize user {event.params['email']}: {ex.stdout!r}"
                 )
 
 

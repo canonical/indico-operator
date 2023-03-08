@@ -10,3 +10,9 @@ add-admin:
       type: string
       description: User password.
   required: [email, password]
+anonymize-user:
+  description: Anonymize user in Indico
+  params:
+    email:
+      type: string
+      description: User email.
