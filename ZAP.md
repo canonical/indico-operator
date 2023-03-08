@@ -51,3 +51,7 @@ More information in [eval](https://developer.mozilla.org/en-US/docs/Web/JavaScri
 Permissions are features offered by the browser through an API. You have to specify every permission separately, so setting a value for this header could negatively impact the user experience.
 
 More information in [Permissions Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Permissions-Policy).
+
+## 10038   IGNORE   (Content Security Policy (CSP) Header Not Set)
+
+By enabling CSP Header, some features while creating events don't work as expected so we are ignoring this alert.
