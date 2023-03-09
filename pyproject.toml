@@ -18,6 +18,9 @@ show_missing = true
 [tool.pytest.ini_options]
 minversion = "6.0"
 log_cli_level = "INFO"
+markers = [
+    "requires_secrets: mark tests that require external secrets"
+]
 
 # Formatting tools configuration
 [tool.black]

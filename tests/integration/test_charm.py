@@ -4,13 +4,23 @@
 
 """Indico charm integration tests."""
 
+import re
+import socket
+from unittest.mock import patch
+
 import juju.action
 import pytest
 import requests
+import urllib3.exceptions
 from ops.model import ActiveStatus, Application
 from pytest_operator.plugin import OpsTest
 
-from charm import CELERY_PROMEXP_PORT, NGINX_PROMEXP_PORT, STATSD_PROMEXP_PORT
+from charm import (
+    CELERY_PROMEXP_PORT,
+    NGINX_PROMEXP_PORT,
+    STAGING_UBUNTU_SAML_URL,
+    STATSD_PROMEXP_PORT,
+)
 
 
 @pytest.mark.asyncio
@@ -118,3 +128,80 @@ async def test_add_admin(app: Application):
     assert action.status == "completed"
     assert action.results["user"] == email
     assert f'Admin with email "{email}" correctly created' in action.results["output"]
+
+
+@pytest.mark.asyncio
+@pytest.mark.abort_on_fail
+@pytest.mark.requires_secrets
+async def test_saml_auth(app: Application, saml_email: str, saml_password: str):
+    """
+    arrange: given charm in its initial state
+    act: configure a SAML target url and fire SAML authentication
+    assert: The SAML authentication process is executed successfully.
+    """
+    await app.set_config({"site_url": "https://indico.local"}),  # type: ignore[attr-defined] # pylint: disable=W0106 # noqa
+    await app.set_config({"saml_target_url": STAGING_UBUNTU_SAML_URL}),  # type: ignore[attr-defined] # pylint: disable=expression-not-assigned # noqa
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+    host = "indico.local"
+    original_getaddrinfo = socket.getaddrinfo
+
+    def patched_getaddrinfo(*args):
+        if args[0] == host:
+            return original_getaddrinfo("127.0.0.1", *args[1:])
+        return original_getaddrinfo(*args)
+
+    with patch.multiple(socket, getaddrinfo=patched_getaddrinfo):
+        session = requests.session()
+        dashboard_page = session.get(
+            f"https://{host}/user/dashboard/", verify=False, allow_redirects=False
+        )
+        assert dashboard_page.status_code == 302
+        print(dashboard_page.headers["Location"])
+
+        session.get(f"https://{host}", verify=False)
+        login_page = session.get(
+            f"https://{host}/login",
+            verify=False,
+        )
+
+        csrf_token = re.findall(
+            "<input type='hidden' name='csrfmiddlewaretoken' value='([^']+)' />", login_page.text
+        )[0]
+        saml_callback = session.post(
+            "https://login.staging.ubuntu.com/+login",
+            data={
+                "csrfmiddlewaretoken": csrf_token,
+                "email": saml_email,
+                "user-intentions": "login",
+                "password": saml_password,
+                "next": "/saml/process",
+                "continue": "",
+                "openid.usernamesecret": "",
+                "RelayState": "indico.local",
+            },
+            headers={"Referer": login_page.url},
+        )
+        print(saml_callback.text)
+        saml_response = re.findall(
+            '<input type="hidden" name="SAMLResponse" value="([^"]+)" />', saml_callback.text
+        )[0]
+        session.post(
+            f"https://{host}/multipass/saml/ubuntu/acs",
+            data={
+                "RelayState": "None",
+                "SAMLResponse": saml_response,
+                "openid.usernamesecret": "",
+            },
+            verify=False,
+        )
+        session.post(
+            f"https://{host}/multipass/saml/ubuntu/acs",
+            data={"SAMLResponse": saml_response, "SameSite": "1"},
+            verify=False,
+        )
+
+        dashboard_page = session.get(
+            f"https://{host}/user/dashboard/", verify=False, allow_redirects=False
+        )
+        assert dashboard_page.status_code == 200
