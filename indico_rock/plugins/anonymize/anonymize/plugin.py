@@ -4,15 +4,15 @@
 
 """Connect our CLI plugin to the existing Indico's CLI."""
 
-from autocreate.cli import cli
+from anonymize.cli import cli
 from indico.core import signals
 from indico.core.plugins import IndicoPlugin
 
 
-class AutocreatePlugin(IndicoPlugin):
-    """Autocreate
+class AnonymizePlugin(IndicoPlugin):
+    """Anonymize
 
-    Provides a way to non-interactively create users via Indico's CLI
+    Provides a way to non-interactively anonymize users via Indico's CLI
     """
 
     def init(self):

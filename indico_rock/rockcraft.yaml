@@ -60,6 +60,7 @@ parts:
         python-ldap \
         uwsgi \
         ./autocreate
+        ./anonymize
     override-prime: |
       craftctl default
       /bin/bash -c "mkdir -p --mode=775 srv/indico/{archive,cache,custom,etc,log,tmp}"
