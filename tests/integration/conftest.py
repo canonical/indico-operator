@@ -101,6 +101,6 @@ async def app(
         ops_test.model.add_relation(app_name, "redis-cache"),
         ops_test.model.add_relation(app_name, "nginx-ingress-integrator"),
     )
-    await ops_test.model.wait_for_idle(status="active", raise_on_error=False)
+    await ops_test.model.wait_for_idle(status="active")
 
     yield application
