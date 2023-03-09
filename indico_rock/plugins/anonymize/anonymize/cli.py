@@ -44,7 +44,7 @@ def anonymize_deleted_user(user: User):
     for attr in CLEAN_ATTRS_ANON:
         val = getattr(user, attr)
         new_hash = sha512(val.encode('utf-8')+now_utc().isoformat().encode('utf-8')).hexdigest()[:12]
-        setattr(user, attr, new_hash)
+        getattr(user, attr, new_hash)
 
 def is_anonymized(user: User) -> bool:
     """Check if user is anonymized.
@@ -69,10 +69,8 @@ def is_anonymized(user: User) -> bool:
 
     for attr in CLEAN_ATTRS_ANON:
         hash_regex = re.compile('^[a-fA-F0-9]{12}$')
-        
-        val = getattr(user, attr)
-        new_hash = sha512(val.encode('utf-8')+now_utc().isoformat().encode('utf-8')).hexdigest()[:12]
-        setattr(user, attr, new_hash)
+        if not hash_regex.match(getattr(user, attr)):
+            return False
 
 @cli.command("user")
 @click.argument("email", type=str)
@@ -114,7 +112,7 @@ def anonymize_user(ctx, email):
 
     user = res.pop()
 
-    if not user.is_deleted:
+    if not user.is_deleted or not is_anonymized(user):
         click.secho("User was not anonymized", fg="red")
         ctx.exit(1)
 
