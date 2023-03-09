@@ -203,3 +203,100 @@ class TestActions(TestBase):
             working_dir="/srv/indico",
             environment=indico_env_config,
         )
+
+    @patch.object(Container, "exec")
+    def test_anonymize_user(self, mock_exec):
+        """
+        arrange: an email
+        act: when the _on_anonymize_user_action method is executed
+        assert: the indico command to anonymize the user is executed with the appropriate
+            parameters and the event results is set as expected
+        """
+        # Set Indico
+        charm: IndicoOperatorCharm = typing.cast(IndicoOperatorCharm, self.harness.charm)
+        charm._get_installed_plugins = MagicMock(return_value="")
+        charm._get_indico_secret_key_from_relation = MagicMock(return_value="")
+        self.harness.container_pebble_ready("indico")
+
+        # Set Mock
+        email = "sample@email.com"
+        mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=(f"{email}", None)))
+
+        # Set and trigger the event
+        mock_event = MagicMock(spec=ActionEvent)
+        mock_event.params = {
+            "email": email,
+        }
+        charm._anonymize_user_action(mock_event)
+
+        # Check if command was called
+        expected_cmd = [
+            "/usr/local/bin/indico",
+            "anonymize",
+            "user",
+            email,
+        ]
+        container = self.harness.model.unit.get_container("indico")
+        indico_env_config = charm._get_indico_env_config_str(container)
+        mock_exec.assert_any_call(
+            expected_cmd,
+            user="indico",
+            working_dir="/srv/indico",
+            environment=indico_env_config,
+        )
+
+        # Check if event results was properly set
+        mock_event.set_results.assert_called_with(
+            {"user": f"{email}", "output": (f"{email}", None)}
+        )
+
+    @patch.object(Container, "exec")
+    def test_anonymize_user_fail(self, mock_exec):
+        """
+        arrange: an email
+        act: when the _on_anonymize_user_action method is executed
+        assert: the indico command to anonymize the user is executed with the appropriate
+            parameters and the event results is set as expected
+        """
+        # Set Indico
+        charm: IndicoOperatorCharm = typing.cast(IndicoOperatorCharm, self.harness.charm)
+        charm._get_installed_plugins = MagicMock(return_value="")
+        charm._get_indico_secret_key_from_relation = MagicMock(return_value="")
+        self.harness.container_pebble_ready("indico")
+
+        # Set Mock
+        email = "sample@email.com"
+        error_msg = "Failed"
+        expected_cmd = [
+            "/usr/local/bin/indico",
+            "anonymize",
+            "user",
+            email,
+        ]
+        expected_exception = ExecError(
+            command=" ".join(expected_cmd), exit_code=42, stdout=f"{error_msg}", stderr=""
+        )
+        wait_output = MagicMock(side_effect=expected_exception)
+        mock_exec.return_value = MagicMock(wait_output=wait_output)
+
+        # Set and trigger the event
+        mock_event = MagicMock(spec=ActionEvent)
+        mock_event.params = {
+            "email": email,
+        }
+        charm._anonymize_user_action(mock_event)
+
+        # Check if command was called
+        container = self.harness.model.unit.get_container("indico")
+        indico_env_config = charm._get_indico_env_config_str(container)
+        mock_exec.assert_any_call(
+            expected_cmd,
+            user="indico",
+            working_dir="/srv/indico",
+            environment=indico_env_config,
+        )
+
+        # Check if event fail was properly set
+        expected_argument = f"Failed to anonymize user {email}: '{error_msg}'"
+        # Pylint does not understand that the mock supports this call
+        mock_event.fail.assert_called_with(expected_argument)  # pylint: disable=no-member

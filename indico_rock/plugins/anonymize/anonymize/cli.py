@@ -2,18 +2,22 @@
 # Copyright 2023 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-"""Create users non-interactively."""
+"""Anonymize users non-interactively."""
 
 import click
 from hashlib import sha512
 from indico.cli.core import cli_group
 from indico.core.db import db
-from indico.modules.auth import Identity
 from indico.modules.users import User
-from indico.modules.users.operations import create_user
 from indico.modules.users.util import search_users
 from indico.util.date_time import now_utc
+from indico.modules.users import User
+import re
 
+CLEAN_ATTRS_STR = ['affiliation', 'email', 'secondary_emails', ]
+CLEAN_ATTRS_SET= ['favorite_users', 'favorite_categories', 'identities']
+CLEAN_ATTRS_LIST = ['old_api_keys',]
+CLEAN_ATTRS_ANON = ['first_name', 'last_name', 'phone', 'address',]
 
 @cli_group(name="anonymize")
 def cli():
@@ -21,25 +25,51 @@ def cli():
 
 # Extracted from:
 # https://github.com/bpedersen2/indico-cron-advanced-cleaner/
-def anonymize_deleted_user(user):
-    """Anonymize user by erasing specific attributes."""
+def anonymize_deleted_user(user: User):
+    """Anonymize user by erasing specific attributes.
 
-    _anon_attrs = ['first_name', 'last_name', 'phone', 'address',]
-    _clear_attrs_str = ['affiliation', 'email', 'secondary_emails', ]
-    _clear_attrs_set = ['favorite_users', 'favorite_categories', 'identities']
-    _clear_attrs_list = ['old_api_keys',]
+    Args:
+        user: Indico user
+    """
 
-
-    for attr in _clear_attrs_str:
+    for attr in CLEAN_ATTRS_STR:
         setattr(user, attr, '')
 
-    for attr in _clear_attrs_set:
+    for attr in CLEAN_ATTRS_SET:
         setattr(user, attr, set())
 
-    for attr in _clear_attrs_list:
+    for attr in CLEAN_ATTRS_LIST:
         setattr(user, attr, list())
 
-    for attr in _anon_attrs:
+    for attr in CLEAN_ATTRS_ANON:
+        val = getattr(user, attr)
+        new_hash = sha512(val.encode('utf-8')+now_utc().isoformat().encode('utf-8')).hexdigest()[:12]
+        setattr(user, attr, new_hash)
+
+def is_anonymized(user: User) -> bool:
+    """Check if user is anonymized.
+
+    Args:
+        user: Indico user
+    Returns:
+        If user is anonymized
+    """
+
+    for attr in CLEAN_ATTRS_STR:
+        if getattr(user, attr, '') != '':
+            return False
+
+    for attr in CLEAN_ATTRS_SET:
+        if getattr(user, attr, set()):
+            return False
+
+    for attr in CLEAN_ATTRS_LIST:
+        if getattr(user, attr, list()):
+            return False
+
+    for attr in CLEAN_ATTRS_ANON:
+        hash_regex = re.compile('^[a-fA-F0-9]{12}$')
+        
         val = getattr(user, attr)
         new_hash = sha512(val.encode('utf-8')+now_utc().isoformat().encode('utf-8')).hexdigest()[:12]
         setattr(user, attr, new_hash)
@@ -48,7 +78,12 @@ def anonymize_deleted_user(user):
 @click.argument("email", type=str)
 @click.pass_context
 def anonymize_user(ctx, email):
-    """Anonymize user non-interactively."""
+    """Anonymize user non-interactively.
+
+    Args:
+        ctx: context
+        email: email of the user to be anonymized
+    """
 
     email = email.lower()
 
