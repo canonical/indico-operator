@@ -56,7 +56,6 @@ parts:
         indico==3.2.0 \
         indico-plugin-piwik \
         indico-plugin-storage-s3 \
-        git+https://github.com/bpedersen2/indico-cron-advanced-cleaner \
         python3-saml \
         python-ldap \
         uwsgi \
