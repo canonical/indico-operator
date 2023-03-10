@@ -132,7 +132,7 @@ async def test_add_admin(app: Application):
 
 @pytest.mark.asyncio
 @pytest.mark.abort_on_fail
-# @pytest.mark.requires_secrets
+@pytest.mark.requires_secrets
 async def test_saml_auth(
     app: Application, saml_email: str, saml_password: str, requests_timeout: float
 ):
