@@ -133,13 +133,20 @@ async def test_add_admin(app: Application):
 @pytest.mark.asyncio
 @pytest.mark.abort_on_fail
 # @pytest.mark.requires_secrets
-async def test_saml_auth(app: Application, saml_email: str, saml_password: str, requests_timeout: float):
+async def test_saml_auth(
+    app: Application, saml_email: str, saml_password: str, requests_timeout: float
+):
     """
     arrange: given charm in its initial state
     act: configure a SAML target url and fire SAML authentication
     assert: The SAML authentication process is executed successfully.
     """
-    await app.set_config({"site_url": "https://indico.local", "saml_target_url": STAGING_UBUNTU_SAML_URL}),  # type: ignore[attr-defined] # pylint: disable=W0106 # noqa
+    await app.set_config(  # type: ignore[attr-defined] # pylint: disable=W0106
+        {
+            "site_url": "https://indico.local",
+            "saml_target_url": STAGING_UBUNTU_SAML_URL,
+        }
+    )
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
     host = "indico.local"
@@ -153,7 +160,10 @@ async def test_saml_auth(app: Application, saml_email: str, saml_password: str, 
     with patch.multiple(socket, getaddrinfo=patched_getaddrinfo):
         session = requests.session()
         dashboard_page = session.get(
-            f"https://{host}/user/dashboard/", verify=False, allow_redirects=False, timeout=requests_timeout,
+            f"https://{host}/user/dashboard/",
+            verify=False,
+            allow_redirects=False,
+            timeout=requests_timeout,
         )
         assert dashboard_page.status_code == 302
 
@@ -195,7 +205,7 @@ async def test_saml_auth(app: Application, saml_email: str, saml_password: str, 
             verify=False,
             timeout=requests_timeout,
         )
-        last_page = session.post(
+        session.post(
             f"https://{host}/multipass/saml/ubuntu/acs",
             data={"SAMLResponse": saml_response, "SameSite": "1"},
             verify=False,
@@ -203,6 +213,9 @@ async def test_saml_auth(app: Application, saml_email: str, saml_password: str, 
         )
 
         dashboard_page = session.get(
-            f"https://{host}/register/ubuntu", verify=False, allow_redirects=False, timeout=requests_timeout,
+            f"https://{host}/register/ubuntu",
+            verify=False,
+            allow_redirects=False,
+            timeout=requests_timeout,
         )
         assert dashboard_page.status_code == 200
