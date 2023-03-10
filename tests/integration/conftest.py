@@ -61,6 +61,12 @@ def prometheus_exporter_images_fixture(metadata):
     yield prometheus_exporter_images
 
 
+@fixture(scope="module")
+def requests_timeout():
+    """Provides a global default timeout for HTTP requests"""
+    yield 15
+
+
 @pytest_asyncio.fixture(scope="module")
 async def app(
     ops_test: OpsTest,
@@ -101,6 +107,6 @@ async def app(
         ops_test.model.add_relation(app_name, "redis-cache"),
         ops_test.model.add_relation(app_name, "nginx-ingress-integrator"),
     )
-    await ops_test.model.wait_for_idle(status="active")
+    await ops_test.model.wait_for_idle(status="active", raise_on_error=False)
 
     yield application

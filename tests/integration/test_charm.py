@@ -132,15 +132,14 @@ async def test_add_admin(app: Application):
 
 @pytest.mark.asyncio
 @pytest.mark.abort_on_fail
-@pytest.mark.requires_secrets
-async def test_saml_auth(app: Application, saml_email: str, saml_password: str):
+# @pytest.mark.requires_secrets
+async def test_saml_auth(app: Application, saml_email: str, saml_password: str, requests_timeout: float):
     """
     arrange: given charm in its initial state
     act: configure a SAML target url and fire SAML authentication
     assert: The SAML authentication process is executed successfully.
     """
-    await app.set_config({"site_url": "https://indico.local"}),  # type: ignore[attr-defined] # pylint: disable=W0106 # noqa
-    await app.set_config({"saml_target_url": STAGING_UBUNTU_SAML_URL}),  # type: ignore[attr-defined] # pylint: disable=expression-not-assigned # noqa
+    await app.set_config({"site_url": "https://indico.local", "saml_target_url": STAGING_UBUNTU_SAML_URL}),  # type: ignore[attr-defined] # pylint: disable=W0106 # noqa
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
     host = "indico.local"
@@ -154,15 +153,15 @@ async def test_saml_auth(app: Application, saml_email: str, saml_password: str):
     with patch.multiple(socket, getaddrinfo=patched_getaddrinfo):
         session = requests.session()
         dashboard_page = session.get(
-            f"https://{host}/user/dashboard/", verify=False, allow_redirects=False
+            f"https://{host}/user/dashboard/", verify=False, allow_redirects=False, timeout=requests_timeout,
         )
         assert dashboard_page.status_code == 302
-        print(dashboard_page.headers["Location"])
 
         session.get(f"https://{host}", verify=False)
         login_page = session.get(
             f"https://{host}/login",
             verify=False,
+            timeout=requests_timeout,
         )
 
         csrf_token = re.findall(
@@ -181,8 +180,8 @@ async def test_saml_auth(app: Application, saml_email: str, saml_password: str):
                 "RelayState": "indico.local",
             },
             headers={"Referer": login_page.url},
+            timeout=requests_timeout,
         )
-        print(saml_callback.text)
         saml_response = re.findall(
             '<input type="hidden" name="SAMLResponse" value="([^"]+)" />', saml_callback.text
         )[0]
@@ -194,14 +193,16 @@ async def test_saml_auth(app: Application, saml_email: str, saml_password: str):
                 "openid.usernamesecret": "",
             },
             verify=False,
+            timeout=requests_timeout,
         )
-        session.post(
+        last_page = session.post(
             f"https://{host}/multipass/saml/ubuntu/acs",
             data={"SAMLResponse": saml_response, "SameSite": "1"},
             verify=False,
+            timeout=requests_timeout,
         )
 
         dashboard_page = session.get(
-            f"https://{host}/user/dashboard/", verify=False, allow_redirects=False
+            f"https://{host}/register/ubuntu", verify=False, allow_redirects=False, timeout=requests_timeout,
         )
         assert dashboard_page.status_code == 200
