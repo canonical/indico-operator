@@ -134,7 +134,11 @@ async def test_add_admin(app: Application):
 @pytest.mark.abort_on_fail
 @pytest.mark.requires_secrets
 async def test_saml_auth(
-    ops_test: OpsTest, app: Application, saml_email: str, saml_password: str, requests_timeout: float
+    ops_test: OpsTest,
+    app: Application,
+    saml_email: str,
+    saml_password: str,
+    requests_timeout: float,
 ):
     """
     arrange: given charm in its initial state
@@ -147,7 +151,7 @@ async def test_saml_auth(
             "saml_target_url": STAGING_UBUNTU_SAML_URL,
         }
     )
-    await ops_test.model.wait_for_idle(status="active")
+    await ops_test.model.wait_for_idle(status="active")  # type: ignore[union-attr]
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
     host = "indico.local"
