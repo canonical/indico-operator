@@ -8,10 +8,12 @@ import click
 from hashlib import sha512
 from indico.cli.core import cli_group
 from indico.core.db import db
+from indico.modules.events.registration import Registration
+from indico.modules.events.registration.models.form_fields import RegistrationFormField
 from indico.modules.users import User
 from indico.modules.users.util import search_users
 from indico.util.date_time import now_utc
-from indico.modules.users import User
+from indico.modules.events import User
 import re
 
 CLEAN_ATTRS_STR = ['affiliation', 'email', 'secondary_emails', ]
@@ -22,6 +24,16 @@ CLEAN_ATTRS_ANON = ['first_name', 'last_name', 'phone', 'address',]
 @cli_group(name="anonymize")
 def cli():
     """Anonymize users non-interactively."""
+
+# Extracted from:
+# https://github.com/bpedersen2/indico-cron-advanced-cleaner/
+def _hash(val: str):
+    """Create hash of val.
+
+    Args:
+        val: The string from the hash should be created
+    """
+    return sha512(val.encode('utf-8')+now_utc().isoformat().encode('utf-8')).hexdigest()[:12]
 
 # Extracted from:
 # https://github.com/bpedersen2/indico-cron-advanced-cleaner/
@@ -42,9 +54,7 @@ def anonymize_deleted_user(user: User):
         setattr(user, attr, list())
 
     for attr in CLEAN_ATTRS_ANON:
-        val = getattr(user, attr)
-        new_hash = sha512(val.encode('utf-8')+now_utc().isoformat().encode('utf-8')).hexdigest()[:12]
-        getattr(user, attr, new_hash)
+        getattr(user, attr, _hash(getattr(user, attr)))
 
 def is_anonymized(user: User) -> bool:
     """Check if user is anonymized.
@@ -72,6 +82,38 @@ def is_anonymized(user: User) -> bool:
         if not hash_regex.match(getattr(user, attr)):
             return False
 
+# Extracted from:
+# https://github.com/bpedersen2/indico-cron-advanced-cleaner/
+def anonymize_registrations(user: User):
+    """Anonymize user by erasing registrations attributes.
+
+    Args:
+        user: Indico user
+    """
+    registrations = Registration.query.filter(Registration.user_id == user.id)
+    for registration in registrations:
+        for fid, rdata in registration.data_by_field.items():
+            fieldtype = RegistrationFormField.get(oid=fid).input_type
+            if fieldtype in ('text', 'textarea'):
+                rdata.data = _hash(rdata.data)
+            elif fieldtype == 'email':
+                rdata.data = _hash(rdata.data) + '@invalid.invalid'
+            elif fieldtype == 'phone':
+                rdata.data = '(+00) 0000000'
+            elif fieldtype == 'date':
+                # Keep dates for now
+                pass
+            elif fieldtype == 'country':
+                # Keep country for now
+                pass
+        # other field types are not touched (choice, mulitchoice, radio)
+
+        registration.first_name = _hash(registration.first_name)
+        registration.last_name = _hash(registration.last_name)
+        registration.email = _hash(registration.email)
+        if registration.user:
+            registration.user = None
+
 @cli.command("user")
 @click.argument("email", type=str)
 @click.pass_context
@@ -93,8 +135,10 @@ def anonymize_user(ctx, email):
     if not users.has_rows():
         click.secho("User not found", fg="red")
         ctx.exit(1)
-    user = user.first()
-    # First we mark as deleted so won't appear in any form
+    user = users.first()
+    # Anonymize registrations
+    anonymize_registrations(user)
+    # We mark as deleted so won't appear in search users forms
     user.is_deleted = True
     anonymize_deleted_user(user)
     db.session.commit()  # pylint: disable=no-member
