@@ -145,12 +145,15 @@ async def test_saml_auth(
     act: configure a SAML target url and fire SAML authentication
     assert: The SAML authentication process is executed successfully.
     """
+    # The linter does not recognize set_config as a method, so this errors must be ignored.
     await app.set_config(  # type: ignore[attr-defined] # pylint: disable=W0106
         {
             "site_url": "https://indico.local",
             "saml_target_url": STAGING_UBUNTU_SAML_URL,
         }
     )
+    # The linter does not recognize wait_for_idle as a method,
+    # since ops_test has a model as Optional, so this error must be ignored.
     await ops_test.model.wait_for_idle(status="active")  # type: ignore[union-attr]
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -162,8 +165,7 @@ async def test_saml_auth(
             return original_getaddrinfo("127.0.0.1", *args[1:])
         return original_getaddrinfo(*args)
 
-    with patch.multiple(socket, getaddrinfo=patched_getaddrinfo):
-        session = requests.session()
+    with patch.multiple(socket, getaddrinfo=patched_getaddrinfo), requests.session() as session:
         dashboard_page = session.get(
             f"https://{host}/user/dashboard/",
             verify=False,
