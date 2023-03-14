@@ -309,6 +309,13 @@ class TestCore(TestBase):
             "https://example.local:8080",
             auth_providers["ubuntu"]["saml_config"]["sp"]["entityId"],
         )
+        self.harness.update_config({"saml_target_url": "https://login.staging.ubuntu.com/saml/"})
+        auth_providers = literal_eval(updated_plan_env["INDICO_AUTH_PROVIDERS"])
+        self.assertEqual("saml", auth_providers["ubuntu"]["type"])
+        self.assertEqual(
+            "https://example.local:8080",
+            auth_providers["ubuntu"]["saml_config"]["sp"]["entityId"],
+        )
         identity_providers = literal_eval(updated_plan_env["INDICO_IDENTITY_PROVIDERS"])
         self.assertEqual("ldap", identity_providers["ldap"]["type"])
         self.assertTrue("INDICO_PROVIDER_MAP" in updated_plan_env)
