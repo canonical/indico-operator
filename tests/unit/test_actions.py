@@ -251,6 +251,58 @@ class TestActions(TestBase):
         )
 
     @patch.object(Container, "exec")
+    def test_anonymize_user_list(self, mock_exec):
+        """
+        arrange: an list of emails
+        act: when the _on_anonymize_user_action method is executed
+        assert: the indico command to anonymize the user is executed with the appropriate
+            parameters and the event results is set as expected
+        """
+        # Set Indico
+        charm: IndicoOperatorCharm = typing.cast(IndicoOperatorCharm, self.harness.charm)
+        charm._get_installed_plugins = MagicMock(return_value="")
+        charm._get_indico_secret_key_from_relation = MagicMock(return_value="")
+        self.harness.container_pebble_ready("indico")
+
+        # Set Mock
+        emails = "sample@email.com,sample1@email.com"
+
+        # Set and trigger the event
+        mock_event = MagicMock(spec=ActionEvent)
+        mock_event.params = {
+            "email": emails,
+        }
+        first_email = MagicMock(wait_output=MagicMock(return_value=("sample@email.com", None)))
+        second_email = MagicMock(wait_output=MagicMock(return_value=("sample1@email.com", None)))
+        mock_exec.side_effect = [first_email, second_email]
+        charm._anonymize_user_action(mock_event)
+
+        def validate_command(email: str):
+            # Check if command was called
+            expected_cmd = [
+                "/usr/local/bin/indico",
+                "anonymize",
+                "user",
+                email,
+            ]
+            container = self.harness.model.unit.get_container("indico")
+            indico_env_config = charm._get_indico_env_config_str(container)
+            mock_exec.assert_any_call(
+                expected_cmd,
+                user="indico",
+                working_dir="/srv/indico",
+                environment=indico_env_config,
+            )
+
+        for email in emails.split(","):
+            validate_command(email)
+
+        # Check if event results was properly set
+        mock_event.set_results.assert_called_with(
+            {"user": f"{emails}", "output": (f"{emails}", None)}
+        )
+
+    @patch.object(Container, "exec")
     def test_anonymize_user_fail(self, mock_exec):
         """
         arrange: an email

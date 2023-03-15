@@ -15,4 +15,4 @@ anonymize-user:
   params:
     email:
       type: string
-      description: User email.
+      description: User email (or a list of emails separated by comma)

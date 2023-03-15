@@ -936,30 +936,40 @@ class IndicoOperatorCharm(CharmBase):
         container = self.unit.get_container("indico")
         indico_env_config = self._get_indico_env_config_str(container)
 
-        cmd = [
-            "/usr/local/bin/indico",
-            "anonymize",
-            "user",
-            event.params["email"],
-        ]
+        output_list = []
+        email_list_separator = ","
+        for email in event.params["email"].split(email_list_separator):
+            cmd = [
+                "/usr/local/bin/indico",
+                "anonymize",
+                "user",
+                email,
+            ]
 
-        if container.can_connect():
-            process = container.exec(
-                cmd,
-                user="indico",
-                working_dir="/srv/indico",
-                environment=indico_env_config,
-            )
-            try:
-                output = process.wait_output()
-                event.set_results({"user": f"{event.params['email']}", "output": output})
-            except ExecError as ex:
-                logger.exception("Action anonymize-user failed: %s", ex.stdout)
-
-                event.fail(
-                    # Parameter validation errors are printed to stdout
-                    f"Failed to anonymize user {event.params['email']}: {ex.stdout!r}"
+            if container.can_connect():
+                process = container.exec(
+                    cmd,
+                    user="indico",
+                    working_dir="/srv/indico",
+                    environment=indico_env_config,
                 )
+                try:
+                    out = process.wait_output()
+                    output_list.append(out[0])
+                except ExecError as ex:
+                    logger.exception("Action anonymize-user failed: %s", ex.stdout)
+
+                    event.fail(
+                        # Parameter validation errors are printed to stdout
+                        f"Failed to anonymize user {event.params['email']}: {ex.stdout!r}"
+                    )
+                    return
+        event.set_results(
+            {
+                "user": f"{event.params['email']}",
+                "output": (email_list_separator.join(output_list), None),
+            }
+        )
 
 
 if __name__ == "__main__":  # pragma: no cover
