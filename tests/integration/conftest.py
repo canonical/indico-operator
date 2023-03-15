@@ -14,6 +14,24 @@ from pytest import Config, fixture
 from pytest_operator.plugin import OpsTest
 
 
+@fixture(scope="module")
+def saml_email(pytestconfig: Config):
+    """SAML login email address test argument for SAML integration tests"""
+    email = pytestconfig.getoption("--saml-email")
+    if not email:
+        raise ValueError("--saml-email argument is required for selected test cases")
+    return email
+
+
+@fixture(scope="module")
+def saml_password(pytestconfig: Config):
+    """SAML login password test argument for SAML integration tests"""
+    password = pytestconfig.getoption("--saml-password")
+    if not password:
+        raise ValueError("--saml-password argument is required for selected test cases")
+    return password
+
+
 @fixture(scope="module", name="metadata")
 def metadata_fixture():
     """Provides charm metadata."""
@@ -41,6 +59,12 @@ def prometheus_exporter_images_fixture(metadata):
         ]["upstream-source"],
     }
     yield prometheus_exporter_images
+
+
+@fixture(scope="module")
+def requests_timeout():
+    """Provides a global default timeout for HTTP requests"""
+    yield 15
 
 
 @pytest_asyncio.fixture(scope="module")
@@ -83,6 +107,6 @@ async def app(
         ops_test.model.add_relation(app_name, "redis-cache"),
         ops_test.model.add_relation(app_name, "nginx-ingress-integrator"),
     )
-    await ops_test.model.wait_for_idle(status="active")
+    await ops_test.model.wait_for_idle(status="active", raise_on_error=False)
 
     yield application

@@ -4,13 +4,23 @@
 
 """Indico charm integration tests."""
 
+import re
+import socket
+from unittest.mock import patch
+
 import juju.action
 import pytest
 import requests
+import urllib3.exceptions
 from ops.model import ActiveStatus, Application
 from pytest_operator.plugin import OpsTest
 
-from charm import CELERY_PROMEXP_PORT, NGINX_PROMEXP_PORT, STATSD_PROMEXP_PORT
+from charm import (
+    CELERY_PROMEXP_PORT,
+    NGINX_PROMEXP_PORT,
+    STAGING_UBUNTU_SAML_URL,
+    STATSD_PROMEXP_PORT,
+)
 
 
 @pytest.mark.asyncio
@@ -151,3 +161,98 @@ async def test_anonymize_user(app: Application):
     assert action_anonymize.status == "completed"
     assert action_anonymize.results["user"] == email
     assert f'User with email "{email}" correctly anonymized' in action_anonymize.results["output"]
+
+@pytest.mark.requires_secrets
+async def test_saml_auth(
+    ops_test: OpsTest,
+    app: Application,
+    saml_email: str,
+    saml_password: str,
+    requests_timeout: float,
+):
+    """
+    arrange: given charm in its initial state
+    act: configure a SAML target url and fire SAML authentication
+    assert: The SAML authentication process is executed successfully.
+    """
+    # The linter does not recognize set_config as a method, so this errors must be ignored.
+    await app.set_config(  # type: ignore[attr-defined] # pylint: disable=W0106
+        {
+            "site_url": "https://indico.local",
+            "saml_target_url": STAGING_UBUNTU_SAML_URL,
+        }
+    )
+    # The linter does not recognize wait_for_idle as a method,
+    # since ops_test has a model as Optional, so this error must be ignored.
+    await ops_test.model.wait_for_idle(status="active")  # type: ignore[union-attr]
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+    host = "indico.local"
+    original_getaddrinfo = socket.getaddrinfo
+
+    def patched_getaddrinfo(*args):
+        if args[0] == host:
+            return original_getaddrinfo("127.0.0.1", *args[1:])
+        return original_getaddrinfo(*args)
+
+    with patch.multiple(socket, getaddrinfo=patched_getaddrinfo), requests.session() as session:
+        dashboard_page = session.get(
+            f"https://{host}/user/dashboard/",
+            verify=False,
+            allow_redirects=False,
+            timeout=requests_timeout,
+        )
+        assert dashboard_page.status_code == 302
+
+        session.get(f"https://{host}", verify=False)
+        login_page = session.get(
+            f"https://{host}/login",
+            verify=False,
+            timeout=requests_timeout,
+        )
+
+        csrf_token = re.findall(
+            "<input type='hidden' name='csrfmiddlewaretoken' value='([^']+)' />", login_page.text
+        )[0]
+        saml_callback = session.post(
+            "https://login.staging.ubuntu.com/+login",
+            data={
+                "csrfmiddlewaretoken": csrf_token,
+                "email": saml_email,
+                "user-intentions": "login",
+                "password": saml_password,
+                "next": "/saml/process",
+                "continue": "",
+                "openid.usernamesecret": "",
+                "RelayState": "indico.local",
+            },
+            headers={"Referer": login_page.url},
+            timeout=requests_timeout,
+        )
+        saml_response = re.findall(
+            '<input type="hidden" name="SAMLResponse" value="([^"]+)" />', saml_callback.text
+        )[0]
+        session.post(
+            f"https://{host}/multipass/saml/ubuntu/acs",
+            data={
+                "RelayState": "None",
+                "SAMLResponse": saml_response,
+                "openid.usernamesecret": "",
+            },
+            verify=False,
+            timeout=requests_timeout,
+        )
+        session.post(
+            f"https://{host}/multipass/saml/ubuntu/acs",
+            data={"SAMLResponse": saml_response, "SameSite": "1"},
+            verify=False,
+            timeout=requests_timeout,
+        )
+
+        dashboard_page = session.get(
+            f"https://{host}/register/ubuntu",
+            verify=False,
+            allow_redirects=False,
+            timeout=requests_timeout,
+        )
+        assert dashboard_page.status_code == 200
