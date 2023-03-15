@@ -162,6 +162,7 @@ async def test_anonymize_user(app: Application):
     assert action_anonymize.results["user"] == email
     assert f'User with email "{email}" correctly anonymized' in action_anonymize.results["output"]
 
+
 @pytest.mark.requires_secrets
 async def test_saml_auth(
     ops_test: OpsTest,
