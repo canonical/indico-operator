@@ -8,12 +8,11 @@ import click
 from hashlib import sha512
 from indico.cli.core import cli_group
 from indico.core.db import db
-from indico.modules.events.registration import Registration
+from indico.modules.events.registration.models.registrations import Registration
 from indico.modules.events.registration.models.form_fields import RegistrationFormField
 from indico.modules.users import User
 from indico.modules.users.util import search_users
 from indico.util.date_time import now_utc
-from indico.modules.events import User
 import re
 
 CLEAN_ATTRS_STR = ['affiliation', 'email', 'secondary_emails', ]
@@ -54,33 +53,7 @@ def anonymize_deleted_user(user: User):
         setattr(user, attr, list())
 
     for attr in CLEAN_ATTRS_ANON:
-        getattr(user, attr, _hash(getattr(user, attr)))
-
-def is_anonymized(user: User) -> bool:
-    """Check if user is anonymized.
-
-    Args:
-        user: Indico user
-    Returns:
-        If user is anonymized
-    """
-
-    for attr in CLEAN_ATTRS_STR:
-        if getattr(user, attr, '') != '':
-            return False
-
-    for attr in CLEAN_ATTRS_SET:
-        if getattr(user, attr, set()):
-            return False
-
-    for attr in CLEAN_ATTRS_LIST:
-        if getattr(user, attr, list()):
-            return False
-
-    for attr in CLEAN_ATTRS_ANON:
-        hash_regex = re.compile('^[a-fA-F0-9]{12}$')
-        if not hash_regex.match(getattr(user, attr)):
-            return False
+        setattr(user, attr, _hash(getattr(user, attr)))
 
 # Extracted from:
 # https://github.com/bpedersen2/indico-cron-advanced-cleaner/
@@ -113,6 +86,7 @@ def anonymize_registrations(user: User):
         registration.email = _hash(registration.email)
         if registration.user:
             registration.user = None
+    db.session.commit()  # pylint: disable=no-member
 
 @cli.command("user")
 @click.argument("email", type=str)
@@ -136,27 +110,16 @@ def anonymize_user(ctx, email):
         click.secho("User not found", fg="red")
         ctx.exit(1)
     user = users.first()
-    # Anonymize registrations
-    anonymize_registrations(user)
+
     # We mark as deleted so won't appear in search users forms
     user.is_deleted = True
     anonymize_deleted_user(user)
-    db.session.commit()  # pylint: disable=no-member
+    # Anonymize registrations
+    anonymize_registrations(user)
 
     # Validate the changes
-    res = search_users(
-        exact=True,
-        include_deleted=True,
-        include_pending=False,
-        include_blocked=False,
-        external=False,
-        allow_system_user=False,
-        email=email,
-    )
-
-    user = res.pop()
-
-    if not user.is_deleted or not is_anonymized(user):
+    users = User.query.filter(User.all_emails == email)
+    if users.has_rows():
         click.secho("User was not anonymized", fg="red")
         ctx.exit(1)
 
