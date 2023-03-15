@@ -118,3 +118,36 @@ async def test_add_admin(app: Application):
     assert action.status == "completed"
     assert action.results["user"] == email
     assert f'Admin with email "{email}" correctly created' in action.results["output"]
+
+
+@pytest.mark.asyncio
+@pytest.mark.abort_on_fail
+async def test_anonymize_user(app: Application):
+    """
+    arrange: given charm in its initial state
+    act: create an user and run the anonymize-user action
+    assert: check the output in the action result
+    """
+
+    # Application actually does have units
+    assert app.units[0]  # type: ignore
+
+    email = "anonymize@email.com"
+    # This is a test password
+    password = "somepassword"  # nosec
+
+    # Application actually does have units
+    action_add_admin: juju.action.Action = await app.units[0].run_action(  # type: ignore
+        "add-admin", email=email, password=password
+    )
+    await action_add_admin.wait()
+    assert action_add_admin.status == "completed"
+
+    # Application actually does have units
+    action_anonymize: juju.action.Action = await app.units[0].run_action(  # type: ignore
+        "anonymize-user", email=email
+    )
+    await action_anonymize.wait()
+    assert action_anonymize.status == "completed"
+    assert action_anonymize.results["user"] == email
+    assert f'User with email "{email}" correctly anonymized' in action_anonymize.results["output"]

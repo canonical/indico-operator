@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3 -W ignore::UserWarning
 # Copyright 2023 Canonical Ltd.
 # See LICENSE file for licensing details.
 
