@@ -22,6 +22,8 @@ from charm import (
     STATSD_PROMEXP_PORT,
 )
 
+ADMIN_USER_EMAIL = "sample@email.com"
+
 
 @pytest.mark.asyncio
 @pytest.mark.abort_on_fail
@@ -106,7 +108,8 @@ async def test_health_checks(app: Application):
 
 @pytest.mark.asyncio
 @pytest.mark.abort_on_fail
-async def test_add_admin(app: Application):
+@pytest.fixture(scope="module")
+async def add_admin(app: Application):
     """
     arrange: given charm in its initial state
     act: run the add-admin action
@@ -116,7 +119,7 @@ async def test_add_admin(app: Application):
     # Application actually does have units
     assert app.units[0]  # type: ignore
 
-    email = "sample@email.com"
+    email = ADMIN_USER_EMAIL
     # This is a test password
     password = "somepassword"  # nosec
 
@@ -132,35 +135,23 @@ async def test_add_admin(app: Application):
 
 @pytest.mark.asyncio
 @pytest.mark.abort_on_fail
+@pytest.mark.usefixtures("add_admin")
 async def test_anonymize_user(app: Application):
     """
-    arrange: given charm in its initial state
-    act: create an user and run the anonymize-user action
+    arrange: admin user created
+    act: run the anonymize-user action
     assert: check the output in the action result
     """
 
     # Application actually does have units
-    assert app.units[0]  # type: ignore
-
-    email = "anonymize@email.com"
-    # This is a test password
-    password = "somepassword"  # nosec
-
-    # Application actually does have units
-    action_add_admin: juju.action.Action = await app.units[0].run_action(  # type: ignore
-        "add-admin", email=email, password=password
-    )
-    await action_add_admin.wait()
-    assert action_add_admin.status == "completed"
-
-    # Application actually does have units
     action_anonymize: juju.action.Action = await app.units[0].run_action(  # type: ignore
-        "anonymize-user", email=email
+        "anonymize-user", email=ADMIN_USER_EMAIL
     )
     await action_anonymize.wait()
     assert action_anonymize.status == "completed"
-    assert action_anonymize.results["user"] == email
-    assert f'User with email "{email}" correctly anonymized' in action_anonymize.results["output"]
+    assert action_anonymize.results["user"] == ADMIN_USER_EMAIL
+    expected_words = [ADMIN_USER_EMAIL, "correctly anonymized"]
+    assert all(word in action_anonymize.results["output"] for word in expected_words)
 
 
 @pytest.mark.requires_secrets

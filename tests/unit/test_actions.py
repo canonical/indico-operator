@@ -318,7 +318,7 @@ class TestActions(TestBase):
 
         # Set Mock
         email = "sample@email.com"
-        error_msg = "Failed"
+        error_msg = "Execution error"
         expected_cmd = [
             "/usr/local/bin/indico",
             "anonymize",
@@ -330,7 +330,6 @@ class TestActions(TestBase):
         )
         wait_output = MagicMock(side_effect=expected_exception)
         mock_exec.return_value = MagicMock(wait_output=wait_output)
-
         # Set and trigger the event
         mock_event = MagicMock(spec=ActionEvent)
         mock_event.params = {
@@ -352,3 +351,11 @@ class TestActions(TestBase):
         expected_argument = f"Failed to anonymize user {email}: '{error_msg}'"
         # Pylint does not understand that the mock supports this call
         mock_event.fail.assert_called_with(expected_argument)  # pylint: disable=no-member
+
+        # Check if event results was properly set
+        mock_event.set_results.assert_called_with(
+            {
+                "user": f"{email}",
+                "output": (f"Failed to anonymize user {email}: '{error_msg}'", None),
+            }
+        )

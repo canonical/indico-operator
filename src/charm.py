@@ -8,7 +8,7 @@
 import logging
 import os
 from re import findall
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Generator, List, Optional, Tuple
 from urllib.parse import urlparse
 
 import ops.lib
@@ -35,6 +35,7 @@ logger = logging.getLogger(__name__)
 CANONICAL_LDAP_HOST = "ldap.canonical.com"
 CELERY_PROMEXP_PORT = "9808"
 DATABASE_NAME = "indico"
+EMAIL_LIST_SEPARATOR = ","
 INDICO_CUSTOMIZATION_DIR = "/srv/indico/custom"
 NGINX_PROMEXP_PORT = "9113"
 PORT = 8080
@@ -973,18 +974,21 @@ class IndicoOperatorCharm(CharmBase):
                     f"Failed to create admin {event.params['email']}: {ex.stdout!r}"
                 )
 
-    def _anonymize_user_action(self, event: ActionEvent) -> None:
-        """Anonymize user in Indico.
+    def _execute_anonymize_cmd(self, event: ActionEvent) -> Generator:
+        """Execute anonymize command for each email.
 
         Args:
-            event: Event triggered by the anonymize-user action
+            event (ActionEvent): Event triggered by the anonymize-user action
+
+        Raises:
+            ex: Raised if the command fails
+
+        Yields:
+            Generator: Output of each command execution
         """
         container = self.unit.get_container("indico")
         indico_env_config = self._get_indico_env_config_str(container)
-
-        output_list = []
-        email_list_separator = ","
-        for email in event.params["email"].split(email_list_separator):
+        for email in event.params["email"].split(EMAIL_LIST_SEPARATOR):
             cmd = [
                 "/usr/local/bin/indico",
                 "anonymize",
@@ -1001,21 +1005,37 @@ class IndicoOperatorCharm(CharmBase):
                 )
                 try:
                     out = process.wait_output()
-                    output_list.append(out[0])
+                    yield out[0]
                 except ExecError as ex:
                     logger.exception("Action anonymize-user failed: %s", ex.stdout)
+                    raise ex
 
-                    event.fail(
-                        # Parameter validation errors are printed to stdout
-                        f"Failed to anonymize user {event.params['email']}: {ex.stdout!r}"
-                    )
-                    return
-        event.set_results(
-            {
-                "user": f"{event.params['email']}",
-                "output": (email_list_separator.join(output_list), None),
-            }
-        )
+    def _anonymize_user_action(self, event: ActionEvent) -> None:
+        """Anonymize user in Indico.
+
+        If find an error, the action will fail. All the results will be set until the error
+        has happened.
+
+        Args:
+            event: Event triggered by the anonymize-user action
+        """
+        output_list = []
+        try:
+            output_list = list(self._execute_anonymize_cmd(event))
+        except ExecError as ex:
+            fail_msg = f"Failed to anonymize user {event.params['email']}: {ex.stdout!r}"
+            output_list.append(fail_msg)
+            event.fail(
+                # Parameter validation errors are printed to stdout
+                fail_msg
+            )
+        finally:
+            event.set_results(
+                {
+                    "user": f"{event.params['email']}",
+                    "output": (EMAIL_LIST_SEPARATOR.join(output_list), None),
+                }
+            )
 
 
 if __name__ == "__main__":  # pragma: no cover

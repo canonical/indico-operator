@@ -11,7 +11,7 @@ add-admin:
       description: User password.
   required: [email, password]
 anonymize-user:
-  description: Anonymize user in Indico
+  description: Anonymize stored personal data to facilitate GDPR compliance
   params:
     email:
       type: string
