@@ -35,6 +35,7 @@ logger = logging.getLogger(__name__)
 CANONICAL_LDAP_HOST = "ldap.canonical.com"
 CELERY_PROMEXP_PORT = "9808"
 DATABASE_NAME = "indico"
+EMAIL_LIST_MAX = 50
 EMAIL_LIST_SEPARATOR = ","
 INDICO_CUSTOMIZATION_DIR = "/srv/indico/custom"
 NGINX_PROMEXP_PORT = "9113"
@@ -1019,6 +1020,11 @@ class IndicoOperatorCharm(CharmBase):
         Args:
             event: Event triggered by the anonymize-user action
         """
+        if len(event.params["email"].split(EMAIL_LIST_SEPARATOR)) > EMAIL_LIST_MAX:
+            fail_msg = "List of more than 50 emails are not allowed"
+            logger.error("Action anonymize-user failed: %s", fail_msg)
+            event.fail(fail_msg)
+            return
         output_list = []
         try:
             output_list = list(self._execute_anonymize_cmd(event))
