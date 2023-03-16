@@ -26,7 +26,7 @@ def cli():
 
 # Extracted from:
 # https://github.com/bpedersen2/indico-cron-advanced-cleaner/
-def _hash(val: str):
+def _hash(val: str) -> str:
     """Create hash of val.
 
     Args:
@@ -107,8 +107,8 @@ def anonymize_user(ctx, email):
 
     users = User.query.filter(User.all_emails == email)
     if not users.has_rows():
-        click.secho("User not found", fg="red")
-        ctx.exit(1)
+        click.secho("User not found", fg="yellow")
+        ctx.exit(0)
     user = users.first()
 
     # We mark as deleted so won't appear in search users forms
