@@ -6,13 +6,14 @@
 # pylint:disable=protected-access
 
 import typing
+from secrets import token_hex
 from unittest.mock import DEFAULT, MagicMock, patch
 
 from ops.charm import ActionEvent
 from ops.model import Container
 from ops.pebble import ExecError
 
-from tests.unit._patched_charm import IndicoOperatorCharm
+from tests.unit._patched_charm import EMAIL_LIST_MAX, EMAIL_LIST_SEPARATOR, IndicoOperatorCharm
 from tests.unit.test_base import TestBase
 
 
@@ -27,7 +28,6 @@ class TestActions(TestBase):
         assert: the customization sources are pulled and the plugins upgraded
         """
         mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=("", None)))
-
         self.harness.disable_hooks()
         self.set_up_all_relations()
         self.harness.set_leader(True)
@@ -204,77 +204,27 @@ class TestActions(TestBase):
             environment=indico_env_config,
         )
 
-    @patch.object(Container, "exec")
-    def test_anonymize_user(self, mock_exec):
+    def _set_indico(self) -> IndicoOperatorCharm:
+        """Set Indico Charm
+
+        Returns:
+            IndicoOperatorCharm: Indico charm configured
         """
-        arrange: an email
-        act: when the _on_anonymize_user_action method is executed
-        assert: the indico command to anonymize the user is executed with the appropriate
-            parameters and the event results is set as expected
-        """
-        # Set Indico
         charm: IndicoOperatorCharm = typing.cast(IndicoOperatorCharm, self.harness.charm)
         charm._get_installed_plugins = MagicMock(return_value="")
         charm._get_indico_secret_key_from_relation = MagicMock(return_value="")
         self.harness.container_pebble_ready("indico")
+        return charm
 
-        # Set Mock
-        email = "sample@email.com"
-        mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=(f"{email}", None)))
+    def _anonymize_user(self, emails: str, mock_event: MagicMock, mock_exec: MagicMock):
+        """Execute anonymize user action
 
-        # Set and trigger the event
-        mock_event = MagicMock(spec=ActionEvent)
-        mock_event.params = {
-            "email": email,
-        }
-        charm._anonymize_user_action(mock_event)
-
-        # Check if command was called
-        expected_cmd = [
-            "/usr/local/bin/indico",
-            "anonymize",
-            "user",
-            email,
-        ]
-        container = self.harness.model.unit.get_container("indico")
-        indico_env_config = charm._get_indico_env_config_str(container)
-        mock_exec.assert_any_call(
-            expected_cmd,
-            user="indico",
-            working_dir="/srv/indico",
-            environment=indico_env_config,
-        )
-
-        # Check if event results was properly set
-        mock_event.set_results.assert_called_with(
-            {"user": f"{email}", "output": (f"{email}", None)}
-        )
-
-    @patch.object(Container, "exec")
-    def test_anonymize_user_list(self, mock_exec):
+        Args:
+            email (str): email parameter to be used_
+            mock_event (MagicMock): event mock
+            mock_exec (MagicMock): Container exec mock
         """
-        arrange: an list of emails
-        act: when the _on_anonymize_user_action method is executed
-        assert: the indico command to anonymize the user is executed with the appropriate
-            parameters and the event results is set as expected
-        """
-        # Set Indico
-        charm: IndicoOperatorCharm = typing.cast(IndicoOperatorCharm, self.harness.charm)
-        charm._get_installed_plugins = MagicMock(return_value="")
-        charm._get_indico_secret_key_from_relation = MagicMock(return_value="")
-        self.harness.container_pebble_ready("indico")
-
-        # Set Mock
-        emails = "sample@email.com,sample1@email.com"
-
-        # Set and trigger the event
-        mock_event = MagicMock(spec=ActionEvent)
-        mock_event.params = {
-            "email": emails,
-        }
-        first_email = MagicMock(wait_output=MagicMock(return_value=("sample@email.com", None)))
-        second_email = MagicMock(wait_output=MagicMock(return_value=("sample1@email.com", None)))
-        mock_exec.side_effect = [first_email, second_email]
+        charm = self._set_indico()
         charm._anonymize_user_action(mock_event)
 
         def validate_command(email: str):
@@ -303,6 +253,74 @@ class TestActions(TestBase):
         )
 
     @patch.object(Container, "exec")
+    def test_anonymize_user(self, mock_exec):
+        """
+        arrange: an email
+        act: when the _on_anonymize_user_action method is executed
+        assert: the indico command to anonymize the user is executed with the appropriate
+            parameters and the event results is set as expected
+        """
+        email = token_hex(16)
+        mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=(f"{email}", None)))
+        mock_event = MagicMock(spec=ActionEvent)
+        mock_event.params = {
+            "email": email,
+        }
+        self._anonymize_user(email, mock_event, mock_exec)
+
+    def _generate_emails_mock(self, emails: str) -> typing.Iterator[MagicMock]:
+        """Generate list of mocks accordingly to list of emails
+
+        Args:
+            emails (str): list of emails
+
+        Yields:
+            Iterator[MagicMock]: Mock of exec that returns email
+        """
+        for email in emails.split(EMAIL_LIST_SEPARATOR):
+            wait_output = MagicMock(return_value=(email, None))
+            yield MagicMock(wait_output=wait_output)
+
+    @patch.object(Container, "exec")
+    def test_anonymize_user_list(self, mock_exec):
+        """
+        arrange: an list of 5 emails
+        act: when the _on_anonymize_user_action method is executed
+        assert: the indico command to anonymize the user is executed with the appropriate
+            parameters and the event results is set as expected
+        """
+        emails = EMAIL_LIST_SEPARATOR.join([token_hex(16) for _ in range(5)])
+        mock_event = MagicMock(spec=ActionEvent)
+        mock_event.params = {
+            "email": emails,
+        }
+        mock_exec.side_effect = list(self._generate_emails_mock(emails))
+        self._anonymize_user(emails, mock_event, mock_exec)
+
+    @patch.object(Container, "exec")
+    def test_anonymize_user_maximum_reached(self, mock_exec):
+        """
+        arrange: an list of 51 emails
+        act: when the _on_anonymize_user_action method is executed
+        assert: the indico command to anonymize the user is executed with the appropriate
+            parameters and the event results is set as expected
+        """
+        charm = self._set_indico()
+        emails = EMAIL_LIST_SEPARATOR.join([token_hex(16) for _ in range(EMAIL_LIST_MAX + 1)])
+        mock_event = MagicMock(spec=ActionEvent)
+        mock_event.params = {
+            "email": emails,
+        }
+        mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=("", None)))
+
+        charm._anonymize_user_action(mock_event)
+        expected_argument = (
+            f"Failed to anonymize user: List of more than {EMAIL_LIST_MAX} emails are not allowed"
+        )
+        # Pylint does not understand that the mock supports this call
+        mock_event.fail.assert_called_with(expected_argument)  # pylint: disable=no-member
+
+    @patch.object(Container, "exec")
     def test_anonymize_user_fail(self, mock_exec):
         """
         arrange: an email
@@ -310,14 +328,10 @@ class TestActions(TestBase):
         assert: the indico command to anonymize the user is executed with the appropriate
             parameters and the event results is set as expected
         """
-        # Set Indico
-        charm: IndicoOperatorCharm = typing.cast(IndicoOperatorCharm, self.harness.charm)
-        charm._get_installed_plugins = MagicMock(return_value="")
-        charm._get_indico_secret_key_from_relation = MagicMock(return_value="")
-        self.harness.container_pebble_ready("indico")
+        charm = self._set_indico()
 
         # Set Mock
-        email = "sample@email.com"
+        email = token_hex(16)
         error_msg = "Execution error"
         expected_cmd = [
             "/usr/local/bin/indico",
@@ -335,6 +349,7 @@ class TestActions(TestBase):
         mock_event.params = {
             "email": email,
         }
+
         charm._anonymize_user_action(mock_event)
 
         # Check if command was called

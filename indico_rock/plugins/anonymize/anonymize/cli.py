@@ -18,7 +18,7 @@ import re
 
 EMPTY_LIST = lambda _: list()
 EMPTY_SET = lambda _: set()
-EMPTY_VAL = lambda _: ''
+EMPTY_VAL = lambda _: str
 HASH_VAL = lambda val: _hash(val)
 CLEAN_ATTRS = {
     'affiliation' : EMPTY_VAL,
@@ -69,19 +69,19 @@ def anonymize_registration(registration: Registration):
         registration (Registration): User registration_
     """
     for fid, rdata in registration.data_by_field.items():
-            fieldtype = RegistrationFormField.get(oid=fid).input_type
-            if fieldtype in ('text', 'textarea'):
-                rdata.data = _hash(rdata.data)
-            elif fieldtype == 'email':
-                rdata.data = _hash(rdata.data) + '@invalid.invalid'
-            elif fieldtype == 'phone':
-                rdata.data = '(+00) 0000000'
-            elif fieldtype == 'date':
-                # Keep dates for now
-                pass
-            elif fieldtype == 'country':
-                # Keep country for now
-                pass
+        fieldtype = RegistrationFormField.get(oid=fid).input_type
+        if fieldtype in ('text', 'textarea'):
+            rdata.data = _hash(rdata.data)
+        elif fieldtype == 'email':
+            rdata.data = _hash(rdata.data) + '@invalid.invalid'
+        elif fieldtype == 'phone':
+            rdata.data = '(+00) 0000000'
+        elif fieldtype == 'date':
+            # Keep dates for now
+            pass
+        elif fieldtype == 'country':
+            # Keep country for now
+            pass
         # other field types are not touched (choice, multiple choice, radio)
 
     registration.first_name = _hash(registration.first_name)

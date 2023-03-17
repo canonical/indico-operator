@@ -62,3 +62,5 @@ class _PGSQLPatch:
 
 pgsql_patch = _PGSQLPatch()
 IndicoOperatorCharm = __import__("charm").IndicoOperatorCharm
+EMAIL_LIST_MAX = __import__("charm").EMAIL_LIST_MAX
+EMAIL_LIST_SEPARATOR = __import__("charm").EMAIL_LIST_SEPARATOR

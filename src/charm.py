@@ -8,7 +8,7 @@
 import logging
 import os
 from re import findall
-from typing import Dict, Generator, List, Optional, Tuple
+from typing import Dict, Iterator, List, Optional, Tuple
 from urllib.parse import urlparse
 
 import ops.lib
@@ -975,7 +975,7 @@ class IndicoOperatorCharm(CharmBase):
                     f"Failed to create admin {event.params['email']}: {ex.stdout!r}"
                 )
 
-    def _execute_anonymize_cmd(self, event: ActionEvent) -> Generator:
+    def _execute_anonymize_cmd(self, event: ActionEvent) -> Iterator[str]:
         """Execute anonymize command for each email.
 
         Args:
@@ -985,7 +985,7 @@ class IndicoOperatorCharm(CharmBase):
             ex: Raised if the command fails
 
         Yields:
-            Generator: Output of each command execution
+            Iterator[str]: Output of each command execution
         """
         container = self.unit.get_container("indico")
         indico_env_config = self._get_indico_env_config_str(container)
@@ -1009,7 +1009,10 @@ class IndicoOperatorCharm(CharmBase):
                     yield out[0]
                 except ExecError as ex:
                     logger.exception("Action anonymize-user failed: %s", ex.stdout)
-                    raise ex
+                    fail_msg = f"Failed to anonymize user {event.params['email']}: {ex.stdout!r}"
+                    event.fail(fail_msg)
+                    yield fail_msg
+                    return
 
     def _anonymize_user_action(self, event: ActionEvent) -> None:
         """Anonymize user in Indico.
@@ -1021,27 +1024,18 @@ class IndicoOperatorCharm(CharmBase):
             event: Event triggered by the anonymize-user action
         """
         if len(event.params["email"].split(EMAIL_LIST_SEPARATOR)) > EMAIL_LIST_MAX:
-            fail_msg = "List of more than 50 emails are not allowed"
+            max_reached_msg = f"List of more than {EMAIL_LIST_MAX} emails are not allowed"
+            fail_msg = f"Failed to anonymize user: {max_reached_msg}"
             logger.error("Action anonymize-user failed: %s", fail_msg)
             event.fail(fail_msg)
             return
-        output_list = []
-        try:
-            output_list = list(self._execute_anonymize_cmd(event))
-        except ExecError as ex:
-            fail_msg = f"Failed to anonymize user {event.params['email']}: {ex.stdout!r}"
-            output_list.append(fail_msg)
-            event.fail(
-                # Parameter validation errors are printed to stdout
-                fail_msg
-            )
-        finally:
-            event.set_results(
-                {
-                    "user": f"{event.params['email']}",
-                    "output": (EMAIL_LIST_SEPARATOR.join(output_list), None),
-                }
-            )
+        output_list = list(self._execute_anonymize_cmd(event))
+        event.set_results(
+            {
+                "user": f"{event.params['email']}",
+                "output": (EMAIL_LIST_SEPARATOR.join(output_list), None),
+            }
+        )
 
 
 if __name__ == "__main__":  # pragma: no cover

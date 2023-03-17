@@ -116,8 +116,9 @@ async def add_admin(app: Application):
     assert: check the output in the action result
     """
 
-    # Application actually does have units
-    assert app.units[0]  # type: ignore
+    assert hasattr(app, "units")
+
+    assert app.units[0]
 
     email = ADMIN_USER_EMAIL
     # This is a test password
