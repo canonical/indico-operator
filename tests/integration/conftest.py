@@ -93,7 +93,7 @@ async def app(
         "indico-nginx-image": pytestconfig.getoption("--indico-nginx-image"),
     }
     resources.update(prometheus_exporter_images)
-    cached = next(glob.glob('**/*.charm', recursive=True))
+    cached = glob.glob("**/*.charm", recursive=True)
     if len(cached) >= 1:
         charm = Path(cached[0])
     else:
