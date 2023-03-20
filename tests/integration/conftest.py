@@ -94,8 +94,8 @@ async def app(
     }
     resources.update(prometheus_exporter_images)
     cached = next(glob.glob('**/*.charm', recursive=True))
-    if cached is not None:
-        charm = Path(cached)
+    if len(cached) >= 1:
+        charm = Path(cached[0])
     else:
         charm = await ops_test.build_charm(".")
     application = await ops_test.model.deploy(
