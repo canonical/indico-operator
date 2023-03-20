@@ -11,7 +11,7 @@ jobs:
     uses: canonical/operator-workflows/.github/workflows/test.yaml@ISD-420-investigate-github-workflow-caching
     secrets: inherit
   plugins-test:
-    name: Specific test for the plugins
+    name: Specific test for the plugin
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
