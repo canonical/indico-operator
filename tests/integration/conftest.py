@@ -4,6 +4,7 @@
 """Fixtures for Indico charm integration tests."""
 
 import asyncio
+import glob
 from pathlib import Path
 from typing import Dict
 
@@ -92,7 +93,11 @@ async def app(
         "indico-nginx-image": pytestconfig.getoption("--indico-nginx-image"),
     }
     resources.update(prometheus_exporter_images)
-    charm = await ops_test.build_charm(".")
+    cached = next(glob.glob('**/*.charm', recursive=True))
+    if cached is not None:
+        charm = Path(cached)
+    else:
+        charm = await ops_test.build_charm(".")
     application = await ops_test.model.deploy(
         charm, resources=resources, application_name=app_name, series="focal"
     )
