@@ -2,6 +2,9 @@ name: Tests
 
 on:
   pull_request:
+  push:
+    branches:
+      - ISD-420-investigate-github-workflow-caching
 
 jobs:
   unit-tests:
