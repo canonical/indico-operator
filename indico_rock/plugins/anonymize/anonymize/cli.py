@@ -71,7 +71,7 @@ def anonymize_registration(registration: Registration):
         if fieldtype in ("text", "textarea"):
             rdata.data = _hash(rdata.data)
         elif fieldtype == "email":
-            rdata.data = _hash(rdata.data) + "@invalid.invalid"
+            rdata.data = f"{_hash(rdata.data)}@invalid.invalid"
         elif fieldtype == "phone":
             rdata.data = "(+00) 0000000"
         elif fieldtype == "date":

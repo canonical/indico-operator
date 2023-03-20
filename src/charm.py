@@ -1024,10 +1024,12 @@ class IndicoOperatorCharm(CharmBase):
             event: Event triggered by the anonymize-user action
         """
         if len(event.params["email"].split(EMAIL_LIST_SEPARATOR)) > EMAIL_LIST_MAX:
-            max_reached_msg = f"List of more than {EMAIL_LIST_MAX} emails are not allowed"
-            fail_msg = f"Failed to anonymize user: {max_reached_msg}"
-            logger.error("Action anonymize-user failed: %s", fail_msg)
-            event.fail(fail_msg)
+            max_reached_msg = (
+                "Failed to anonymize user: "
+                f"List of more than {EMAIL_LIST_MAX} emails are not allowed"
+            )
+            logger.error("Action anonymize-user failed: %s", max_reached_msg)
+            event.fail(max_reached_msg)
             return
         output_list = list(self._execute_anonymize_cmd(event))
         event.set_results(
