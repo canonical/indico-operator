@@ -94,6 +94,7 @@ async def app(
     }
     resources.update(prometheus_exporter_images)
     cached = glob.glob("**/*.charm", recursive=True)
+    print(f"found {cached} charms")
     if len(cached) >= 1:
         charm = Path(cached[0])
     else:
