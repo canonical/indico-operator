@@ -248,9 +248,7 @@ class TestActions(TestBase):
             validate_command(email)
 
         # Check if event results was properly set
-        mock_event.set_results.assert_called_with(
-            {"user": f"{emails}", "output": (f"{emails}", None)}
-        )
+        mock_event.set_results.assert_called_with({"user": f"{emails}", "output": f"{emails}"})
 
     @patch.object(Container, "exec")
     def test_anonymize_user(self, mock_exec):
@@ -371,6 +369,6 @@ class TestActions(TestBase):
         mock_event.set_results.assert_called_with(
             {
                 "user": f"{email}",
-                "output": (f"Failed to anonymize user {email}: '{error_msg}'", None),
+                "output": f"Failed to anonymize user {email}: '{error_msg}'",
             }
         )

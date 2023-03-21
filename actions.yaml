@@ -16,3 +16,4 @@ anonymize-user:
     email:
       type: string
       description: User email (or a list of emails separated by comma). Maximum of 50 emails.
+  required: [email]

@@ -123,7 +123,7 @@ def anonymize_user(ctx, email):
 
     users = User.query.filter(User.all_emails == email)
     if not users.has_rows():
-        click.secho("User not found", fg="yellow")
+        click.secho(f"No user found for email {email}", fg="yellow")
         ctx.exit(0)
     user = users.first()
 
@@ -136,7 +136,7 @@ def anonymize_user(ctx, email):
     # Validate the changes
     users = User.query.filter(User.all_emails == email)
     if users.has_rows():
-        click.secho("User was not anonymized", fg="red")
+        click.secho("User with email {email} was not anonymized", fg="red")
         ctx.exit(1)
 
-    click.secho(f'User with email "{email}" correctly anonymized', fg="green")
+    click.secho(f"User with email {email} correctly anonymized", fg="green")

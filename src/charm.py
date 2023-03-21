@@ -1006,7 +1006,7 @@ class IndicoOperatorCharm(CharmBase):
                 )
                 try:
                     out = process.wait_output()
-                    yield out[0]
+                    yield out[0].replace("\n", "")
                 except ExecError as ex:
                     logger.exception("Action anonymize-user failed: %s", ex.stdout)
                     fail_msg = f"Failed to anonymize user {event.params['email']}: {ex.stdout!r}"
@@ -1035,7 +1035,7 @@ class IndicoOperatorCharm(CharmBase):
         event.set_results(
             {
                 "user": f"{event.params['email']}",
-                "output": (EMAIL_LIST_SEPARATOR.join(output_list), None),
+                "output": EMAIL_LIST_SEPARATOR.join(output_list),
             }
         )
 
