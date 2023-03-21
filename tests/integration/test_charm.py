@@ -10,6 +10,7 @@ from unittest.mock import patch
 
 import juju.action
 import pytest
+import pytest_asyncio
 import requests
 import urllib3.exceptions
 from ops.model import ActiveStatus, Application
@@ -106,9 +107,8 @@ async def test_health_checks(app: Application):
         assert stdout.count("0/3") == 1
 
 
-@pytest.mark.asyncio
 @pytest.mark.abort_on_fail
-@pytest.fixture(scope="module")
+@pytest_asyncio.fixture(scope="module")
 async def add_admin(app: Application):
     """
     arrange: given charm in its initial state
@@ -143,7 +143,6 @@ async def test_anonymize_user(app: Application):
     act: run the anonymize-user action
     assert: check the output in the action result
     """
-
     # Application actually does have units
     action_anonymize: juju.action.Action = await app.units[0].run_action(  # type: ignore
         "anonymize-user", email=ADMIN_USER_EMAIL
