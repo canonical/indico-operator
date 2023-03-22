@@ -96,8 +96,6 @@ def anonymize_registrations(user: User):
     registrations = Registration.query.filter(Registration.user_id == user.id)
     for registration in registrations:
         anonymize_registration(registration)
-    # db.session has commit()
-    db.session.commit()  # pylint: disable=no-member
 
 
 @cli.command("user")
@@ -128,6 +126,9 @@ def anonymize_user(ctx, email):
     anonymize_deleted_user(user)
     # Anonymize registrations
     anonymize_registrations(user)
+
+    # db.session has commit()
+    db.session.commit()  # pylint: disable=no-member
 
     # Validate the changes
     users = User.query.filter(User.all_emails == email)
