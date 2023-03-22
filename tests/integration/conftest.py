@@ -96,7 +96,7 @@ async def app(
     cached = glob.glob("**/*.charm", recursive=True)
     print(f"found {cached} charms")
     if len(cached) >= 1:
-        charm = Path(cached[0])
+        charm = f"./{Path(cached[0])}"
     else:
         charm = await ops_test.build_charm(".")
     application = await ops_test.model.deploy(
