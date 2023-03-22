@@ -997,22 +997,27 @@ class IndicoOperatorCharm(CharmBase):
                 email,
             ]
 
-            if container.can_connect():
-                process = container.exec(
-                    cmd,
-                    user="indico",
-                    working_dir="/srv/indico",
-                    environment=indico_env_config,
+            if not container.can_connect():
+                logger.error(
+                    "Action anonymize-user failed: cannot connect to the Indico workload container"
                 )
-                try:
-                    out = process.wait_output()
-                    yield out[0].replace("\n", "")
-                except ExecError as ex:
-                    logger.exception("Action anonymize-user failed: %s", ex.stdout)
-                    fail_msg = f"Failed to anonymize user {event.params['email']}: {ex.stdout!r}"
-                    event.fail(fail_msg)
-                    yield fail_msg
-                    return
+                return
+
+            process = container.exec(
+                cmd,
+                user="indico",
+                working_dir="/srv/indico",
+                environment=indico_env_config,
+            )
+            try:
+                out = process.wait_output()
+                yield out[0].replace("\n", "")
+            except ExecError as ex:
+                logger.exception("Action anonymize-user failed: %s", ex.stdout)
+                fail_msg = f"Failed to anonymize user {event.params['email']}: {ex.stdout!r}"
+                event.fail(fail_msg)
+                yield fail_msg
+                return
 
     def _anonymize_user_action(self, event: ActionEvent) -> None:
         """Anonymize user in Indico.
