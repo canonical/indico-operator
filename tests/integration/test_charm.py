@@ -154,6 +154,8 @@ async def test_anonymize_user(app: Application):
     assert all(word in action_anonymize.results["output"] for word in expected_words)
 
 
+@pytest.mark.asyncio
+@pytest.mark.abort_on_fail
 @pytest.mark.requires_secrets
 async def test_saml_auth(
     ops_test: OpsTest,
