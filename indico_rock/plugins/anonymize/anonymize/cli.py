@@ -4,13 +4,14 @@
 
 """Anonymize users non-interactively."""
 
+import uuid
+
 import click
 from indico.cli.core import cli_group
 from indico.core.db import db
 from indico.modules.events.registration.models.form_fields import RegistrationFormField
 from indico.modules.events.registration.models.registrations import Registration
 from indico.modules.users import User
-import uuid
 
 CLEAN_ATTRS = {
     "affiliation": str,

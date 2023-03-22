@@ -1001,6 +1001,9 @@ class IndicoOperatorCharm(CharmBase):
                 logger.error(
                     "Action anonymize-user failed: cannot connect to the Indico workload container"
                 )
+                self.unit.status = WaitingStatus(
+                    "Waiting to be able to connect to workload container"
+                )
                 return
 
             process = container.exec(
