@@ -4,6 +4,7 @@
 
 """Anonymize users non-interactively."""
 
+import typing
 import uuid
 
 import click
@@ -13,22 +14,6 @@ from indico.modules.events.registration.models.form_fields import RegistrationFo
 from indico.modules.events.registration.models.registrations import Registration
 from indico.modules.users import User
 
-CLEAN_ATTRS = {
-    "affiliation": str,
-    "email": str,
-    "secondary_emails": str,
-    "favorite_users": set,
-    "favorite_categories": set,
-    "identities": set,
-    "old_api_keys": list,
-}
-HASH_ATTRS = ["first_name", "last_name", "phone", "address"]
-
-
-@cli_group(name="anonymize")
-def cli():
-    """Anonymize users non-interactively."""
-
 
 def _generate_uuid() -> str:
     """Generate UUID for fake values
@@ -37,6 +22,26 @@ def _generate_uuid() -> str:
         str: UUID
     """
     return str(uuid.uuid4())
+
+
+CLEAN_ATTRS: typing.Dict[str, typing.Callable] = {
+    "affiliation": str,
+    "email": str,
+    "secondary_emails": str,
+    "favorite_users": set,
+    "favorite_categories": set,
+    "identities": set,
+    "old_api_keys": list,
+    "first_name": _generate_uuid,
+    "last_name": _generate_uuid,
+    "phone": _generate_uuid,
+    "address": _generate_uuid,
+}
+
+
+@cli_group(name="anonymize")
+def cli():
+    """Anonymize users non-interactively."""
 
 
 # Based on:
@@ -49,8 +54,6 @@ def anonymize_deleted_user(user: User):
     """
     for attr, anonymize_val in CLEAN_ATTRS.items():
         setattr(user, attr, anonymize_val())
-    for attr in HASH_ATTRS:
-        setattr(user, attr, _generate_uuid())
 
 
 def anonymize_registration(registration: Registration):

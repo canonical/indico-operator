@@ -1018,9 +1018,8 @@ class IndicoOperatorCharm(CharmBase):
             except ExecError as ex:
                 logger.exception("Action anonymize-user failed: %s", ex.stdout)
                 fail_msg = f"Failed to anonymize user {event.params['email']}: {ex.stdout!r}"
-                event.fail(fail_msg)
+                event.fail("Failed to anonymize one or more users, please verify the results.")
                 yield fail_msg
-                return
 
     def _anonymize_user_action(self, event: ActionEvent) -> None:
         """Anonymize user in Indico.

@@ -361,7 +361,7 @@ class TestActions(TestBase):
         )
 
         # Check if event fail was properly set
-        expected_argument = f"Failed to anonymize user {email}: '{error_msg}'"
+        expected_argument = "Failed to anonymize one or more users, please verify the results."
         # Pylint does not understand that the mock supports this call
         mock_event.fail.assert_called_with(expected_argument)  # pylint: disable=no-member
 
