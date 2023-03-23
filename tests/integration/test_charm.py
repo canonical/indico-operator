@@ -208,6 +208,9 @@ async def test_saml_auth(
             timeout=requests_timeout,
         )
 
+        assert hasattr(login_page, "text")
+        logger.info("debug: %s", login_page.text)
+        assert len(login_page.text) > 1
         csrf_token = re.findall(
             "<input type='hidden' name='csrfmiddlewaretoken' value='([^']+)' />", login_page.text
         )[0]
