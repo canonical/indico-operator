@@ -4,6 +4,7 @@
 
 """Indico charm integration tests."""
 
+import logging
 import re
 import socket
 from unittest.mock import patch
@@ -24,6 +25,8 @@ from charm import (
 )
 
 ADMIN_USER_EMAIL = "sample@email.com"
+
+logger = logging.getLogger()
 
 
 @pytest.mark.asyncio
@@ -223,6 +226,9 @@ async def test_saml_auth(
             headers={"Referer": login_page.url},
             timeout=requests_timeout,
         )
+        assert hasattr(saml_callback, "text")
+        logger.info("debug: %s", saml_callback.text)
+        assert len(saml_callback.text) > 1
         saml_response = re.findall(
             '<input type="hidden" name="SAMLResponse" value="([^"]+)" />', saml_callback.text
         )[0]
