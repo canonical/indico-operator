@@ -207,13 +207,11 @@ async def test_saml_auth(
             verify=False,
             timeout=requests_timeout,
         )
-
-        assert hasattr(login_page, "text")
-        logger.info("debug: %s", login_page.text)
-        assert len(login_page.text) > 1
-        csrf_token = re.findall(
+        csrf_token_matches = re.findall(
             "<input type='hidden' name='csrfmiddlewaretoken' value='([^']+)' />", login_page.text
-        )[0]
+        )
+        assert len(csrf_token_matches) > 0
+        csrf_token = csrf_token_matches[0]
         saml_callback = session.post(
             "https://login.staging.ubuntu.com/+login",
             data={
@@ -229,12 +227,11 @@ async def test_saml_auth(
             headers={"Referer": login_page.url},
             timeout=requests_timeout,
         )
-        assert hasattr(saml_callback, "text")
-        logger.info("debug: %s", saml_callback.text)
-        assert len(saml_callback.text) > 1
-        saml_response = re.findall(
+        saml_response_matches = re.findall(
             '<input type="hidden" name="SAMLResponse" value="([^"]+)" />', saml_callback.text
-        )[0]
+        )
+        assert len(saml_response_matches) > 0
+        saml_response = saml_response_matches[0]
         session.post(
             f"https://{host}/multipass/saml/ubuntu/acs",
             data={
