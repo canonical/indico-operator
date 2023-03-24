@@ -4,12 +4,14 @@
 
 """Indico charm integration tests."""
 
+import logging
 import re
 import socket
 from unittest.mock import patch
 
 import juju.action
 import pytest
+import pytest_asyncio
 import requests
 import urllib3.exceptions
 from ops.model import ActiveStatus, Application
@@ -21,6 +23,10 @@ from charm import (
     STAGING_UBUNTU_SAML_URL,
     STATSD_PROMEXP_PORT,
 )
+
+ADMIN_USER_EMAIL = "sample@email.com"
+
+logger = logging.getLogger()
 
 
 @pytest.mark.asyncio
@@ -104,19 +110,20 @@ async def test_health_checks(app: Application):
         assert stdout.count("0/3") == 1
 
 
-@pytest.mark.asyncio
 @pytest.mark.abort_on_fail
-async def test_add_admin(app: Application):
+@pytest_asyncio.fixture(scope="module")
+async def add_admin(app: Application):
     """
     arrange: given charm in its initial state
     act: run the add-admin action
     assert: check the output in the action result
     """
 
-    # Application actually does have units
-    assert app.units[0]  # type: ignore
+    assert hasattr(app, "units")
 
-    email = "sample@email.com"
+    assert app.units[0]
+
+    email = ADMIN_USER_EMAIL
     # This is a test password
     password = "somepassword"  # nosec
 
@@ -128,6 +135,26 @@ async def test_add_admin(app: Application):
     assert action.status == "completed"
     assert action.results["user"] == email
     assert f'Admin with email "{email}" correctly created' in action.results["output"]
+
+
+@pytest.mark.asyncio
+@pytest.mark.abort_on_fail
+@pytest.mark.usefixtures("add_admin")
+async def test_anonymize_user(app: Application):
+    """
+    arrange: admin user created
+    act: run the anonymize-user action
+    assert: check the output in the action result
+    """
+    # Application actually does have units
+    action_anonymize: juju.action.Action = await app.units[0].run_action(  # type: ignore
+        "anonymize-user", email=ADMIN_USER_EMAIL
+    )
+    await action_anonymize.wait()
+    assert action_anonymize.status == "completed"
+    assert action_anonymize.results["user"] == ADMIN_USER_EMAIL
+    expected_words = [ADMIN_USER_EMAIL, "correctly anonymized"]
+    assert all(word in action_anonymize.results["output"] for word in expected_words)
 
 
 @pytest.mark.asyncio
@@ -180,14 +207,14 @@ async def test_saml_auth(
             verify=False,
             timeout=requests_timeout,
         )
-
-        csrf_token = re.findall(
+        csrf_token_matches = re.findall(
             "<input type='hidden' name='csrfmiddlewaretoken' value='([^']+)' />", login_page.text
-        )[0]
+        )
+        assert len(csrf_token_matches) > 0
         saml_callback = session.post(
             "https://login.staging.ubuntu.com/+login",
             data={
-                "csrfmiddlewaretoken": csrf_token,
+                "csrfmiddlewaretoken": csrf_token_matches[0],
                 "email": saml_email,
                 "user-intentions": "login",
                 "password": saml_password,
@@ -199,14 +226,15 @@ async def test_saml_auth(
             headers={"Referer": login_page.url},
             timeout=requests_timeout,
         )
-        saml_response = re.findall(
+        saml_response_matches = re.findall(
             '<input type="hidden" name="SAMLResponse" value="([^"]+)" />', saml_callback.text
-        )[0]
+        )
+        assert len(saml_response_matches) > 0
         session.post(
             f"https://{host}/multipass/saml/ubuntu/acs",
             data={
                 "RelayState": "None",
-                "SAMLResponse": saml_response,
+                "SAMLResponse": saml_response_matches[0],
                 "openid.usernamesecret": "",
             },
             verify=False,
@@ -214,7 +242,7 @@ async def test_saml_auth(
         )
         session.post(
             f"https://{host}/multipass/saml/ubuntu/acs",
-            data={"SAMLResponse": saml_response, "SameSite": "1"},
+            data={"SAMLResponse": saml_response_matches[0], "SameSite": "1"},
             verify=False,
             timeout=requests_timeout,
         )

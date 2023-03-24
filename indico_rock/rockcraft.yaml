@@ -59,6 +59,7 @@ parts:
         python3-saml \
         python-ldap \
         uwsgi \
+        ./anonymize \
         ./autocreate
     override-prime: |
       craftctl default
