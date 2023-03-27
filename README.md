@@ -1,3 +1,8 @@
+[![CharmHub Badge](https://charmhub.io/indico/badge.svg)](https://charmhub.io/indico)
+[![Release to Edge](https://github.com/canonical/indico-operator/actions/workflows/test_and_publish_charm.yaml/badge.svg)](https://github.com/canonical/indico-operator/actions/workflows/test_and_publish_charm.yaml)
+[![Promote charm](https://github.com/canonical/indico-operator/actions/workflows/promote_charm.yaml/badge.svg)](https://github.com/canonical/indico-operator/actions/workflows/promote_charm.yaml)
+[![Discourse Status](https://img.shields.io/discourse/status?server=https%3A%2F%2Fdiscourse.charmhub.io&style=flat&label=CharmHub%20Discourse)](https://discourse.charmhub.io)
+
 # Indico Operator
 
 A Juju charm deploying and managing Indico on Kubernetes. Indico is an
