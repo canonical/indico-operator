@@ -9,6 +9,8 @@ platforms:
   amd64:
 parts:
   indico-files:
+    build-packages:
+      - libpq-dev
     plugin: python
     source: .
     python-packages:
@@ -18,5 +20,6 @@ parts:
     stage:
       - srv/indico/static
     stage-packages:
+      - build-essential
       - python3-dev
       - python3-venv
