@@ -1,4 +1,4 @@
-# How to configure proxy
+# How to configure a proxy
 
 This charm supports several operations that require access to external resources, such as customization or plugins installation, so your environment may not be able to reach those URLs unless through a proxy. The proxy can be configured via two configuration options `http_proxy` for HTTP requests, and `https_proxy` for HTTPS request.
 

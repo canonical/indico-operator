@@ -1,4 +1,4 @@
-# How to configure external hostname
+# How to configure the external hostname
 
 This charm exposes the `site_url` configuration option to specify the external hostname of the application.
 
