@@ -1,4 +1,4 @@
-# Install plugins
+# How to install plugins
 
 This charm supports installing both official and custom plugins for Indico, from pypi and from a git repositories.
 

@@ -1,4 +1,4 @@
-# Charm Architecture
+# Charm architecture
 
 At its core, [Indico](https://getindico.io/) is a [Flask](https://flask.palletsprojects.com/) application that integrates with [PostgreSQL](https://www.postgresql.org/), [Redis](https://redis.io/), and [Celery](https://docs.celeryq.dev/en/stable/).
 
@@ -52,7 +52,7 @@ The Celery is used to process tasks asynchronously created by the Indico applica
 
 The Celery container runs the same workload as the Indico container, as defined in the [Indico dockerfile in the charm repository](https://github.com/canonical/indico-operator/blob/main/indico.Dockerfile).
 
-### NGINX Prometheus Exporter
+### NGINX Prometheus exporter
 
 This container runs the `nginx/nginx-prometheus-exporter` image.
 
@@ -60,7 +60,7 @@ The `NGINX Prometheus Exporter` is started with `-nginx.scrape-uri=http://localh
 
 This has been configured in the NGINX container to return NGINX's [stub_status](http://nginx.org/en/docs/http/ngx_http_stub_status_module.html). The exporter listens on port `9113` and metrics about web traffic to the pod can be scraped by Prometheus there.
 
-### StatsD Prometheus Exporter
+### StatsD Prometheus exporter
 
 This container runs the `prom/statsd-exporter` image.
 
@@ -69,7 +69,7 @@ The `StatsD Prometheus Exporter` listens on ports:
 - `9125`: UDP address on which to receive statsd metric.
 - `9102`: expose the web interface and generated Prometheus metrics. The metrics can be scraped by Prometheus here.
 
-### Celery Prometheus Exporter
+### Celery Prometheus exporter
 
 This container runs the `danihodovic/celery-exporter` image.
 
@@ -84,7 +84,7 @@ The `Celery Prometheus Exporter` listens on port `9808` and metrics about Indico
 
 The Grafana dashboard is the same available [here](https://grafana.com/grafana/dashboards/17508-celery-tasks-by-task/).
 
-## Docker Images
+## Docker images
 
 The images defined in [NGINX dockerfile](https://github.com/canonical/indico-operator/blob/main/indico-nginx.Dockerfile) and [Indico dockerfile](https://github.com/canonical/indico-operator/blob/main/indico.Dockerfile) in the charm repository are published to [Charmhub](https://charmhub.io/), the official repository of charms.
 
@@ -121,7 +121,7 @@ Redis is an open-source in-memory data structure store used here as two independ
 1. Cache backend: Copies of frequently accessed data are stored and used if satisfy the request. Otherwise, the application will handle it. This configuration helps to reduce the number of queries and improve response latency.
 2. Message broker: Used for communication between Indico and the Celery background workers.
 
-## Juju Events
+## Juju events
 
 Accordingly to the [Juju SDK](https://juju.is/docs/sdk/event): "an event is a data structure that encapsulates part of the execution context of a charm".
 
@@ -142,7 +142,7 @@ Action: Same as config_changed.
 7. [refresh_external_resources_action](https://charmhub.io/indico/actions): fired when refresh-external-resources action is executed.
 Action: Pull changes from the customization repository, reload uWSGI and upgrade the external plugins.
 
-## Charm Code Overview
+## Charm code overview
 
 The `src/charm.py` is the default entry point for a charm and has the IndicoOperatorCharm Python class which inherits from CharmBase.
 

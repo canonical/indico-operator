@@ -1,4 +1,4 @@
-# Theme Customization
+# Theme customization
 
 Indico offers a framework for customizing the look and feel of your Indico installation. See more information in [Customization](https://docs.getindico.io/en/latest/config/settings/#customization).
 
