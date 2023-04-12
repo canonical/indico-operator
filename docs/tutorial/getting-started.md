@@ -1,6 +1,6 @@
-# Quick Guide
+# Quick guide
 
-## What you’ll learn
+## What you’ll do
 
 - Deploy the [Indico charm](https://charmhub.io/indico).
 - Relate to [the Redis K8s charm](https://charmhub.io/redis-k8s) and [the PostgreSQL K8s charm](https://charmhub.io/postgresql-k8s).
@@ -46,7 +46,7 @@ indico/0*                 waiting   idle   10.1.74.70             Waiting for re
 
 This means that Indico charm isn't integrated with Redis yet.
 
-### Relate to the Redis K8s charm the PostgreSQL K8s charm
+### Relate to the Redis k8s charm the PostgreSQL k8s charm
 
 Provide integration between Indico and Redis by running the following [`juju relate`](https://juju.is/docs/olm/juju-relate) commands:
 
@@ -80,7 +80,7 @@ indico                 3.2                           active      1  indico      
 
 The deployment finishes when the status shows "Active".
 
-### Relate to Ingress by using NGINX Ingress Integrator
+### Relate to Ingress by using NGINX Ingress Integrator charm
 
 The NGINX Ingress Integrator charm can deploy and manage external access to HTTP/HTTPS services in a Kubernetes cluster.
 

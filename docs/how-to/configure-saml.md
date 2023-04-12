@@ -1,4 +1,4 @@
-# SAML configuration
+# How to configure SAML
 
 To configure Indico's SAML integration you'll have to set `saml_target_url` with the URL for your SAML server by running `juju config [charm_name] saml_target_url=[value]`.
 
