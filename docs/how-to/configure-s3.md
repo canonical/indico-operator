@@ -1,4 +1,4 @@
-# S3 configuration
+# How to configure S3
 
 An S3 bucket can be leveraged to serve the static content uploaded to Indico, potentially improving performance. Moreover, it is required when scaling the charm to serve the uploaded files. To configure it to set the appropriate connection parameters in `s3_storage` for your existing bucket `juju config [charm_name] s3_storage=[value]`.
 

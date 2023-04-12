@@ -1,4 +1,4 @@
-# Theme customization
+# How to customize theme
 
 This charm supports providing static source files for customizing Indico look and feel. Details on how those files should look like can be consulted in [Indico's official documentation](https://docs.getindico.io/en/stable/config/settings/#customization).
 

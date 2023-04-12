@@ -1,4 +1,4 @@
-# SMTP configuration
+# How to configure SMTP
 
 To configure Indico's SMTP you'll have to set the following configuration options with the appropriate values for your SMTP server by running `juju config [charm_name] [configuration]=[value]`.
 
