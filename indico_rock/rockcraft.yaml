@@ -5,10 +5,6 @@ version: "1.0"
 base: bare
 build-base: ubuntu:22.04
 license: Apache-2.0
-env:
-  - LANG: C.UTF-8
-  - LC_ALL: C.UTF-8
-  - LC_LANG: C.UTF-8
 platforms:
   amd64:
 parts:
