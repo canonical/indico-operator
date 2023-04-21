@@ -1,4 +1,4 @@
-name: Auto update charm libraries
+name: Auto-update charm libraries
 
 on:
   pull_request:
