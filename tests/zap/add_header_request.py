@@ -1,3 +1,7 @@
+# Copyright 2023 Canonical Ltd.
+# See LICENSE file for licensing details.
+
+
 # pylint: disable=missing-module-docstring,invalid-name,unused-argument
 # linting rules disabled due to this file is defined by ZAP tool script template
 def sendingRequest(msg, initiator, helper):  # noqa: N802
