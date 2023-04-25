@@ -1,3 +1,6 @@
+# Copyright 2023 Canonical Ltd.
+# See LICENSE file for licensing details.
+
 name: indico
 summary: Indico rock
 description: Indico OCI image for the Indico charm
@@ -18,7 +21,6 @@ parts:
   indico:
     build-packages:
       - build-essential
-      - libldap2-dev
       - libpq-dev
       - libsasl2-dev
       - libxmlsec1-dev
@@ -31,7 +33,6 @@ parts:
       - ca-certificates
       - git-core
       - libglib2.0-data
-      - libldap2-dev
       - libpq-dev
       - libsasl2-dev
       - libxmlsec1-dev
@@ -53,7 +54,6 @@ parts:
         indico-plugin-piwik \
         indico-plugin-storage-s3 \
         python3-saml \
-        python-ldap \
         uwsgi \
         ./anonymize \
         ./autocreate

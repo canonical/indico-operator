@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2022 Canonical Ltd.
+# Copyright 2023 Canonical Ltd.
 # See LICENSE file for licensing details.
 
 # pylint: disable=too-many-lines
@@ -32,7 +32,6 @@ from ops.pebble import ExecError
 
 logger = logging.getLogger(__name__)
 
-CANONICAL_LDAP_HOST = "ldap.canonical.com"
 CELERY_PROMEXP_PORT = "9808"
 DATABASE_NAME = "indico"
 EMAIL_LIST_MAX = 50
@@ -689,45 +688,6 @@ class IndicoOperatorCharm(CharmBase):
                     "identifier_field": "openid",
                 }
             }
-            if self.config["ldap_host"]:
-                _ldap_config = {
-                    "uri": "ldaps://ldap.canonical.com",
-                    "bind_dn": "cn=Indico Bot,ou=bots,dc=canonical,dc=com",
-                    "bind_password": self.config["ldap_password"],
-                    "timeout": 30,
-                    "verify_cert": True,
-                    "page_size": 1500,
-                    "uid": "launchpadID",
-                    "user_base": "ou=staff,dc=canonical,dc=com",
-                    "user_filter": "(objectClass=canonicalPerson)",
-                    "gid": "cn",
-                    "group_base": "dc=canonical,dc=com",
-                    "group_filter": "(objectClass=groupofnames)",
-                    "member_of_attr": "memberOf",
-                    "ad_group_style": False,
-                }
-                identity_providers = {
-                    "ldap": {
-                        "type": "ldap",
-                        "title": "LDAP",
-                        "ldap": _ldap_config,
-                        "mapping": {
-                            "email": "mail",
-                            "affiliation": "o",
-                            "first_name": "givenName",
-                            "last_name": "sn",
-                        },
-                        "trusted_email": True,
-                        "synced_fields": {"first_name", "last_name", "affiliation"},
-                    }
-                }
-                provider_map = {
-                    "ubuntu": {
-                        "identity_provider": "ldap",
-                        "mapping": {"identifier": "username"},
-                    }
-                }
-                env_config["INDICO_PROVIDER_MAP"] = str(provider_map)
             env_config["INDICO_IDENTITY_PROVIDERS"] = str(identity_providers)
             env_config = {**env_config, **self._get_http_proxy_configuration()}
         return env_config
@@ -748,10 +708,6 @@ class IndicoOperatorCharm(CharmBase):
         if self.config["https_proxy"]:
             config["HTTPS_PROXY"] = self.config["https_proxy"]
         return config
-
-    def _is_ldap_host_valid(self) -> bool:
-        """Check if the LDAP host is currently supported."""
-        return not self.config["ldap_host"] or CANONICAL_LDAP_HOST == self.config["ldap_host"]
 
     def _is_saml_target_url_valid(self) -> bool:
         """Check if the target SAML URL is currently supported."""
@@ -774,12 +730,6 @@ class IndicoOperatorCharm(CharmBase):
             self.unit.status = BlockedStatus(
                 "Invalid saml_target_url option provided. "
                 f"Only {UBUNTU_SAML_URL} and {STAGING_UBUNTU_SAML_URL} are available."
-            )
-            event.defer()
-            return
-        if not self._is_ldap_host_valid():
-            self.unit.status = BlockedStatus(
-                f"Invalid ldap_host option provided. Only {CANONICAL_LDAP_HOST} is available."
             )
             event.defer()
             return

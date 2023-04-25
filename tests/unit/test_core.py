@@ -1,4 +1,4 @@
-# Copyright 2022 Canonical Ltd.
+# Copyright 2023 Canonical Ltd.
 # See LICENSE file for licensing details.
 
 """Indico charm unit tests."""
@@ -266,7 +266,6 @@ class TestCore(TestBase):
                 "indico_support_email": "example@email.local",
                 "indico_public_support_email": "public@email.local",
                 "indico_no_reply_email": "noreply@email.local",
-                "ldap_host": "ldap.canonical.com",
                 "saml_target_url": "https://login.ubuntu.com/saml/",
                 "site_url": "https://example.local:8080",
                 "smtp_server": "localhost",
@@ -317,8 +316,7 @@ class TestCore(TestBase):
             auth_providers["ubuntu"]["saml_config"]["sp"]["entityId"],
         )
         identity_providers = literal_eval(updated_plan_env["INDICO_IDENTITY_PROVIDERS"])
-        self.assertEqual("ldap", identity_providers["ldap"]["type"])
-        self.assertTrue("INDICO_PROVIDER_MAP" in updated_plan_env)
+        self.assertEqual("saml", identity_providers["ubuntu"]["type"])
         mock_exec.assert_any_call(
             ["git", "clone", "https://example.com/custom", "."],
             working_dir="/srv/indico/custom",
@@ -369,8 +367,7 @@ class TestCore(TestBase):
             auth_providers["ubuntu"]["saml_config"]["sp"]["entityId"],
         )
         identity_providers = literal_eval(updated_plan_env["INDICO_IDENTITY_PROVIDERS"])
-        self.assertEqual("ldap", identity_providers["ldap"]["type"])
-        self.assertTrue("INDICO_PROVIDER_MAP" in updated_plan_env)
+        self.assertEqual("saml", identity_providers["ubuntu"]["type"])
 
         self.harness.update_config({"site_url": "https://example.local"})
         self.assertEqual(
@@ -483,50 +480,6 @@ class TestCore(TestBase):
             BlockedStatus.name,
         )
         self.assertTrue("Invalid saml_target_url option" in self.harness.model.unit.status.message)
-
-    @patch.object(Container, "exec")
-    def test_config_changed_when_ldap_host_invalid(self, mock_exec):
-        """
-        arrange: charm created and relations established
-        act: trigger an invalid LDAP host configuration change for the charm
-        assert: the unit reaches blocked status
-        """
-        mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=("", None)))
-        self.set_up_all_relations()
-        self.harness.set_leader(True)
-
-        self.is_ready(
-            [
-                "indico",
-                "indico-celery",
-                "indico-nginx",
-            ]
-        )
-
-        self.harness.update_config({"ldap_host": "ldap.example.com"})
-        self.assertEqual(
-            self.harness.model.unit.status.name,
-            BlockedStatus.name,
-        )
-        self.assertTrue("Invalid ldap_host option" in self.harness.model.unit.status.message)
-
-    def test_pebble_ready_when_relations_not_ready(self):
-        """
-        arrange: charm created
-        act: trigger the pebble ready events
-        assert: the unit reaches waiting status
-        """
-        self.is_ready(
-            [
-                "indico",
-                "indico-celery",
-                "indico-nginx",
-            ]
-        )
-
-        self.assertEqual(
-            self.harness.model.unit.status, WaitingStatus("Waiting for redis-broker availability")
-        )
 
     @patch.object(JujuVersion, "from_environ")
     def test_on_leader_elected_when_secrets_not_supported(self, mock_juju_env):

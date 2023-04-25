@@ -1,3 +1,6 @@
+# Copyright 2023 Canonical Ltd.
+# See LICENSE file for licensing details.
+
 refresh-external-resources:
   description: Pull changes from the customization repository, reload uWSGI and upgrade the external plugins
 add-admin:
