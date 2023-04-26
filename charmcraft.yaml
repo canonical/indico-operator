@@ -1,3 +1,6 @@
+# Copyright 2023 Canonical Ltd.
+# See LICENSE file for licensing details.
+
 # Learn more about charmcraft.yaml configuration at:
 # https://juju.is/docs/sdk/charmcraft-config
 type: "charm"

@@ -1,4 +1,4 @@
-# Copyright 2022 Canonical Ltd.
+# Copyright 2023 Canonical Ltd.
 # See LICENSE file for licensing details.
 
 options:
@@ -37,14 +37,6 @@ options:
   https_proxy:
     type: string
     description: HTTPS proxy URL to be used when installing plugins or downloading customization files, e.g. 'http://squid.example:3128'.
-    default: ''
-  ldap_host:
-    type: string
-    description: URL for the LDAP server to use as identity provider. Requires SAML to be configured.
-    default: ''
-  ldap_password:
-    type: string
-    description: Password for the LDAP server to use as identity provider.
     default: ''
   saml_target_url:
     type: string
