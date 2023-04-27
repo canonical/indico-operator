@@ -61,13 +61,4 @@ to the dashboard can be made but will not be persisted upon restart/redeployment
 Grafana-Prometheus relate command: `juju relate grafana-k8s:grafana-source prometheus-k8s:grafana-source`  
 Grafana-dashboard relate command: `juju relate wordpress-k8s grafana-dashboard`
 
-This charm integrates with:
-
-- [Grafana](https://grafana.com/)
-- [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/#what-is-ingress)
-- [Loki](https://grafana.com/oss/loki/)
-- [PostgreSQL](https://www.postgresql.org/)
-- [Prometheus](https://prometheus.io/)
-- [Redis](https://redis.io/)
-
 See more information in [Charm Architecture](https://charmhub.io/indico/docs/charm-architecture).
