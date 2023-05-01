@@ -11,6 +11,7 @@ Import `IngressRequires` in your charm, with two required options:
 
 `config_dict` accepts the following keys:
 - additional-hostnames
+- backend-protocol
 - limit-rps
 - limit-whitelist
 - max-body-size
@@ -60,7 +61,7 @@ import copy
 import logging
 from typing import Dict
 
-from ops.charm import CharmEvents, RelationBrokenEvent, RelationChangedEvent
+from ops.charm import CharmBase, CharmEvents, RelationBrokenEvent, RelationChangedEvent
 from ops.framework import EventBase, EventSource, Object
 from ops.model import BlockedStatus
 
@@ -75,7 +76,7 @@ LIBAPI = 0
 
 # Increment this PATCH version before using `charmcraft publish-lib` or reset
 # to 0 if you are raising the major API version
-LIBPATCH = 14
+LIBPATCH = 16
 
 LOGGER = logging.getLogger(__name__)
 
@@ -83,6 +84,7 @@ REQUIRED_INGRESS_RELATION_FIELDS = {"service-hostname", "service-name", "service
 
 OPTIONAL_INGRESS_RELATION_FIELDS = {
     "additional-hostnames",
+    "backend-protocol",
     "limit-rps",
     "limit-whitelist",
     "max-body-size",
@@ -103,7 +105,7 @@ RELATION_INTERFACES_MAPPINGS = {
     "service-namespace": "model",
     "service-port": "port",
 }
-RELATION_INTERFACES_MAPPINGS_VALUES = {v for v in RELATION_INTERFACES_MAPPINGS.values()}
+RELATION_INTERFACES_MAPPINGS_VALUES = set(RELATION_INTERFACES_MAPPINGS.values())
 
 
 class IngressAvailableEvent(EventBase):
@@ -152,7 +154,7 @@ class IngressRequires(Object):
         config_dict: Contains all the configuration options for Ingress.
     """
 
-    def __init__(self, charm, config_dict):
+    def __init__(self, charm: CharmBase, config_dict: Dict) -> None:
         """Init function for the IngressRequires class.
 
         Args:
@@ -203,7 +205,7 @@ class IngressRequires(Object):
             update_only: If the charm needs to update only existing keys.
 
         Returns:
-            If we need to update the config dict ot not.
+            If we need to update the config dict or not.
         """
         blocked_message = "Error in ingress relation, check `juju debug-log`"
         unknown = [
@@ -276,6 +278,15 @@ class IngressBaseProvides(Object):
         model: Juju model where the charm is deployed.
     """
 
+    def __init__(self, charm: CharmBase, relation_name: str) -> None:
+        """Init function for the IngressProxyProvides class.
+
+        Args:
+            charm: The charm that provides the ingress-proxy relation.
+        """
+        super().__init__(charm, relation_name)
+        self.charm = charm
+
     def _on_relation_changed(self, event: RelationChangedEvent) -> None:
         """Handle a change to the ingress/ingress-proxy relation.
 
@@ -290,6 +301,7 @@ class IngressBaseProvides(Object):
 
         relation_name = event.relation.name
 
+        assert event.app is not None  # nosec
         if not event.relation.data[event.app]:
             LOGGER.info(
                 "%s hasn't finished configuring, waiting until relation is changed again.",
@@ -343,7 +355,7 @@ class IngressProvides(IngressBaseProvides):
         - relation-changed
     """
 
-    def __init__(self, charm):
+    def __init__(self, charm: CharmBase) -> None:
         """Init function for the IngressProvides class.
 
         Args:
@@ -358,7 +370,6 @@ class IngressProvides(IngressBaseProvides):
         self.framework.observe(
             charm.on[INGRESS_RELATION_NAME].relation_broken, self._on_relation_broken
         )
-        self.charm = charm
 
     def _on_relation_broken(self, event: RelationBrokenEvent) -> None:
         """Handle a relation-broken event in the ingress relation.
@@ -383,7 +394,7 @@ class IngressProxyProvides(IngressBaseProvides):
         - relation-changed
     """
 
-    def __init__(self, charm):
+    def __init__(self, charm: CharmBase) -> None:
         """Init function for the IngressProxyProvides class.
 
         Args:
@@ -395,4 +406,3 @@ class IngressProxyProvides(IngressBaseProvides):
         self.framework.observe(
             charm.on[INGRESS_PROXY_RELATION_NAME].relation_changed, self._on_relation_changed
         )
-        self.charm = charm
