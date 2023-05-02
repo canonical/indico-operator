@@ -18,7 +18,7 @@ For more information about how to install Juju, see [Get started with Juju](http
 
 ### Deploy the Indico charm
 
-Since Indico requires connections to PostgreSQL and Redis, you'll deploy them too. For more information, see [Charm Architecture](https://charmhub.io/indico/docs/charm-architecture).
+Since Indico requires connections to PostgreSQL and Redis, you'll deploy them too. For more information, see [Charm Architecture](https://charmhub.io/indico/docs/explanation-charm-architecture).
 
 Redis is deployed twice because one is for the broker and the other for the cache. To do this, the `juju deploy` command accepts an extra argument with the custom application name. See more details in [Override the name of a deployed application](https://juju.is/docs/olm/deploy-a-charm-from-charmhub#heading--override-the-name-of-a-deployed-application).
 

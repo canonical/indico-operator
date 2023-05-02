@@ -61,4 +61,4 @@ to the dashboard can be made but will not be persisted upon restart/redeployment
 Grafana-Prometheus relate command: `juju relate grafana-k8s:grafana-source prometheus-k8s:grafana-source`  
 Grafana-dashboard relate command: `juju relate wordpress-k8s grafana-dashboard`
 
-See more information in [Charm Architecture](https://charmhub.io/indico/docs/charm-architecture).
+See more information in [Charm Architecture](https://charmhub.io/indico/docs/explanation-charm-architecture).
