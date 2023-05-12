@@ -11,13 +11,17 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - main
-      - track/**
+      - track-based-on-version
 
 jobs:
+  get-indico-version:
+    name: Get Indico version
+    uses: ./.github/workflows/get_indico_version.yaml
   publish-to-edge:
-    uses: canonical/operator-workflows/.github/workflows/test_and_publish_charm.yaml@main
+    uses: canonical/operator-workflows/.github/workflows/test_and_publish_charm.yaml@support-for-overriding-channel
+    needs: get-indico-version
     secrets: inherit
     with:
+      channel: ${{ needs.get-indico-version.outputs.version }}
       integration-test-extra-arguments: -m "not (requires_secrets)"
       trivy-image-config: "trivy.yaml"
