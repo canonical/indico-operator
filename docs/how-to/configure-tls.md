@@ -1,6 +1,6 @@
 # How to configure a TLS certificate
 
-First you'll need a k8s secret with key and cert values as appropriate.
+First you'll need a k8s secret with `key` and `cert` values as appropriate.
 
 Then, use that secret to configure your nginx-ingress-integrator. You do this by running:
 ```
