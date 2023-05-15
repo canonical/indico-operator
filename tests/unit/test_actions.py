@@ -68,7 +68,6 @@ class TestActions(TestBase):
         act: when the _on_add_admin_action method is executed
         assert: the indico command to add the user is executed with the appropriate parameters.
         """
-
         mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=("", None)))
 
         self.set_up_all_relations()
@@ -99,6 +98,11 @@ class TestActions(TestBase):
         }
 
         def event_store_failure(arg):
+            """Define a failure message for the event.
+
+            Args:
+                arg: message content.
+            """
             event.fail_message = arg
 
         event.fail = event_store_failure
@@ -128,7 +132,6 @@ class TestActions(TestBase):
         act: when the _on_add_admin_action method is executed
         assert: the indico command to add the user is executed with the appropriate parameters.
         """
-
         mock_wo = MagicMock(
             return_value=("", None),
         )
@@ -137,6 +140,18 @@ class TestActions(TestBase):
 
         # I'm disabling unused-argument here because some could be passed to the mock
         def mock_wo_side_effect(*args, **kwargs):  # pylint: disable=unused-argument
+            """Mock wo side effect.
+
+            Args:
+                args: Variable list of positional arguments passed to the parent constructor.
+                kwargs: a `dict` of the extra arguments passed to the function.
+
+            Returns:
+                unittest.mock DEFAULT built-in.
+
+            Raises:
+                ExecError: Execution error fired if conditions are met.
+            """
             if isinstance(mock_wo.cmd, list) and "autocreate" in mock_wo.cmd:
                 raise ExecError(command=mock_wo.cmd, exit_code=42, stdout=stdout_mock, stderr="")
             return DEFAULT
@@ -145,6 +160,15 @@ class TestActions(TestBase):
 
         # I'm disabling unused-argument here because some could be passed to the mock
         def mock_exec_side_effect(*args, **kwargs):  # pylint: disable=unused-argument
+            """Mock execution side effect.
+
+            Args:
+                args: Variable list of positional arguments passed to the parent constructor.
+                kwargs: a `dict` of the extra arguments passed to the function.
+
+            Returns:
+                unittest.mock DEFAULT built-in.
+            """
             mock_wo.cmd = args[0]
             return DEFAULT
 
@@ -181,6 +205,11 @@ class TestActions(TestBase):
         }
 
         def event_store_failure(arg):
+            """Define a failure message for the event.
+
+            Args:
+                arg: message content.
+            """
             event.fail_message = arg
 
         event.fail = event_store_failure
@@ -220,7 +249,7 @@ class TestActions(TestBase):
         """Execute anonymize user action
 
         Args:
-            email (str): email parameter to be used_
+            emails: email list parameter to be used
             mock_event (MagicMock): event mock
             mock_exec (MagicMock): Container exec mock
         """
@@ -228,6 +257,11 @@ class TestActions(TestBase):
         charm._anonymize_user_action(mock_event)
 
         def validate_command(email: str):
+            """Check if the command was called.
+
+            Args:
+                email: email parameter to be used
+            """
             # Check if command was called
             expected_cmd = [
                 "/usr/local/bin/indico",

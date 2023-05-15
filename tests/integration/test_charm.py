@@ -118,7 +118,6 @@ async def add_admin(app: Application):
     act: run the add-admin action
     assert: check the output in the action result
     """
-
     assert hasattr(app, "units")
 
     assert app.units[0]
@@ -188,6 +187,14 @@ async def test_saml_auth(
     original_getaddrinfo = socket.getaddrinfo
 
     def patched_getaddrinfo(*args):
+        """Get address info forcing localhost as the IP.
+
+        Args:
+            args: Variable list of positional arguments passed to the parent constructor.
+
+        Returns:
+            Address information with localhost as the patched IP.
+        """
         if args[0] == host:
             return original_getaddrinfo("127.0.0.1", *args[1:])
         return original_getaddrinfo(*args)

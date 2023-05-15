@@ -21,6 +21,15 @@ _og_use = ops.lib.use
 
 
 def _use(*args, **kwargs):
+    """Patch use method.
+
+    Args:
+        args: Variable list of positional arguments passed to the parent constructor.
+        kwargs: a `dict` of the extra arguments passed to the function.
+
+    Returns:
+        Patched ops.lib.use method.
+    """
     print("use: ", args)
     if args == ("pgsql", 1, "postgresql-charmers@lists.launchpad.net"):
         return pgsql

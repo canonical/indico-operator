@@ -29,8 +29,6 @@ def zap_pre_shutdown(zap):
 
     Args:
         zap (ZAPv2): ZAPv2 instance
-    Returns:
-        None
     """
     logging.info("script.listEngines: %s", zap.script.list_engines)
     logging.info("script.listScripts: %s", zap.script.list_scripts)

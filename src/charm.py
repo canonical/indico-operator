@@ -48,13 +48,22 @@ pgsql = ops.lib.use("pgsql", 1, "postgresql-charmers@lists.launchpad.net")
 
 
 class IndicoOperatorCharm(CharmBase):
-    """Charm for Indico on kubernetes."""
+    """Charm for Indico on kubernetes.
+
+    Attrs:
+        _stored: Juju stored state.
+        on: Redis relation charm events.
+    """
 
     _stored = StoredState()
     on = RedisRelationCharmEvents()
 
     def __init__(self, *args):
-        """Construct."""
+        """Construct.
+
+        Args:
+            args: Variable list of positional arguments passed to the parent constructor.
+        """
         super().__init__(*args)
 
         self.framework.observe(self.on.config_changed, self._on_config_changed)
@@ -275,6 +284,9 @@ class IndicoOperatorCharm(CharmBase):
     def _get_indico_pebble_config(self, container: Container) -> Dict:
         """Generate pebble config for the indico container.
 
+        Args:
+            container: Indico container
+
         Returns:
             The pebble configuration for the container.
         """
@@ -303,6 +315,9 @@ class IndicoOperatorCharm(CharmBase):
 
     def _get_indico_celery_pebble_config(self, container: Container) -> Dict:
         """Generate pebble config for the indico-celery container.
+
+        Args:
+            container: Celery container
 
         Returns:
             The pebble configuration for the container.
@@ -693,6 +708,14 @@ class IndicoOperatorCharm(CharmBase):
         return env_config
 
     def _get_indico_env_config_str(self, container: Container) -> Dict[str, str]:
+        """Get indico environment config.
+
+        Args:
+            container: Indico container.
+
+        Returns:
+            Indico environment config.
+        """
         indico_env_config = self._get_indico_env_config(container)
         return {env_name: str(value) for env_name, value in indico_env_config.items()}
 
@@ -710,7 +733,11 @@ class IndicoOperatorCharm(CharmBase):
         return config
 
     def _is_saml_target_url_valid(self) -> bool:
-        """Check if the target SAML URL is currently supported."""
+        """Check if the target SAML URL is currently supported.
+
+        Returns:
+            If the SAML config is valid or not.
+        """
         return (
             not self.config["saml_target_url"]
             or UBUNTU_SAML_URL == self.config["saml_target_url"]
@@ -749,7 +776,11 @@ class IndicoOperatorCharm(CharmBase):
         self.model.unit.status = ActiveStatus()
 
     def _get_current_customization_url(self) -> str:
-        """Get the current remote repository for the customization changes."""
+        """Get the current remote repository for the customization changes.
+
+        Returns:
+            The customization URL.
+        """
         indico_container = self.unit.get_container("indico")
         process = indico_container.exec(
             ["git", "config", "--get", "remote.origin.url"],
@@ -888,6 +919,11 @@ class IndicoOperatorCharm(CharmBase):
             peer_relation.data[self.app].update({"secret-id": secret.id})
 
     def _has_secrets(self) -> bool:
+        """Check if current Juju version supports secrets.
+
+        Returns:
+            If secrets are supported or not.
+        """
         juju_version = JujuVersion.from_environ()
         # Because we're only using secrets in a peer relation we don't need to
         # check if the other end of a relation also supports secrets...
@@ -933,9 +969,6 @@ class IndicoOperatorCharm(CharmBase):
 
         Args:
             event (ActionEvent): Event triggered by the anonymize-user action
-
-        Raises:
-            ex: Raised if the command fails
 
         Yields:
             Iterator[str]: Output of each command execution
