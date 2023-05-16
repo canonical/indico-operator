@@ -97,13 +97,13 @@ class TestActions(TestBase):
             "password": password,
         }
 
-        def event_store_failure(arg):
+        def event_store_failure(failure_message: str) -> None:
             """Define a failure message for the event.
 
             Args:
-                arg: message content.
+                failure_message: failure message content to be defined.
             """
-            event.fail_message = arg
+            event.fail_message = failure_message
 
         event.fail = event_store_failure
 
@@ -204,13 +204,13 @@ class TestActions(TestBase):
             "password": password,
         }
 
-        def event_store_failure(arg):
+        def event_store_failure(failure_message: str) -> None:
             """Define a failure message for the event.
 
             Args:
-                arg: message content.
+                failure_message: failure message content to be defined.
             """
-            event.fail_message = arg
+            event.fail_message = failure_message
 
         event.fail = event_store_failure
 

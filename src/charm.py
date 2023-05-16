@@ -51,7 +51,6 @@ class IndicoOperatorCharm(CharmBase):
     """Charm for Indico on kubernetes.
 
     Attrs:
-        _stored: Juju stored state.
         on: Redis relation charm events.
     """
 
@@ -62,7 +61,7 @@ class IndicoOperatorCharm(CharmBase):
         """Construct.
 
         Args:
-            args: Variable list of positional arguments passed to the parent constructor.
+            args: Arguments passed to the CharmBase parent constructor.
         """
         super().__init__(*args)
 
@@ -254,7 +253,7 @@ class IndicoOperatorCharm(CharmBase):
         """Apply pebble configurations to a container.
 
         Args:
-            container: Container to be configured.
+            container: Container to be configured by Pebble.
         """
         self.unit.status = MaintenanceStatus(f"Adding {container.name} layer to pebble")
         if container.name in ["indico", "indico-celery"]:
@@ -285,7 +284,7 @@ class IndicoOperatorCharm(CharmBase):
         """Generate pebble config for the indico container.
 
         Args:
-            container: Indico container
+            container: Indico container that has the target configuration.
 
         Returns:
             The pebble configuration for the container.
@@ -317,7 +316,7 @@ class IndicoOperatorCharm(CharmBase):
         """Generate pebble config for the indico-celery container.
 
         Args:
-            container: Celery container
+            container: Celery container that has the target configuration.
 
         Returns:
             The pebble configuration for the container.
@@ -711,7 +710,7 @@ class IndicoOperatorCharm(CharmBase):
         """Get indico environment config.
 
         Args:
-            container: Indico container.
+            container: Indico container that has the target environment configuration.
 
         Returns:
             Indico environment config.

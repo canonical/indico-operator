@@ -190,7 +190,7 @@ async def test_saml_auth(
         """Get address info forcing localhost as the IP.
 
         Args:
-            args: Variable list of positional arguments passed to the parent constructor.
+            args: Arguments from the getaddrinfo original method.
 
         Returns:
             Address information with localhost as the patched IP.
