@@ -9,6 +9,7 @@ on:
 jobs:
   print:
     runs-on: ubuntu-22.04
+    permissions: read-all
     steps:
       # - run: |
       #     gh api \
