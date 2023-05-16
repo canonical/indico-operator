@@ -25,8 +25,8 @@ jobs:
         with:
           route: GET /repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks
           # repository: ${{ github.repository }}
-          repo: test-wfs
-          owner: arturo-seijas
+          repo: indico-operator
+          owner: canonical
           branch: main
           # script: |
             # const owner = context.payload.repository.owner.login;
