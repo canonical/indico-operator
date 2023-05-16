@@ -22,9 +22,14 @@ def cli():
 @click.argument("email", type=str)
 @click.argument("password", type=str)
 @click.pass_context
-def create_admin(ctx, email, password):
-    """Create a new admin user non-interactively."""
+def create_admin(ctx, email, password) -> None:
+    """Create a new admin user non-interactively.
 
+    Args:
+        ctx: Click's CLI context passed as a parameter.
+        email: Indico user's email.
+        password: Indico user's password
+    """
     email = email.lower()
     username = email
     first_name = "unknown"
