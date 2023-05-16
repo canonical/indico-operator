@@ -2,8 +2,36 @@ name: Tests
 
 on:
   pull_request:
+  push:
+    branches:
+      - test
 
 jobs:
+  print:
+    runs-on: ubuntu-22.04
+    steps:
+      # - run: |
+      #     gh api \
+      #     -H "Accept: application/vnd.github+json" \
+      #     -H "X-GitHub-Api-Version: 2022-11-28" \
+      #     /repos/${{ github.repository }}/branches/${{ github.event.repository.default_branch }}/protection
+      #   env:
+      #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: octokit/request-action@v2.x
+        id: get_branch_protection
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          route: GET /repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks
+          # repository: ${{ github.repository }}
+          repo: test-wfs
+          owner: arturo-seijas
+          branch: main
+          # script: |
+            # const owner = context.payload.repository.owner.login;
+            # const repo = context.payload.repository.name;
+            # strict_required_status_checks_policy
+      - run: "echo '${{ steps.get_branch_protection.outputs.data }}'"
   unit-tests:
     uses: canonical/operator-workflows/.github/workflows/test.yaml@main
     secrets: inherit
