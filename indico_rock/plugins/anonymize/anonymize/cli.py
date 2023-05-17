@@ -113,7 +113,7 @@ def anonymize_user(ctx, email):
     """
     email = email.lower()
 
-    if email == "":
+    if not email:
         click.secho("E-mail should not be empty", fg="red")
         ctx.exit(1)
 
