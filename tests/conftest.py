@@ -5,7 +5,11 @@
 
 
 def pytest_addoption(parser):
-    """Parse additional pytest options."""
+    """Parse additional pytest options.
+
+    Args:
+        parser: Pytest parser.
+    """
     parser.addoption("--indico-image", action="store")
     parser.addoption("--indico-nginx-image", action="store")
     parser.addoption("--saml-email", action="store")

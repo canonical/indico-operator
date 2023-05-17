@@ -21,7 +21,15 @@ _og_use = ops.lib.use
 
 
 def _use(*args, **kwargs):
-    print("use: ", args)
+    """Patch use method.
+
+    Args:
+        args: Arguments from the ops.lib.use original method.
+        kwargs: a `dict` of the extra arguments passed to the function.
+
+    Returns:
+        Patched ops.lib.use method.
+    """
     if args == ("pgsql", 1, "postgresql-charmers@lists.launchpad.net"):
         return pgsql
     return _og_use(*args, **kwargs)

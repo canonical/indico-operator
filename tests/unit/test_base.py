@@ -52,6 +52,10 @@ class TestBase(unittest.TestCase):
         broker_relation.data = {broker_unit: {"hostname": "broker-host", "port": 1010}}
 
     def is_ready(self, apps: List[str]):
-        """Waiting for all applications to be ready."""
+        """Waiting for all applications to be ready.
+
+        Args:
+            apps: List of applications.
+        """
         for app_name in apps:
             self.harness.container_pebble_ready(app_name)

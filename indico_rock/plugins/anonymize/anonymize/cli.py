@@ -16,7 +16,7 @@ from indico.modules.users import User
 
 
 def _generate_uuid() -> str:
-    """Generate UUID for fake values
+    """Generate UUID for fake values.
 
     Returns:
         str: UUID
@@ -111,10 +111,9 @@ def anonymize_user(ctx, email):
         ctx: context
         email: email of the user to be anonymized
     """
-
     email = email.lower()
 
-    if email == "":
+    if not email:
         click.secho("E-mail should not be empty", fg="red")
         ctx.exit(1)
 

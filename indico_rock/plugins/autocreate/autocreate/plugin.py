@@ -10,14 +10,20 @@ from indico.core.plugins import IndicoPlugin
 
 
 class AutocreatePlugin(IndicoPlugin):
-    """Autocreate
+    """Autocreate.
 
     Provides a way to non-interactively create users via Indico's CLI
     """
 
     def init(self):
+        """Construct."""
         super().init()
         self.connect(signals.plugin.cli, self._extend_indico_cli)
 
     def _extend_indico_cli(self, *_, **__):
+        """Return the indico extended cli.
+
+        Returns:
+            Indico's CLI with extra parameters.
+        """
         return cli
