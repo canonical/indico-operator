@@ -94,7 +94,11 @@ async def app(
     resources.update(prometheus_exporter_images)
     charm = await ops_test.build_charm(".")
     application = await ops_test.model.deploy(
-        charm, resources=resources, application_name=app_name, series="focal"
+        charm,
+        resources=resources,
+        application_name=app_name,
+        channel="latest/stable",
+        series="focal",
     )
 
     await dependencies
