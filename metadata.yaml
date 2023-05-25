@@ -58,7 +58,7 @@ resources:
     type: oci-image
     description: Prometheus exporter for celery
     auto-fetch: true
-    upstream-source: danihodovic/celery-exporter:0.5.8
+    upstream-source: danihodovic/celery-exporter:0.7.6
   nginx-prometheus-exporter-image:
     type: oci-image
     description: Prometheus exporter for nginx
