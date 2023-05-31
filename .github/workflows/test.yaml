@@ -21,7 +21,7 @@ jobs:
       - uses: octokit/request-action@v2.x
         id: get_branch_protection
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.REPO_ACCESS_TOKEN }}
         with:
           route: GET /repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks
           # repository: ${{ github.repository }}
