@@ -23,7 +23,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.REPO_ACCESS_TOKEN }}
         with:
-          route: GET /repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks
+          route: GET /repos/{owner}/{repo}/branches/{branch}/protection
           # repository: ${{ github.repository }}
           repo: indico-operator
           owner: canonical
