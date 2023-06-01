@@ -101,6 +101,7 @@ async def app(
     )
 
     await dependencies
+    await ops_test.model.wait_for_idle(apps=["postgresql-k8s"],status="active", raise_on_error=False)
     # Add required relations, mypy has difficulty with WaitingStatus
     expected_name = WaitingStatus.name  # type: ignore
     assert ops_test.model.applications[app_name].units[0].workload_status == expected_name

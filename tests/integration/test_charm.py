@@ -78,14 +78,13 @@ async def test_prom_exporters_are_up(app: Application):
     ]
     # Send request to /metrics for each target and check the response
     for target in prometheus_targets:
-        cmd = f"curl http://{target}/metrics"
-        action = await indico_unit.run(cmd)
-        result = await action.wait()
-        code = result.results.get("return-code")
-        stdout = result.results.get("stdout")
-        stderr = result.results.get("stderr")
-        assert code == 0, f"{cmd} failed ({code}): {stderr or stdout}"
-
+        cmd = f"curl -m 10 http://{target}/metrics"
+        action = await indico_unit.run(cmd,timeout=15)
+        result = action.data
+        code = result["results"].get("Code")
+        stdout = result["results"].get("Stdout")
+        stderr = result["results"].get("Stderr")
+        assert code == "0", f"{cmd} failed ({code}): {stderr or stdout}"
 
 @pytest.mark.asyncio
 @pytest.mark.abort_on_fail
@@ -99,12 +98,12 @@ async def test_health_checks(app: Application):
     indico_unit = app.units[0]  # type: ignore
     for container in container_list:
         cmd = f"PEBBLE_SOCKET=/charm/containers/{container}/pebble.socket /charm/bin/pebble checks"
-        action = await indico_unit.run(cmd)
-        result = await action.wait()
-        code = result.results.get("return-code")
-        stdout = result.results.get("stdout")
-        stderr = result.results.get("stderr")
-        assert code == 0, f"{cmd} failed ({code}): {stderr or stdout}"
+        action = await indico_unit.run(cmd, timeout=10)
+        result = action.data
+        code = result["results"].get("Code")
+        stdout = result["results"].get("Stdout")
+        stderr = result["results"].get("Stderr")
+        assert code == "0", f"{cmd} failed ({code}): {stderr or stdout}"
         # When executing the checks, `0/3` means there are 0 errors of 3.
         # Each check has it's own `0/3`, so we will count `n` times,
         # where `n` is the number of checks for that container.
