@@ -79,12 +79,13 @@ async def test_prom_exporters_are_up(app: Application):
     # Send request to /metrics for each target and check the response
     for target in prometheus_targets:
         cmd = f"curl -m 10 http://{target}/metrics"
-        action = await indico_unit.run(cmd,timeout=15)
+        action = await indico_unit.run(cmd, timeout=15)
         result = action.data
         code = result["results"].get("Code")
         stdout = result["results"].get("Stdout")
         stderr = result["results"].get("Stderr")
         assert code == "0", f"{cmd} failed ({code}): {stderr or stdout}"
+
 
 @pytest.mark.asyncio
 @pytest.mark.abort_on_fail
