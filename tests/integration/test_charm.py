@@ -80,6 +80,8 @@ async def test_prom_exporters_are_up(app: Application):
     for target in prometheus_targets:
         cmd = f"curl -m 10 http://{target}/metrics"
         action = await indico_unit.run(cmd, timeout=15)
+        # This should be changing if upgrading Juju lib version to >= 3
+        # See https://github.com/juju/python-libjuju/issues/707#issuecomment-1212296289
         result = action.data
         code = result["results"].get("Code")
         stdout = result["results"].get("Stdout")
@@ -100,6 +102,8 @@ async def test_health_checks(app: Application):
     for container in container_list:
         cmd = f"PEBBLE_SOCKET=/charm/containers/{container}/pebble.socket /charm/bin/pebble checks"
         action = await indico_unit.run(cmd, timeout=10)
+        # This should be changing if upgrading Juju lib version to >= 3
+        # See https://github.com/juju/python-libjuju/issues/707#issuecomment-1212296289
         result = action.data
         code = result["results"].get("Code")
         stdout = result["results"].get("Stdout")
