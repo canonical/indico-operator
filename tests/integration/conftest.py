@@ -81,7 +81,7 @@ async def app(
     assert ops_test.model
     # Deploy relations to speed up overall execution
     dependencies = asyncio.gather(
-        ops_test.model.deploy("postgresql-k8s"),
+        ops_test.model.deploy("postgresql-k8s", channel="latest/stable", series="focal"),
         ops_test.model.deploy("redis-k8s", "redis-broker"),
         ops_test.model.deploy("redis-k8s", "redis-cache"),
         ops_test.model.deploy("nginx-ingress-integrator", trust=True),
@@ -94,10 +94,16 @@ async def app(
     resources.update(prometheus_exporter_images)
     charm = await ops_test.build_charm(".")
     application = await ops_test.model.deploy(
-        charm, resources=resources, application_name=app_name, series="focal"
+        charm,
+        resources=resources,
+        application_name=app_name,
+        series="focal",
     )
 
     await dependencies
+    await ops_test.model.wait_for_idle(
+        apps=["postgresql-k8s"], status="active", raise_on_error=False
+    )
     # Add required relations, mypy has difficulty with WaitingStatus
     expected_name = WaitingStatus.name  # type: ignore
     assert ops_test.model.applications[app_name].units[0].workload_status == expected_name
