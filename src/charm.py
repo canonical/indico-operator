@@ -3,7 +3,7 @@
 # Copyright 2023 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-# pylint: disable=too-many-lines
+# pylint: disable=too-many-lines, wrong-import-order
 """Charm for Indico on kubernetes."""
 import logging
 import os
@@ -101,6 +101,7 @@ class IndicoOperatorCharm(CharmBase):
 
         self.redis = RedisRequires(self, self._stored)
         self.framework.observe(self.on.redis_relation_changed, self._on_config_changed)
+        self.framework.observe(self.on.redis_relation_updated, self._on_config_changed)
         self.ingress = IngressRequires(self, self._make_ingress_config())
         self._metrics_endpoint = MetricsEndpointProvider(
             self,
