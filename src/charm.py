@@ -3,7 +3,7 @@
 # Copyright 2023 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-# pylint: disable=too-many-lines, wrong-import-order
+# pylint: disable=too-many-lines
 """Charm for Indico on kubernetes."""
 import logging
 import os
