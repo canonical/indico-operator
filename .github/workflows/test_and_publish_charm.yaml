@@ -15,6 +15,6 @@ jobs:
     needs: get-indico-version
     secrets: inherit
     with:
-      channel: ${{ needs.get-indico-version.outputs.version }}/edge
+      channel: latest/edge
       integration-test-extra-arguments: -m "not (requires_secrets)"
       trivy-image-config: "trivy.yaml"
