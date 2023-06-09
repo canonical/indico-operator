@@ -12,7 +12,6 @@ jobs:
     uses: ./.github/workflows/get_indico_version.yaml
   publish-to-edge:
     uses: canonical/operator-workflows/.github/workflows/test_and_publish_charm.yaml@main
-    needs: get-indico-version
     secrets: inherit
     with:
       channel: latest/edge
