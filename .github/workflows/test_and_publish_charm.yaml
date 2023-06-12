@@ -7,9 +7,6 @@ on:
       - main
 
 jobs:
-  get-indico-version:
-    name: Get Indico version
-    uses: ./.github/workflows/get_indico_version.yaml
   publish-to-edge:
     uses: canonical/operator-workflows/.github/workflows/test_and_publish_charm.yaml@main
     secrets: inherit
