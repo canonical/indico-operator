@@ -7,11 +7,8 @@ on:
       - main
 
 jobs:
-  get-indico-version:
-    name: Get Indico version
-    uses: ./.github/workflows/get_indico_version.yaml
   publish-to-edge:
-    uses: canonical/operator-workflows/.github/workflows/test_and_publish_charm.yaml@main
+    uses: canonical/operator-workflows/.github/workflows/publish_charm.yaml@reuse-images-from-pr-checks
     secrets: inherit
     with:
       channel: latest/edge
