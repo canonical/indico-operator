@@ -40,3 +40,4 @@ Thinking about using the Indico Operator for your next project? [Get in touch](h
 
 For further details,
 [see the charm's detailed documentation](https://charmhub.io/indico/docs).
+changes
