@@ -12,5 +12,4 @@ jobs:
     secrets: inherit
     with:
       channel: latest/edge
-      integration-test-extra-arguments: -m "not (requires_secrets)"
       trivy-image-config: "trivy.yaml"
