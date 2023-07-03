@@ -32,8 +32,7 @@ fixes and constructive feedback.
 * [Code of conduct](https://ubuntu.com/community/code-of-conduct)
 * [Get support](https://discourse.charmhub.io/)
 * [Join our online chat](https://chat.charmhub.io/charmhub/channels/charm-dev)
-* [Contribute](https://charmhub.io/indico/docs/contributing)
-* [Getting Started](https://charmhub.io/indico/docs/getting-started)
+* [Contribute](https://charmhub.io/indico/docs/how-to-contribute)
 Thinking about using the Indico Operator for your next project? [Get in touch](https://chat.charmhub.io/charmhub/channels/charm-dev)!
 
 ---
