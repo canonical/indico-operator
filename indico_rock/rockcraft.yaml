@@ -14,7 +14,6 @@ parts:
   add-user:
     plugin: nil
     overlay-script: |
-      mkdir $CRAFT_OVERLAY/etc
       chmod 755 $CRAFT_OVERLAY/etc
       groupadd -R $CRAFT_OVERLAY --gid 2000 indico
       useradd -R $CRAFT_OVERLAY --system --gid 2000 --uid 2000 --home /srv/indico indico
