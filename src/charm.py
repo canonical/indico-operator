@@ -100,7 +100,6 @@ class IndicoOperatorCharm(CharmBase):
         self.framework.observe(self.db.on.master_changed, self._on_master_changed)
 
         self.redis = RedisRequires(self, self._stored)
-        self.framework.observe(self.on.redis_relation_changed, self._on_config_changed)
         self.framework.observe(self.on.redis_relation_updated, self._on_config_changed)
         self.ingress = IngressRequires(self, self._make_ingress_config())
         self._metrics_endpoint = MetricsEndpointProvider(
