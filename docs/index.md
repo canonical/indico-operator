@@ -12,8 +12,6 @@ Documentation is an important part of this project, and we take the same open-so
 
 If there's a particular area of documentation that you'd like to see that's missing, please [file a bug](https://github.com/canonical/indico-operator/issues).
 
-
-
 # Navigation
 
 | Level | Path | Navlink |
