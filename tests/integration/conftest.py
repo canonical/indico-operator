@@ -94,7 +94,7 @@ async def app(
     resources.update(prometheus_exporter_images)
     charm = pytestconfig.getoption("--charm-file")
     application = await ops_test.model.deploy(
-        charm,
+        f"./{charm}",
         resources=resources,
         application_name=app_name,
         series="focal",
