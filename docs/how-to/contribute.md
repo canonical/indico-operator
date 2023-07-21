@@ -34,7 +34,7 @@ source .tox/unit/bin/activate
 
 ### Testing
 
-Note that the [indico](indico.Dockerfile) and [indico nginx](indico-nginx.Dockerfile) images need to be built and pushed to microk8s for the tests to run. The should be named `localhost:32000/indico:latest` and `localhost:32000/indico-nginx:latest` so that Kubernetes knows to pull them from the microk8s repository. Note that the microk8s registry needs to be enabled using `microk8s enable registry`. More details regarding the Docker images below. The following commands can then be used to run the tests:
+Note that the [indico](indico_rock/rockcraft.yaml) and [indico nginx](indico_nginx_rock/rockcraft.yaml) images need to be built and pushed to microk8s for the tests to run. They should be tagged as `localhost:32000/indico:latest` and `localhost:32000/indico-nginx:latest` so that Kubernetes knows how to pull them from the microk8s repository. Note that the microk8s registry needs to be enabled using `microk8s enable registry`. More details regarding the OCI images below. The following commands can then be used to run the tests:
 
 * `tox`: Runs all of the basic checks (`lint`, `unit`, `static`, and `coverage-report`).
 * `tox -e fmt`: Runs formatting using `black` and `isort`.
@@ -55,11 +55,14 @@ and indico-nginx images are required in the microk8s registry. To enable it:
 
     microk8s enable registry
 
-The following commands push the required images into the registry:
+The following commands import the images in the Docker daemon and push them into the registry:
 
     docker build . -f indico.Dockerfile -t localhost:32000/indico:latest
+    cd [project_dir]/indico_rock && rockcraft pack rockcraft.yaml
+    skopeo --insecure-policy copy oci-archive:indico_1.0_amd64.rock docker-daemon:localhost:32000/indico:latest
     docker push localhost:32000/indico:latest
-    docker build . -f indico-nginx.Dockerfile -t  localhost:32000/indico-nginx:latest
+    cd [project_dir]/nginx_rock && rockcraft pack rockcraft.yaml
+    skopeo --insecure-policy copy oci-archive:indico_nginx_1.0_amd64.rock docker-daemon:localhost:32000/indico-nginx:latest
     docker push localhost:32000/indico-nginx:latest
 
 ### Deploy
@@ -73,6 +76,7 @@ juju model-config logging-config="<root>=INFO;unit=DEBUG"
 juju deploy ./indico_ubuntu-20.04-amd64.charm \
   --resource indico-image=localhost:32000/indico:latest \
   --resource indico-nginx-image=localhost:32000/indico-nginx:latest \
+  --resource celery-prometheus-exporter-image='danihodovic/celery-exporter:0.7.6' \
   --resource nginx-prometheus-exporter-image='nginx/nginx-prometheus-exporter:0.10.0' \
   --resource statsd-prometheus-exporter-image='prom/statsd-exporter:v0.22.8'
 ```
