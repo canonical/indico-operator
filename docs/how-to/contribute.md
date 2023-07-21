@@ -55,7 +55,7 @@ and indico-nginx images are required in the microk8s registry. To enable it:
 
     microk8s enable registry
 
-The following commands to import the images in the Docker daemon and push them into the registry:
+The following commands import the images in the Docker daemon and push them into the registry:
 
     docker build . -f indico.Dockerfile -t localhost:32000/indico:latest
     cd [project_dir]/indico_rock && rockcraft pack rockcraft.yaml
