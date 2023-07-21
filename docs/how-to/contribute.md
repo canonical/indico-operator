@@ -34,7 +34,7 @@ source .tox/unit/bin/activate
 
 ### Testing
 
-Note that the [indico](indico_rock/rockcraft.yaml) and [indico nginx](indico_nginx_rock/rockcraft.yaml) images need to be built and pushed to microk8s for the tests to run. The should be tagged `localhost:32000/indico:latest` and `localhost:32000/indico-nginx:latest` so that Kubernetes knows to pull them from the microk8s repository. Note that the microk8s registry needs to be enabled using `microk8s enable registry`. More details regarding the OCI images below. The following commands can then be used to run the tests:
+Note that the [indico](indico_rock/rockcraft.yaml) and [indico nginx](indico_nginx_rock/rockcraft.yaml) images need to be built and pushed to microk8s for the tests to run. They should be tagged as `localhost:32000/indico:latest` and `localhost:32000/indico-nginx:latest` so that Kubernetes knows how to pull them from the microk8s repository. Note that the microk8s registry needs to be enabled using `microk8s enable registry`. More details regarding the OCI images below. The following commands can then be used to run the tests:
 
 * `tox`: Runs all of the basic checks (`lint`, `unit`, `static`, and `coverage-report`).
 * `tox -e fmt`: Runs formatting using `black` and `isort`.
