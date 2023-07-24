@@ -10,6 +10,7 @@ def pytest_addoption(parser):
     Args:
         parser: Pytest parser.
     """
+    parser.addoption("--charm-file", action="store")
     parser.addoption("--indico-image", action="store")
     parser.addoption("--indico-nginx-image", action="store")
     parser.addoption("--saml-email", action="store")
