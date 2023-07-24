@@ -92,15 +92,23 @@ async def app(
         "indico-nginx-image": pytestconfig.getoption("--indico-nginx-image"),
     }
     resources.update(prometheus_exporter_images)
-    charm = pytestconfig.getoption("--charm-file")
-    application = await ops_test.model.deploy(
-        f"./{charm}",
-        resources=resources,
-        application_name=app_name,
-        series="focal",
-    )
+    
+    if charm := pytestconfig.getoption("--charm-file"):
+        application = await ops_test.model.deploy(
+            f"./{charm}",
+            resources=resources,
+            application_name=app_name,
+            series="focal",
+        )
+    else:
+        charm = await ops_test.build_charm(".")
+        application = await ops_test.model.deploy(
+            charm,
+            resources=resources,
+            application_name=app_name,
+            series="focal",
+        )
 
-    await dependencies
     await ops_test.model.wait_for_idle(
         apps=["postgresql-k8s"], status="active", raise_on_error=False
     )
