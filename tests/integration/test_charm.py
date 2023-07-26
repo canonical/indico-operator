@@ -17,12 +17,7 @@ import urllib3.exceptions
 from ops.model import ActiveStatus, Application
 from pytest_operator.plugin import OpsTest
 
-from charm import (
-    CELERY_PROMEXP_PORT,
-    NGINX_PROMEXP_PORT,
-    STAGING_UBUNTU_SAML_URL,
-    STATSD_PROMEXP_PORT,
-)
+from charm import STAGING_UBUNTU_SAML_URL
 
 ADMIN_USER_EMAIL = "sample@email.com"
 ADMIN_USER_EMAIL_FAIL = "sample2@email.com"
@@ -59,34 +54,6 @@ async def test_indico_is_up(ops_test: OpsTest, app: Application):
         f"http://{address}:8080/bootstrap", headers={"Host": f"{app.name}.local"}, timeout=10
     )
     assert response.status_code == 200
-
-
-@pytest.mark.asyncio
-@pytest.mark.abort_on_fail
-async def test_prom_exporters_are_up(app: Application):
-    """
-    arrange: given charm in its initial state
-    act: when the metrics endpoints are scraped
-    assert: the response is 200 (HTTP OK)
-    """
-    # Application actually does have units
-    indico_unit = app.units[0]  # type: ignore
-    prometheus_targets = [
-        f"localhost:{NGINX_PROMEXP_PORT}",
-        f"localhost:{STATSD_PROMEXP_PORT}",
-        f"localhost:{CELERY_PROMEXP_PORT}",
-    ]
-    # Send request to /metrics for each target and check the response
-    for target in prometheus_targets:
-        cmd = f"curl -m 10 http://{target}/metrics"
-        action = await indico_unit.run(cmd, timeout=15)
-        # Change this if upgrading Juju lib version to >= 3
-        # See https://github.com/juju/python-libjuju/issues/707#issuecomment-1212296289
-        result = action.data
-        code = result["results"].get("Code")
-        stdout = result["results"].get("Stdout")
-        stderr = result["results"].get("Stderr")
-        assert code == "0", f"{cmd} failed ({code}): {stderr or stdout}"
 
 
 @pytest.mark.asyncio

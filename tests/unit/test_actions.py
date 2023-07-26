@@ -34,7 +34,6 @@ class TestActions(TestBase):
 
         self.is_ready(
             [
-                "nginx-prometheus-exporter",
                 "indico",
                 "indico-celery",
                 "indico-nginx",
@@ -75,9 +74,6 @@ class TestActions(TestBase):
 
         self.is_ready(
             [
-                "celery-prometheus-exporter",
-                "statsd-prometheus-exporter",
-                "nginx-prometheus-exporter",
                 "indico",
                 "indico-celery",
                 "indico-nginx",
@@ -182,9 +178,6 @@ class TestActions(TestBase):
 
         self.is_ready(
             [
-                "celery-prometheus-exporter",
-                "statsd-prometheus-exporter",
-                "nginx-prometheus-exporter",
                 "indico",
                 "indico-celery",
                 "indico-nginx",

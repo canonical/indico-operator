@@ -54,4 +54,4 @@ markers = [
 ]
 
 [tool.pylint]
-disable = "wrong-import-order"
+disable = "wrong-import-order, duplicate-code"

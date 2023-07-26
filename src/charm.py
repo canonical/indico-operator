@@ -71,15 +71,6 @@ class IndicoOperatorCharm(CharmBase):
         self.framework.observe(self.on.indico_celery_pebble_ready, self._on_pebble_ready)
         self.framework.observe(self.on.indico_nginx_pebble_ready, self._on_pebble_ready)
         self.framework.observe(
-            self.on.nginx_prometheus_exporter_pebble_ready, self._on_pebble_ready
-        )
-        self.framework.observe(
-            self.on.statsd_prometheus_exporter_pebble_ready, self._on_pebble_ready
-        )
-        self.framework.observe(
-            self.on.celery_prometheus_exporter_pebble_ready, self._on_pebble_ready
-        )
-        self.framework.observe(
             self.on.refresh_external_resources_action, self._refresh_external_resources_action
         )
         # self.framework.observe(self.on.update_status, self._refresh_external_resources)
@@ -308,7 +299,22 @@ class IndicoOperatorCharm(CharmBase):
                     "override": "replace",
                     "level": "ready",
                     "tcp": {"port": 8081},
-                }
+                },
+                "celery-exporter-up": {
+                    "override": "replace",
+                    "level": "alive",
+                    "http": {"url": "http://localhost:9808/health"},
+                },
+                "nginx-exporter-up": {
+                    "override": "replace",
+                    "level": "alive",
+                    "http": {"url": "http://localhost:9113/metrics"},
+                },
+                "statsd-exporter-up": {
+                    "override": "replace",
+                    "level": "alive",
+                    "http": {"url": "http://localhost:9102/metrics"},
+                },
             },
         }
 
@@ -371,93 +377,6 @@ class IndicoOperatorCharm(CharmBase):
                     "override": "replace",
                     "level": "alive",
                     "http": {"url": "http://localhost:8080/health"},
-                },
-            },
-        }
-
-    def _get_celery_prometheus_exporter_pebble_config(self, _) -> Dict:
-        """Generate pebble config for the celery-prometheus-exporter container.
-
-        Returns:
-            The pebble configuration for the container.
-        """
-        return {
-            "summary": "Celery prometheus exporter",
-            "description": "Prometheus exporter for celery",
-            "services": {
-                "celery-exporter": {
-                    "override": "replace",
-                    "summary": "Celery Exporter",
-                    "command": (
-                        "python"
-                        " /app/cli.py"
-                        f" --broker-url={self._get_celery_backend()}"
-                        " --retry-interval=5"
-                    ),
-                    "environment": {"CE_ACCEPT_CONTENT": "json,pickle"},
-                    "startup": "enabled",
-                },
-            },
-            "checks": {
-                "celery-exporter-up": {
-                    "override": "replace",
-                    "level": "alive",
-                    "http": {"url": "http://localhost:9808/health"},
-                },
-            },
-        }
-
-    def _get_nginx_prometheus_exporter_pebble_config(self, _) -> Dict:
-        """Generate pebble config for the nginx-prometheus-exporter container.
-
-        Returns:
-            The pebble configuration for the container.
-        """
-        return {
-            "summary": "Nginx prometheus exporter",
-            "description": "Prometheus exporter for nginx",
-            "services": {
-                "nginx-exporter": {
-                    "override": "replace",
-                    "summary": "Nginx Exporter",
-                    "command": (
-                        "nginx-prometheus-exporter"
-                        " -nginx.scrape-uri=http://localhost:9080/stub_status"
-                    ),
-                    "startup": "enabled",
-                },
-            },
-            "checks": {
-                "nginx-exporter-up": {
-                    "override": "replace",
-                    "level": "alive",
-                    "http": {"url": "http://localhost:9113/metrics"},
-                },
-            },
-        }
-
-    def _get_statsd_prometheus_exporter_pebble_config(self, _) -> Dict:
-        """Generate pebble config for the statsd-prometheus-exporter container.
-
-        Returns:
-            The pebble configuration for the container.
-        """
-        return {
-            "summary": "Statsd prometheus exporter",
-            "description": "Prometheus exporter for statsd",
-            "services": {
-                "statsd-exporter": {
-                    "override": "replace",
-                    "summary": "Statsd Exporter",
-                    "command": ("statsd_exporter"),
-                    "startup": "enabled",
-                },
-            },
-            "checks": {
-                "statsd-exporter-up": {
-                    "override": "replace",
-                    "level": "alive",
-                    "http": {"url": "http://localhost:9102/metrics"},
                 },
             },
         }
