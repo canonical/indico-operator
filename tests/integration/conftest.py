@@ -81,9 +81,9 @@ async def app(
     assert ops_test.model
     # Deploy relations to speed up overall execution
     asyncio.gather(
-        ops_test.model.deploy("postgresql-k8s", channel="latest/stable", series="focal"),
-        ops_test.model.deploy("redis-k8s", "redis-broker"),
-        ops_test.model.deploy("redis-k8s", "redis-cache"),
+        ops_test.model.deploy("postgresql-k8s", channel="latest/edge", series="focal"),
+        ops_test.model.deploy("redis-k8s", "redis-broker", channel="latest/edge"),
+        ops_test.model.deploy("redis-k8s", "redis-cache", channel="latest/edge"),
         ops_test.model.deploy("nginx-ingress-integrator", trust=True),
     )
 
