@@ -42,11 +42,11 @@ containers:
 resources:
   indico-image:
     type: oci-image
-    description: Docker image for Indico
+    description: OCI image for Indico
     auto-fetch: true
   indico-nginx-image:
     type: oci-image
-    description: Docker image for nginx Indico
+    description: OCI image for nginx Indico
     auto-fetch: true
 
 provides:
