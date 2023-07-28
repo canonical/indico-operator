@@ -250,7 +250,7 @@ async def test_saml_auth(
         csrf_token_matches = re.findall(
             "<input type='hidden' name='csrfmiddlewaretoken' value='([^']+)' />", login_page.text
         )
-        assert len(csrf_token_matches), login_page.text
+        assert csrf_token_matches, login_page.text
         saml_callback = session.post(
             "https://login.staging.ubuntu.com/+login",
             data={
