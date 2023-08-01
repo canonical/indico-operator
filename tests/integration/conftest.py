@@ -9,7 +9,6 @@ from typing import Dict
 
 import pytest_asyncio
 import yaml
-from ops.model import WaitingStatus
 from pytest import Config, fixture
 from pytest_operator.plugin import OpsTest
 
