@@ -11,7 +11,6 @@ from unittest.mock import MagicMock, patch
 from ops.jujuversion import JujuVersion
 from ops.model import ActiveStatus, BlockedStatus, Container, WaitingStatus
 
-from charm import IndicoOperatorCharm
 from tests.unit.test_base import TestBase
 
 
@@ -45,9 +44,8 @@ class TestCore(TestBase):
             self.harness.model.unit.status, WaitingStatus("Waiting for database availability")
         )
 
-    @patch.object(IndicoOperatorCharm, "_config_nginx_exporter")
     @patch.object(Container, "exec")
-    def test_indico_nginx_pebble_ready(self, mock_exec, _):
+    def test_indico_nginx_pebble_ready(self, mock_exec):
         """
         arrange: charm created
         act: trigger container pebble ready event for nginx container

@@ -239,15 +239,6 @@ class IndicoOperatorCharm(CharmBase):
             event.defer()
             return
         self._config_pebble(event.workload)
-        if event.workload.name == "indico-nginx":
-            self._config_nginx_exporter()
-
-    def _config_nginx_exporter(self):
-        """Configure NGINX exporter to avoid race conditions with NGINX."""
-        container = self.unit.get_container("indico")
-        pebble_config = self._get_nginx_prometheus_exporter_pebble_config(container)
-        container.add_layer("nginx", pebble_config, combine=True)
-        container.pebble.replan_services()
 
     def _config_pebble(self, container: Container) -> None:
         """Apply pebble configurations to a container.
@@ -278,6 +269,9 @@ class IndicoOperatorCharm(CharmBase):
                 pebble_config = pebble_config_func(container)
                 container.add_layer(item, pebble_config, combine=True)
             self._download_customization_changes(container)
+        if container.name == "indico-nginx":
+            pebble_config = self._get_nginx_prometheus_exporter_pebble_config(container)
+            container.add_layer("nginx", pebble_config, combine=True)
         self.unit.status = MaintenanceStatus(f"Starting {container.name} container")
         container.pebble.replan_services()
         if self._are_pebble_instances_ready():

@@ -46,7 +46,6 @@ parts:
       - texlive-xetex
     stage-snaps:
       - celery-prometheus-exporter/latest/edge
-      - gtrkiller-nginx-prometheus-exporter/latest/edge
       - gtrkiller-statsd-prometheus-exporter/latest/edge
     source: plugins
     plugin: nil
