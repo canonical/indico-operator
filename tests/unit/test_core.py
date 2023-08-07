@@ -451,6 +451,7 @@ class TestCore(TestBase):
         self.set_up_all_relations()
         self.harness.set_leader(True)
 
+        # pylint: disable=duplicate-code
         self.is_ready(
             [
                 "indico",

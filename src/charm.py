@@ -262,12 +262,10 @@ class IndicoOperatorCharm(CharmBase):
         pebble_config = pebble_config_func(container)
         container.add_layer(container.name, pebble_config, combine=True)
         if container.name == "indico":
-            for item in ["statsd", "celery"]:
-                pebble_config_func = getattr(
-                    self, f"_get_{item}_prometheus_exporter_pebble_config"
-                )
-                pebble_config = pebble_config_func(container)
-                container.add_layer(item, pebble_config, combine=True)
+            celery_config = self._get_celery_prometheus_exporter_pebble_config(container)
+            statsd_config = self._get_statsd_prometheus_exporter_pebble_config(container)
+            container.add_layer("celery", celery_config, combine=True)
+            container.add_layer("statsd", statsd_config, combine=True)
             self._download_customization_changes(container)
         if container.name == "indico-nginx":
             pebble_config = self._get_nginx_prometheus_exporter_pebble_config(container)
