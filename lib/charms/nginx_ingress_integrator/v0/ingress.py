@@ -1,5 +1,5 @@
 # Copyright 2023 Canonical Ltd.
-# Licensed under the Apache2.0, see LICENCE file in charm source for details.
+# Licensed under the Apache2.0. See LICENSE file in charm source for details.
 """Library for the ingress relation.
 
 This library contains the Requires and Provides classes for handling
@@ -35,16 +35,13 @@ As an example, add the following to `src/charm.py`:
 ```
 from charms.nginx_ingress_integrator.v0.ingress import IngressRequires
 
-# In your charm's `__init__` method.
+# In your charm's `__init__` method (assuming your app is listening on port 8080).
 self.ingress = IngressRequires(self, {
-        "service-hostname": self.config["external_hostname"],
+        "service-hostname": self.app.name,
         "service-name": self.app.name,
-        "service-port": 80,
+        "service-port": 8080,
     }
 )
-
-# In your charm's `config-changed` handler.
-self.ingress.update_config({"service-hostname": self.config["external_hostname"]})
 ```
 And then add the following to `metadata.yaml`:
 ```
@@ -55,6 +52,22 @@ requires:
 You _must_ register the IngressRequires class as part of the `__init__` method
 rather than, for instance, a config-changed event handler, for the relation
 changed event to be properly handled.
+
+In the example above we're setting `service-hostname` (which translates to the
+external hostname for the application when related to nginx-ingress-integrator)
+to `self.app.name` here. This ensures by default the charm will be available on
+the name of the deployed juju application, but can be overridden in a
+production deployment by setting `service-hostname` on the
+nginx-ingress-integrator charm. For example:
+```bash
+juju deploy nginx-ingress-integrator
+juju deploy my-charm
+juju relate nginx-ingress-integrator my-charm:ingress
+# The service is now reachable on the ingress IP(s) of your k8s cluster at
+# 'http://my-charm'.
+juju config nginx-ingress-integrator service-hostname='my-charm.example.com'
+# The service is now reachable on the ingress IP(s) of your k8s cluster at
+# 'http://my-charm.example.com'.
 """
 
 import copy
@@ -76,7 +89,7 @@ LIBAPI = 0
 
 # Increment this PATCH version before using `charmcraft publish-lib` or reset
 # to 0 if you are raising the major API version
-LIBPATCH = 16
+LIBPATCH = 17
 
 LOGGER = logging.getLogger(__name__)
 
@@ -283,6 +296,7 @@ class IngressBaseProvides(Object):
 
         Args:
             charm: The charm that provides the ingress-proxy relation.
+            relation_name: The name of the relation.
         """
         super().__init__(charm, relation_name)
         self.charm = charm
@@ -348,9 +362,6 @@ class IngressBaseProvides(Object):
 class IngressProvides(IngressBaseProvides):
     """Class containing the functionality for the 'provides' side of the 'ingress' relation.
 
-    Attrs:
-        charm: The charm that provides the ingress relation.
-
     Hook events observed:
         - relation-changed
     """
@@ -386,9 +397,6 @@ class IngressProvides(IngressBaseProvides):
 
 class IngressProxyProvides(IngressBaseProvides):
     """Class containing the functionality for the 'provides' side of the 'ingress-proxy' relation.
-
-    Attrs:
-        charm: The charm that provides the ingress-proxy relation.
 
     Hook events observed:
         - relation-changed
