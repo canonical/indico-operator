@@ -235,17 +235,7 @@ class TestCore(TestBase):
         """
         mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=("", None)))
 
-        self.set_up_all_relations()
-        self.harness.set_leader(True)
-
-        # pylint: disable=duplicate-code
-        self.is_ready(
-            [
-                "indico",
-                "indico-celery",
-                "indico-nginx",
-            ]
-        )
+        self.set_relations_and_leader()
         self.harness.update_config(
             {
                 "customization_debug": True,
@@ -374,17 +364,7 @@ class TestCore(TestBase):
         """
         mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=("", None)))
 
-        self.set_up_all_relations()
-        self.harness.set_leader(True)
-
-        # pylint: disable=duplicate-code
-        self.is_ready(
-            [
-                "indico",
-                "indico-celery",
-                "indico-nginx",
-            ]
-        )
+        self.set_relations_and_leader()
         self.harness.update_config({"site_url": "example.local"})
         self.assertEqual(
             self.harness.model.unit.status,
@@ -400,24 +380,14 @@ class TestCore(TestBase):
         """
         mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=("", None)))
 
-        self.set_up_all_relations()
-        self.harness.set_leader(True)
-
-        # pylint: disable=duplicate-code
-        self.is_ready(
-            [
-                "indico",
-                "indico-celery",
-                "indico-nginx",
-            ]
-        )
+        self.set_relations_and_leader()
         self.harness.update_config(
             {
                 "customization_sources_url": "https://example.com/custom",
                 "external_plugins": "git+https://example.git/#subdirectory=themes_cern",
             }
         )
-
+        # pylint: disable=duplicate-code
         mock_exec.assert_any_call(
             ["git", "clone", "https://example.com/custom", "."],
             working_dir="/srv/indico/custom",
@@ -448,17 +418,7 @@ class TestCore(TestBase):
         """
         mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=("", None)))
 
-        self.set_up_all_relations()
-        self.harness.set_leader(True)
-
-        # pylint: disable=duplicate-code
-        self.is_ready(
-            [
-                "indico",
-                "indico-celery",
-                "indico-nginx",
-            ]
-        )
+        self.set_relations_and_leader()
 
         self.harness.update_config({"saml_target_url": "sample.com/saml"})
         self.assertEqual(
