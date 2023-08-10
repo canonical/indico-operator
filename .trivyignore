@@ -1,0 +1,24 @@
+# https://avd.aquasec.com/nvd/cve-2021-33026
+# Flask-Caching - disputed vurlnerability
+CVE-2021-33026
+# ignore CVEs that are resolved in Indico 3.2.2 until we can use it
+# requires postgresql machine charm >= 13
+CVE-2022-40023
+CVE-2022-45199
+CVE-2023-25577
+CVE-2023-23934
+CVE-2022-23491
+CVE-2023-0286
+CVE-2023-23931
+CVE-2023-30861
+CVE-2023-28117
+GHSA-39hc-v87j-747x
+CVE-2023-24816
+CVE-2022-40897
+CVE-2022-40898
+# ignore pebble CVEs until https://github.com/canonical/pebble/pull/194 is merged
+CVE-2021-43565
+CVE-2022-27191
+CVE-2022-29526
+CVE-2022-28948
+CVE-2023-31655

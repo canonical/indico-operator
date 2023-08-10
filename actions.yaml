@@ -1,2 +1,22 @@
+# Copyright 2023 Canonical Ltd.
+# See LICENSE file for licensing details.
+
 refresh-external-resources:
-  description: Pull changes from the customization repository and upgrade the external plugins
+  description: Pull changes from the customization repository, reload uWSGI and upgrade the external plugins
+add-admin:
+  description: Add an admin to Indico
+  params:
+    email:
+      type: string
+      description: User email.
+    password:
+      type: string
+      description: User password.
+  required: [email, password]
+anonymize-user:
+  description: Anonymize stored personal data to facilitate GDPR compliance
+  params:
+    email:
+      type: string
+      description: User email (or a list of emails separated by comma). Maximum of 50 emails.
+  required: [email]

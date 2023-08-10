@@ -1,4 +1,4 @@
-# Copyright 2022 Canonical Ltd.
+# Copyright 2023 Canonical Ltd.
 # See LICENSE file for licensing details.
 
 options:
@@ -68,6 +68,6 @@ options:
     default: true
   s3_storage:
     type: string
-    description: Comma separated list of parameters to connect to S3 as in 's3:bucket=my-indico-test-bucket,access_key=12345,secret_key=topsecret'. Details on the available options can be found at https://github.com/indico/indico-plugins/blob/master/storage_s3/README.md#available-config-options
+    description: Comma separated list of parameters to connect to an S3 bucket as in 's3:bucket=my-indico-test-bucket,access_key=12345,secret_key=topsecret'. Details on the available options can be found at https://github.com/indico/indico-plugins/blob/master/storage_s3/README.md#available-config-options
     default: ''
 

@@ -7,3 +7,6 @@ __pycache__/
 *.py[cod]
 .idea
 .vscode
+.mypy_cache
+*.egg-info/
+*/*.rock

@@ -1,3 +1,8 @@
+[![CharmHub Badge](https://charmhub.io/indico/badge.svg)](https://charmhub.io/indico)
+[![Publish to edge](https://github.com/canonical/indico-operator/actions/workflows/publish_charm.yaml/badge.svg)](https://github.com/canonical/indico-operator/actions/workflows/publish_charm.yaml)
+[![Promote charm](https://github.com/canonical/indico-operator/actions/workflows/promote_charm.yaml/badge.svg)](https://github.com/canonical/indico-operator/actions/workflows/promote_charm.yaml)
+[![Discourse Status](https://img.shields.io/discourse/status?server=https%3A%2F%2Fdiscourse.charmhub.io&style=flat&label=CharmHub%20Discourse)](https://discourse.charmhub.io)
+
 # Indico Operator
 
 A Juju charm deploying and managing Indico on Kubernetes. Indico is an
@@ -19,40 +24,18 @@ straightforward through Juju's clean interface. It will allow easy deployment
 into multiple environments for testing of changes, and supports scaling out for
 enterprise deployments.
 
-## Deployment options overview
+## Project and community
 
-For overall concepts related to using Juju
-[see the Juju overview page](https://juju.is/). For easy local testing we
-recommend
-[this how to on using MicroK8s with Juju](https://juju.is/docs/microk8s-cloud).
+The Indico Operator is a member of the Ubuntu family. It's an open source
+project that warmly welcomes community projects, contributions, suggestions,
+fixes and constructive feedback.
+* [Code of conduct](https://ubuntu.com/community/code-of-conduct)
+* [Get support](https://discourse.charmhub.io/)
+* [Join our online chat](https://chat.charmhub.io/charmhub/channels/charm-dev)
+* [Contribute](https://charmhub.io/indico/docs/how-to-contribute)
+Thinking about using the Indico Operator for your next project? [Get in touch](https://chat.charmhub.io/charmhub/channels/charm-dev)!
 
-## How to deploy this charm (quick guide)
-
-To deploy the charm and relate it to
-[the PostgreSQL K8s charm](https://charmhub.io/postgresql-k8s) and
-[the Redis K8s charm](https://charmhub.io/redis-k8s) within a Juju Kubernetes model:
-
-    juju deploy postgresql-k8s
-    juju deploy redis-k8s redis-broker
-    juju deploy redis-k8s redis-cache
-    juju deploy indico
-    juju relate indico postgresql-k8s:db
-    juju relate redis-broker indico
-    juju relate redis-cache indico
-    
-The charm also supports the `ingress` relation, which can be used with
-[nginx-ingress-integrator](https://charmhub.io/nginx-ingress-integrator/).
-
-    juju deploy nginx-ingress-integrator
-    juju relate indico:ingress nginx-ingress-integrator:ingress
-
-Once the deployment has completed and the "indico" workload state in
-`juju status` has changed to "active" you can visit `http://indico.local` in
-a browser (assuming `indico.local` resolves to the IP(s) of your k8s ingress)
-and log in to your Indico instance, and you'll be presented with a screen
-to create an initial admin account. Further accounts must be created using this
-admin account, or by setting up an external authentication source, such as
-SAML.
+---
 
 For further details,
 [see the charm's detailed documentation](https://charmhub.io/indico/docs).

@@ -1,4 +1,4 @@
-# Copyright 2022 Canonical Ltd.
+# Copyright 2023 Canonical Ltd.
 # See LICENSE file for licensing details.
 
 """Patch the ``ops-lib-pgsql`` library for unit testing.
@@ -21,18 +21,28 @@ _og_use = ops.lib.use
 
 
 def _use(*args, **kwargs):
-    print("use: ", args)
+    """Patch use method.
+
+    Args:
+        args: Arguments from the ops.lib.use original method.
+        kwargs: a `dict` of the extra arguments passed to the function.
+
+    Returns:
+        Patched ops.lib.use method.
+    """
     if args == ("pgsql", 1, "postgresql-charmers@lists.launchpad.net"):
         return pgsql
-    else:
-        return _og_use(*args, **kwargs)
+    return _og_use(*args, **kwargs)
 
 
 ops.lib.use = _use
 
 
 class _PGSQLPatch:
+    """The simulation of a Indico installed PGSQL database charm."""
+
     def __init__(self):
+        """Initialize the instance."""
         # borrow some code from
         # https://github.com/canonical/ops-lib-pgsql/blob/master/tests/test_client.py
         self._leadership_data = {}
@@ -44,16 +54,21 @@ class _PGSQLPatch:
         )
 
     def _reset_leadership_data(self):
+        """Clear the leadership data of the patched charm."""
         self._leadership_data.clear()
 
     def start(self):
+        """Start the patched charm."""
         self._reset_leadership_data()
         self._patch.start()
 
     def stop(self):
+        """Stop the patched charm."""
         self._reset_leadership_data()
         self._patch.stop()
 
 
 pgsql_patch = _PGSQLPatch()
 IndicoOperatorCharm = __import__("charm").IndicoOperatorCharm
+EMAIL_LIST_MAX = __import__("charm").EMAIL_LIST_MAX
+EMAIL_LIST_SEPARATOR = __import__("charm").EMAIL_LIST_SEPARATOR

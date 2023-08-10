@@ -1,13 +1,36 @@
+# Copyright 2023 Canonical Ltd.
+# See LICENSE file for licensing details.
+
 name: indico
 display-name: Indico
 summary: Indico web application.
-docs: https://discourse.charmhub.io/t/indico-docs-index/6552
+description: |
+  A [Juju](https://juju.is/) [charm](https://juju.is/docs/olm/charmed-operators)
+  deploying and managing [Indico](https://getindico.io/) on Kubernetes. Indico is an
+  open-source tool for event organisation, archival and collaboration.
+
+  This charm simplifies initial deployment and "day N" operations of Indico
+  on Kubernetes, such as scaling the number of instances, integration with SSO,
+  access to S3 for redundant file storage and more. It allows for deployment on
+  many different Kubernetes platforms, from [MicroK8s](https://microk8s.io) to
+  [Charmed Kubernetes](https://ubuntu.com/kubernetes) and public cloud Kubernetes
+  offerings.
+
+  As such, the charm makes it easy for those looking to take control of their own
+  events management system whilst keeping operations simple, and gives them the
+  freedom to deploy on the Kubernetes platform of their choice.
+
+  For DevOps or SRE teams this charm will make operating Indico simple and
+  straightforward through Juju's clean interface. It will allow easy deployment
+  into multiple environments for testing of changes, and supports scaling out for
+  enterprise deployments.
+docs: https://discourse.charmhub.io/t/indico-documentation-overview/7571
+issues: https://github.com/canonical/indico-operator/issues
 maintainers:
   - launchpad.net/~canonical-is-devops
-issues: https://github.com/canonical/indico-operator/issues
-description: |
-  Indico is a tool that allows you to manage complex conferences, workshops and meetings.
-  https://getindico.io/
+source: https://github.com/canonical/indico-operator
+assumes:
+  - k8s-api
 containers:
   indico:
     resource: indico-image
@@ -15,23 +38,16 @@ containers:
     resource: indico-nginx-image
   indico-celery:
     resource: indico-image
-  nginx-prometheus-exporter:
-    resource: nginx-prometheus-exporter-image
 
 resources:
   indico-image:
     type: oci-image
-    description: Docker image for Indico
+    description: OCI image for Indico
     auto-fetch: true
   indico-nginx-image:
     type: oci-image
-    description: Docker image for nginx Indico
+    description: OCI image for nginx Indico
     auto-fetch: true
-  nginx-prometheus-exporter-image:
-    type: oci-image
-    description: Prometheus exporter for nginx
-    auto-fetch: true
-    upstream-source: nginx/nginx-prometheus-exporter:0.10.0
 
 provides:
   grafana-dashboard:
