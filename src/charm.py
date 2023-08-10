@@ -71,15 +71,6 @@ class IndicoOperatorCharm(CharmBase):
         self.framework.observe(self.on.indico_celery_pebble_ready, self._on_pebble_ready)
         self.framework.observe(self.on.indico_nginx_pebble_ready, self._on_pebble_ready)
         self.framework.observe(
-            self.on.nginx_prometheus_exporter_pebble_ready, self._on_pebble_ready
-        )
-        self.framework.observe(
-            self.on.statsd_prometheus_exporter_pebble_ready, self._on_pebble_ready
-        )
-        self.framework.observe(
-            self.on.celery_prometheus_exporter_pebble_ready, self._on_pebble_ready
-        )
-        self.framework.observe(
             self.on.refresh_external_resources_action, self._refresh_external_resources_action
         )
         # self.framework.observe(self.on.update_status, self._refresh_external_resources)
@@ -271,7 +262,14 @@ class IndicoOperatorCharm(CharmBase):
         pebble_config = pebble_config_func(container)
         container.add_layer(container.name, pebble_config, combine=True)
         if container.name == "indico":
+            celery_config = self._get_celery_prometheus_exporter_pebble_config(container)
+            statsd_config = self._get_statsd_prometheus_exporter_pebble_config(container)
+            container.add_layer("celery", celery_config, combine=True)
+            container.add_layer("statsd", statsd_config, combine=True)
             self._download_customization_changes(container)
+        if container.name == "indico-nginx":
+            pebble_config = self._get_nginx_prometheus_exporter_pebble_config(container)
+            container.add_layer("nginx", pebble_config, combine=True)
         self.unit.status = MaintenanceStatus(f"Starting {container.name} container")
         container.pebble.replan_services()
         if self._are_pebble_instances_ready():
@@ -308,7 +306,7 @@ class IndicoOperatorCharm(CharmBase):
                     "override": "replace",
                     "level": "ready",
                     "tcp": {"port": 8081},
-                }
+                },
             },
         }
 
@@ -375,12 +373,16 @@ class IndicoOperatorCharm(CharmBase):
             },
         }
 
-    def _get_celery_prometheus_exporter_pebble_config(self, _) -> Dict:
+    def _get_celery_prometheus_exporter_pebble_config(self, container) -> Dict:
         """Generate pebble config for the celery-prometheus-exporter container.
+
+        Args:
+            container: Celery container that has the target configuration.
 
         Returns:
             The pebble configuration for the container.
         """
+        indico_env_config = self._get_indico_env_config(container)
         return {
             "summary": "Celery prometheus exporter",
             "description": "Prometheus exporter for celery",
@@ -389,12 +391,11 @@ class IndicoOperatorCharm(CharmBase):
                     "override": "replace",
                     "summary": "Celery Exporter",
                     "command": (
-                        "python"
-                        " /app/cli.py"
+                        "celery-exporter"
                         f" --broker-url={self._get_celery_backend()}"
                         " --retry-interval=5"
                     ),
-                    "environment": {"CE_ACCEPT_CONTENT": "json,pickle"},
+                    "environment": indico_env_config,
                     "startup": "enabled",
                 },
             },
@@ -417,7 +418,7 @@ class IndicoOperatorCharm(CharmBase):
             "summary": "Nginx prometheus exporter",
             "description": "Prometheus exporter for nginx",
             "services": {
-                "nginx-exporter": {
+                "nginx-prometheus-exporter": {
                     "override": "replace",
                     "summary": "Nginx Exporter",
                     "command": (
