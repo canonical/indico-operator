@@ -29,17 +29,7 @@ class TestActions(TestBase):
         """
         mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=("", None)))
         self.harness.disable_hooks()
-        self.set_up_all_relations()
-        self.harness.set_leader(True)
-
-        self.is_ready(
-            [
-                "nginx-prometheus-exporter",
-                "indico",
-                "indico-celery",
-                "indico-nginx",
-            ]
-        )
+        self.set_relations_and_leader()
         self.harness.update_config(
             {
                 "customization_sources_url": "https://example.com/custom",
@@ -70,19 +60,7 @@ class TestActions(TestBase):
         """
         mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=("", None)))
 
-        self.set_up_all_relations()
-        self.harness.set_leader(True)
-
-        self.is_ready(
-            [
-                "celery-prometheus-exporter",
-                "statsd-prometheus-exporter",
-                "nginx-prometheus-exporter",
-                "indico",
-                "indico-celery",
-                "indico-nginx",
-            ]
-        )
+        self.set_relations_and_leader()
         self.harness.disable_hooks()
 
         container = self.harness.model.unit.get_container("indico")
@@ -177,19 +155,7 @@ class TestActions(TestBase):
             wait_output=mock_wo,
         )
 
-        self.set_up_all_relations()
-        self.harness.set_leader(True)
-
-        self.is_ready(
-            [
-                "celery-prometheus-exporter",
-                "statsd-prometheus-exporter",
-                "nginx-prometheus-exporter",
-                "indico",
-                "indico-celery",
-                "indico-nginx",
-            ]
-        )
+        self.set_relations_and_leader()
         self.harness.disable_hooks()
 
         container = self.harness.model.unit.get_container("indico")

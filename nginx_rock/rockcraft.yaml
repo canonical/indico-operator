@@ -26,6 +26,8 @@ parts:
   nginx:
     stage-packages:
       - nginx
+    stage-snaps:
+      - gtrkiller-nginx-prometheus-exporter/latest/edge
     plugin: nil
     override-build: |
       craftctl default

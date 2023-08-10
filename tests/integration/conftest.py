@@ -5,7 +5,6 @@
 
 import asyncio
 from pathlib import Path
-from typing import Dict
 
 import pytest_asyncio
 import yaml
@@ -44,23 +43,6 @@ def app_name_fixture(metadata):
     yield metadata["name"]
 
 
-@fixture(scope="module", name="prometheus_exporter_images")
-def prometheus_exporter_images_fixture(metadata):
-    """Provides Prometheus exporter images from the metadata."""
-    prometheus_exporter_images = {
-        "nginx-prometheus-exporter-image": metadata["resources"][
-            "nginx-prometheus-exporter-image"
-        ]["upstream-source"],
-        "statsd-prometheus-exporter-image": metadata["resources"][
-            "statsd-prometheus-exporter-image"
-        ]["upstream-source"],
-        "celery-prometheus-exporter-image": metadata["resources"][
-            "celery-prometheus-exporter-image"
-        ]["upstream-source"],
-    }
-    yield prometheus_exporter_images
-
-
 @fixture(scope="module")
 def requests_timeout():
     """Provides a global default timeout for HTTP requests"""
@@ -72,7 +54,6 @@ async def app(
     ops_test: OpsTest,
     app_name: str,
     pytestconfig: Config,
-    prometheus_exporter_images: Dict[str, str],
 ):
     """Indico charm used for integration testing.
 
@@ -91,7 +72,6 @@ async def app(
         "indico-image": pytestconfig.getoption("--indico-image"),
         "indico-nginx-image": pytestconfig.getoption("--indico-nginx-image"),
     }
-    resources.update(prometheus_exporter_images)
     charm = pytestconfig.getoption("--charm-file")
     application = await ops_test.model.deploy(
         f"./{charm}",

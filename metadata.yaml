@@ -38,12 +38,6 @@ containers:
     resource: indico-nginx-image
   indico-celery:
     resource: indico-image
-  celery-prometheus-exporter:
-    resource: celery-prometheus-exporter-image
-  nginx-prometheus-exporter:
-    resource: nginx-prometheus-exporter-image
-  statsd-prometheus-exporter:
-    resource: statsd-prometheus-exporter-image
 
 resources:
   indico-image:
@@ -54,21 +48,6 @@ resources:
     type: oci-image
     description: OCI image for nginx Indico
     auto-fetch: true
-  celery-prometheus-exporter-image:
-    type: oci-image
-    description: Prometheus exporter for celery
-    auto-fetch: true
-    upstream-source: danihodovic/celery-exporter:0.7.6
-  nginx-prometheus-exporter-image:
-    type: oci-image
-    description: Prometheus exporter for nginx
-    auto-fetch: true
-    upstream-source: nginx/nginx-prometheus-exporter:0.11.0
-  statsd-prometheus-exporter-image:
-    type: oci-image
-    description: Prometheus exporter for statsd
-    auto-fetch: true
-    upstream-source: prom/statsd-exporter:v0.22.8
 
 provides:
   grafana-dashboard:
