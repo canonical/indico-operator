@@ -73,6 +73,8 @@ async def app(
         "indico-nginx-image": pytestconfig.getoption("--indico-nginx-image"),
     }
     charm = pytestconfig.getoption("--charm-file")
+    if charm is None:
+        charm = await ops_test.build_charm(".")
     application = await ops_test.model.deploy(
         f"./{charm}",
         resources=resources,
