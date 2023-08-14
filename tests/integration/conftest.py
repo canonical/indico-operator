@@ -72,8 +72,6 @@ async def app(
         "indico-nginx-image": pytestconfig.getoption("--indico-nginx-image"),
     }
 
-    resources.update(prometheus_exporter_images)
-
     if charm := pytestconfig.getoption("--charm-file"):
         application = await ops_test.model.deploy(
             f"./{charm}",
