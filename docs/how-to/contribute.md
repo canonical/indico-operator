@@ -74,10 +74,7 @@ juju model-config logging-config="<root>=INFO;unit=DEBUG"
 # Deploy the charm (assuming you're on amd64)
 juju deploy ./indico_ubuntu-20.04-amd64.charm \
   --resource indico-image=localhost:32000/indico:latest \
-  --resource indico-nginx-image=localhost:32000/indico-nginx:latest \
-  --resource celery-prometheus-exporter-image='danihodovic/celery-exporter:0.7.6' \
-  --resource nginx-prometheus-exporter-image='nginx/nginx-prometheus-exporter:0.10.0' \
-  --resource statsd-prometheus-exporter-image='prom/statsd-exporter:v0.22.8'
+  --resource indico-nginx-image=localhost:32000/indico-nginx:latest
 ```
 
 ## Canonical Contributor Agreement
