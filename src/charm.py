@@ -7,6 +7,7 @@
 """Charm for Indico on kubernetes."""
 import logging
 import os
+import typing
 from re import findall
 from typing import Dict, Iterator, List, Optional, Tuple
 from urllib.parse import urlparse
@@ -280,7 +281,7 @@ class IndicoOperatorCharm(CharmBase):
         else:
             self.unit.status = WaitingStatus("Waiting for pebble")
 
-    def _get_indico_pebble_config(self, container: Container) -> Dict:
+    def _get_indico_pebble_config(self, container: Container) -> ops.pebble.LayerDict:
         """Generate pebble config for the indico container.
 
         Args:
@@ -290,7 +291,7 @@ class IndicoOperatorCharm(CharmBase):
             The pebble configuration for the container.
         """
         indico_env_config = self._get_indico_env_config(container)
-        return {
+        layer = {
             "summary": "Indico layer",
             "description": "Indico layer",
             "services": {
@@ -311,6 +312,7 @@ class IndicoOperatorCharm(CharmBase):
                 },
             },
         }
+        return typing.cast(ops.pebble.LayerDict, layer)
 
     def _get_indico_celery_pebble_config(self, container: Container) -> Dict:
         """Generate pebble config for the indico-celery container.
@@ -375,7 +377,7 @@ class IndicoOperatorCharm(CharmBase):
             },
         }
 
-    def _get_celery_prometheus_exporter_pebble_config(self, container) -> Dict:
+    def _get_celery_prometheus_exporter_pebble_config(self, container) -> ops.pebble.LayerDict:
         """Generate pebble config for the celery-prometheus-exporter container.
 
         Args:
@@ -385,7 +387,7 @@ class IndicoOperatorCharm(CharmBase):
             The pebble configuration for the container.
         """
         indico_env_config = self._get_indico_env_config(container)
-        return {
+        layer = {
             "summary": "Celery prometheus exporter",
             "description": "Prometheus exporter for celery",
             "services": {
@@ -409,14 +411,15 @@ class IndicoOperatorCharm(CharmBase):
                 },
             },
         }
+        return typing.cast(ops.pebble.LayerDict, layer)
 
-    def _get_nginx_prometheus_exporter_pebble_config(self, _) -> Dict:
+    def _get_nginx_prometheus_exporter_pebble_config(self, _) -> ops.pebble.LayerDict:
         """Generate pebble config for the nginx-prometheus-exporter container.
 
         Returns:
             The pebble configuration for the container.
         """
-        return {
+        layer = {
             "summary": "Nginx prometheus exporter",
             "description": "Prometheus exporter for nginx",
             "services": {
@@ -438,14 +441,15 @@ class IndicoOperatorCharm(CharmBase):
                 },
             },
         }
+        return typing.cast(ops.pebble.LayerDict, layer)
 
-    def _get_statsd_prometheus_exporter_pebble_config(self, _) -> Dict:
+    def _get_statsd_prometheus_exporter_pebble_config(self, _) -> ops.pebble.LayerDict:
         """Generate pebble config for the statsd-prometheus-exporter container.
 
         Returns:
             The pebble configuration for the container.
         """
-        return {
+        layer = {
             "summary": "Statsd prometheus exporter",
             "description": "Prometheus exporter for statsd",
             "services": {
@@ -464,6 +468,7 @@ class IndicoOperatorCharm(CharmBase):
                 },
             },
         }
+        return typing.cast(ops.pebble.LayerDict, layer)
 
     def _get_redis_rel(self, name: str) -> Optional[Relation]:
         """Get Redis relation.
