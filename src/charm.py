@@ -42,6 +42,8 @@ PORT = 8080
 STATSD_PROMEXP_PORT = "9102"
 UBUNTU_SAML_URL = "https://login.ubuntu.com/saml/"
 STAGING_UBUNTU_SAML_URL = "https://login.staging.ubuntu.com/saml/"
+SAML_GROUPS_PLUGIN_NAME = "saml_groups"
+
 UWSGI_TOUCH_RELOAD = "/srv/indico/indico.wsgi"
 
 pgsql = ops.lib.use("pgsql", 1, "postgresql-charmers@lists.launchpad.net")
@@ -692,7 +694,9 @@ class IndicoOperatorCharm(CharmBase):
             env_config["INDICO_AUTH_PROVIDERS"] = str(auth_providers)
             identity_providers = {
                 "ubuntu": {
-                    "type": "saml",
+                    "type": (
+                        "saml_groups" if SAML_GROUPS_PLUGIN_NAME in available_plugins else "saml"
+                    ),
                     "trusted_email": True,
                     "mapping": {
                         "user_name": "username",
