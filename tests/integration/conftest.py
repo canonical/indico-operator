@@ -60,8 +60,12 @@ async def app(
     """
     assert ops_test.model
     # Deploy relations to speed up overall execution
+    postgresql_config = {
+        "plugin_pg_trgm_enable=true": True,
+        "plugin_unaccent_enable": True,
+    }
     asyncio.gather(
-        ops_test.model.deploy("postgresql-k8s", channel="14/edge"),
+        ops_test.model.deploy("postgresql-k8s", channel="14/edge", config=postgresql_config),
         ops_test.model.deploy("redis-k8s", "redis-broker", channel="latest/edge"),
         ops_test.model.deploy("redis-k8s", "redis-cache", channel="latest/edge"),
         ops_test.model.deploy("nginx-ingress-integrator", channel="latest/edge", trust=True),
