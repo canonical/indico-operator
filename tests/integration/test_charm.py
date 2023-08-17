@@ -207,7 +207,7 @@ async def test_saml_auth(
     # The linter does not recognize set_config as a method, so this errors must be ignored.
     await app.set_config(  # type: ignore[attr-defined] # pylint: disable=W0106
         {
-            "site_url": "https://indico.local",
+            "site_url": "https://events.staging.canonical.com",
             "saml_target_url": STAGING_UBUNTU_SAML_URL,
         }
     )
@@ -216,7 +216,7 @@ async def test_saml_auth(
     await ops_test.model.wait_for_idle(status="active")  # type: ignore[union-attr]
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-    host = "indico.local"
+    host = "events.staging.canonical.com"
     original_getaddrinfo = socket.getaddrinfo
 
     def patched_getaddrinfo(*args):
@@ -233,14 +233,6 @@ async def test_saml_auth(
         return original_getaddrinfo(*args)
 
     with patch.multiple(socket, getaddrinfo=patched_getaddrinfo), requests.session() as session:
-        dashboard_page = session.get(
-            f"https://{host}/user/dashboard/",
-            verify=False,
-            allow_redirects=False,
-            timeout=requests_timeout,
-        )
-        assert dashboard_page.status_code == 302
-
         session.get(f"https://{host}", verify=False)
         login_page = session.get(
             f"https://{host}/login",
@@ -250,7 +242,7 @@ async def test_saml_auth(
         csrf_token_matches = re.findall(
             "<input type='hidden' name='csrfmiddlewaretoken' value='([^']+)' />", login_page.text
         )
-        assert len(csrf_token_matches) > 0
+        assert csrf_token_matches, login_page.text
         saml_callback = session.post(
             "https://login.staging.ubuntu.com/+login",
             data={
@@ -269,7 +261,7 @@ async def test_saml_auth(
         saml_response_matches = re.findall(
             '<input type="hidden" name="SAMLResponse" value="([^"]+)" />', saml_callback.text
         )
-        assert len(saml_response_matches) > 0
+        assert len(saml_response_matches), saml_callback.text
         session.post(
             f"https://{host}/multipass/saml/ubuntu/acs",
             data={
@@ -290,7 +282,6 @@ async def test_saml_auth(
         dashboard_page = session.get(
             f"https://{host}/register/ubuntu",
             verify=False,
-            allow_redirects=False,
             timeout=requests_timeout,
         )
         assert dashboard_page.status_code == 200

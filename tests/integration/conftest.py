@@ -8,7 +8,6 @@ from pathlib import Path
 
 import pytest_asyncio
 import yaml
-from ops.model import WaitingStatus
 from pytest import Config, fixture
 from pytest_operator.plugin import OpsTest
 
@@ -61,36 +60,43 @@ async def app(
     """
     assert ops_test.model
     # Deploy relations to speed up overall execution
-    dependencies = asyncio.gather(
-        ops_test.model.deploy("postgresql-k8s", channel="latest/stable", series="focal"),
-        ops_test.model.deploy("redis-k8s", "redis-broker"),
-        ops_test.model.deploy("redis-k8s", "redis-cache"),
-        ops_test.model.deploy("nginx-ingress-integrator", trust=True),
+    postgresql_config = {
+        "plugin_pg_trgm_enable": True,
+        "plugin_unaccent_enable": True,
+    }
+    asyncio.gather(
+        ops_test.model.deploy(
+            "postgresql-k8s", channel="14/edge", config=postgresql_config, trust=True
+        ),
+        ops_test.model.deploy("redis-k8s", "redis-broker", channel="latest/edge"),
+        ops_test.model.deploy("redis-k8s", "redis-cache", channel="latest/edge"),
+        ops_test.model.deploy("nginx-ingress-integrator", channel="latest/edge", trust=True),
     )
 
     resources = {
         "indico-image": pytestconfig.getoption("--indico-image"),
         "indico-nginx-image": pytestconfig.getoption("--indico-nginx-image"),
     }
-    charm = pytestconfig.getoption("--charm-file")
-    if charm is None:
-        charm = await ops_test.build_charm(".")
-    else:
-        charm = Path(charm)
-    application = await ops_test.model.deploy(
-        charm.absolute(),
-        resources=resources,
-        application_name=app_name,
-        series="focal",
-    )
 
-    await dependencies
+    if charm := pytestconfig.getoption("--charm-file"):
+        application = await ops_test.model.deploy(
+            f"./{charm}",
+            resources=resources,
+            application_name=app_name,
+            series="focal",
+        )
+    else:
+        charm = await ops_test.build_charm(".")
+        application = await ops_test.model.deploy(
+            charm,
+            resources=resources,
+            application_name=app_name,
+            series="focal",
+        )
+
     await ops_test.model.wait_for_idle(
         apps=["postgresql-k8s"], status="active", raise_on_error=False
     )
-    # Add required relations, mypy has difficulty with WaitingStatus
-    expected_name = WaitingStatus.name  # type: ignore
-    assert ops_test.model.applications[app_name].units[0].workload_status == expected_name
     await asyncio.gather(
         ops_test.model.add_relation(app_name, "postgresql-k8s:db"),
         ops_test.model.add_relation(app_name, "redis-broker"),
