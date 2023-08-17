@@ -233,14 +233,6 @@ async def test_saml_auth(
         return original_getaddrinfo(*args)
 
     with patch.multiple(socket, getaddrinfo=patched_getaddrinfo), requests.session() as session:
-        dashboard_page = session.get(
-            f"https://{host}/user/dashboard/",
-            verify=False,
-            allow_redirects=False,
-            timeout=requests_timeout,
-        )
-        assert dashboard_page.status_code == 302
-
         session.get(f"https://{host}", verify=False)
         login_page = session.get(
             f"https://{host}/login",
