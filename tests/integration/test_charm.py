@@ -207,7 +207,7 @@ async def test_saml_auth(
     # The linter does not recognize set_config as a method, so this errors must be ignored.
     await app.set_config(  # type: ignore[attr-defined] # pylint: disable=W0106
         {
-            "site_url": "https://indico.local",
+            "site_url": "https://events.staging.canonical.com",
             "saml_target_url": STAGING_UBUNTU_SAML_URL,
         }
     )
@@ -216,7 +216,7 @@ async def test_saml_auth(
     await ops_test.model.wait_for_idle(status="active")  # type: ignore[union-attr]
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-    host = "indico.local"
+    host = "events.staging.canonical.com"
     original_getaddrinfo = socket.getaddrinfo
 
     def patched_getaddrinfo(*args):
