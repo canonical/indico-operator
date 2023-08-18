@@ -582,6 +582,7 @@ class IndicoOperatorCharm(CharmBase):
         env_config = {
             "ATTACHMENT_STORAGE": "default",
             "CELERY_BROKER": self._get_celery_backend(),
+            "CE_ACCEPT_CONTENT": "json,pickle",
             "CUSTOMIZATION_DEBUG": self.config["customization_debug"],
             "ENABLE_ROOMBOOKING": self.config["enable_roombooking"],
             "INDICO_AUTH_PROVIDERS": str({}),
