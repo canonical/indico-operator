@@ -121,6 +121,11 @@ Redis is an open-source in-memory data structure store used here as two independ
 1. Cache backend: Copies of frequently accessed data are stored and used if satisfy the request. Otherwise, the application will handle it. This configuration helps to reduce the number of queries and improve response latency.
 2. Message broker: Used for communication between Indico and the Celery background workers.
 
+> **Warning**
+> If you redeploy Indico with a fresh database, you must also remove the Redis cache from the previous deployment. 
+> The Redis cache holds the session data, and if you don't remove it, [session hijacking](https://github.com/indico/indico/issues/5901) 
+> may be possible if the user id of the old deployment matches the user id of the new deployment.
+ 
 ## Juju events
 
 Accordingly to the [Juju SDK](https://juju.is/docs/sdk/event): "an event is a data structure that encapsulates part of the execution context of a charm".
