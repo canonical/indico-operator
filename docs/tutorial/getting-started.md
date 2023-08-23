@@ -35,7 +35,7 @@ To see the pod created by the Indico charm, run `kubectl get pods` on a namespac
 
 ```bash
 NAME                             READY   STATUS    RESTARTS   AGE
-indico-0                         7/7     Running   0         6h4m
+indico-0                         4/4     Running   0         6h4m
 ```
 
 Run [`juju status`](https://juju.is/docs/olm/juju-status) to see the current status of the deployment. In the Unit list, you can see that Indico is waiting:
@@ -75,7 +75,7 @@ Optional: run `juju status --relations --watch 5s` to watch the status every 5 s
 
 ```bash
 App                       Version                       Status  Scale  Charm                     Channel  Rev  Address         Exposed  Message
-indico                 3.2                           active      1  indico                              17  10.152.183.68   no
+indico                 3.2                           active      1  indico                              138  10.152.183.68   no
 ```
 
 The deployment finishes when the status shows "Active".
