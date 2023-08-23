@@ -51,6 +51,11 @@ class TestBase(unittest.TestCase):
         broker_unit = self.harness.model.get_unit("redis-broker/0")
         broker_relation.data = {broker_unit: {"hostname": "broker-host", "port": 1010}}
 
+        self.nginx_route_relation_id = self.harness.add_relation(  # pylint: disable=W0201
+            "nginx-route", "ingress"
+        )
+        self.harness.add_relation_unit(self.nginx_route_relation_id, "ingress/0")
+
     def is_ready(self, apps: List[str]):
         """Waiting for all applications to be ready.
 
