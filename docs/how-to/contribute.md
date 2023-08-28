@@ -16,6 +16,7 @@ This document explains the processes and practices recommended for contributing 
   - test coverage
   - user experience for Juju operators of this charm.
 - Please help us out in ensuring easy to review branches by rebasing your pull request branch onto the `main` branch. This also avoids merge commits and creates a linear Git commit history.
+- Please generate src documentation for every commit. See the section below for more details.
 
 ## Developing
 
@@ -42,6 +43,15 @@ Note that the [indico](indico_rock/rockcraft.yaml) and [indico nginx](indico_ngi
 * `tox -e static`: Runs other checks such as `bandit` for security issues.
 * `tox -e unit`: Runs the unit tests.
 * `tox -e integration`: Runs the integration tests.
+
+### Generating src docs for every commit
+
+Run the following command:
+
+```bash
+echo -e "tox -e src-docs\ngit add src-docs\n" >> .git/hooks/pre-commit
+chmod +x .git/hooks/pre-commit
+```
 
 ## Build charm
 
