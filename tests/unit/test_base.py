@@ -59,3 +59,15 @@ class TestBase(unittest.TestCase):
         """
         for app_name in apps:
             self.harness.container_pebble_ready(app_name)
+
+    def set_relations_and_leader(self):
+        """Set Indico relations, the leader and check container readiness."""
+        self.set_up_all_relations()
+        self.harness.set_leader(True)
+        self.is_ready(
+            [
+                "indico",
+                "indico-celery",
+                "indico-nginx",
+            ]
+        )

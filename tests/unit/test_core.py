@@ -74,12 +74,6 @@ class TestCore(TestBase):
         self.set_up_all_relations()
         self.harness.set_leader(True)
 
-        self.harness.container_pebble_ready("celery-prometheus-exporter")
-        self.assertEqual(self.harness.model.unit.status, WaitingStatus("Waiting for pebble"))
-        self.harness.container_pebble_ready("statsd-prometheus-exporter")
-        self.assertEqual(self.harness.model.unit.status, WaitingStatus("Waiting for pebble"))
-        self.harness.container_pebble_ready("nginx-prometheus-exporter")
-        self.assertEqual(self.harness.model.unit.status, WaitingStatus("Waiting for pebble"))
         self.harness.container_pebble_ready("indico")
         self.assertEqual(self.harness.model.unit.status, WaitingStatus("Waiting for pebble"))
         self.harness.container_pebble_ready("indico-celery")
@@ -241,20 +235,7 @@ class TestCore(TestBase):
         """
         mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=("", None)))
 
-        self.set_up_all_relations()
-        self.harness.set_leader(True)
-
-        # pylint: disable=duplicate-code
-        self.is_ready(
-            [
-                "celery-prometheus-exporter",
-                "statsd-prometheus-exporter",
-                "nginx-prometheus-exporter",
-                "indico",
-                "indico-celery",
-                "indico-nginx",
-            ]
-        )
+        self.set_relations_and_leader()
         self.harness.update_config(
             {
                 "customization_debug": True,
@@ -383,20 +364,7 @@ class TestCore(TestBase):
         """
         mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=("", None)))
 
-        self.set_up_all_relations()
-        self.harness.set_leader(True)
-
-        # pylint: disable=duplicate-code
-        self.is_ready(
-            [
-                "celery-prometheus-exporter",
-                "statsd-prometheus-exporter",
-                "nginx-prometheus-exporter",
-                "indico",
-                "indico-celery",
-                "indico-nginx",
-            ]
-        )
+        self.set_relations_and_leader()
         self.harness.update_config({"site_url": "example.local"})
         self.assertEqual(
             self.harness.model.unit.status,
@@ -412,27 +380,14 @@ class TestCore(TestBase):
         """
         mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=("", None)))
 
-        self.set_up_all_relations()
-        self.harness.set_leader(True)
-
-        # pylint: disable=duplicate-code
-        self.is_ready(
-            [
-                "celery-prometheus-exporter",
-                "statsd-prometheus-exporter",
-                "nginx-prometheus-exporter",
-                "indico",
-                "indico-celery",
-                "indico-nginx",
-            ]
-        )
+        self.set_relations_and_leader()
         self.harness.update_config(
             {
                 "customization_sources_url": "https://example.com/custom",
                 "external_plugins": "git+https://example.git/#subdirectory=themes_cern",
             }
         )
-
+        # pylint: disable=duplicate-code
         mock_exec.assert_any_call(
             ["git", "clone", "https://example.com/custom", "."],
             working_dir="/srv/indico/custom",
@@ -446,7 +401,7 @@ class TestCore(TestBase):
 
     def test_config_changed_when_pebble_not_ready(self):
         """
-        arrange: charm created and relations established but ppebble is not ready yet
+        arrange: charm created and relations established but pebble is not ready yet
         act: trigger a configuration change for the charm
         assert: the charm is still in waiting status
         """
@@ -463,16 +418,7 @@ class TestCore(TestBase):
         """
         mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=("", None)))
 
-        self.set_up_all_relations()
-        self.harness.set_leader(True)
-
-        self.is_ready(
-            [
-                "indico",
-                "indico-celery",
-                "indico-nginx",
-            ]
-        )
+        self.set_relations_and_leader()
 
         self.harness.update_config({"saml_target_url": "sample.com/saml"})
         self.assertEqual(
@@ -480,6 +426,51 @@ class TestCore(TestBase):
             BlockedStatus.name,
         )
         self.assertTrue("Invalid saml_target_url option" in self.harness.model.unit.status.message)
+
+    @patch.object(Container, "exec")
+    def test_config_changed_when_saml_groups_plugin_installed(self, mock_exec):
+        """
+        arrange: charm created and relations established and saml_groups plugin installed
+        act: trigger a configuration change with external_plugins for the charm
+        assert: the indico identity provider is set to saml_groups
+        """
+        plugins_table = """
+        +-----------------------+
+        | Name        | Title   |
+        +-------------+---------+
+        | anonymize   | Anonymize.  |
+        | autocreate  | Autocreate. |
+        | piwik       | Piwik statistics |
+        | saml_groups | SAML Groups Plugin. |
+        | storage_s3  | S3 Storage |
+        +-------------+---------+
+        """.lstrip(
+            "\n"
+        )
+        mock_exec.return_value = MagicMock(
+            wait_output=MagicMock(return_value=(plugins_table, None))
+        )
+
+        self.set_relations_and_leader()
+
+        self.harness.update_config(
+            {
+                "external_plugins": "git+https://example.git",
+                "saml_target_url": "https://login.ubuntu.com/saml/",
+            }
+        )
+
+        updated_plan = self.harness.get_container_pebble_plan("indico").to_dict()
+        updated_plan_env = updated_plan["services"]["indico"]["environment"]
+
+        identity_providers = literal_eval(updated_plan_env["INDICO_IDENTITY_PROVIDERS"])
+        self.assertEqual("saml_groups", identity_providers["ubuntu"]["type"])
+
+        updated_plan = self.harness.get_container_pebble_plan("indico-celery").to_dict()
+        updated_plan_env = updated_plan["services"]["indico-celery"]["environment"]
+
+        identity_providers = literal_eval(updated_plan_env["INDICO_IDENTITY_PROVIDERS"])
+        self.assertEqual("saml_groups", identity_providers["ubuntu"]["type"])
 
     @patch.object(JujuVersion, "from_environ")
     def test_on_leader_elected_when_secrets_not_supported(self, mock_juju_env):

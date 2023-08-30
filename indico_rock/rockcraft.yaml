@@ -44,6 +44,9 @@ parts:
       - texlive-fonts-recommended
       - texlive-plain-generic
       - texlive-xetex
+    stage-snaps:
+      - celery-prometheus-exporter/latest/edge
+      - gtrkiller-statsd-prometheus-exporter/latest/edge
     source: plugins
     plugin: nil
     override-build: |
