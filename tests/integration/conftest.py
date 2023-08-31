@@ -5,11 +5,9 @@
 
 import asyncio
 from pathlib import Path
-from typing import Dict
 
 import pytest_asyncio
 import yaml
-from ops.model import WaitingStatus
 from pytest import Config, fixture
 from pytest_operator.plugin import OpsTest
 
@@ -44,23 +42,6 @@ def app_name_fixture(metadata):
     yield metadata["name"]
 
 
-@fixture(scope="module", name="prometheus_exporter_images")
-def prometheus_exporter_images_fixture(metadata):
-    """Provides Prometheus exporter images from the metadata."""
-    prometheus_exporter_images = {
-        "nginx-prometheus-exporter-image": metadata["resources"][
-            "nginx-prometheus-exporter-image"
-        ]["upstream-source"],
-        "statsd-prometheus-exporter-image": metadata["resources"][
-            "statsd-prometheus-exporter-image"
-        ]["upstream-source"],
-        "celery-prometheus-exporter-image": metadata["resources"][
-            "celery-prometheus-exporter-image"
-        ]["upstream-source"],
-    }
-    yield prometheus_exporter_images
-
-
 @fixture(scope="module")
 def requests_timeout():
     """Provides a global default timeout for HTTP requests"""
@@ -72,7 +53,6 @@ async def app(
     ops_test: OpsTest,
     app_name: str,
     pytestconfig: Config,
-    prometheus_exporter_images: Dict[str, str],
 ):
     """Indico charm used for integration testing.
 
@@ -80,33 +60,43 @@ async def app(
     """
     assert ops_test.model
     # Deploy relations to speed up overall execution
-    dependencies = asyncio.gather(
-        ops_test.model.deploy("postgresql-k8s", channel="latest/stable", series="focal"),
-        ops_test.model.deploy("redis-k8s", "redis-broker"),
-        ops_test.model.deploy("redis-k8s", "redis-cache"),
-        ops_test.model.deploy("nginx-ingress-integrator", trust=True),
+    postgresql_config = {
+        "plugin_pg_trgm_enable": True,
+        "plugin_unaccent_enable": True,
+    }
+    asyncio.gather(
+        ops_test.model.deploy(
+            "postgresql-k8s", channel="14/edge", config=postgresql_config, trust=True
+        ),
+        ops_test.model.deploy("redis-k8s", "redis-broker", channel="latest/edge"),
+        ops_test.model.deploy("redis-k8s", "redis-cache", channel="latest/edge"),
+        ops_test.model.deploy("nginx-ingress-integrator", channel="latest/edge", trust=True),
     )
 
     resources = {
         "indico-image": pytestconfig.getoption("--indico-image"),
         "indico-nginx-image": pytestconfig.getoption("--indico-nginx-image"),
     }
-    resources.update(prometheus_exporter_images)
-    charm = pytestconfig.getoption("--charm-file")
-    application = await ops_test.model.deploy(
-        f"./{charm}",
-        resources=resources,
-        application_name=app_name,
-        series="focal",
-    )
 
-    await dependencies
+    if charm := pytestconfig.getoption("--charm-file"):
+        application = await ops_test.model.deploy(
+            f"./{charm}",
+            resources=resources,
+            application_name=app_name,
+            series="focal",
+        )
+    else:
+        charm = await ops_test.build_charm(".")
+        application = await ops_test.model.deploy(
+            charm,
+            resources=resources,
+            application_name=app_name,
+            series="focal",
+        )
+
     await ops_test.model.wait_for_idle(
         apps=["postgresql-k8s"], status="active", raise_on_error=False
     )
-    # Add required relations, mypy has difficulty with WaitingStatus
-    expected_name = WaitingStatus.name  # type: ignore
-    assert ops_test.model.applications[app_name].units[0].workload_status == expected_name
     await asyncio.gather(
         ops_test.model.add_relation(app_name, "postgresql-k8s:db"),
         ops_test.model.add_relation(app_name, "redis-broker"),

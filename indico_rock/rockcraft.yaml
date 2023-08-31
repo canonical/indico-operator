@@ -44,12 +44,15 @@ parts:
       - texlive-fonts-recommended
       - texlive-plain-generic
       - texlive-xetex
+    stage-snaps:
+      - celery-prometheus-exporter/latest/edge
+      - gtrkiller-statsd-prometheus-exporter/latest/edge
     source: plugins
     plugin: nil
     override-build: |
       craftctl default
       UWSGI_EMBED_PLUGINS=stats_pusher_statsd python3 -m pip install --no-cache-dir --no-warn-script-location --prefer-binary \
-        indico==3.2.0 \
+        indico==3.2.7 \
         indico-plugin-piwik \
         indico-plugin-storage-s3 \
         python3-saml \

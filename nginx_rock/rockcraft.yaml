@@ -26,6 +26,8 @@ parts:
   nginx:
     stage-packages:
       - nginx
+    stage-snaps:
+      - gtrkiller-nginx-prometheus-exporter/latest/edge
     plugin: nil
     override-build: |
       craftctl default
@@ -39,7 +41,7 @@ parts:
     plugin: python
     source: .
     python-packages:
-      - indico==3.2.0
+      - indico==3.2.7
     organize:
       lib/python3.10/site-packages/indico/web/static: srv/indico/static
     stage:

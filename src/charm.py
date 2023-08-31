@@ -7,6 +7,7 @@
 """Charm for Indico on kubernetes."""
 import logging
 import os
+import typing
 from re import findall
 from typing import Dict, Iterator, List, Optional, Tuple
 from urllib.parse import urlparse
@@ -44,6 +45,8 @@ PORT = 8080
 STATSD_PROMEXP_PORT = "9102"
 UBUNTU_SAML_URL = "https://login.ubuntu.com/saml/"
 STAGING_UBUNTU_SAML_URL = "https://login.staging.ubuntu.com/saml/"
+SAML_GROUPS_PLUGIN_NAME = "saml_groups"
+
 UWSGI_TOUCH_RELOAD = "/srv/indico/indico.wsgi"
 
 pgsql = ops.lib.use("pgsql", 1, "postgresql-charmers@lists.launchpad.net")
@@ -76,15 +79,6 @@ class IndicoOperatorCharm(CharmBase):
         self.framework.observe(self.on.indico_pebble_ready, self._on_pebble_ready)
         self.framework.observe(self.on.indico_celery_pebble_ready, self._on_pebble_ready)
         self.framework.observe(self.on.indico_nginx_pebble_ready, self._on_pebble_ready)
-        self.framework.observe(
-            self.on.nginx_prometheus_exporter_pebble_ready, self._on_pebble_ready
-        )
-        self.framework.observe(
-            self.on.statsd_prometheus_exporter_pebble_ready, self._on_pebble_ready
-        )
-        self.framework.observe(
-            self.on.celery_prometheus_exporter_pebble_ready, self._on_pebble_ready
-        )
         self.framework.observe(
             self.on.refresh_external_resources_action, self._refresh_external_resources_action
         )
@@ -277,7 +271,14 @@ class IndicoOperatorCharm(CharmBase):
         pebble_config = pebble_config_func(container)
         container.add_layer(container.name, pebble_config, combine=True)
         if container.name == "indico":
+            celery_config = self._get_celery_prometheus_exporter_pebble_config(container)
+            statsd_config = self._get_statsd_prometheus_exporter_pebble_config(container)
+            container.add_layer("celery", celery_config, combine=True)
+            container.add_layer("statsd", statsd_config, combine=True)
             self._download_customization_changes(container)
+        if container.name == "indico-nginx":
+            pebble_config = self._get_nginx_prometheus_exporter_pebble_config(container)
+            container.add_layer("nginx", pebble_config, combine=True)
         self.unit.status = MaintenanceStatus(f"Starting {container.name} container")
         container.pebble.replan_services()
         if self._are_pebble_instances_ready():
@@ -286,7 +287,7 @@ class IndicoOperatorCharm(CharmBase):
         else:
             self.unit.status = WaitingStatus("Waiting for pebble")
 
-    def _get_indico_pebble_config(self, container: Container) -> Dict:
+    def _get_indico_pebble_config(self, container: Container) -> ops.pebble.LayerDict:
         """Generate pebble config for the indico container.
 
         Args:
@@ -296,7 +297,7 @@ class IndicoOperatorCharm(CharmBase):
             The pebble configuration for the container.
         """
         indico_env_config = self._get_indico_env_config(container)
-        return {
+        layer = {
             "summary": "Indico layer",
             "description": "Indico layer",
             "services": {
@@ -314,9 +315,10 @@ class IndicoOperatorCharm(CharmBase):
                     "override": "replace",
                     "level": "ready",
                     "tcp": {"port": 8081},
-                }
+                },
             },
         }
+        return typing.cast(ops.pebble.LayerDict, layer)
 
     def _get_indico_celery_pebble_config(self, container: Container) -> Dict:
         """Generate pebble config for the indico-celery container.
@@ -381,13 +383,17 @@ class IndicoOperatorCharm(CharmBase):
             },
         }
 
-    def _get_celery_prometheus_exporter_pebble_config(self, _) -> Dict:
+    def _get_celery_prometheus_exporter_pebble_config(self, container) -> ops.pebble.LayerDict:
         """Generate pebble config for the celery-prometheus-exporter container.
+
+        Args:
+            container: Celery container that has the target configuration.
 
         Returns:
             The pebble configuration for the container.
         """
-        return {
+        indico_env_config = self._get_indico_env_config(container)
+        layer = {
             "summary": "Celery prometheus exporter",
             "description": "Prometheus exporter for celery",
             "services": {
@@ -395,12 +401,11 @@ class IndicoOperatorCharm(CharmBase):
                     "override": "replace",
                     "summary": "Celery Exporter",
                     "command": (
-                        "python"
-                        " /app/cli.py"
+                        "celery-exporter"
                         f" --broker-url={self._get_celery_backend()}"
                         " --retry-interval=5"
                     ),
-                    "environment": {"CE_ACCEPT_CONTENT": "json,pickle"},
+                    "environment": indico_env_config,
                     "startup": "enabled",
                 },
             },
@@ -412,18 +417,19 @@ class IndicoOperatorCharm(CharmBase):
                 },
             },
         }
+        return typing.cast(ops.pebble.LayerDict, layer)
 
-    def _get_nginx_prometheus_exporter_pebble_config(self, _) -> Dict:
+    def _get_nginx_prometheus_exporter_pebble_config(self, _) -> ops.pebble.LayerDict:
         """Generate pebble config for the nginx-prometheus-exporter container.
 
         Returns:
             The pebble configuration for the container.
         """
-        return {
+        layer = {
             "summary": "Nginx prometheus exporter",
             "description": "Prometheus exporter for nginx",
             "services": {
-                "nginx-exporter": {
+                "nginx-prometheus-exporter": {
                     "override": "replace",
                     "summary": "Nginx Exporter",
                     "command": (
@@ -441,14 +447,15 @@ class IndicoOperatorCharm(CharmBase):
                 },
             },
         }
+        return typing.cast(ops.pebble.LayerDict, layer)
 
-    def _get_statsd_prometheus_exporter_pebble_config(self, _) -> Dict:
+    def _get_statsd_prometheus_exporter_pebble_config(self, _) -> ops.pebble.LayerDict:
         """Generate pebble config for the statsd-prometheus-exporter container.
 
         Returns:
             The pebble configuration for the container.
         """
-        return {
+        layer = {
             "summary": "Statsd prometheus exporter",
             "description": "Prometheus exporter for statsd",
             "services": {
@@ -467,6 +474,7 @@ class IndicoOperatorCharm(CharmBase):
                 },
             },
         }
+        return typing.cast(ops.pebble.LayerDict, layer)
 
     def _get_redis_rel(self, name: str) -> Optional[Relation]:
         """Get Redis relation.
@@ -580,6 +588,7 @@ class IndicoOperatorCharm(CharmBase):
         env_config = {
             "ATTACHMENT_STORAGE": "default",
             "CELERY_BROKER": self._get_celery_backend(),
+            "CE_ACCEPT_CONTENT": "json,pickle",
             "CUSTOMIZATION_DEBUG": self.config["customization_debug"],
             "ENABLE_ROOMBOOKING": self.config["enable_roombooking"],
             "INDICO_AUTH_PROVIDERS": str({}),
@@ -697,7 +706,9 @@ class IndicoOperatorCharm(CharmBase):
             env_config["INDICO_AUTH_PROVIDERS"] = str(auth_providers)
             identity_providers = {
                 "ubuntu": {
-                    "type": "saml",
+                    "type": (
+                        "saml_groups" if SAML_GROUPS_PLUGIN_NAME in available_plugins else "saml"
+                    ),
                     "trusted_email": True,
                     "mapping": {
                         "user_name": "username",
