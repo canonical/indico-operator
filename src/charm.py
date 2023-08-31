@@ -14,7 +14,7 @@ from urllib.parse import urlparse
 
 import ops.lib
 from charms.grafana_k8s.v0.grafana_dashboard import GrafanaDashboardProvider
-from charms.nginx_ingress_integrator.v0.ingress import IngressRequires
+from charms.nginx_ingress_integrator.v0.nginx_route import require_nginx_route
 from charms.prometheus_k8s.v0.prometheus_scrape import MetricsEndpointProvider
 from charms.redis_k8s.v0.redis import RedisRelationCharmEvents, RedisRequires
 from ops.charm import ActionEvent, CharmBase, HookEvent, PebbleReadyEvent
@@ -101,7 +101,8 @@ class IndicoOperatorCharm(CharmBase):
 
         self.redis = RedisRequires(self, self._stored)
         self.framework.observe(self.on.redis_relation_updated, self._on_config_changed)
-        self.ingress = IngressRequires(self, self._make_ingress_config())
+        self._require_nginx_route()
+
         self._metrics_endpoint = MetricsEndpointProvider(
             self,
             jobs=[
@@ -156,17 +157,14 @@ class IndicoOperatorCharm(CharmBase):
             return
         self._on_config_changed(event)
 
-    def _make_ingress_config(self) -> Dict:
-        """Create minimal ingress configuration.
-
-        Returns:
-            Minimal ingress configuration with hostname, service name and service port.
-        """
-        return {
-            "service-hostname": self._get_external_hostname(),
-            "service-name": self.app.name,
-            "service-port": 8080,
-        }
+    def _require_nginx_route(self) -> None:
+        """Require nginx ingress."""
+        require_nginx_route(
+            charm=self,
+            service_hostname=self._get_external_hostname(),
+            service_name=self.app.name,
+            service_port=8080,
+        )
 
     def _are_pebble_instances_ready(self) -> bool:
         """Check if all pebble instances are up and containers available.
@@ -796,7 +794,6 @@ class IndicoOperatorCharm(CharmBase):
             return
         for container_name in self.model.unit.containers:
             self._config_pebble(self.unit.get_container(container_name))
-        self.ingress.update_config(self._make_ingress_config())
         self.model.unit.status = ActiveStatus()
 
     def _get_current_customization_url(self) -> str:

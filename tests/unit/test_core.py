@@ -355,9 +355,13 @@ class TestCore(TestBase):
         self.assertEqual("saml", identity_providers["ubuntu"]["type"])
 
         self.harness.update_config({"site_url": "https://example.local"})
-        self.assertEqual(
-            "example.local", self.harness.charm.ingress.config_dict["service-hostname"]
+        # ops testing harness doesn't rerun the charm's __init__
+        # manually rerun the _require_nginx_route function
+        self.harness.charm._require_nginx_route()
+        nginx_route_relation_data = self.harness.get_relation_data(
+            self.nginx_route_relation_id, self.harness.charm.app
         )
+        self.assertEqual("example.local", nginx_route_relation_data["service-hostname"])
 
     @patch.object(ops.Container, "exec")
     def test_config_changed_when_config_invalid(self, mock_exec):
