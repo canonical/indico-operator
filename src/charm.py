@@ -738,7 +738,7 @@ class IndicoOperatorCharm(CharmBase):
         indico_env_config = self._get_indico_env_config(container)
         return {env_name: str(value) for env_name, value in indico_env_config.items()}
 
-    def _get_http_proxy_configuration(self, proxy: ProxyConfig | None = None) -> Dict[str, str]:
+    def _get_http_proxy_configuration(self, proxy: Optional[ProxyConfig] = None) -> Dict[str, str]:
         """Generate http proxy config.
 
         Args:
