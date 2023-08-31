@@ -431,7 +431,6 @@ class TestCore(TestBase):
         )
         self.assertTrue("Invalid saml_target_url option" in self.harness.model.unit.status.message)
 
-
     @patch.object(ops.Container, "exec")
     def test_config_changed_when_saml_groups_plugin_installed(self, mock_exec):
         """
@@ -477,7 +476,7 @@ class TestCore(TestBase):
         identity_providers = literal_eval(updated_plan_env["INDICO_IDENTITY_PROVIDERS"])
         self.assertEqual("saml_groups", identity_providers["ubuntu"]["type"])
 
-    @patch.object(JujuVersion, "from_environ")
+    @patch.object(ops.JujuVersion, "from_environ")
     def test_on_leader_elected_when_secrets_not_supported(self, mock_juju_env):
         """
         arrange: charm created and secrets not supported
