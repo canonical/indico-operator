@@ -31,6 +31,8 @@ from ops.model import (
 )
 from ops.pebble import ExecError
 
+from state import CharmConfigInvalidError, ProxyConfig, State
+
 logger = logging.getLogger(__name__)
 
 CELERY_PROMEXP_PORT = "9808"
@@ -67,7 +69,11 @@ class IndicoOperatorCharm(CharmBase):
             args: Arguments passed to the CharmBase parent constructor.
         """
         super().__init__(*args)
-
+        try:
+            self.state = State.from_charm(self)
+        except CharmConfigInvalidError as exc:
+            self.unit.status = ops.BlockedStatus(exc.msg)
+            return
         self.framework.observe(self.on.config_changed, self._on_config_changed)
         self.framework.observe(self.on.leader_elected, self._on_leader_elected)
         self.framework.observe(self.on.indico_pebble_ready, self._on_pebble_ready)
@@ -712,7 +718,10 @@ class IndicoOperatorCharm(CharmBase):
                 }
             }
             env_config["INDICO_IDENTITY_PROVIDERS"] = str(identity_providers)
-            env_config = {**env_config, **self._get_http_proxy_configuration()}
+            env_config = {
+                **env_config,
+                **self._get_http_proxy_configuration(self.state.proxy_config),
+            }
         return env_config
 
     def _get_indico_env_config_str(self, container: Container) -> Dict[str, str]:
@@ -727,18 +736,22 @@ class IndicoOperatorCharm(CharmBase):
         indico_env_config = self._get_indico_env_config(container)
         return {env_name: str(value) for env_name, value in indico_env_config.items()}
 
-    def _get_http_proxy_configuration(self) -> Dict[str, str]:
+    def _get_http_proxy_configuration(self, proxy: Optional[ProxyConfig] = None) -> Dict[str, str]:
         """Generate http proxy config.
+
+        Args:
+            proxy: Proxy configuration.
 
         Returns:
             Map containing the HTTP_PROXY environment variables.
         """
-        config = {}
-        if self.config["http_proxy"]:
-            config["HTTP_PROXY"] = self.config["http_proxy"]
-        if self.config["https_proxy"]:
-            config["HTTPS_PROXY"] = self.config["https_proxy"]
-        return config
+        if proxy:
+            return {
+                "HTTP_PROXY": str(proxy.http_proxy),
+                "HTTPS_PROXY": str(proxy.https_proxy),
+                "NO_PROXY": str(proxy.no_proxy),
+            }
+        return {}
 
     def _is_saml_target_url_valid(self) -> bool:
         """Check if the target SAML URL is currently supported.
@@ -811,7 +824,7 @@ class IndicoOperatorCharm(CharmBase):
         if plugins:
             process = container.exec(
                 ["pip", "install", "--upgrade"] + plugins,
-                environment=self._get_http_proxy_configuration(),
+                environment=self._get_http_proxy_configuration(self.state.proxy_config),
             )
             process.wait_output()
 
@@ -839,7 +852,7 @@ class IndicoOperatorCharm(CharmBase):
             command,
             working_dir=INDICO_CUSTOMIZATION_DIR,
             user="indico",
-            environment=self._get_http_proxy_configuration(),
+            environment=self._get_http_proxy_configuration(self.state.proxy_config),
         )
         process.wait_output()
 
