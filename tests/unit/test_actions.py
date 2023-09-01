@@ -3,7 +3,7 @@
 
 """Indico charm unit tests."""
 
-# pylint:disable=protected-access
+# pylint:disable=duplicate-code,protected-access
 
 import typing
 from secrets import token_hex

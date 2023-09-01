@@ -30,14 +30,6 @@ options:
     type: string
     description: Email address of the technical manager of the Indico instance.
     default: 'support-tech@mydomain.local'
-  http_proxy:
-    type: string
-    description: HTTP proxy URL to be used when installing plugins or downloading customization files, e.g. 'http://squid.example:3128'.
-    default: ''
-  https_proxy:
-    type: string
-    description: HTTPS proxy URL to be used when installing plugins or downloading customization files, e.g. 'http://squid.example:3128'.
-    default: ''
   saml_target_url:
     type: string
     description: Target URL for SAML SSO authentication.
