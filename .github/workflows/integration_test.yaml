@@ -1,7 +1,7 @@
 name: Integration tests
 
 on:
-  pull_request:
+  push:
 
 jobs:
   integration-tests:
