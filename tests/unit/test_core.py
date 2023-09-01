@@ -4,14 +4,27 @@
 """Indico charm unit tests."""
 
 # pylint:disable=protected-access
-
 from ast import literal_eval
 from unittest.mock import MagicMock, patch
 
-from ops.jujuversion import JujuVersion
-from ops.model import ActiveStatus, BlockedStatus, Container, WaitingStatus
+import ops
+import pytest
+from ops.testing import Harness
 
+from charm import IndicoOperatorCharm
 from tests.unit.test_base import TestBase
+
+
+def test_proxyconfig_invalid(monkeypatch: pytest.MonkeyPatch):
+    """
+    arrange: given a monkeypatched os.environ mapping that contains invalid proxy values.
+    act: when charm is initialized.
+    assert: the charm reaches blocked status.
+    """
+    monkeypatch.setenv("JUJU_CHARM_HTTP_PROXY", "INVALID_URL")
+    harness = Harness(IndicoOperatorCharm)
+    harness.begin()
+    assert harness.model.unit.status.name == ops.BlockedStatus().name
 
 
 class TestCore(TestBase):
@@ -25,7 +38,8 @@ class TestCore(TestBase):
         """
         self.harness.update_config({"site_url": "foo"})
         self.assertEqual(
-            self.harness.model.unit.status, WaitingStatus("Waiting for redis-broker availability")
+            self.harness.model.unit.status,
+            ops.WaitingStatus("Waiting for redis-broker availability"),
         )
         redis_relation_id = self.harness.add_relation("redis", "redis-broker")
         self.harness.add_relation_unit(redis_relation_id, "redis-broker/0")
@@ -33,7 +47,8 @@ class TestCore(TestBase):
             redis_relation_id, "redis-broker/0", {"something": "just to trigger rel-changed event"}
         )
         self.assertEqual(
-            self.harness.model.unit.status, WaitingStatus("Waiting for redis-cache availability")
+            self.harness.model.unit.status,
+            ops.WaitingStatus("Waiting for redis-cache availability"),
         )
         redis_relation_id = self.harness.add_relation("redis", "redis-cache")
         self.harness.add_relation_unit(redis_relation_id, "redis-cache/0")
@@ -41,10 +56,10 @@ class TestCore(TestBase):
             redis_relation_id, "redis-cache/0", {"something": "just to trigger rel-changed event"}
         )
         self.assertEqual(
-            self.harness.model.unit.status, WaitingStatus("Waiting for database availability")
+            self.harness.model.unit.status, ops.WaitingStatus("Waiting for database availability")
         )
 
-    @patch.object(Container, "exec")
+    @patch.object(ops.Container, "exec")
     def test_indico_nginx_pebble_ready(self, mock_exec):
         """
         arrange: charm created
@@ -60,9 +75,9 @@ class TestCore(TestBase):
 
         service = self.harness.model.unit.get_container("indico-nginx").get_service("indico-nginx")
         self.assertTrue(service.is_running())
-        self.assertEqual(self.harness.model.unit.status, WaitingStatus("Waiting for pebble"))
+        self.assertEqual(self.harness.model.unit.status, ops.WaitingStatus("Waiting for pebble"))
 
-    @patch.object(Container, "exec")
+    @patch.object(ops.Container, "exec")
     def test_all_pebble_services_ready(self, mock_exec):
         """
         arrange: charm created and relations established
@@ -75,14 +90,14 @@ class TestCore(TestBase):
         self.harness.set_leader(True)
 
         self.harness.container_pebble_ready("indico")
-        self.assertEqual(self.harness.model.unit.status, WaitingStatus("Waiting for pebble"))
+        self.assertEqual(self.harness.model.unit.status, ops.WaitingStatus("Waiting for pebble"))
         self.harness.container_pebble_ready("indico-celery")
-        self.assertEqual(self.harness.model.unit.status, WaitingStatus("Waiting for pebble"))
+        self.assertEqual(self.harness.model.unit.status, ops.WaitingStatus("Waiting for pebble"))
         self.harness.container_pebble_ready("indico-nginx")
-        self.assertEqual(self.harness.model.unit.status, ActiveStatus())
+        self.assertEqual(self.harness.model.unit.status, ops.ActiveStatus())
 
-    @patch.object(JujuVersion, "from_environ")
-    @patch.object(Container, "exec")
+    @patch.object(ops.JujuVersion, "from_environ")
+    @patch.object(ops.Container, "exec")
     def test_indico_pebble_ready_when_secrets_not_enabled(self, mock_exec, mock_juju_env):
         """
         arrange: charm created, secrets not supported and relations established
@@ -126,10 +141,10 @@ class TestCore(TestBase):
 
         service = self.harness.model.unit.get_container("indico").get_service("indico")
         self.assertTrue(service.is_running())
-        self.assertEqual(self.harness.model.unit.status, WaitingStatus("Waiting for pebble"))
+        self.assertEqual(self.harness.model.unit.status, ops.WaitingStatus("Waiting for pebble"))
 
-    @patch.object(JujuVersion, "from_environ")
-    @patch.object(Container, "exec")
+    @patch.object(ops.JujuVersion, "from_environ")
+    @patch.object(ops.Container, "exec")
     def test_indico_pebble_ready_when_secrets_enabled(self, mock_exec, mock_juju_env):
         """
         arrange: charm created, secrets supported and relations established
@@ -173,9 +188,9 @@ class TestCore(TestBase):
 
         service = self.harness.model.unit.get_container("indico").get_service("indico")
         self.assertTrue(service.is_running())
-        self.assertEqual(self.harness.model.unit.status, WaitingStatus("Waiting for pebble"))
+        self.assertEqual(self.harness.model.unit.status, ops.WaitingStatus("Waiting for pebble"))
 
-    @patch.object(Container, "exec")
+    @patch.object(ops.Container, "exec")
     def test_indico_celery_pebble_ready(self, mock_exec):
         """
         arrange: charm created and relations established
@@ -224,9 +239,9 @@ class TestCore(TestBase):
             "indico-celery"
         )
         self.assertTrue(service.is_running())
-        self.assertEqual(self.harness.model.unit.status, WaitingStatus("Waiting for pebble"))
+        self.assertEqual(self.harness.model.unit.status, ops.WaitingStatus("Waiting for pebble"))
 
-    @patch.object(Container, "exec")
+    @patch.object(ops.Container, "exec")
     def test_config_changed(self, mock_exec):  # pylint: disable=R0915
         """
         arrange: charm created and relations established
@@ -242,8 +257,6 @@ class TestCore(TestBase):
                 "customization_sources_url": "https://example.com/custom",
                 "enable_roombooking": True,
                 "external_plugins": "git+https://example.git/#subdirectory=themes_cern",
-                "http_proxy": "http://squid.internal:3128",
-                "https_proxy": "https://squid.internal:3128",
                 "indico_support_email": "example@email.local",
                 "indico_public_support_email": "public@email.local",
                 "indico_no_reply_email": "noreply@email.local",
@@ -262,8 +275,6 @@ class TestCore(TestBase):
         updated_plan_env = updated_plan["services"]["indico"]["environment"]
 
         self.assertEqual("example.local", updated_plan_env["SERVICE_HOSTNAME"])
-        self.assertEqual("http://squid.internal:3128", updated_plan_env["HTTP_PROXY"])
-        self.assertEqual("https://squid.internal:3128", updated_plan_env["HTTPS_PROXY"])
         self.assertTrue(updated_plan_env["ENABLE_ROOMBOOKING"])
         self.assertEqual("example@email.local", updated_plan_env["INDICO_SUPPORT_EMAIL"])
         self.assertEqual("public@email.local", updated_plan_env["INDICO_PUBLIC_SUPPORT_EMAIL"])
@@ -302,25 +313,17 @@ class TestCore(TestBase):
             ["git", "clone", "https://example.com/custom", "."],
             working_dir="/srv/indico/custom",
             user="indico",
-            environment={
-                "HTTP_PROXY": "http://squid.internal:3128",
-                "HTTPS_PROXY": "https://squid.internal:3128",
-            },
+            environment={},
         )
         mock_exec.assert_any_call(
             ["pip", "install", "--upgrade", "git+https://example.git/#subdirectory=themes_cern"],
-            environment={
-                "HTTP_PROXY": "http://squid.internal:3128",
-                "HTTPS_PROXY": "https://squid.internal:3128",
-            },
+            environment={},
         )
 
         updated_plan = self.harness.get_container_pebble_plan("indico-celery").to_dict()
         updated_plan_env = updated_plan["services"]["indico-celery"]["environment"]
 
         self.assertEqual("example.local", updated_plan_env["SERVICE_HOSTNAME"])
-        self.assertEqual("http://squid.internal:3128", updated_plan_env["HTTP_PROXY"])
-        self.assertEqual("https://squid.internal:3128", updated_plan_env["HTTPS_PROXY"])
         self.assertTrue(updated_plan_env["ENABLE_ROOMBOOKING"])
         self.assertEqual("example@email.local", updated_plan_env["INDICO_SUPPORT_EMAIL"])
         self.assertEqual("public@email.local", updated_plan_env["INDICO_PUBLIC_SUPPORT_EMAIL"])
@@ -359,7 +362,7 @@ class TestCore(TestBase):
         )
         self.assertEqual("example.local", nginx_route_relation_data["service-hostname"])
 
-    @patch.object(Container, "exec")
+    @patch.object(ops.Container, "exec")
     def test_config_changed_when_config_invalid(self, mock_exec):
         """
         arrange: charm created and relations established
@@ -372,10 +375,10 @@ class TestCore(TestBase):
         self.harness.update_config({"site_url": "example.local"})
         self.assertEqual(
             self.harness.model.unit.status,
-            BlockedStatus("Configuration option site_url is not valid"),
+            ops.BlockedStatus("Configuration option site_url is not valid"),
         )
 
-    @patch.object(Container, "exec")
+    @patch.object(ops.Container, "exec")
     def test_config_changed_with_external_resources(self, mock_exec):
         """
         arrange: charm created and relations established
@@ -411,9 +414,9 @@ class TestCore(TestBase):
         """
         self.set_up_all_relations()
         self.harness.update_config({"indico_support_email": "example@email.local"})
-        self.assertEqual(self.harness.model.unit.status, WaitingStatus("Waiting for pebble"))
+        self.assertEqual(self.harness.model.unit.status, ops.WaitingStatus("Waiting for pebble"))
 
-    @patch.object(Container, "exec")
+    @patch.object(ops.Container, "exec")
     def test_config_changed_when_saml_target_url_invalid(self, mock_exec):
         """
         arrange: charm created and relations established
@@ -427,11 +430,11 @@ class TestCore(TestBase):
         self.harness.update_config({"saml_target_url": "sample.com/saml"})
         self.assertEqual(
             self.harness.model.unit.status.name,
-            BlockedStatus.name,
+            ops.BlockedStatus.name,
         )
         self.assertTrue("Invalid saml_target_url option" in self.harness.model.unit.status.message)
 
-    @patch.object(Container, "exec")
+    @patch.object(ops.Container, "exec")
     def test_config_changed_when_saml_groups_plugin_installed(self, mock_exec):
         """
         arrange: charm created and relations established and saml_groups plugin installed
@@ -476,7 +479,7 @@ class TestCore(TestBase):
         identity_providers = literal_eval(updated_plan_env["INDICO_IDENTITY_PROVIDERS"])
         self.assertEqual("saml_groups", identity_providers["ubuntu"]["type"])
 
-    @patch.object(JujuVersion, "from_environ")
+    @patch.object(ops.JujuVersion, "from_environ")
     def test_on_leader_elected_when_secrets_not_supported(self, mock_juju_env):
         """
         arrange: charm created and secrets not supported
@@ -497,7 +500,7 @@ class TestCore(TestBase):
             self.harness.get_relation_data(rel_id, self.harness.charm.app.name).get("secret-key"),
         )
 
-    @patch.object(JujuVersion, "from_environ")
+    @patch.object(ops.JujuVersion, "from_environ")
     def test_on_leader_elected_when_secrets_supported(self, mock_juju_env):
         """
         arrange: charm created and secrets supported
