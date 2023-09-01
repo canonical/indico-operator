@@ -745,14 +745,13 @@ class IndicoOperatorCharm(CharmBase):
         Returns:
             Map containing the HTTP_PROXY environment variables.
         """
-        config = {}
         if proxy:
-            config = {
+            return {
                 "HTTP_PROXY": str(proxy.http_proxy),
                 "HTTPS_PROXY": str(proxy.https_proxy),
                 "NO_PROXY": str(proxy.no_proxy),
             }
-        return config
+        return {}
 
     def _is_saml_target_url_valid(self) -> bool:
         """Check if the target SAML URL is currently supported.
