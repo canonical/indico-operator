@@ -11,7 +11,6 @@ import ops
 import pytest
 from ops.testing import Harness
 
-import state
 from charm import IndicoOperatorCharm
 from tests.unit.test_base import TestBase
 
@@ -22,7 +21,7 @@ def test_proxyconfig_invalid(monkeypatch: pytest.MonkeyPatch):
     act: when charm is initialized.
     assert: the charm reaches blocked status.
     """
-    monkeypatch.setattr(state.os, "environ", {"JUJU_CHARM_HTTP_PROXY": "INVALID_URL"})
+    monkeypatch.setenv("JUJU_CHARM_HTTP_PROXY", "INVALID_URL")
     harness = Harness(IndicoOperatorCharm)
     harness.begin()
     assert harness.model.unit.status.name == ops.BlockedStatus().name

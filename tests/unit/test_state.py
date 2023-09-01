@@ -17,7 +17,7 @@ def test_proxyconfig_invalid(monkeypatch: pytest.MonkeyPatch):
     act: when charm state is initialized.
     assert: CharmConfigInvalidError is raised.
     """
-    monkeypatch.setattr(state.os, "environ", {"JUJU_CHARM_HTTP_PROXY": "INVALID_URL"})
+    monkeypatch.setenv("JUJU_CHARM_HTTP_PROXY", "INVALID_URL")
     mock_charm = unittest.mock.MagicMock(spec=ops.CharmBase)
     mock_charm.config = {}
 
