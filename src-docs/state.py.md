@@ -50,7 +50,7 @@ Represents an error with charm state.
 ---
 
 ## <kbd>class</kbd> `ProxyConfig`
-Configuration for accessing Jenkins through proxy. 
+Configuration for accessing Indico through proxy. 
 
 
 

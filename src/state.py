@@ -34,7 +34,7 @@ class CharmConfigInvalidError(CharmStateBaseError):
 
 
 class ProxyConfig(BaseModel):  # pylint: disable=too-few-public-methods
-    """Configuration for accessing Jenkins through proxy.
+    """Configuration for accessing Indico through proxy.
 
     Attributes:
         http_proxy: The http proxy URL.
