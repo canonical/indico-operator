@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Integration Tests (require secrets)
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup operator environment
         uses: charmed-kubernetes/actions-operator@main
