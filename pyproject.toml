@@ -46,12 +46,5 @@ ignore_missing_imports = true
 explicit_package_bases = true
 namespace_packages = true
 
-[tool.pytest.ini_options]
-minversion = "6.0"
-log_cli_level = "INFO"
-markers = [
-    "requires_secrets: mark tests that require external secrets"
-]
-
 [tool.pylint]
 disable = "wrong-import-order"

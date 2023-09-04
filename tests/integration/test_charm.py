@@ -191,7 +191,6 @@ async def test_anonymize_user_fail(app: Application):
 
 @pytest.mark.asyncio
 @pytest.mark.abort_on_fail
-@pytest.mark.requires_secrets
 async def test_saml_auth(
     ops_test: OpsTest,
     app: Application,
