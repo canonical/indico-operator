@@ -733,11 +733,9 @@ class IndicoOperatorCharm(CharmBase):
                 "Invalid saml_target_url option provided. "
                 f"Only {UBUNTU_SAML_URL} and {STAGING_UBUNTU_SAML_URL} are available."
             )
-            event.defer()
             return
         if not self._are_pebble_instances_ready():
             self.unit.status = WaitingStatus("Waiting for pebble")
-            event.defer()
             return
         self.model.unit.status = MaintenanceStatus("Configuring pod")
         is_valid, error = self._is_configuration_valid()
