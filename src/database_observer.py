@@ -64,21 +64,3 @@ class DatabaseObserver(Object):
         relation_id = self.database.relations[0].id
         relation_data = self.database.fetch_relation_data()[relation_id]
         return relation_data.get("uris")
-
-    # def get_uri_from_relation(self) -> typing.Optional[str]:
-    #     """Get database uri from the relation databag.
-
-    #     Returns:
-    #         str: Database uri.
-    #     """
-    #     if self.model.get_relation(self._RELATION_NAME) is None:
-    #         return None
-    #     relation_id = self.database.relations[0].id
-    #     relation_data = self.database.fetch_relation_data()[relation_id]
-    #     endpoint = relation_data.get("endpoints", ":")
-    #     user=relation_data.get("username", "")
-    #     password=relation_data.get("password", "")
-    #     host=endpoint.split(":")[0]
-    #     port=endpoint.split(":")[1]
-    #     db_name=self._charm.app.name
-    #     return f"postgresql://{user}:{password}@{host}:{port}/{db_name}"
