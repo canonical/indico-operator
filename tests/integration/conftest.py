@@ -100,7 +100,7 @@ async def app(
         apps=["postgresql-k8s"], status="active", raise_on_error=False
     )
     await asyncio.gather(
-        ops_test.model.add_relation(app_name, "postgresql-k8s:db"),
+        ops_test.model.add_relation(app_name, "postgresql-k8s"),
         ops_test.model.add_relation(app_name, "redis-broker"),
         ops_test.model.add_relation(app_name, "redis-cache"),
         ops_test.model.add_relation(app_name, "nginx-ingress-integrator"),

@@ -13,7 +13,7 @@ from ops.charm import ActionEvent
 from ops.model import Container
 from ops.pebble import ExecError
 
-from tests.unit._patched_charm import EMAIL_LIST_MAX, EMAIL_LIST_SEPARATOR, IndicoOperatorCharm
+from charm import EMAIL_LIST_MAX, EMAIL_LIST_SEPARATOR, IndicoOperatorCharm
 from tests.unit.test_base import TestBase
 
 
