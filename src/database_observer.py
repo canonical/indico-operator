@@ -20,7 +20,7 @@ class DatabaseObserver(Object):
     """The Database relation observer.
 
     Attrs:
-        uris: The database uris.
+        uri: The database uri.
     """
 
     _RELATION_NAME = "database"
@@ -52,8 +52,8 @@ class DatabaseObserver(Object):
         self._charm.on.config_changed.emit()
 
     @property
-    def uris(self) -> typing.Optional[str]:
-        """Get the database uris from the relation data.
+    def uri(self) -> typing.Optional[str]:
+        """Get the database uri from the relation data.
 
         Returns:
             str: The uri.
@@ -63,4 +63,10 @@ class DatabaseObserver(Object):
 
         relation_id = self.database.relations[0].id
         relation_data = self.database.fetch_relation_data()[relation_id]
-        return relation_data.get("uris")
+        user = relation_data.get("username", "")
+        password = relation_data.get("password", "")
+        database = relation_data.get("database", "")
+        endpoint = relation_data.get("endpoints", "").split(",")[0]
+        if not user or not password or not database or not endpoint:
+            return None
+        return f"postgresql://{user}:{password}@{endpoint}/{database}"

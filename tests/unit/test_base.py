@@ -31,7 +31,12 @@ class TestBase(unittest.TestCase):
         self.harness.update_relation_data(
             self.db_relation_id,
             "postgresql",
-            {"uris": "db-uri"},
+            {
+                "database": "indico",
+                "endpoints": "postgresql-k8s-primary.local:5432",
+                "password": "somepass",
+                "username": "user1",
+            },
         )
 
         self.harness.add_relation("indico-peers", self.harness.charm.app.name)

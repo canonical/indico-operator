@@ -185,7 +185,7 @@ class IndicoOperatorCharm(CharmBase):
         if self._get_redis_cache_rel() is None:
             self.unit.status = WaitingStatus("Waiting for redis-cache availability")
             return False
-        if not self.database.uris:
+        if not self.database.uri:
             self.unit.status = WaitingStatus("Waiting for database availability")
             return False
         return True
@@ -544,7 +544,7 @@ class IndicoOperatorCharm(CharmBase):
             "CUSTOMIZATION_DEBUG": self.config["customization_debug"],
             "ENABLE_ROOMBOOKING": self.config["enable_roombooking"],
             "INDICO_AUTH_PROVIDERS": str({}),
-            "INDICO_DB_URI": self.database.uris,
+            "INDICO_DB_URI": self.database.uri,
             "INDICO_EXTRA_PLUGINS": ",".join(available_plugins),
             "INDICO_IDENTITY_PROVIDERS": str({}),
             "INDICO_NO_REPLY_EMAIL": self.config["indico_no_reply_email"],

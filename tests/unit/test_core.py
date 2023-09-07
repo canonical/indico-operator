@@ -113,7 +113,10 @@ class TestCore(TestBase):
 
         updated_plan = self.harness.get_container_pebble_plan("indico").to_dict()
         updated_plan_env = updated_plan["services"]["indico"]["environment"]
-        self.assertEqual("db-uri", updated_plan_env["INDICO_DB_URI"])
+        self.assertEqual(
+            "postgresql://user1:somepass@postgresql-k8s-primary.local:5432/indico",
+            updated_plan_env["INDICO_DB_URI"],
+        )
         self.assertEqual("redis://broker-host:1010", updated_plan_env["CELERY_BROKER"])
         peer_relation = self.harness.model.get_relation("indico-peers")
         self.assertEqual(
@@ -160,7 +163,10 @@ class TestCore(TestBase):
 
         updated_plan = self.harness.get_container_pebble_plan("indico").to_dict()
         updated_plan_env = updated_plan["services"]["indico"]["environment"]
-        self.assertEqual("db-uri", updated_plan_env["INDICO_DB_URI"])
+        self.assertEqual(
+            "postgresql://user1:somepass@postgresql-k8s-primary.local:5432/indico",
+            updated_plan_env["INDICO_DB_URI"],
+        )
         self.assertEqual("redis://broker-host:1010", updated_plan_env["CELERY_BROKER"])
         peer_relation = self.harness.model.get_relation("indico-peers")
         secret_id = self.harness.get_relation_data(
@@ -206,7 +212,10 @@ class TestCore(TestBase):
 
         updated_plan = self.harness.get_container_pebble_plan("indico-celery").to_dict()
         updated_plan_env = updated_plan["services"]["indico-celery"]["environment"]
-        self.assertEqual("db-uri", updated_plan_env["INDICO_DB_URI"])
+        self.assertEqual(
+            "postgresql://user1:somepass@postgresql-k8s-primary.local:5432/indico",
+            updated_plan_env["INDICO_DB_URI"],
+        )
         self.assertEqual("redis://broker-host:1010", updated_plan_env["CELERY_BROKER"])
         peer_relation = self.harness.model.get_relation("indico-peers")
         self.assertEqual(

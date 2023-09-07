@@ -69,11 +69,11 @@ def test_endpoints_changed_emits_config_changed_event():
     assert len(harness.charm.events) == 1
 
 
-def test_uris():
+def test_uri():
     """
     arrange: set up a charm and a database relation with a populated databag.
-    act: retrieve the uris.
-    assert: the uris match the databag content.
+    act: retrieve the uri.
+    assert: the uri matches the databag content.
     """
     harness = Harness(ObservedCharm, meta=REQUIRER_METADATA)
     harness.begin()
@@ -82,19 +82,26 @@ def test_uris():
     harness.update_relation_data(
         relation_id,
         "database-provider",
-        {"uris": "sample_uri"},
+        {
+            "database": "indico",
+            "endpoints": "postgresql-k8s-primary.local:5432",
+            "password": "somepass",
+            "username": "user1",
+        },
     )
-    assert harness.charm.database.uris == "sample_uri"
+    assert harness.charm.database.uri == (
+        "postgresql://user1:somepass@postgresql-k8s-primary.local:5432/indico"
+    )
 
 
-def test_uris_when_no_relation_data():
+def test_uri_when_no_relation_data():
     """
     arrange: set up a charm and a database relation with an empty databag.
-    act: retrieve the uris.
-    assert: the uris are None.
+    act: retrieve the uri.
+    assert: the uri is None.
     """
     harness = Harness(ObservedCharm, meta=REQUIRER_METADATA)
     harness.begin()
     relation_id = harness.add_relation("database", "database-provider")
     harness.add_relation_unit(relation_id, "database-provider/0")
-    assert harness.charm.database.uris is None
+    assert harness.charm.database.uri is None
