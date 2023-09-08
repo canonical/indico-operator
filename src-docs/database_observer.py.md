@@ -12,7 +12,7 @@ The Database agent relation observer.
 ## <kbd>class</kbd> `DatabaseObserver`
 The Database relation observer. 
 
-Attrs:  uris: The database uris. 
+Attrs:  uri: The database uri. 
 
 <a href="../src/database_observer.py#L28"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
@@ -39,9 +39,9 @@ Shortcut for more simple access the model.
 
 ---
 
-#### <kbd>property</kbd> uris
+#### <kbd>property</kbd> uri
 
-Get the database uris from the relation data. 
+Get the database uri from the relation data. 
 
 
 
