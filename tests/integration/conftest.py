@@ -60,23 +60,20 @@ async def app(
     """
     assert ops_test.model
     # Deploy relations to speed up overall execution
+    postgresql_config = {
+        "plugin_pg_trgm_enable": "True",
+        "plugin_unaccent_enable": "True",
+    }
     await asyncio.gather(
-        ops_test.model.deploy("postgresql-k8s", channel="14/edge", trust=True),
+        ops_test.model.deploy(
+            "postgresql-k8s", channel="14/edge", config=postgresql_config, trust=True
+        ),
         ops_test.model.deploy("redis-k8s", "redis-broker", channel="latest/edge"),
         ops_test.model.deploy("redis-k8s", "redis-cache", channel="latest/edge"),
         ops_test.model.deploy(
             "nginx-ingress-integrator", channel="latest/edge", series="focal", trust=True
         ),
     )
-    # https://github.com/canonical/postgresql-k8s-operator/issues/239
-    await ops_test.model.wait_for_idle(
-        apps=["postgresql-k8s"], status="active", raise_on_error=False
-    )
-    postgresql_config = {
-        "plugin_pg_trgm_enable": "True",
-        "plugin_unaccent_enable": "True",
-    }
-    await ops_test.model.applications["postgresql-k8s"].set_config(postgresql_config)
     await ops_test.model.wait_for_idle(
         apps=["postgresql-k8s"], status="active", raise_on_error=False
     )
