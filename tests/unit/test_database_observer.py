@@ -20,7 +20,7 @@ class ObservedCharm(ops.CharmBase):
     """Class for requirer charm testing."""
 
     def __init__(self, *args):
-        """Init method for the class.
+        """Construct.
 
         Args:
             args: Variable list of positional arguments passed to the parent constructor.
@@ -50,7 +50,9 @@ def test_database_created_emits_config_changed_event():
     relation_id = harness.add_relation("database", "database-provider")
     harness.add_relation_unit(relation_id, "database-provider/0")
     relation = harness.charm.framework.model.get_relation("database", 0)
+
     harness.charm.database.database.on.database_created.emit(relation)
+
     assert len(harness.charm.events) == 1
 
 
@@ -65,20 +67,23 @@ def test_endpoints_changed_emits_config_changed_event():
     relation_id = harness.add_relation("database", "database-provider")
     harness.add_relation_unit(relation_id, "database-provider/0")
     relation = harness.charm.framework.model.get_relation("database", 0)
+
     harness.charm.database.database.on.endpoints_changed.emit(relation)
+
     assert len(harness.charm.events) == 1
 
 
 def test_uri():
     """
-    arrange: set up a charm and a database relation with a populated databag.
-    act: retrieve the uri.
+    arrange: set up a charm and a database relation with an empty databag.
+    act: populate the relation databag.
     assert: the uri matches the databag content.
     """
     harness = Harness(ObservedCharm, meta=REQUIRER_METADATA)
     harness.begin()
     relation_id = harness.add_relation("database", "database-provider")
     harness.add_relation_unit(relation_id, "database-provider/0")
+
     harness.update_relation_data(
         relation_id,
         "database-provider",
@@ -89,6 +94,7 @@ def test_uri():
             "username": "user1",
         },
     )
+
     assert harness.charm.database.uri == (
         "postgresql://user1:somepass@postgresql-k8s-primary.local:5432/indico"
     )
@@ -97,11 +103,12 @@ def test_uri():
 def test_uri_when_no_relation_data():
     """
     arrange: set up a charm and a database relation with an empty databag.
-    act: retrieve the uri.
+    act:.
     assert: the uri is None.
     """
     harness = Harness(ObservedCharm, meta=REQUIRER_METADATA)
     harness.begin()
     relation_id = harness.add_relation("database", "database-provider")
     harness.add_relation_unit(relation_id, "database-provider/0")
+
     assert harness.charm.database.uri is None
