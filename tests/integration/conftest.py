@@ -77,7 +77,9 @@ async def app(
         "plugin_unaccent_enable": True,
     }
     await ops_test.model.applications["postgresql-k8s"].set_config(postgresql_config)
-
+    await ops_test.model.wait_for_idle(
+        apps=["postgresql-k8s"], status="active", raise_on_error=False
+    )
     resources = {
         "indico-image": pytestconfig.getoption("--indico-image"),
         "indico-nginx-image": pytestconfig.getoption("--indico-nginx-image"),
