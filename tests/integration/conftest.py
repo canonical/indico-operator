@@ -73,8 +73,8 @@ async def app(
         apps=["postgresql-k8s"], status="active", raise_on_error=False
     )
     postgresql_config = {
-        "plugin_pg_trgm_enable": True,
-        "plugin_unaccent_enable": True,
+        "plugin_pg_trgm_enable": "True",
+        "plugin_unaccent_enable": "True",
     }
     await ops_test.model.applications["postgresql-k8s"].set_config(postgresql_config)
     await ops_test.model.wait_for_idle(
