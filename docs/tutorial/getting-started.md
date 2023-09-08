@@ -64,7 +64,7 @@ indico/0*                 waiting   idle   10.1.74.70             Waiting for da
 Provide integration between Indico and PostgreSQL:
 
 ```bash
-juju relate indico postgresql-k8s:db
+juju relate indico postgresql-k8s
 ```
 
 Note: `db` is the name of the relation. This is needed because establishes that the two charms are compatible with each other.  You can run `juju info indico` to check what are the relation names required by the Indico application.
