@@ -24,7 +24,7 @@ body:
         Please provide a step-by-step instruction of how to reproduce the behavior.
       placeholder: |
         1. `juju deploy ...`
-        2. `juju relate ...`
+        2. `juju integrate ...`
         3. `juju status --relations`
     validations:
       required: true

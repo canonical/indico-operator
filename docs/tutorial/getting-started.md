@@ -3,8 +3,8 @@
 ## What you’ll do
 
 - Deploy the [Indico charm](https://charmhub.io/indico).
-- Relate to [the Redis K8s charm](https://charmhub.io/redis-k8s) and [the PostgreSQL K8s charm](https://charmhub.io/postgresql-k8s).
-- Relate to [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/#what-is-ingress) by using [NGINX Ingress Integrator](https://charmhub.io/nginx-ingress-integrator/).
+- Integrate with [the Redis K8s charm](https://charmhub.io/redis-k8s) and [the PostgreSQL K8s charm](https://charmhub.io/postgresql-k8s).
+- Integrate with [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/#what-is-ingress) by using [NGINX Ingress Integrator](https://charmhub.io/nginx-ingress-integrator/).
 
 Through the process, you'll inspect the Kubernetes resources created, verify the workload state, and log in to your Indico instance.
 
@@ -46,13 +46,13 @@ indico/0*                 waiting   idle   10.1.74.70             Waiting for re
 
 This means that Indico charm isn't integrated with Redis yet.
 
-### Relate to the Redis k8s charm the PostgreSQL k8s charm
+### Integrate with the Redis k8s charm the PostgreSQL k8s charm
 
-Provide integration between Indico and Redis by running the following [`juju relate`](https://juju.is/docs/olm/juju-relate) commands:
+Provide integration between Indico and Redis by running the following [`juju integrate`](https://juju.is/docs/juju/juju-integrate) commands:
 
 ```bash
-juju relate redis-broker indico
-juju relate redis-cache indico
+juju integrate redis-broker indico
+juju integrate redis-cache indico
 ```
 
 Run `juju status` to see that the message has changed:
@@ -64,7 +64,7 @@ indico/0*                 waiting   idle   10.1.74.70             Waiting for da
 Provide integration between Indico and PostgreSQL:
 
 ```bash
-juju relate indico postgresql-k8s:db
+juju integrate indico postgresql-k8s:db
 ```
 
 Note: `db` is the name of the relation. This is needed because establishes that the two charms are compatible with each other.  You can run `juju info indico` to check what are the relation names required by the Indico application.
@@ -80,7 +80,7 @@ indico                 3.2                           active      1  indico      
 
 The deployment finishes when the status shows "Active".
 
-### Relate to Ingress by using NGINX Ingress Integrator charm
+### Integrate with Ingress by using NGINX Ingress Integrator charm
 
 The NGINX Ingress Integrator charm can deploy and manage external access to HTTP/HTTPS services in a Kubernetes cluster.
 
@@ -105,7 +105,7 @@ Run `juju status` to verify the deployment.
 Provide integration between Indico and NGINX Ingress Integrator:
 
 ```bash
-juju relate indico nginx-ingress-integrator
+juju integrate indico nginx-ingress-integrator
 
 ```
 
