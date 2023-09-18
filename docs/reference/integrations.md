@@ -54,7 +54,7 @@ _Supported charms_: [grafana-k8s](https://charmhub.io/grafana-k8s)
 
 Grafana-dashboard relation enables quick dashboard access already tailored to fit the needs of
 operators to monitor the charm. The template for the Grafana dashboard for indico charm can
-be found at `/src/grafana_dashboards/indico.json`. In Grafana UI, it can be found as Indico
+be found at `/src/grafana_dashboards/indico.json`. In Grafana UI, it can be found as "Indico
 Operator Overview” under the General section of the dashboard browser (`/dashboards`). Modifications
 to the dashboard can be made but will not be persisted upon restart/redeployment of the charm.
 
