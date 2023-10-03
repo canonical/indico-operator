@@ -185,7 +185,7 @@ class IndicoOperatorCharm(CharmBase):
         if self._get_redis_cache_rel() is None:
             self.unit.status = WaitingStatus("Waiting for redis-cache availability")
             return False
-        if not self.database.uri:
+        if self.database.uri is None:
             self.unit.status = WaitingStatus("Waiting for database availability")
             return False
         return True
