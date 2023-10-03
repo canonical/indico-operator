@@ -66,7 +66,7 @@ async def app(
     }
     await asyncio.gather(
         ops_test.model.deploy(
-            "postgresql-k8s", channel="14/edge", config=postgresql_config, trust=True
+            "postgresql-k8s", channel="14/edge/pr278", config=postgresql_config, trust=True
         ),
         ops_test.model.deploy("redis-k8s", "redis-broker", channel="latest/edge"),
         ops_test.model.deploy("redis-k8s", "redis-cache", channel="latest/edge"),
