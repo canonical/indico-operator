@@ -61,8 +61,8 @@ async def app(
     assert ops_test.model
     # Deploy relations to speed up overall execution
     postgresql_config = {
-        "plugin_pg_trgm_enable": "True",
-        "plugin_unaccent_enable": "True",
+        "plugin_pg_trgm_enable": str(True),
+        "plugin_unaccent_enable": str(True),
     }
     await asyncio.gather(
         ops_test.model.deploy(
