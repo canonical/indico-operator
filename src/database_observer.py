@@ -35,7 +35,6 @@ class DatabaseObserver(Object):
         """
         super().__init__(charm, "database-observer")
         self._charm = charm
-        
         self.database = DatabaseRequires(
             self._charm,
             relation_name=self._RELATION_NAME,
