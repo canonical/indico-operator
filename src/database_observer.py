@@ -24,6 +24,8 @@ class DatabaseObserver(Object):
     """
 
     _RELATION_NAME = "database"
+    # SUPERUSER is required for the schema migrations
+    _DATABASE_USER = "SUPERUSER"
 
     def __init__(self, charm: CharmBase):
         """Initialize the observer and register event handlers.
@@ -33,12 +35,12 @@ class DatabaseObserver(Object):
         """
         super().__init__(charm, "database-observer")
         self._charm = charm
-        # SUPERUSER is required for the schema migrations
+        
         self.database = DatabaseRequires(
             self._charm,
             relation_name=self._RELATION_NAME,
             database_name=self._charm.app.name,
-            extra_user_roles="SUPERUSER",
+            extra_user_roles=self._DATABASE_USER,
         )
         self.framework.observe(self.database.on.database_created, self._on_database_created)
         self.framework.observe(self.database.on.endpoints_changed, self._on_endpoints_changed)
