@@ -59,11 +59,11 @@ class DatabaseObserver(Object):
         Returns:
             str: The uri.
         """
-        if self.model.get_relation(self._RELATION_NAME) is None:
+        if self.model.get_relation(self._RELATION_NAME) is None or not self.database.relations:
             return None
 
         relation_id = self.database.relations[0].id
-        relation_data = self.database.fetch_relation_data()[relation_id]
+        relation_data = self.database.fetch_relation_data().get(relation_id, {})
         user = relation_data.get("username", "")
         password = relation_data.get("password", "")
         database = relation_data.get("database", "")
