@@ -63,6 +63,7 @@ async def app(
     postgresql_config = {
         "plugin_pg_trgm_enable": str(True),
         "plugin_unaccent_enable": str(True),
+        "profile": "testing",
     }
     await asyncio.gather(
         ops_test.model.deploy(
