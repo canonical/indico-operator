@@ -5,6 +5,7 @@
 
 import asyncio
 from pathlib import Path
+from time import sleep
 
 import pytest_asyncio
 import yaml
@@ -100,11 +101,12 @@ async def app(
         )
 
     await asyncio.gather(
-        ops_test.model.add_relation(app_name, "postgresql-k8s"),
         ops_test.model.add_relation(app_name, "redis-broker"),
         ops_test.model.add_relation(app_name, "redis-cache"),
         ops_test.model.add_relation(app_name, "nginx-ingress-integrator"),
     )
+    sleep(60)
+    await ops_test.model.add_relation(app_name, "postgresql-k8s")
     await ops_test.model.wait_for_idle(status="active", raise_on_error=False)
 
     yield application
