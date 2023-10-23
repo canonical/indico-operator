@@ -99,8 +99,8 @@ async def app(
             series="focal",
         )
 
+    await ops_test.model.add_relation(app_name, "postgresql-k8s")
     await asyncio.gather(
-        ops_test.model.add_relation(app_name, "postgresql-k8s"),
         ops_test.model.add_relation(app_name, "redis-broker"),
         ops_test.model.add_relation(app_name, "redis-cache"),
         ops_test.model.add_relation(app_name, "nginx-ingress-integrator"),
