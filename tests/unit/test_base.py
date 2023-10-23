@@ -10,7 +10,7 @@ from typing import List
 
 from ops.testing import Harness
 
-from tests.unit._patched_charm import IndicoOperatorCharm, pgsql_patch
+from charm import IndicoOperatorCharm
 
 
 class TestBase(unittest.TestCase):
@@ -18,22 +18,26 @@ class TestBase(unittest.TestCase):
 
     def setUp(self):
         """Set up test environment."""
-        pgsql_patch.start()
         self.harness = Harness(IndicoOperatorCharm)
         self.addCleanup(self.harness.cleanup)
         self.harness.begin()
 
-    def tearDown(self):
-        """Tear down test environment."""
-        pgsql_patch.stop()
-
     def set_up_all_relations(self):
         """Set up all relations for the charm."""
-        self.harness.charm._stored.db_uri = "db-uri"
         self.db_relation_id = self.harness.add_relation(  # pylint: disable=W0201
-            "db", "postgresql"
+            "database", "postgresql"
         )
         self.harness.add_relation_unit(self.db_relation_id, "postgresql/0")
+        self.harness.update_relation_data(
+            self.db_relation_id,
+            "postgresql",
+            {
+                "database": "indico",
+                "endpoints": "postgresql-k8s-primary.local:5432",
+                "password": "somepass",
+                "username": "user1",
+            },
+        )
 
         self.harness.add_relation("indico-peers", self.harness.charm.app.name)
 

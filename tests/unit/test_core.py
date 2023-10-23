@@ -113,7 +113,10 @@ class TestCore(TestBase):
 
         updated_plan = self.harness.get_container_pebble_plan("indico").to_dict()
         updated_plan_env = updated_plan["services"]["indico"]["environment"]
-        self.assertEqual("db-uri", updated_plan_env["INDICO_DB_URI"])
+        self.assertEqual(
+            "postgresql://user1:somepass@postgresql-k8s-primary.local:5432/indico",
+            updated_plan_env["INDICO_DB_URI"],
+        )
         self.assertEqual("redis://broker-host:1010", updated_plan_env["CELERY_BROKER"])
         peer_relation = self.harness.model.get_relation("indico-peers")
         self.assertEqual(
@@ -160,7 +163,10 @@ class TestCore(TestBase):
 
         updated_plan = self.harness.get_container_pebble_plan("indico").to_dict()
         updated_plan_env = updated_plan["services"]["indico"]["environment"]
-        self.assertEqual("db-uri", updated_plan_env["INDICO_DB_URI"])
+        self.assertEqual(
+            "postgresql://user1:somepass@postgresql-k8s-primary.local:5432/indico",
+            updated_plan_env["INDICO_DB_URI"],
+        )
         self.assertEqual("redis://broker-host:1010", updated_plan_env["CELERY_BROKER"])
         peer_relation = self.harness.model.get_relation("indico-peers")
         secret_id = self.harness.get_relation_data(
@@ -206,7 +212,10 @@ class TestCore(TestBase):
 
         updated_plan = self.harness.get_container_pebble_plan("indico-celery").to_dict()
         updated_plan_env = updated_plan["services"]["indico-celery"]["environment"]
-        self.assertEqual("db-uri", updated_plan_env["INDICO_DB_URI"])
+        self.assertEqual(
+            "postgresql://user1:somepass@postgresql-k8s-primary.local:5432/indico",
+            updated_plan_env["INDICO_DB_URI"],
+        )
         self.assertEqual("redis://broker-host:1010", updated_plan_env["CELERY_BROKER"])
         peer_relation = self.harness.model.get_relation("indico-peers")
         self.assertEqual(
@@ -518,48 +527,4 @@ class TestCore(TestBase):
         self.assertEqual(
             secret_id,
             self.harness.get_relation_data(rel_id, self.harness.charm.app.name).get("secret-id"),
-        )
-
-    def test_db_relations(self):
-        """
-        arrange: charm created
-        act: establish relations
-        assert: the database connection data is interchanged, including the required extensions
-        """
-        self.set_up_all_relations()
-        self.harness.set_leader(True)
-        # testing harness not re-emits deferred events, manually trigger that
-        self.harness.framework.reemit()
-        db_relation_data = self.harness.get_relation_data(
-            self.db_relation_id, self.harness.charm.app.name
-        )
-        self.assertEqual(
-            db_relation_data.get("database"),
-            "indico",
-            "database name should be set after relation joined",
-        )
-        self.assertSetEqual(
-            {"pg_trgm:public", "unaccent:public"},
-            set(db_relation_data.get("extensions").split(",")),
-            "database roles should be set after relation joined",
-        )
-        self.harness.update_relation_data(
-            self.db_relation_id,
-            "postgresql/0",
-            {"master": "host=master"},
-        )
-        self.assertEqual(
-            self.harness.charm._stored.db_uri,
-            "postgresql://master",
-            "database connection string should be set after database master ready",
-        )
-        self.harness.update_relation_data(
-            self.db_relation_id,
-            "postgresql/0",
-            {"master": "host=new_master"},
-        )
-        self.assertEqual(
-            self.harness.charm._stored.db_uri,
-            "postgresql://new_master",
-            "database connection string should change after database master changed",
         )

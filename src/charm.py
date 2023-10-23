@@ -31,6 +31,7 @@ from ops.model import (
 )
 from ops.pebble import ExecError
 
+from database_observer import DatabaseObserver
 from state import CharmConfigInvalidError, ProxyConfig, State
 
 logger = logging.getLogger(__name__)
@@ -48,8 +49,6 @@ STAGING_UBUNTU_SAML_URL = "https://login.staging.ubuntu.com/saml/"
 SAML_GROUPS_PLUGIN_NAME = "saml_groups"
 
 UWSGI_TOUCH_RELOAD = "/srv/indico/indico.wsgi"
-
-pgsql = ops.lib.use("pgsql", 1, "postgresql-charmers@lists.launchpad.net")
 
 
 class IndicoOperatorCharm(CharmBase):
@@ -69,6 +68,7 @@ class IndicoOperatorCharm(CharmBase):
             args: Arguments passed to the CharmBase parent constructor.
         """
         super().__init__(*args)
+        self.database = DatabaseObserver(self)
         try:
             self.state = State.from_charm(self)
         except CharmConfigInvalidError as exc:
@@ -87,17 +87,8 @@ class IndicoOperatorCharm(CharmBase):
         self.framework.observe(self.on.anonymize_user_action, self._anonymize_user_action)
 
         self._stored.set_default(
-            db_conn_str=None,
-            db_uri=None,
-            db_ro_uris=[],
             redis_relation={},
         )
-
-        self.db = pgsql.PostgreSQLClient(self, "db")  # pylint: disable=C0103
-        self.framework.observe(
-            self.db.on.database_relation_joined, self._on_database_relation_joined
-        )
-        self.framework.observe(self.db.on.master_changed, self._on_master_changed)
 
         self.redis = RedisRequires(self, self._stored)
         self.framework.observe(self.on.redis_relation_updated, self._on_config_changed)
@@ -120,42 +111,6 @@ class IndicoOperatorCharm(CharmBase):
             ],
         )
         self._grafana_dashboards = GrafanaDashboardProvider(self)
-
-    # pgsql.DatabaseRelationJoinedEvent is actually defined
-    def _on_database_relation_joined(
-        self, event: pgsql.DatabaseRelationJoinedEvent  # type: ignore
-    ) -> None:
-        """Handle db-relation-joined.
-
-        Args:
-            event: Event triggering the database relation joined handler.
-        """
-        if self.model.unit.is_leader():
-            # Provide requirements to the PostgreSQL server.
-            event.database = DATABASE_NAME
-            event.extensions = ["pg_trgm:public", "unaccent:public"]
-        elif event.database != DATABASE_NAME:
-            # Leader has not yet set requirements. Defer, in case this unit
-            # becomes leader and needs to perform that operation.
-            event.defer()
-            return
-
-    # pgsql.MasterChangedEvent is actually defined
-    def _on_master_changed(self, event: pgsql.MasterChangedEvent) -> None:  # type: ignore
-        """Handle changes in the primary database unit.
-
-        Args:
-            event: Event triggering the database master changed handler.
-        """
-        if event.database != DATABASE_NAME:
-            # Leader has not yet set requirements. Wait until next
-            # event, or risk connecting to an incorrect database.
-            return
-        self._stored.db_conn_str = None if event.master is None else event.master.conn_str
-        self._stored.db_uri = None if event.master is None else event.master.uri
-        if event.master is None:
-            return
-        self._on_config_changed(event)
 
     def _require_nginx_route(self) -> None:
         """Require nginx ingress."""
@@ -230,8 +185,7 @@ class IndicoOperatorCharm(CharmBase):
         if self._get_redis_cache_rel() is None:
             self.unit.status = WaitingStatus("Waiting for redis-cache availability")
             return False
-        # mypy misinterprets this line, reports something about function overloading
-        if not self._stored.db_uri:  # type: ignore
+        if self.database.uri is None:
             self.unit.status = WaitingStatus("Waiting for database availability")
             return False
         return True
@@ -590,7 +544,7 @@ class IndicoOperatorCharm(CharmBase):
             "CUSTOMIZATION_DEBUG": self.config["customization_debug"],
             "ENABLE_ROOMBOOKING": self.config["enable_roombooking"],
             "INDICO_AUTH_PROVIDERS": str({}),
-            "INDICO_DB_URI": self._stored.db_uri,
+            "INDICO_DB_URI": self.database.uri,
             "INDICO_EXTRA_PLUGINS": ",".join(available_plugins),
             "INDICO_IDENTITY_PROVIDERS": str({}),
             "INDICO_NO_REPLY_EMAIL": self.config["indico_no_reply_email"],
@@ -779,21 +733,17 @@ class IndicoOperatorCharm(CharmBase):
                 "Invalid saml_target_url option provided. "
                 f"Only {UBUNTU_SAML_URL} and {STAGING_UBUNTU_SAML_URL} are available."
             )
-            event.defer()
             return
         if not self._are_pebble_instances_ready():
             self.unit.status = WaitingStatus("Waiting for pebble")
-            event.defer()
             return
         self.model.unit.status = MaintenanceStatus("Configuring pod")
         is_valid, error = self._is_configuration_valid()
         if not is_valid:
             self.model.unit.status = BlockedStatus(error)
-            event.defer()
             return
         for container_name in self.model.unit.containers:
             self._config_pebble(self.unit.get_container(container_name))
-        self.model.unit.status = ActiveStatus()
 
     def _get_current_customization_url(self) -> str:
         """Get the current remote repository for the customization changes.
