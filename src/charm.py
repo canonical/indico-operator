@@ -744,7 +744,6 @@ class IndicoOperatorCharm(CharmBase):
             return
         for container_name in self.model.unit.containers:
             self._config_pebble(self.unit.get_container(container_name))
-        self.model.unit.status = ActiveStatus()
 
     def _get_current_customization_url(self) -> str:
         """Get the current remote repository for the customization changes.
