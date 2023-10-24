@@ -61,8 +61,9 @@ async def app(
     assert ops_test.model
     # Deploy relations to speed up overall execution
     postgresql_config = {
-        "plugin_pg_trgm_enable": True,
-        "plugin_unaccent_enable": True,
+        "plugin_pg_trgm_enable": str(True),
+        "plugin_unaccent_enable": str(True),
+        "profile": "testing",
     }
     await asyncio.gather(
         ops_test.model.deploy(
@@ -74,7 +75,9 @@ async def app(
             "nginx-ingress-integrator", channel="latest/edge", series="focal", trust=True
         ),
     )
-
+    await ops_test.model.wait_for_idle(
+        apps=["postgresql-k8s"], status="active", raise_on_error=False
+    )
     resources = {
         "indico-image": pytestconfig.getoption("--indico-image"),
         "indico-nginx-image": pytestconfig.getoption("--indico-nginx-image"),
@@ -96,11 +99,8 @@ async def app(
             series="focal",
         )
 
-    await ops_test.model.wait_for_idle(
-        apps=["postgresql-k8s"], status="active", raise_on_error=False
-    )
     await asyncio.gather(
-        ops_test.model.add_relation(app_name, "postgresql-k8s:db"),
+        ops_test.model.add_relation(app_name, "postgresql-k8s"),
         ops_test.model.add_relation(app_name, "redis-broker"),
         ops_test.model.add_relation(app_name, "redis-cache"),
         ops_test.model.add_relation(app_name, "nginx-ingress-integrator"),

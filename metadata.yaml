@@ -54,8 +54,8 @@ provides:
     interface: prometheus_scrape
 
 requires:
-  db:
-    interface: pgsql
+  database:
+    interface: postgresql_client
     limit: 1
   nginx-route:
     interface: nginx-route
