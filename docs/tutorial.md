@@ -25,7 +25,7 @@ Redis is deployed twice because one is for the broker and the other for the cach
 Deploy the charms:
 
 ```bash
-juju deploy postgresql-k8s
+juju deploy postgresql-k8s --trust
 juju deploy redis-k8s redis-broker
 juju deploy redis-k8s redis-cache
 juju deploy indico
