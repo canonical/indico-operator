@@ -12,6 +12,7 @@ import pytest
 from ops.testing import Harness
 
 from charm import IndicoOperatorCharm
+from state import SmtpConfig
 from tests.unit.test_base import TestBase
 
 
@@ -132,11 +133,6 @@ class TestCore(TestBase):
         self.assertEqual("support-tech@mydomain.local", updated_plan_env["INDICO_SUPPORT_EMAIL"])
         self.assertEqual("support@mydomain.local", updated_plan_env["INDICO_PUBLIC_SUPPORT_EMAIL"])
         self.assertEqual("noreply@mydomain.local", updated_plan_env["INDICO_NO_REPLY_EMAIL"])
-        self.assertEqual("", updated_plan_env["SMTP_SERVER"])
-        self.assertEqual(25, updated_plan_env["SMTP_PORT"])
-        self.assertEqual("", updated_plan_env["SMTP_LOGIN"])
-        self.assertEqual("", updated_plan_env["SMTP_PASSWORD"])
-        self.assertTrue(updated_plan_env["SMTP_USE_TLS"])
         self.assertFalse(updated_plan_env["CUSTOMIZATION_DEBUG"])
         self.assertEqual("default", updated_plan_env["ATTACHMENT_STORAGE"])
         storage_dict = literal_eval(updated_plan_env["STORAGE_DICT"])
@@ -158,6 +154,13 @@ class TestCore(TestBase):
         mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=("", None)))
         self.set_up_all_relations()
         self.harness.set_leader(True)
+        self.harness.charm.smtp.smtp_config = SmtpConfig(
+            host="localhost",
+            port=8025,
+            login="user",
+            password="pass",  # nosec
+            use_tls=False,
+        )
 
         self.harness.container_pebble_ready("indico")
 
@@ -182,15 +185,15 @@ class TestCore(TestBase):
         self.assertEqual("support-tech@mydomain.local", updated_plan_env["INDICO_SUPPORT_EMAIL"])
         self.assertEqual("support@mydomain.local", updated_plan_env["INDICO_PUBLIC_SUPPORT_EMAIL"])
         self.assertEqual("noreply@mydomain.local", updated_plan_env["INDICO_NO_REPLY_EMAIL"])
-        self.assertEqual("", updated_plan_env["SMTP_SERVER"])
-        self.assertEqual(25, updated_plan_env["SMTP_PORT"])
-        self.assertEqual("", updated_plan_env["SMTP_LOGIN"])
-        self.assertEqual("", updated_plan_env["SMTP_PASSWORD"])
-        self.assertTrue(updated_plan_env["SMTP_USE_TLS"])
         self.assertFalse(updated_plan_env["CUSTOMIZATION_DEBUG"])
         self.assertEqual("default", updated_plan_env["ATTACHMENT_STORAGE"])
         storage_dict = literal_eval(updated_plan_env["STORAGE_DICT"])
         self.assertEqual("fs:/srv/indico/archive", storage_dict["default"])
+        self.assertEqual("localhost", updated_plan_env["SMTP_SERVER"])
+        self.assertEqual(8025, updated_plan_env["SMTP_PORT"])
+        self.assertEqual("user", updated_plan_env["SMTP_LOGIN"])
+        self.assertEqual("pass", updated_plan_env["SMTP_PASSWORD"])
+        self.assertFalse(updated_plan_env["SMTP_USE_TLS"])
 
         service = self.harness.model.unit.get_container("indico").get_service("indico")
         self.assertTrue(service.is_running())
@@ -207,6 +210,13 @@ class TestCore(TestBase):
 
         self.set_up_all_relations()
         self.harness.set_leader(True)
+        self.harness.charm.smtp.smtp_config = SmtpConfig(
+            host="localhost",
+            port=8025,
+            login="user",
+            password="pass",  # nosec
+            use_tls=False,
+        )
 
         self.harness.container_pebble_ready("indico-celery")
 
@@ -232,17 +242,17 @@ class TestCore(TestBase):
         self.assertEqual("support-tech@mydomain.local", updated_plan_env["INDICO_SUPPORT_EMAIL"])
         self.assertEqual("support@mydomain.local", updated_plan_env["INDICO_PUBLIC_SUPPORT_EMAIL"])
         self.assertEqual("noreply@mydomain.local", updated_plan_env["INDICO_NO_REPLY_EMAIL"])
-        self.assertEqual("", updated_plan_env["SMTP_SERVER"])
-        self.assertEqual(25, updated_plan_env["SMTP_PORT"])
-        self.assertEqual("", updated_plan_env["SMTP_LOGIN"])
-        self.assertEqual("", updated_plan_env["SMTP_PASSWORD"])
-        self.assertTrue(updated_plan_env["SMTP_USE_TLS"])
         self.assertFalse(updated_plan_env["CUSTOMIZATION_DEBUG"])
         self.assertEqual("default", updated_plan_env["ATTACHMENT_STORAGE"])
         storage_dict = literal_eval(updated_plan_env["STORAGE_DICT"])
         self.assertEqual("fs:/srv/indico/archive", storage_dict["default"])
         self.assertFalse(literal_eval(updated_plan_env["INDICO_AUTH_PROVIDERS"]))
         self.assertFalse(literal_eval(updated_plan_env["INDICO_IDENTITY_PROVIDERS"]))
+        self.assertEqual("localhost", updated_plan_env["SMTP_SERVER"])
+        self.assertEqual(8025, updated_plan_env["SMTP_PORT"])
+        self.assertEqual("user", updated_plan_env["SMTP_LOGIN"])
+        self.assertEqual("pass", updated_plan_env["SMTP_PASSWORD"])
+        self.assertFalse(updated_plan_env["SMTP_USE_TLS"])
 
         service = self.harness.model.unit.get_container("indico-celery").get_service(
             "indico-celery"
@@ -271,11 +281,6 @@ class TestCore(TestBase):
                 "indico_no_reply_email": "noreply@email.local",
                 "saml_target_url": "https://login.ubuntu.com/saml/",
                 "site_url": "https://example.local:8080",
-                "smtp_server": "localhost",
-                "smtp_port": 8025,
-                "smtp_login": "user",
-                "smtp_password": "pass",
-                "smtp_use_tls": False,
                 "s3_storage": "s3:bucket=test-bucket,access_key=12345,secret_key=topsecret",
             }
         )
@@ -290,11 +295,6 @@ class TestCore(TestBase):
         self.assertEqual("noreply@email.local", updated_plan_env["INDICO_NO_REPLY_EMAIL"])
         self.assertEqual("https", updated_plan_env["SERVICE_SCHEME"])
         self.assertEqual(8080, updated_plan_env["SERVICE_PORT"])
-        self.assertEqual("localhost", updated_plan_env["SMTP_SERVER"])
-        self.assertEqual(8025, updated_plan_env["SMTP_PORT"])
-        self.assertEqual("user", updated_plan_env["SMTP_LOGIN"])
-        self.assertEqual("pass", updated_plan_env["SMTP_PASSWORD"])
-        self.assertFalse(updated_plan_env["SMTP_USE_TLS"])
         self.assertTrue(updated_plan_env["CUSTOMIZATION_DEBUG"])
         storage_dict = literal_eval(updated_plan_env["STORAGE_DICT"])
         self.assertEqual("s3", updated_plan_env["ATTACHMENT_STORAGE"])
@@ -340,11 +340,6 @@ class TestCore(TestBase):
         self.assertEqual("example.local", updated_plan_env["SERVICE_HOSTNAME"])
         self.assertEqual("https", updated_plan_env["SERVICE_SCHEME"])
         self.assertEqual(8080, updated_plan_env["SERVICE_PORT"])
-        self.assertEqual("localhost", updated_plan_env["SMTP_SERVER"])
-        self.assertEqual(8025, updated_plan_env["SMTP_PORT"])
-        self.assertEqual("user", updated_plan_env["SMTP_LOGIN"])
-        self.assertEqual("pass", updated_plan_env["SMTP_PASSWORD"])
-        self.assertFalse(updated_plan_env["SMTP_USE_TLS"])
         self.assertTrue(updated_plan_env["CUSTOMIZATION_DEBUG"])
         self.assertEqual("s3", updated_plan_env["ATTACHMENT_STORAGE"])
         storage_dict = literal_eval(updated_plan_env["STORAGE_DICT"])
