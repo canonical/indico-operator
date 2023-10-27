@@ -29,7 +29,6 @@ If there's a particular area of documentation that you'd like to see that's miss
 | 2 | how-to-configure-a-proxy | [Configure a proxy](/t/indico-docs-how-to-configure-a-proxy/8678) |
 | 2 | how-to-configure-s3 | [Configure S3](/t/indico-docs-how-to-configure-s3/8680) |
 | 2 | how-to-configure-saml | [Configure SAML](/t/indico-docs-how-to-configure-saml/8664) |
-| 2 | how-to-configure-smtp | [Configure SMTP](/t/indico-docs-how-to-configure-smtp/8666) |
 | 2 | how-to-configure-the-external-hostname | [Configure the external hostname](/t/indico-docs-how-to-configure-the-external-hostname/8660) |
 | 2 | how-to-contribute | [Contribute](/t/indico-docs-how-to-contribute/7561) |
 | 2 | how-to-customize-theme | [Customize theme](/t/indico-docs-how-to-customize-theme/8682) |
