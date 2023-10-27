@@ -51,7 +51,7 @@ a `SmtpRelationData` data object.
 """
 
 # The unique Charmhub library identifier, never change it
-LIBID = "018a12e798714b69829be1e9a5c481a5"
+LIBID = "09583c2f9c1d4c0f9a40244cfc20b0c2"
 
 # Increment this major API version when introducing breaking changes
 LIBAPI = 0
