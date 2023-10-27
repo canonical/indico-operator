@@ -18,7 +18,7 @@ Exception raised when a charm configuration is found to be invalid.
  
  - <b>`msg`</b>:  Explanation of the error. 
 
-<a href="../src/state.py#L27"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/state.py#L29"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>function</kbd> `__init__`
 
@@ -65,7 +65,7 @@ Configuration for accessing Indico through proxy.
 
 ---
 
-<a href="../src/state.py#L49"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/state.py#L51"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>classmethod</kbd> `from_env`
 
@@ -83,6 +83,25 @@ Instantiate ProxyConfig from juju charm environment.
 
 ---
 
+## <kbd>class</kbd> `SmtpConfig`
+SMTP configuration. 
+
+
+
+**Attributes:**
+ 
+ - <b>`login`</b>:  SMTP user. 
+ - <b>`password`</b>:  SMTP passwaord. 
+ - <b>`port`</b>:  SMTP port. 
+ - <b>`host`</b>:  SMTP host. 
+ - <b>`use_tls`</b>:  whether TLS is enabled. 
+
+
+
+
+
+---
+
 ## <kbd>class</kbd> `State`
 The Indico operator charm state. 
 
@@ -91,13 +110,14 @@ The Indico operator charm state.
 **Attributes:**
  
  - <b>`proxy_config`</b>:  Proxy configuration. 
+ - <b>`smtp_config`</b>:  SMTP configuration. 
 
 
 
 
 ---
 
-<a href="../src/state.py#L77"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/state.py#L99"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>classmethod</kbd> `from_charm`
 
