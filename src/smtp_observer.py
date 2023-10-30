@@ -32,10 +32,10 @@ class SmtpObserver(Object):
         )
         self.smtp_config = None
         self.framework.observe(
-            self.smtp.on.smtp_data_available, self._saml_relation_data_available
+            self.smtp.on.smtp_data_available, self._smtp_relation_data_available
         )
 
-    def _saml_relation_data_available(self, event: SmtpDataAvailableEvent) -> None:
+    def _smtp_relation_data_available(self, event: SmtpDataAvailableEvent) -> None:
         """Handle the relation data available event.
 
         Args:
