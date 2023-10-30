@@ -145,7 +145,6 @@ class SmtpRelationData(BaseModel):
             result["password"] = self.password
         if self.password_id:
             result["password_id"] = self.password_id
-        logging.error(result)
         return result
 
 
@@ -322,5 +321,4 @@ class SmtpProvides(ops.Object):
             relation: the relation for which to update the data.
             smtp_data: a SmtpRelationData instance wrapping the data to be updated.
         """
-        logging.error(smtp_data.to_relation_data())
         relation.data[self.charm.model.app].update(smtp_data.to_relation_data())
