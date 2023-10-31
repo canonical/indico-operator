@@ -10,7 +10,7 @@ This charm will make operating Indico simple and straightforward for DevOps or S
 
 | | |
 |--|--|
-|  [Tutorials](https://charmhub.io/indico/docs/tutorial-getting-started)</br>  Get started - a hands-on introduction to using the Charmed Indico operator for new users </br> |  [How-to guides](https://charmhub.io/indico/docs/how-to-configure-a-proxy) </br> Step-by-step guides covering key operations and common tasks |
+|  [Tutorials](https://charmhub.io/indico/docs/tutorial)</br>  Get started - a hands-on introduction to using the Charmed Indico operator for new users </br> |  [How-to guides](https://charmhub.io/indico/docs/how-to-configure-a-proxy) </br> Step-by-step guides covering key operations and common tasks |
 | [Reference](https://charmhub.io/indico/docs/reference-actions) </br> Technical information - specifications, APIs, architecture | [Explanation](https://charmhub.io/indico/docs/explanation-charm-architecture) </br> Concepts - discussion and clarification of key topics  |
 
 ## Contributing to this documentation
