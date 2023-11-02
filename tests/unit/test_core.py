@@ -154,7 +154,7 @@ class TestCore(TestBase):
         mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=("", None)))
         self.set_up_all_relations()
         self.harness.set_leader(True)
-        self.harness.charm.smtp.smtp_config = SmtpConfig(
+        self.harness.charm.state.smtp_config = SmtpConfig(
             host="localhost",
             port=8025,
             login="user",
@@ -210,7 +210,7 @@ class TestCore(TestBase):
 
         self.set_up_all_relations()
         self.harness.set_leader(True)
-        self.harness.charm.smtp.smtp_config = SmtpConfig(
+        self.harness.charm.state.smtp_config = SmtpConfig(
             host="localhost",
             port=8025,
             login="user",

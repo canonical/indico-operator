@@ -8,6 +8,7 @@ import os
 from typing import Optional
 
 import ops
+from charms.smtp_integrator.v0.smtp import SmtpRelationData, TransportSecurity
 
 # pylint: disable=no-name-in-module
 from pydantic import BaseModel, Field, HttpUrl, ValidationError
@@ -96,12 +97,16 @@ class State:  # pylint: disable=too-few-public-methods
     proxy_config: Optional[ProxyConfig]
     smtp_config: Optional[SmtpConfig]
 
+    # pylint: disable=unused-argument
     @classmethod
-    def from_charm(cls, charm: ops.CharmBase) -> "State":  # pylint: disable=unused-argument
+    def from_charm(
+        cls, charm: ops.CharmBase, smtp_relation_data: Optional[SmtpRelationData]
+    ) -> "State":
         """Initialize the state from charm.
 
         Args:
             charm: The charm root IndicoOperatorCharm.
+            smtp_relation_data: SMTP relation data.
 
         Returns:
             Current state of Indico.
@@ -111,7 +116,18 @@ class State:  # pylint: disable=too-few-public-methods
         """
         try:
             proxy_config = ProxyConfig.from_env()
+            smtp_config = (
+                SmtpConfig(
+                    host=smtp_relation_data.host,
+                    port=smtp_relation_data.port,
+                    login=smtp_relation_data.user,
+                    password=smtp_relation_data.password,
+                    use_tls=smtp_relation_data.transport_security is not TransportSecurity.NONE,
+                )
+                if smtp_relation_data
+                else None
+            )
         except ValidationError as exc:
             logger.error("Invalid juju model proxy configuration, %s", exc)
             raise CharmConfigInvalidError("Invalid model proxy configuration.") from exc
-        return cls(proxy_config=proxy_config, smtp_config=None)
+        return cls(proxy_config=proxy_config, smtp_config=smtp_config)

@@ -28,7 +28,7 @@ class ObservedCharm(ops.CharmBase):
         """
         super().__init__(*args)
         self.smtp = SmtpObserver(self)
-        self.state = State.from_charm(self)
+        self.state = State.from_charm(self, smtp_relation_data=None)
         self.events = []
         self.framework.observe(self.on.config_changed, self._record_event)
 
@@ -66,8 +66,3 @@ def test_smtp_related_emits_config_changed_eventand_updates_charm_state():
         relation_data,
     )
     assert len(harness.charm.events) == 1
-    assert harness.charm.smtp.smtp_config.host == relation_data["host"]
-    assert harness.charm.smtp.smtp_config.port == int(relation_data["port"])
-    assert harness.charm.smtp.smtp_config.login == relation_data["user"]
-    assert harness.charm.smtp.smtp_config.password == relation_data["password"]
-    assert harness.charm.smtp.smtp_config.use_tls

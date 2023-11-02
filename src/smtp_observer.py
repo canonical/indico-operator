@@ -4,11 +4,9 @@
 """The SMTP relation observer."""
 import logging
 
-from charms.smtp_integrator.v0.smtp import SmtpDataAvailableEvent, SmtpRequires, TransportSecurity
+from charms.smtp_integrator.v0.smtp import SmtpRequires
 from ops.charm import CharmBase
 from ops.framework import Object
-
-from state import SmtpConfig
 
 logger = logging.getLogger(__name__)
 
@@ -35,17 +33,6 @@ class SmtpObserver(Object):
             self.smtp.on.smtp_data_available, self._smtp_relation_data_available
         )
 
-    def _smtp_relation_data_available(self, event: SmtpDataAvailableEvent) -> None:
-        """Handle the relation data available event.
-
-        Args:
-            event: the relation event.
-        """
-        self.smtp_config = SmtpConfig(
-            host=event.host,
-            port=event.port,
-            login=event.user,
-            password=event.password,
-            use_tls=event.transport_security is not TransportSecurity.NONE,
-        )
+    def _smtp_relation_data_available(self, _) -> None:
+        """Handle the relation data available event."""
         self._charm.on.config_changed.emit()

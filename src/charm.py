@@ -72,7 +72,9 @@ class IndicoOperatorCharm(CharmBase):
         self.database = DatabaseObserver(self)
         self.smtp = SmtpObserver(self)
         try:
-            self.state = State.from_charm(self)
+            self.state = State.from_charm(
+                self, smtp_relation_data=self.smtp.smtp.get_relation_data()
+            )
         except CharmConfigInvalidError as exc:
             self.unit.status = ops.BlockedStatus(exc.msg)
             return
@@ -565,12 +567,12 @@ class IndicoOperatorCharm(CharmBase):
             },
         }
 
-        if self.smtp.smtp_config:
-            env_config["SMTP_LOGIN"] = self.smtp.smtp_config.login
-            env_config["SMTP_PASSWORD"] = self.smtp.smtp_config.password
-            env_config["SMTP_PORT"] = self.smtp.smtp_config.port
-            env_config["SMTP_SERVER"] = self.smtp.smtp_config.host
-            env_config["SMTP_USE_TLS"] = self.smtp.smtp_config.use_tls
+        if self.state.smtp_config:
+            env_config["SMTP_LOGIN"] = self.state.smtp_config.login
+            env_config["SMTP_PASSWORD"] = self.state.smtp_config.password
+            env_config["SMTP_PORT"] = self.state.smtp_config.port
+            env_config["SMTP_SERVER"] = self.state.smtp_config.host
+            env_config["SMTP_USE_TLS"] = self.state.smtp_config.use_tls
 
         # Required for monitoring Celery
         celery_config = {"worker_send_task_events": True, "task_send_sent_event": True}

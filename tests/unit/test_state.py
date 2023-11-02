@@ -7,6 +7,7 @@ import unittest
 
 import ops
 import pytest
+from charms.smtp_integrator.v0.smtp import AuthType, SmtpRelationData, TransportSecurity
 
 import state
 
@@ -22,10 +23,10 @@ def test_proxyconfig_invalid(monkeypatch: pytest.MonkeyPatch):
     mock_charm.config = {}
 
     with pytest.raises(state.CharmConfigInvalidError):
-        state.State.from_charm(mock_charm)
+        state.State.from_charm(mock_charm, smtp_relation_data=None)
 
 
-def test_proxyconfig_from_charm_env(proxy_config: state.ProxyConfig):
+def test_config_from_charm_env(proxy_config: state.ProxyConfig):
     """
     arrange: given a monkeypatched os.environ with proxy configurations.
     act: when ProxyConfig.from_charm_config is called.
@@ -34,8 +35,21 @@ def test_proxyconfig_from_charm_env(proxy_config: state.ProxyConfig):
     mock_charm = unittest.mock.MagicMock(spec=ops.CharmBase)
     mock_charm.config = {}
 
-    config = state.State.from_charm(mock_charm).proxy_config
-    assert config, "Valid proxy config should not return None."
-    assert config.http_proxy == proxy_config.http_proxy
-    assert config.https_proxy == proxy_config.https_proxy
-    assert config.no_proxy == proxy_config.no_proxy
+    smtp_relation_data = SmtpRelationData(
+        host="example.com",
+        port=22,
+        user="user",
+        password="passwd",  # nosec
+        transport_security=TransportSecurity.NONE,
+        auth_type=AuthType.NONE,
+    )
+    config = state.State.from_charm(mock_charm, smtp_relation_data=smtp_relation_data)
+    assert config.proxy_config, "Valid proxy config should not return None."
+    assert config.proxy_config.http_proxy == proxy_config.http_proxy
+    assert config.proxy_config.https_proxy == proxy_config.https_proxy
+    assert config.proxy_config.no_proxy == proxy_config.no_proxy
+    assert config.smtp_config.host == smtp_relation_data.host
+    assert config.smtp_config.port == smtp_relation_data.port
+    assert config.smtp_config.login == smtp_relation_data.user
+    assert config.smtp_config.password == smtp_relation_data.password
+    assert not config.smtp_config.use_tls
