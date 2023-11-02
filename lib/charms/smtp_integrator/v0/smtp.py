@@ -58,7 +58,7 @@ LIBAPI = 0
 
 # Increment this PATCH version before using `charmcraft publish-lib` or reset
 # to 0 if you are raising the major API version
-LIBPATCH = 3
+LIBPATCH = 4
 
 # pylint: disable=wrong-import-position
 import logging
@@ -251,7 +251,6 @@ class SmtpRequires(ops.Object):
             SmtpRelationData: the relation data.
         """
         relation = self.model.get_relation(self.relation_name)
-        assert relation
         return self._get_relation_data_from_relation(relation) if relation else None
 
     def _get_relation_data_from_relation(self, relation: ops.Relation) -> SmtpRelationData:
