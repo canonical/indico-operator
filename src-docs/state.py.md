@@ -18,7 +18,7 @@ Exception raised when a charm configuration is found to be invalid.
  
  - <b>`msg`</b>:  Explanation of the error. 
 
-<a href="../src/state.py#L29"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/state.py#L30"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>function</kbd> `__init__`
 
@@ -65,7 +65,7 @@ Configuration for accessing Indico through proxy.
 
 ---
 
-<a href="../src/state.py#L51"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/state.py#L52"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>classmethod</kbd> `from_env`
 
@@ -117,12 +117,15 @@ The Indico operator charm state.
 
 ---
 
-<a href="../src/state.py#L99"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/state.py#L101"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>classmethod</kbd> `from_charm`
 
 ```python
-from_charm(charm: CharmBase) → State
+from_charm(
+    charm: CharmBase,
+    smtp_relation_data: Optional[SmtpRelationData]
+) → State
 ```
 
 Initialize the state from charm. 
@@ -132,6 +135,7 @@ Initialize the state from charm.
 **Args:**
  
  - <b>`charm`</b>:  The charm root IndicoOperatorCharm. 
+ - <b>`smtp_relation_data`</b>:  SMTP relation data. 
 
 
 

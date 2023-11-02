@@ -12,7 +12,7 @@ The SMTP relation observer.
 ## <kbd>class</kbd> `SmtpObserver`
 The SMTP integrator relation observer. 
 
-<a href="../src/smtp_observer.py#L21"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/smtp_observer.py#L19"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>function</kbd> `__init__`
 
