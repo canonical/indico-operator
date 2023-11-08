@@ -35,5 +35,5 @@ class SmtpObserver(Object):
 
     def _smtp_relation_data_available(self, _) -> None:
         """Handle the relation data available event."""
-        # A config changes is emited to avoid a huge refactor at this point.
+        # A config changes is emitted to avoid a huge refactor at this point.
         self._charm.on.config_changed.emit()
