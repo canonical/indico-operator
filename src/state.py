@@ -5,10 +5,13 @@
 import dataclasses
 import logging
 import os
-import typing
+from typing import Optional
 
 import ops
-from pydantic import BaseModel, HttpUrl, ValidationError  # pylint: disable=no-name-in-module
+from charms.smtp_integrator.v0.smtp import SmtpRelationData, TransportSecurity
+
+# pylint: disable=no-name-in-module
+from pydantic import BaseModel, Field, HttpUrl, ValidationError
 
 logger = logging.getLogger(__name__)
 
@@ -42,12 +45,12 @@ class ProxyConfig(BaseModel):  # pylint: disable=too-few-public-methods
         no_proxy: Comma separated list of hostnames to bypass proxy.
     """
 
-    http_proxy: typing.Optional[HttpUrl]
-    https_proxy: typing.Optional[HttpUrl]
-    no_proxy: typing.Optional[str]
+    http_proxy: Optional[HttpUrl]
+    https_proxy: Optional[HttpUrl]
+    no_proxy: Optional[str]
 
     @classmethod
-    def from_env(cls) -> typing.Optional["ProxyConfig"]:
+    def from_env(cls) -> Optional["ProxyConfig"]:
         """Instantiate ProxyConfig from juju charm environment.
 
         Returns:
@@ -64,22 +67,46 @@ class ProxyConfig(BaseModel):  # pylint: disable=too-few-public-methods
         )
 
 
-@dataclasses.dataclass(frozen=True)
+class SmtpConfig(BaseModel):  # pylint: disable=too-few-public-methods
+    """SMTP configuration.
+
+    Attributes:
+        login: SMTP user.
+        password: SMTP passwaord.
+        port: SMTP port.
+        host: SMTP host.
+        use_tls: whether TLS is enabled.
+    """
+
+    login: Optional[str]
+    password: Optional[str]
+    port: int = Field(None, ge=1, le=65536)
+    host: str = Field(..., min_length=1)
+    use_tls: bool
+
+
+@dataclasses.dataclass()
 class State:  # pylint: disable=too-few-public-methods
     """The Indico operator charm state.
 
     Attributes:
         proxy_config: Proxy configuration.
+        smtp_config: SMTP configuration.
     """
 
-    proxy_config: typing.Optional[ProxyConfig]
+    proxy_config: Optional[ProxyConfig]
+    smtp_config: Optional[SmtpConfig]
 
+    # pylint: disable=unused-argument
     @classmethod
-    def from_charm(cls, charm: ops.CharmBase) -> "State":  # pylint: disable=unused-argument
+    def from_charm(
+        cls, charm: ops.CharmBase, smtp_relation_data: Optional[SmtpRelationData]
+    ) -> "State":
         """Initialize the state from charm.
 
         Args:
             charm: The charm root IndicoOperatorCharm.
+            smtp_relation_data: SMTP relation data.
 
         Returns:
             Current state of Indico.
@@ -89,7 +116,18 @@ class State:  # pylint: disable=too-few-public-methods
         """
         try:
             proxy_config = ProxyConfig.from_env()
+            smtp_config = (
+                SmtpConfig(
+                    host=smtp_relation_data.host,
+                    port=smtp_relation_data.port,
+                    login=smtp_relation_data.user,
+                    password=smtp_relation_data.password,
+                    use_tls=smtp_relation_data.transport_security is not TransportSecurity.NONE,
+                )
+                if smtp_relation_data
+                else None
+            )
         except ValidationError as exc:
             logger.error("Invalid juju model proxy configuration, %s", exc)
             raise CharmConfigInvalidError("Invalid model proxy configuration.") from exc
-        return cls(proxy_config=proxy_config)
+        return cls(proxy_config=proxy_config, smtp_config=smtp_config)

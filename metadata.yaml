@@ -63,6 +63,9 @@ requires:
   redis:
     interface: redis
     limit: 2
+  smtp-legacy:
+    interface: smtp
+    limit: 1
 
 peers:
   indico-peers:

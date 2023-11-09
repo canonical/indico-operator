@@ -32,6 +32,7 @@ from ops.model import (
 from ops.pebble import ExecError
 
 from database_observer import DatabaseObserver
+from smtp_observer import SmtpObserver
 from state import CharmConfigInvalidError, ProxyConfig, State
 
 logger = logging.getLogger(__name__)
@@ -69,8 +70,11 @@ class IndicoOperatorCharm(CharmBase):
         """
         super().__init__(*args)
         self.database = DatabaseObserver(self)
+        self.smtp = SmtpObserver(self)
         try:
-            self.state = State.from_charm(self)
+            self.state = State.from_charm(
+                self, smtp_relation_data=self.smtp.smtp.get_relation_data()
+            )
         except CharmConfigInvalidError as exc:
             self.unit.status = ops.BlockedStatus(exc.msg)
             return
@@ -558,15 +562,17 @@ class IndicoOperatorCharm(CharmBase):
             "SERVICE_HOSTNAME": self._get_external_hostname(),
             "SERVICE_PORT": self._get_external_port(),
             "SERVICE_SCHEME": self._get_external_scheme(),
-            "SMTP_LOGIN": self.config["smtp_login"],
-            "SMTP_PASSWORD": self.config["smtp_password"],
-            "SMTP_PORT": self.config["smtp_port"],
-            "SMTP_SERVER": self.config["smtp_server"],
-            "SMTP_USE_TLS": self.config["smtp_use_tls"],
             "STORAGE_DICT": {
                 "default": "fs:/srv/indico/archive",
             },
         }
+
+        if self.state.smtp_config:
+            env_config["SMTP_LOGIN"] = self.state.smtp_config.login
+            env_config["SMTP_PASSWORD"] = self.state.smtp_config.password
+            env_config["SMTP_PORT"] = self.state.smtp_config.port
+            env_config["SMTP_SERVER"] = self.state.smtp_config.host
+            env_config["SMTP_USE_TLS"] = self.state.smtp_config.use_tls
 
         # Required for monitoring Celery
         celery_config = {"worker_send_task_events": True, "task_send_sent_event": True}
