@@ -54,7 +54,7 @@ rather than, for instance, a config-changed event handler, for the relation
 changed event to be properly handled.
 
 In the example above we're setting `service_hostname` (which translates to the
-external hostname for the application when integrated to nginx-ingress-integrator)
+external hostname for the application when related to nginx-ingress-integrator)
 to `self.app.name` here. This ensures by default the charm will be available on
 the name of the deployed juju application, but can be overridden in a
 production deployment by setting `service-hostname` on the
@@ -62,7 +62,7 @@ nginx-ingress-integrator charm. For example:
 ```bash
 juju deploy nginx-ingress-integrator
 juju deploy my-charm
-juju integrate nginx-ingress-integrator my-charm:nginx-route
+juju relate nginx-ingress-integrator my-charm:nginx-route
 # The service is now reachable on the ingress IP(s) of your k8s cluster at
 # 'http://my-charm'.
 juju config nginx-ingress-integrator service-hostname='my-charm.example.com'
@@ -86,7 +86,7 @@ LIBAPI = 0
 
 # Increment this PATCH version before using `charmcraft publish-lib` or reset
 # to 0 if you are raising the major API version
-LIBPATCH = 3
+LIBPATCH = 4
 
 __all__ = ["require_nginx_route", "provide_nginx_route"]
 
@@ -172,7 +172,8 @@ class _NginxRouteRequirer(ops.framework.Object):
 
 # C901 is ignored since the method has too many ifs but wouldn't be
 # necessarily good to reduce to smaller methods.
-def require_nginx_route(  # pylint: disable=too-many-locals,too-many-branches # noqa: C901
+# E501: line too long
+def require_nginx_route(  # pylint: disable=too-many-locals,too-many-branches,too-many-arguments # noqa: C901,E501
     *,
     charm: ops.charm.CharmBase,
     service_hostname: str,
