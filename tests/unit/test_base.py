@@ -41,17 +41,17 @@ class TestBase(unittest.TestCase):
 
         self.harness.add_relation("indico-peers", self.harness.charm.app.name)
 
-        broker_relation_id = self.harness.add_relation("redis", "redis-broker")
+        broker_relation_id = self.harness.add_relation("redis-broker", "redis-broker")
         self.harness.add_relation_unit(broker_relation_id, "redis-broker/0")
 
-        cache_relation_id = self.harness.add_relation("redis", "redis-cache")
+        cache_relation_id = self.harness.add_relation("redis-cache", "redis-cache")
         self.harness.add_relation_unit(cache_relation_id, "redis-cache/0")
 
-        cache_relation = self.harness.model.get_relation("redis", cache_relation_id)
+        cache_relation = self.harness.model.get_relation("redis-cache", cache_relation_id)
         cache_unit = self.harness.model.get_unit("redis-cache/0")
         cache_relation.data = {cache_unit: {"hostname": "cache-host", "port": 1011}}
 
-        broker_relation = self.harness.model.get_relation("redis", broker_relation_id)
+        broker_relation = self.harness.model.get_relation("redis-broker", broker_relation_id)
         broker_unit = self.harness.model.get_unit("redis-broker/0")
         broker_relation.data = {broker_unit: {"hostname": "broker-host", "port": 1010}}
 

@@ -42,16 +42,13 @@ class TestCore(TestBase):
             self.harness.model.unit.status,
             ops.WaitingStatus("Waiting for redis-broker availability"),
         )
-        redis_relation_id = self.harness.add_relation("redis", "redis-broker")
+        redis_relation_id = self.harness.add_relation("redis-broker", "redis-broker")
         self.harness.add_relation_unit(redis_relation_id, "redis-broker/0")
-        self.harness.update_relation_data(
-            redis_relation_id, "redis-broker/0", {"something": "just to trigger rel-changed event"}
-        )
         self.assertEqual(
             self.harness.model.unit.status,
             ops.WaitingStatus("Waiting for redis-cache availability"),
         )
-        redis_relation_id = self.harness.add_relation("redis", "redis-cache")
+        redis_relation_id = self.harness.add_relation("redis-cache", "redis-cache")
         self.harness.add_relation_unit(redis_relation_id, "redis-cache/0")
         self.harness.update_relation_data(
             redis_relation_id, "redis-cache/0", {"something": "just to trigger rel-changed event"}
