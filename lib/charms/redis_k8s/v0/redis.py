@@ -63,8 +63,6 @@ class RedisRelationCharmEvents(CharmEvents):
 
 class RedisRequires(Object):
 
-    on = RedisRelationCharmEvents()
-
     def __init__(self, charm, _stored, relation_name: str = DEFAULT_REALTION_NAME):
         """A class implementing the redis requires relation."""
         super().__init__(charm, relation_name)
@@ -85,7 +83,7 @@ class RedisRequires(Object):
         self._stored.redis_relation[event.relation.id] = {"hostname": hostname, "port": port}
 
         # Trigger an event that our charm can react to.
-        self.on.redis_relation_updated.emit()
+        self.charm.on.redis_relation_updated.emit()
 
     def _on_relation_broken(self, event):
         """Handle the relation broken event."""
@@ -93,7 +91,7 @@ class RedisRequires(Object):
         self._stored.redis_relation.pop(event.relation.id, None)
 
         # Trigger an event that our charm can react to.
-        self.on.redis_relation_updated.emit()
+        self.charm.on.redis_relation_updated.emit()
 
     def get_relation_data(self) -> Optional[Dict[str, str]]:
         """Retrieve the relation data.
