@@ -58,11 +58,5 @@ def test_smtp_related_emits_config_changed_eventand_updates_charm_state():
     }
     harness = Harness(ObservedCharm, meta=REQUIRER_METADATA)
     harness.begin()
-    relation_id = harness.add_relation("smtp-legacy", "smtp-integrator")
-    harness.add_relation_unit(relation_id, "smtp-integrator/0")
-    harness.update_relation_data(
-        relation_id,
-        "smtp-integrator",
-        relation_data,
-    )
+    harness.add_relation("smtp-legacy", "smtp-integrator", app_data=relation_data)
     assert len(harness.charm.events) == 1

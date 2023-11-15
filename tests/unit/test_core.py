@@ -42,16 +42,19 @@ class TestCore(TestBase):
             self.harness.model.unit.status,
             ops.WaitingStatus("Waiting for redis-broker availability"),
         )
-        redis_relation_id = self.harness.add_relation("redis-broker", "redis-broker")
-        self.harness.add_relation_unit(redis_relation_id, "redis-broker/0")
+        self.harness.add_relation(
+            "redis-broker",
+            "redis-broker",
+            unit_data={"something": "just to trigger rel-changed event"},
+        )
         self.assertEqual(
             self.harness.model.unit.status,
             ops.WaitingStatus("Waiting for redis-cache availability"),
         )
-        redis_relation_id = self.harness.add_relation("redis-cache", "redis-cache")
-        self.harness.add_relation_unit(redis_relation_id, "redis-cache/0")
-        self.harness.update_relation_data(
-            redis_relation_id, "redis-cache/0", {"something": "just to trigger rel-changed event"}
+        self.harness.add_relation(
+            "redis-cache",
+            "redis-cache",
+            unit_data={"something": "just to trigger rel-changed event"},
         )
         self.assertEqual(
             self.harness.model.unit.status, ops.WaitingStatus("Waiting for database availability")
@@ -395,7 +398,6 @@ class TestCore(TestBase):
                 "external_plugins": "git+https://example.git/#subdirectory=themes_cern",
             }
         )
-        # pylint: disable=duplicate-code
         mock_exec.assert_any_call(
             ["git", "clone", "https://example.com/custom", "."],
             working_dir="/srv/indico/custom",

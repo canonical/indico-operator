@@ -47,8 +47,7 @@ def test_database_created_emits_config_changed_event():
     """
     harness = Harness(ObservedCharm, meta=REQUIRER_METADATA)
     harness.begin()
-    relation_id = harness.add_relation("database", "database-provider")
-    harness.add_relation_unit(relation_id, "database-provider/0")
+    harness.add_relation("database", "database-provider")
     relation = harness.charm.framework.model.get_relation("database", 0)
 
     harness.charm.database.database.on.database_created.emit(relation)
@@ -64,8 +63,7 @@ def test_endpoints_changed_emits_config_changed_event():
     """
     harness = Harness(ObservedCharm, meta=REQUIRER_METADATA)
     harness.begin()
-    relation_id = harness.add_relation("database", "database-provider")
-    harness.add_relation_unit(relation_id, "database-provider/0")
+    harness.add_relation("database", "database-provider")
     relation = harness.charm.framework.model.get_relation("database", 0)
 
     harness.charm.database.database.on.endpoints_changed.emit(relation)
@@ -81,13 +79,10 @@ def test_uri():
     """
     harness = Harness(ObservedCharm, meta=REQUIRER_METADATA)
     harness.begin()
-    relation_id = harness.add_relation("database", "database-provider")
-    harness.add_relation_unit(relation_id, "database-provider/0")
-
-    harness.update_relation_data(
-        relation_id,
+    harness.add_relation(
+        "database",
         "database-provider",
-        {
+        app_data={
             "database": "indico",
             "endpoints": "postgresql-k8s-primary.local:5432",
             "password": "somepass",
@@ -108,7 +103,6 @@ def test_uri_when_no_relation_data():
     """
     harness = Harness(ObservedCharm, meta=REQUIRER_METADATA)
     harness.begin()
-    relation_id = harness.add_relation("database", "database-provider")
-    harness.add_relation_unit(relation_id, "database-provider/0")
+    harness.add_relation("database", "database-provider")
 
     assert harness.charm.database.uri is None

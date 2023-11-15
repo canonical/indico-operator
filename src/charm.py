@@ -92,7 +92,9 @@ class IndicoOperatorCharm(CharmBase):
             self.redis_broker.charm.on.redis_relation_updated, self._on_config_changed
         )
         self.redis_cache = RedisRequires(self, self._stored, "redis-cache")
-        self.framework.observe(self.redis_cache.charm.on.redis_relation_updated, self._on_config_changed)
+        self.framework.observe(
+            self.redis_cache.charm.on.redis_relation_updated, self._on_config_changed
+        )
         self._require_nginx_route()
 
         self._metrics_endpoint = MetricsEndpointProvider(
