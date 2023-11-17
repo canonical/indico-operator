@@ -3,7 +3,6 @@
 # Copyright 2023 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-# pylint: disable=too-many-lines
 """Charm for Indico on kubernetes."""
 import logging
 import os
@@ -21,14 +20,7 @@ from ops.charm import ActionEvent, CharmBase, HookEvent, PebbleReadyEvent
 from ops.framework import StoredState
 from ops.jujuversion import JujuVersion
 from ops.main import main
-from ops.model import (
-    ActiveStatus,
-    BlockedStatus,
-    Container,
-    MaintenanceStatus,
-    Relation,
-    WaitingStatus,
-)
+from ops.model import ActiveStatus, BlockedStatus, Container, MaintenanceStatus, WaitingStatus
 from ops.pebble import ExecError
 
 from database_observer import DatabaseObserver
@@ -90,12 +82,19 @@ class IndicoOperatorCharm(CharmBase):
         self.framework.observe(self.on.add_admin_action, self._add_admin_action)
         self.framework.observe(self.on.anonymize_user_action, self._anonymize_user_action)
 
+        # Still needed by the library
         self._stored.set_default(
             redis_relation={},
         )
 
-        self.redis = RedisRequires(self, self._stored)
-        self.framework.observe(self.on.redis_relation_updated, self._on_config_changed)
+        self.redis_broker = RedisRequires(self, self._stored, "redis-broker")
+        self.framework.observe(
+            self.redis_broker.charm.on.redis_relation_updated, self._on_config_changed
+        )
+        self.redis_cache = RedisRequires(self, self._stored, "redis-cache")
+        self.framework.observe(
+            self.redis_cache.charm.on.redis_relation_updated, self._on_config_changed
+        )
         self._require_nginx_route()
 
         self._metrics_endpoint = MetricsEndpointProvider(
@@ -183,10 +182,10 @@ class IndicoOperatorCharm(CharmBase):
         Returns:
             If the needed relations have been established.
         """
-        if self._get_redis_broker_rel() is None:
+        if self.redis_broker.relation_data is None:
             self.unit.status = WaitingStatus("Waiting for redis-broker availability")
             return False
-        if self._get_redis_cache_rel() is None:
+        if self.redis_cache.relation_data is None:
             self.unit.status = WaitingStatus("Waiting for redis-cache availability")
             return False
         if self.database.uri is None:
@@ -358,7 +357,7 @@ class IndicoOperatorCharm(CharmBase):
                     "summary": "Celery Exporter",
                     "command": (
                         "celery-exporter"
-                        f" --broker-url={self._get_celery_backend()}"
+                        f" --broker-url={self.redis_broker.url}"
                         " --retry-interval=5"
                     ),
                     "environment": indico_env_config,
@@ -432,73 +431,6 @@ class IndicoOperatorCharm(CharmBase):
         }
         return typing.cast(ops.pebble.LayerDict, layer)
 
-    def _get_redis_rel(self, name: str) -> Optional[Relation]:
-        """Get Redis relation.
-
-        Args:
-            name: Relation name to look up as prefix.
-
-        Returns:
-            Relation between indico and redis accordingly to name. If not found, returns None.
-        """
-        return next(
-            (
-                rel
-                for rel in self.model.relations["redis"]
-                if rel.app and rel.app.name.startswith(name)
-            ),
-            None,
-        )
-
-    def _get_redis_broker_rel(self) -> Optional[Relation]:
-        """Get Redis Broker relation.
-
-        Returns:
-            Relation between indico and redis-broker. If not found, returns None.
-        """
-        return self._get_redis_rel("redis-broker")
-
-    def _get_redis_cache_rel(self) -> Optional[Relation]:
-        """Get Redis Cache relation.
-
-        Returns:
-            Relation between indico and redis-cache. If not found, returns None.
-        """
-        return self._get_redis_rel("redis-cache")
-
-    def _get_redis_backend(self, name: str) -> str:
-        """Generate Redis Backend URL formed by Redis host and port for a given relation.
-
-        Args:
-            name: Relation name to look up as prefix.
-
-        Returns:
-            Redis Backend URL as expected by Indico.
-        """
-        redis_host = ""
-        redis_port = ""
-        if (redis_rel := self._get_redis_rel(name)) is not None:
-            redis_unit = next(unit for unit in redis_rel.data if unit.name.startswith(name))
-            redis_host = redis_rel.data[redis_unit].get("hostname")
-            redis_port = redis_rel.data[redis_unit].get("port")
-        return f"redis://{redis_host}:{redis_port}"
-
-    def _get_cache_backend(self) -> str:
-        """Generate cache Backend URL formed by Redis broker host and port.
-
-        Returns:
-            Cache Backend URL as expected by Indico.
-        """
-        return self._get_redis_backend("redis-cache")
-
-    def _get_celery_backend(self) -> str:
-        """Generate Celery Backend URL formed by Redis broker host and port.
-
-        Returns:
-            Celery Backend URL as expected by Indico and Celery Prometheus Exporter.
-        """
-        return self._get_redis_backend("redis-broker")
-
     def _get_installed_plugins(self, container: Container) -> List[str]:
         """Return plugins currently installed.
 
@@ -543,7 +475,7 @@ class IndicoOperatorCharm(CharmBase):
 
         env_config = {
             "ATTACHMENT_STORAGE": "default",
-            "CELERY_BROKER": self._get_celery_backend(),
+            "CELERY_BROKER": self.redis_broker.url,
             "CE_ACCEPT_CONTENT": "json,pickle",
             "CUSTOMIZATION_DEBUG": self.config["customization_debug"],
             "ENABLE_ROOMBOOKING": self.config["enable_roombooking"],
@@ -557,7 +489,7 @@ class IndicoOperatorCharm(CharmBase):
             "LANG": "C.UTF-8",
             "LC_ALL": "C.UTF-8",
             "LC_LANG": "C.UTF-8",
-            "REDIS_CACHE_URL": self._get_cache_backend(),
+            "REDIS_CACHE_URL": self.redis_cache.url,
             "SECRET_KEY": self._get_indico_secret_key_from_relation(),
             "SERVICE_HOSTNAME": self._get_external_hostname(),
             "SERVICE_PORT": self._get_external_port(),
@@ -732,7 +664,6 @@ class IndicoOperatorCharm(CharmBase):
             event: Event triggering the configuration change handler.
         """
         if not self._are_relations_ready(event):
-            event.defer()
             return
         if not self._is_saml_target_url_valid():
             self.unit.status = BlockedStatus(
