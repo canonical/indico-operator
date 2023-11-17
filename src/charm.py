@@ -182,10 +182,10 @@ class IndicoOperatorCharm(CharmBase):
         Returns:
             If the needed relations have been established.
         """
-        if self.redis_broker.get_relation_data() is None:
+        if self.redis_broker.relation_data is None:
             self.unit.status = WaitingStatus("Waiting for redis-broker availability")
             return False
-        if self.redis_cache.get_relation_data() is None:
+        if self.redis_cache.relation_data is None:
             self.unit.status = WaitingStatus("Waiting for redis-cache availability")
             return False
         if self.database.uri is None:
@@ -357,7 +357,7 @@ class IndicoOperatorCharm(CharmBase):
                     "summary": "Celery Exporter",
                     "command": (
                         "celery-exporter"
-                        f" --broker-url={self.redis_broker.get_url()}"
+                        f" --broker-url={self.redis_broker.url}"
                         " --retry-interval=5"
                     ),
                     "environment": indico_env_config,
@@ -475,7 +475,7 @@ class IndicoOperatorCharm(CharmBase):
 
         env_config = {
             "ATTACHMENT_STORAGE": "default",
-            "CELERY_BROKER": self.redis_broker.get_url(),
+            "CELERY_BROKER": self.redis_broker.url,
             "CE_ACCEPT_CONTENT": "json,pickle",
             "CUSTOMIZATION_DEBUG": self.config["customization_debug"],
             "ENABLE_ROOMBOOKING": self.config["enable_roombooking"],
@@ -489,7 +489,7 @@ class IndicoOperatorCharm(CharmBase):
             "LANG": "C.UTF-8",
             "LC_ALL": "C.UTF-8",
             "LC_LANG": "C.UTF-8",
-            "REDIS_CACHE_URL": self.redis_cache.get_url(),
+            "REDIS_CACHE_URL": self.redis_cache.url,
             "SECRET_KEY": self._get_indico_secret_key_from_relation(),
             "SERVICE_HOSTNAME": self._get_external_hostname(),
             "SERVICE_PORT": self._get_external_port(),
