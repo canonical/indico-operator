@@ -100,7 +100,7 @@ class RedisRequires(Object):
             Dict: dict containing the relation data.
         """
         relation = self.model.get_relation(self.relation_name)
-        if not relation:
+        if not relation or not relation.units:
             return None
         unit = next(iter(relation.units))
         return relation.data[unit]
@@ -120,17 +120,17 @@ class RedisRequires(Object):
 
 
 class RedisProvides(Object):
-    def __init__(self, charm, port, relation_name: str = DEFAULT_REALTION_NAME):
+    def __init__(self, charm, port):
         """A class implementing the redis provides relation."""
-        super().__init__(charm, relation_name)
-        self.framework.observe(charm.on[relation_name].relation_changed, self._on_relation_changed)
+        super().__init__(charm, DEFAULT_REALTION_NAME)
+        self.framework.observe(charm.on.redis_relation_changed, self._on_relation_changed)
         self._port = port
         self._charm = charm
 
     def _on_relation_changed(self, event):
         """Handle the relation changed event."""
-        event.relation.data[self.model.unit]['hostname'] = self._get_master_ip()
-        event.relation.data[self.model.unit]['port'] = str(self._port)
+        event.relation.data[self.model.unit]["hostname"] = self._get_master_ip()
+        event.relation.data[self.model.unit]["port"] = str(self._port)
         # The reactive Redis charm also exposes 'password'. When tackling
         # https://github.com/canonical/redis-k8s/issues/7 add 'password'
         # field so that it matches the exposed interface information from it.
