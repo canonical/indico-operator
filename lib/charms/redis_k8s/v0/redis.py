@@ -7,6 +7,11 @@ Import `RedisRequires` in your charm by adding the following to `src/charm.py`:
 ```
 from charms.redis_k8s.v0.redis import RedisRequires
 ```
+Define the following attributes in charm charm class for the library to be able to work with it
+```
+ _stored = StoredState()
+    on = RedisRelationCharmEvents()
+```
 And then in your charm's `__init__` method:
 ```
 # Make sure you set redis_relation in StoredState. Assuming you refer to this
@@ -15,14 +20,10 @@ self._stored.set_default(redis_relation={})
 self.redis = RedisRequires(self, self._stored)
 ```
 And then wherever you need to reference the relation data it will be available
-via StoredState:
+in the property `relation_data`:
 ```
-redis_hosts = []
-for redis_unit in self._stored.redis_relation:
-    redis_hosts.append({
-        "redis-host": self._stored.redis_relation[redis_unit]["hostname"],
-        "redis-port": self._stored.redis_relation[redis_unit]["port"],
-    })
+redis_host = self.redis.relation_data.get("hostname")
+redis_port = self.redis.relation_data.get("port")
 ```
 You will also need to add the following to `metadata.yaml`:
 ```
@@ -46,7 +47,7 @@ LIBAPI = 0
 
 # Increment this PATCH version before using `charmcraft publish-lib` or reset
 # to 0 if you are raising the major API version.
-LIBPATCH = 4
+LIBPATCH = 5
 
 logger = logging.getLogger(__name__)
 
