@@ -1,10 +1,17 @@
-A [Juju](https://juju.is/) [charm](https://juju.is/docs/olm/charmed-operators) deploying and managing [Indico](https://getindico.io/) on Kubernetes. Indico is an open-source tool for event organisation, archival and collaboration.
+A [Juju](https://juju.is/) [charm](https://juju.is/docs/olm/charmed-operators) deploying and managing [Indico](https://getindico.io/) on Kubernetes. Indico is an open-source tool for event organisation, archival, and collaboration.
 
-This charm simplifies initial deployment and "day N" operations of Indico on Kubernetes, such as scaling the number of instances, integration with SSO, access to S3 for redundant file storage and more. It allows for deployment on many different Kubernetes platforms, from [MicroK8s](https://microk8s.io) to [Charmed Kubernetes](https://ubuntu.com/kubernetes) and public cloud Kubernetes offerings.
+This charm simplifies initial deployment and "day N" operations of Indico on Kubernetes, such as scaling the number of instances, integration with SSO, access to S3 for redundant file storage, and more. It allows for deployment on many different Kubernetes platforms, from [MicroK8s](https://microk8s.io) to [Charmed Kubernetes](https://ubuntu.com/kubernetes) and public cloud Kubernetes offerings.
 
-As such, the charm makes it easy for those looking to take control of their own events management system whilst keeping operations simple, and gives them the freedom to deploy on the Kubernetes platform of their choice.
+As such, the charm makes it easy for those looking to take control of their own events management system whilst keeping operations simple and gives them the freedom to deploy on the Kubernetes platform of their choice.
 
-For DevOps or SRE teams this charm will make operating Indico simple and straightforward through Juju's clean interface. It will allow easy deployment into multiple environments for testing of changes, and supports scaling out for enterprise deployments.
+This charm will make operating Indico simple and straightforward for DevOps or SRE teams through Juju's clean interface. It will allow easy deployment into multiple environments to test changes and support scaling out for enterprise deployments.
+
+## In this documentation
+
+| | |
+|--|--|
+|  [Tutorials](https://charmhub.io/indico/docs/tutorial)</br>  Get started - a hands-on introduction to using the Charmed Indico operator for new users </br> |  [How-to guides](https://charmhub.io/indico/docs/how-to-configure-a-proxy) </br> Step-by-step guides covering key operations and common tasks |
+| [Reference](https://charmhub.io/indico/docs/reference-actions) </br> Technical information - specifications, APIs, architecture | [Explanation](https://charmhub.io/indico/docs/explanation-charm-architecture) </br> Concepts - discussion and clarification of key topics  |
 
 ## Contributing to this documentation
 
@@ -12,32 +19,34 @@ Documentation is an important part of this project, and we take the same open-so
 
 If there's a particular area of documentation that you'd like to see that's missing, please [file a bug](https://github.com/canonical/indico-operator/issues).
 
-## In this documentation
+## Project and community
 
-| | |
-|--|--|
-|  [Tutorials](https://charmhub.io/indico/docs/tutorial-getting-started)</br>  Get started - a hands-on introduction to using the Charmed Indico operator for new users </br> |  [How-to guides](https://charmhub.io/indico/docs/how-to-configure-a-proxy) </br> Step-by-step guides covering key operations and common tasks |
-| [Reference](https://charmhub.io/indico/docs/reference-actions) </br> Technical information - specifications, APIs, architecture | [Explanation](https://charmhub.io/indico/docs/explanation-charm-architecture) </br> Concepts - discussion and clarification of key topics  |
+The Indico Operator is a member of the Ubuntu family. It's an open-source project that warmly welcomes community projects, contributions, suggestions, fixes, and constructive feedback.
 
-# Navigation
+- [Code of conduct](https://ubuntu.com/community/code-of-conduct)
+- [Get support](https://discourse.charmhub.io/)
+- [Join our online chat](https://chat.charmhub.io/charmhub/channels/charm-dev)
+- [Contribute](Contribute)
 
-| Level | Path | Navlink |
-| -- | -- | -- |
-| 1 | tutorial | [Tutorial]() |
-| 2 | tutorial-getting-started | [Quick guide](/t/indico-docs-quick-guide/8676) |
-| 1 | how-to | [How to]() |
-| 2 | how-to-configure-a-proxy | [Configure a proxy](/t/indico-docs-how-to-configure-a-proxy/8678) |
-| 2 | how-to-configure-s3 | [Configure S3](/t/indico-docs-how-to-configure-s3/8680) |
-| 2 | how-to-configure-saml | [Configure SAML](/t/indico-docs-how-to-configure-saml/8664) |
-| 2 | how-to-configure-the-external-hostname | [Configure the external hostname](/t/indico-docs-how-to-configure-the-external-hostname/8660) |
-| 2 | how-to-contribute | [Contribute](/t/indico-docs-how-to-contribute/7561) |
-| 2 | how-to-customize-theme | [Customize theme](/t/indico-docs-how-to-customize-theme/8682) |
-| 2 | how-to-install-plugins | [Install plugins](/t/indico-docs-how-to-install-plugins/8662) |
-| 1 | reference | [Reference]() |
-| 2 | reference-actions | [Actions](/t/indico-docs-actions/8668) |
-| 2 | reference-configurations | [Configurations](/t/indico-docs-configurations/8670) |
-| 2 | reference-integrations | [Integrations](/t/indico-docs-integrations/8672) |
-| 2 | reference-plugins | [Plugins](/t/indico-docs-plugins/7567) |
-| 2 | reference-theme-customization | [Theme customization](/t/indico-docs-theme-customization/8674) |
-| 1 | explanation | [Explanation]() |
-| 2 | explanation-charm-architecture | [Charm architecture](/t/indico-docs-charm-architecture/7559) |
+Thinking about using the Indico Operator for your next project? [Get in touch](https://chat.charmhub.io/charmhub/channels/charm-dev)!
+
+# Contents
+
+1. [Tutorial](tutorial.md)
+1. [How to](how-to)
+  1. [Configure a proxy](how-to/configure-a-proxy.md)
+  1. [Configure S3](how-to/configure-s3.md)
+  1. [Configure SAML](how-to/configure-saml.md)
+  1. [Configure SMTP](how-to/configure-smtp.md)
+  1. [Configure the external hostname](how-to/configure-the-external-hostname.md)
+  1. [Contribute](how-to/contribute.md)
+  1. [Customize theme](how-to/customize-theme.md)
+  1. [Install plugins](how-to/install-plugins.md)
+1. [Reference](reference)
+  1. [Actions](reference/actions.md)
+  1. [Configurations](reference/configurations.md)
+  1. [Integrations](reference/integrations.md)
+  1. [Plugins](reference/plugins.md)
+  1. [Theme customization](reference/theme-customization.md)
+1. [Explanation](explanation)
+  1. [Charm architecture](explanation/charm-architecture.md)
