@@ -13,6 +13,7 @@ from urllib.parse import urlparse
 
 import ops.lib
 from charms.grafana_k8s.v0.grafana_dashboard import GrafanaDashboardProvider
+from charms.loki_k8s.v1.loki_push_api import LogProxyConsumer
 from charms.nginx_ingress_integrator.v0.nginx_route import require_nginx_route
 from charms.prometheus_k8s.v0.prometheus_scrape import MetricsEndpointProvider
 from charms.redis_k8s.v0.redis import RedisRelationCharmEvents, RedisRequires
@@ -114,6 +115,20 @@ class IndicoOperatorCharm(CharmBase):
             ],
         )
         self._grafana_dashboards = GrafanaDashboardProvider(self)
+        self._log_proxy = LogProxyConsumer(
+            self,
+            relation_name="log-proxy",
+            logs_scheme={
+                "indico": {
+                    "log-files": ["/srv/indico/log/indico.log"],
+                    "syslog-port": 1514,
+                },
+                "indico-nginx": {
+                    "log-files": ["/var/log/nginx/access.log"],
+                    "syslog-port": 1515,
+                },
+            },
+        )
 
     def _require_nginx_route(self) -> None:
         """Require nginx ingress."""
