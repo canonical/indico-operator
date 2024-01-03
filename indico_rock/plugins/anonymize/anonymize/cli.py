@@ -1,5 +1,5 @@
 #!/usr/bin/env python3 -W ignore::UserWarning
-# Copyright 2023 Canonical Ltd.
+# Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
 
 """Anonymize users non-interactively."""
