@@ -104,10 +104,6 @@ The Indico charm also supports being integrated with [Ingress](https://kubernete
 
 In this case, an existing Ingress controller is required. For more information, see [Adding the Ingress Relation to a Charm](https://charmhub.io/nginx-ingress-integrator/docs/adding-ingress-relation).
 
-### Loki
-
-Loki is an open-source fully-featured logging system. This charm is shipped with support for the [Loki Operator](https://charmhub.io/loki-k8s) to collect the generated logs.
-
 ### PostgreSQL
 
 PostgreSQL is an open-source object-relational database used by Indico as a source of all the data needed for its goal: event organization, archival, and collaboration.
