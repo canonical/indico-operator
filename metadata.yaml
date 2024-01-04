@@ -60,9 +60,12 @@ requires:
   nginx-route:
     interface: nginx-route
     limit: 1
-  redis:
+  redis-broker:
     interface: redis
-    limit: 2
+    limit: 1
+  redis-cache:
+    interface: redis
+    limit: 1
   smtp-legacy:
     interface: smtp
     limit: 1

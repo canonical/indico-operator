@@ -7,6 +7,11 @@ Import `RedisRequires` in your charm by adding the following to `src/charm.py`:
 ```
 from charms.redis_k8s.v0.redis import RedisRequires
 ```
+Define the following attributes in charm charm class for the library to be able to work with it
+```
+ _stored = StoredState()
+    on = RedisRelationCharmEvents()
+```
 And then in your charm's `__init__` method:
 ```
 # Make sure you set redis_relation in StoredState. Assuming you refer to this
@@ -15,14 +20,10 @@ self._stored.set_default(redis_relation={})
 self.redis = RedisRequires(self, self._stored)
 ```
 And then wherever you need to reference the relation data it will be available
-via StoredState:
+in the property `relation_data`:
 ```
-redis_hosts = []
-for redis_unit in self._stored.redis_relation:
-    redis_hosts.append({
-        "redis-host": self._stored.redis_relation[redis_unit]["hostname"],
-        "redis-port": self._stored.redis_relation[redis_unit]["port"],
-    })
+redis_host = self.redis.relation_data.get("hostname")
+redis_port = self.redis.relation_data.get("port")
 ```
 You will also need to add the following to `metadata.yaml`:
 ```
@@ -33,6 +34,7 @@ requires:
 """
 import logging
 import socket
+from typing import Dict, Optional
 
 from ops.charm import CharmEvents
 from ops.framework import EventBase, EventSource, Object
@@ -45,10 +47,11 @@ LIBAPI = 0
 
 # Increment this PATCH version before using `charmcraft publish-lib` or reset
 # to 0 if you are raising the major API version.
-LIBPATCH = 3
+LIBPATCH = 5
 
 logger = logging.getLogger(__name__)
 
+DEFAULT_REALTION_NAME = "redis"
 
 class RedisRelationUpdatedEvent(EventBase):
     """An event for the redis relation having been updated."""
@@ -56,19 +59,20 @@ class RedisRelationUpdatedEvent(EventBase):
 
 class RedisRelationCharmEvents(CharmEvents):
     """A class to carry custom charm events so requires can react to relation changes."""
-
     redis_relation_updated = EventSource(RedisRelationUpdatedEvent)
 
 
 class RedisRequires(Object):
-    def __init__(self, charm, _stored):
+
+    def __init__(self, charm, _stored, relation_name: str = DEFAULT_REALTION_NAME):
         """A class implementing the redis requires relation."""
-        super().__init__(charm, "redis")
-        self.framework.observe(charm.on.redis_relation_joined, self._on_relation_changed)
-        self.framework.observe(charm.on.redis_relation_changed, self._on_relation_changed)
-        self.framework.observe(charm.on.redis_relation_broken, self._on_relation_broken)
+        super().__init__(charm, relation_name)
+        self.framework.observe(charm.on[relation_name].relation_joined, self._on_relation_changed)
+        self.framework.observe(charm.on[relation_name].relation_changed, self._on_relation_changed)
+        self.framework.observe(charm.on[relation_name].relation_broken, self._on_relation_broken)
         self._stored = _stored
         self.charm = charm
+        self.relation_name = relation_name
 
     def _on_relation_changed(self, event):
         """Handle the relation changed event."""
@@ -90,11 +94,38 @@ class RedisRequires(Object):
         # Trigger an event that our charm can react to.
         self.charm.on.redis_relation_updated.emit()
 
+    @property
+    def relation_data(self) -> Optional[Dict[str, str]]:
+        """Retrieve the relation data.
+
+        Returns:
+            Dict: dict containing the relation data.
+        """
+        relation = self.model.get_relation(self.relation_name)
+        if not relation or not relation.units:
+            return None
+        unit = next(iter(relation.units))
+        return relation.data[unit]
+
+    @property
+    def url(self) -> Optional[str]:
+        """Retrieve the Redis URL.
+
+        Returns:
+            str: the Redis URL.
+        """
+        relation_data = self.relation_data
+        if not relation_data:
+            return None
+        redis_host = relation_data.get("hostname")
+        redis_port = relation_data.get("port")
+        return f"redis://{redis_host}:{redis_port}"
+
 
 class RedisProvides(Object):
     def __init__(self, charm, port):
         """A class implementing the redis provides relation."""
-        super().__init__(charm, "redis")
+        super().__init__(charm, DEFAULT_REALTION_NAME)
         self.framework.observe(charm.on.redis_relation_changed, self._on_relation_changed)
         self._port = port
         self._charm = charm
