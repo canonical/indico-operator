@@ -1,4 +1,4 @@
-# Copyright 2023 Canonical Ltd.
+# Copyright 2024 Canonical Ltd.
 # Licensed under the Apache2.0. See LICENSE file in charm source for details.
 
 """Library to manage the integration with the SMTP Integrator charm.
