@@ -4,6 +4,6 @@ This charm supports providing static source files for customizing Indico look an
 
 If you wish to apply a set of customization files, set the configuration option `customization_sources_url` to the URL of the git repository containing them `juju config [charm_name] customization_sources_url=[value]`. For debugging purposes, you may also want to enable `customization_debug` to get meaningful log messages when the files are accessed.
 
-The theme changes can be pulled by running the [refresh-external-resources action](https://charmhub.io/indico/actions#refresh-external-resources).
+The theme changes can be pulled by running the [refresh-external-resources action](https://charmhub.io/indico/actions#refresh-external-resources). If you want the favicon to be customizad too, you'll have to publish it as `files/favicon.ico`.
 
 For more details on the configuration options and their default values see the [configuration reference](https://charmhub.io/indico/configure).
