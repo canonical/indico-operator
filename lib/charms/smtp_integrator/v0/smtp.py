@@ -68,7 +68,9 @@ LIBAPI = 0
 
 # Increment this PATCH version before using `charmcraft publish-lib` or reset
 # to 0 if you are raising the major API version
-LIBPATCH = 7
+LIBPATCH = 8
+
+PYDEPS = ["pydantic>=2"]
 
 # pylint: disable=wrong-import-position
 import itertools
@@ -129,12 +131,12 @@ class SmtpRelationData(BaseModel):
 
     host: str = Field(..., min_length=1)
     port: int = Field(None, ge=1, le=65536)
-    user: Optional[str]
-    password: Optional[str]
-    password_id: Optional[str]
+    user: Optional[str] = None
+    password: Optional[str] = None
+    password_id: Optional[str] = None
     auth_type: AuthType
     transport_security: TransportSecurity
-    domain: Optional[str]
+    domain: Optional[str] = None
 
     def to_relation_data(self) -> Dict[str, str]:
         """Convert an instance of SmtpRelationData to the relation representation.
