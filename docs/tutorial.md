@@ -25,7 +25,7 @@ Redis is deployed twice because one is for the broker and the other for the cach
 Deploy the charms:
 
 ```bash
-juju deploy postgresql-k8s
+juju deploy postgresql-k8s --trust
 juju deploy redis-k8s redis-broker
 juju deploy redis-k8s redis-cache
 juju deploy indico
@@ -64,7 +64,7 @@ indico/0*                 waiting   idle   10.1.74.70             Waiting for da
 Provide integration between Indico and PostgreSQL:
 
 ```bash
-juju integrate indico postgresql-k8s
+juju integrate indico postgresql-k8s:db
 ```
 
 Note: `db` is the name of the relation. This is needed because establishes that the two charms are compatible with each other.  You can run `juju info indico` to check what are the relation names required by the Indico application.
