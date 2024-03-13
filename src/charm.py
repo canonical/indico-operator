@@ -470,9 +470,8 @@ class IndicoOperatorCharm(CharmBase):
             secret_value = peer_relation.data[self.app].get("secret-key")
         else:
             secret_id = peer_relation.data[self.app].get("secret-id")
-            if secret_id:
-                secret = self.model.get_secret(id=secret_id)
-                secret_value = secret.get_content().get("secret-key")
+            secret = self.model.get_secret(id=secret_id)
+            secret_value = secret.get_content().get("secret-key")
         return secret_value
 
     def _get_indico_env_config(self, container: Container) -> Dict:
@@ -853,10 +852,13 @@ class IndicoOperatorCharm(CharmBase):
             and event.departing_unit
             and peer_relation.data[self.app].get("celery-unit") == event.departing_unit.name
         ):
-            peer_relation.data[self.app].update({"celery-unit": self.unit.name})
-            container = self.unit.get_container("indico")
-            if self._are_relations_ready(event) and container.can_connect():
-                self._config_pebble(container)
+            if self.unit != event.departing_unit:
+                peer_relation.data[self.app].update({"celery-unit": self.unit.name})
+                container = self.unit.get_container("indico")
+                if self._are_relations_ready(event) and container.can_connect():
+                    self._config_pebble(container)
+            else:
+                peer_relation.data[self.app].update({"celery-unit": None})
 
     def _has_secrets(self) -> bool:
         """Check if current Juju version supports secrets.
