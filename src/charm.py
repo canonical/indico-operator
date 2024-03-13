@@ -850,6 +850,7 @@ class IndicoOperatorCharm(CharmBase):
         if (
             self.unit.is_leader()
             and peer_relation
+            and event.departing_unit
             and peer_relation.data[self.app].get("celery-unit") == event.departing_unit.name
         ):
             peer_relation.data[self.app].update({"celery-unit": self.unit.name})
