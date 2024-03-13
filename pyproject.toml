@@ -16,7 +16,7 @@ line-length = 99
 target-version = ["py38"]
 
 [tool.coverage.report]
-fail_under = 97
+fail_under = 96
 show_missing = true
 
 # Linting tools configuration

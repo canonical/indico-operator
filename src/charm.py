@@ -16,7 +16,7 @@ from charms.grafana_k8s.v0.grafana_dashboard import GrafanaDashboardProvider
 from charms.nginx_ingress_integrator.v0.nginx_route import require_nginx_route
 from charms.prometheus_k8s.v0.prometheus_scrape import MetricsEndpointProvider
 from charms.redis_k8s.v0.redis import RedisRelationCharmEvents, RedisRequires
-from ops.charm import ActionEvent, CharmBase, HookEvent, PebbleReadyEvent
+from ops.charm import ActionEvent, CharmBase, HookEvent, PebbleReadyEvent, RelationDepartedEvent
 from ops.framework import StoredState
 from ops.jujuversion import JujuVersion
 from ops.main import main
@@ -73,7 +73,6 @@ class IndicoOperatorCharm(CharmBase):
         self.framework.observe(self.on.config_changed, self._on_config_changed)
         self.framework.observe(self.on.leader_elected, self._on_leader_elected)
         self.framework.observe(self.on.indico_pebble_ready, self._on_pebble_ready)
-        self.framework.observe(self.on.indico_celery_pebble_ready, self._on_pebble_ready)
         self.framework.observe(self.on.indico_nginx_pebble_ready, self._on_pebble_ready)
         self.framework.observe(
             self.on.refresh_external_resources_action, self._refresh_external_resources_action
@@ -94,6 +93,10 @@ class IndicoOperatorCharm(CharmBase):
         self.redis_cache = RedisRequires(self, self._stored, "redis-cache")
         self.framework.observe(
             self.redis_cache.charm.on.redis_relation_updated, self._on_config_changed
+        )
+        self.framework.observe(
+            self.on["indico-peers"].relation_departed,
+            self._on_peer_relation_departed,
         )
         self._require_nginx_route()
 
@@ -211,7 +214,7 @@ class IndicoOperatorCharm(CharmBase):
             container: Container to be configured by Pebble.
         """
         self.unit.status = MaintenanceStatus(f"Adding {container.name} layer to pebble")
-        if container.name in ["indico", "indico-celery"]:
+        if container.name == "indico":
             plugins = (
                 self.config["external_plugins"].split(",")
                 if self.config["external_plugins"]
@@ -220,20 +223,28 @@ class IndicoOperatorCharm(CharmBase):
             self._install_plugins(container, plugins)
         # The plugins need to be installed before adding the layer so that they are included in
         # the corresponding env vars
-        pebble_config_func = getattr(
-            self, f"_get_{container.name.replace('-', '_')}_pebble_config"
-        )
-        pebble_config = pebble_config_func(container)
-        container.add_layer(container.name, pebble_config, combine=True)
         if container.name == "indico":
-            celery_config = self._get_celery_prometheus_exporter_pebble_config(container)
+            indico_config = self._get_indico_pebble_config(container)
+            container.add_layer(container.name, indico_config, combine=True)
+            peer_relation = self.model.get_relation("indico-peers")
+            if (
+                not peer_relation
+                or peer_relation.data[self.app].get("celery-unit") == self.unit.name
+            ):
+                celery_config = self._get_celery_pebble_config(container)
+                container.add_layer("celery", celery_config, combine=True)
+                celery_exporter_config = self._get_celery_prometheus_exporter_pebble_config(
+                    container
+                )
+                container.add_layer("celery-exporter", celery_exporter_config, combine=True)
             statsd_config = self._get_statsd_prometheus_exporter_pebble_config(container)
-            container.add_layer("celery", celery_config, combine=True)
             container.add_layer("statsd", statsd_config, combine=True)
             self._download_customization_changes(container)
         if container.name == "indico-nginx":
-            pebble_config = self._get_nginx_prometheus_exporter_pebble_config(container)
-            container.add_layer("nginx", pebble_config, combine=True)
+            nginx_config = self._get_nginx_pebble_config(container)
+            container.add_layer(container.name, nginx_config, combine=True)
+            nginx_exporter_config = self._get_nginx_prometheus_exporter_pebble_config(container)
+            container.add_layer("nginx", nginx_exporter_config, combine=True)
         self.unit.status = MaintenanceStatus(f"Starting {container.name} container")
         container.pebble.replan_services()
         if self._are_pebble_instances_ready():
@@ -275,8 +286,8 @@ class IndicoOperatorCharm(CharmBase):
         }
         return typing.cast(ops.pebble.LayerDict, layer)
 
-    def _get_indico_celery_pebble_config(self, container: Container) -> Dict:
-        """Generate pebble config for the indico-celery container.
+    def _get_celery_pebble_config(self, container: Container) -> ops.pebble.LayerDict:
+        """Generate pebble config for the celery container.
 
         Args:
             container: Celery container that has the target configuration.
@@ -285,11 +296,11 @@ class IndicoOperatorCharm(CharmBase):
             The pebble configuration for the container.
         """
         indico_env_config = self._get_indico_env_config(container)
-        return {
+        layer = {
             "summary": "Indico celery layer",
             "description": "Indico celery layer",
             "services": {
-                "indico-celery": {
+                "celery": {
                     "override": "replace",
                     "summary": "Indico celery",
                     "command": "/usr/local/bin/indico celery worker -B -E",
@@ -311,14 +322,15 @@ class IndicoOperatorCharm(CharmBase):
                 },
             },
         }
+        return typing.cast(ops.pebble.LayerDict, layer)
 
-    def _get_indico_nginx_pebble_config(self, _) -> Dict:
+    def _get_nginx_pebble_config(self, _) -> ops.pebble.LayerDict:
         """Generate pebble config for the indico-nginx container.
 
         Returns:
             The pebble configuration for the container.
         """
-        return {
+        layer = {
             "summary": "Indico nginx layer",
             "description": "Indico nginx layer",
             "services": {
@@ -337,6 +349,7 @@ class IndicoOperatorCharm(CharmBase):
                 },
             },
         }
+        return typing.cast(ops.pebble.LayerDict, layer)
 
     def _get_celery_prometheus_exporter_pebble_config(self, container) -> ops.pebble.LayerDict:
         """Generate pebble config for the celery-prometheus-exporter container.
@@ -824,6 +837,25 @@ class IndicoOperatorCharm(CharmBase):
         ):
             secret = self.app.add_secret({"secret-key": secret_value})
             peer_relation.data[self.app].update({"secret-id": secret.id})
+        if peer_relation and not peer_relation.data[self.app].get("celery-unit"):
+            peer_relation.data[self.app].update({"celery-unit": self.unit.name})
+
+    def _on_peer_relation_departed(self, event: RelationDepartedEvent) -> None:
+        """Handle the peer relation departed event.
+
+        Args:
+            event: the event triggering the handler.
+        """
+        peer_relation = self.model.get_relation("indico-peers")
+        if (
+            self.unit.is_leader()
+            and peer_relation
+            and peer_relation.data[self.app].get("celery-unit") == event.departing_unit.name
+        ):
+            peer_relation.data[self.app].update({"celery-unit": self.unit.name})
+            container = self.unit.get_container("indico")
+            if self._are_relations_ready(event) and container.can_connect():
+                self._config_pebble(container)
 
     def _has_secrets(self) -> bool:
         """Check if current Juju version supports secrets.

@@ -68,7 +68,7 @@ async def test_health_checks(app: Application):
 
     Assume that the charm has already been built and is running.
     """
-    container_list = ["indico-celery", "indico-nginx", "indico"]
+    container_list = ["indico-nginx", "indico"]
     # Application actually does have units
     indico_unit = app.units[0]  # type: ignore
     for container in container_list:
