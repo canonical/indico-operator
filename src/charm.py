@@ -95,8 +95,7 @@ class IndicoOperatorCharm(CharmBase):
             self.redis_cache.charm.on.redis_relation_updated, self._on_config_changed
         )
         self.framework.observe(
-            self.on["indico-peers"].relation_departed,
-            self._on_peer_relation_departed,
+            self.on["indico-peers"].relation_departed, self._on_peer_relation_departed
         )
         self._require_nginx_route()
 
