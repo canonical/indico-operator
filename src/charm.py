@@ -857,7 +857,8 @@ class IndicoOperatorCharm(CharmBase):
                 if self._are_relations_ready(event) and container.can_connect():
                     self._config_pebble(container)
             else:
-                peer_relation.data[self.app].update({"celery-unit": None})
+                # Leadership election will select a new celery-unit
+                peer_relation.data[self.app].update({"celery-unit": ""})
 
     def _has_secrets(self) -> bool:
         """Check if current Juju version supports secrets.

@@ -502,6 +502,29 @@ class TestCore(TestBase):
         self.assertEqual(celery_unit, "indico/0")
 
     @patch.object(ops.JujuVersion, "from_environ")
+    def test_on_peer_relation_departed_celery_leder_unit_relation_data_changed(
+        self, mock_juju_env
+    ):
+        """
+        arrange: given a charm with two units and a peer relation with celery-unit in the databag
+        act: remove the leader unit matching the celery-unit
+        assert: the stored celery-unit is removed
+        """
+        mock_juju_env.return_value = MagicMock(has_secrets=True)
+        self.harness.set_can_connect(self.harness.model.unit.containers["indico"], True)
+        rel_id = self.harness.add_relation(
+            "indico-peers", self.harness.charm.app.name, app_data={"celery-unit": "indico/0"}
+        )
+        self.harness.add_relation_unit(rel_id, "indico/0")
+        self.harness.add_relation_unit(rel_id, "indico/1")
+        self.harness.set_leader(True)
+        self.harness.remove_relation_unit(rel_id, "indico/0")
+        celery_unit = self.harness.get_relation_data(rel_id, self.harness.charm.app.name).get(
+            "celery-unit"
+        )
+        self.assertIsNone(celery_unit)
+
+    @patch.object(ops.JujuVersion, "from_environ")
     @patch.object(ops.Container, "exec")
     def test_indico_pebble_ready_when_leader_includes_celery(self, mock_exec, mock_juju_env):
         """
