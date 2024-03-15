@@ -68,10 +68,11 @@ async def test_health_checks(app: Application):
 
     Assume that the charm has already been built and is running.
     """
-    container_list = ["indico-celery", "indico-nginx", "indico"]
+    container__checks_list = [("indico-nginx", 2), ("indico", 4)]
     # Application actually does have units
     indico_unit = app.units[0]  # type: ignore
-    for container in container_list:
+    for container_checks in container__checks_list:
+        container = container_checks[0]
         cmd = f"PEBBLE_SOCKET=/charm/containers/{container}/pebble.socket /charm/bin/pebble checks"
         action = await indico_unit.run(cmd, timeout=10)
         # Change this if upgrading Juju lib version to >= 3
@@ -84,7 +85,7 @@ async def test_health_checks(app: Application):
         # When executing the checks, `0/3` means there are 0 errors of 3.
         # Each check has it's own `0/3`, so we will count `n` times,
         # where `n` is the number of checks for that container.
-        assert stdout.count("0/3") == container_list.index(container) + 1
+        assert stdout.count("0/3") == container_checks[1]
 
 
 @pytest.mark.abort_on_fail

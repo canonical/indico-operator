@@ -92,8 +92,6 @@ class TestCore(TestBase):
 
         self.harness.container_pebble_ready("indico")
         self.assertEqual(self.harness.model.unit.status, ops.WaitingStatus("Waiting for pebble"))
-        self.harness.container_pebble_ready("indico-celery")
-        self.assertEqual(self.harness.model.unit.status, ops.WaitingStatus("Waiting for pebble"))
         self.harness.container_pebble_ready("indico-nginx")
         self.assertEqual(self.harness.model.unit.status, ops.ActiveStatus())
 
@@ -197,66 +195,7 @@ class TestCore(TestBase):
 
         service = self.harness.model.unit.get_container("indico").get_service("indico")
         self.assertTrue(service.is_running())
-        self.assertEqual(self.harness.model.unit.status, ops.WaitingStatus("Waiting for pebble"))
-
-    @patch.object(ops.Container, "exec")
-    def test_indico_celery_pebble_ready(self, mock_exec):
-        """
-        arrange: charm created and relations established
-        act: trigger container pebble ready event for the Celery container
-        assert: the container and the service are running and properly configured
-        """
-        mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=("", None)))
-
-        self.set_up_all_relations()
-        self.harness.set_leader(True)
-        self.harness.charm.state.smtp_config = SmtpConfig(
-            host="localhost",
-            port=8025,
-            login="user",
-            password="pass",  # nosec
-            use_tls=False,
-        )
-
-        self.harness.container_pebble_ready("indico-celery")
-
-        updated_plan = self.harness.get_container_pebble_plan("indico-celery").to_dict()
-        updated_plan_env = updated_plan["services"]["indico-celery"]["environment"]
-        self.assertEqual(
-            "postgresql://user1:somepass@postgresql-k8s-primary.local:5432/indico",
-            updated_plan_env["INDICO_DB_URI"],
-        )
-        self.assertEqual("redis://broker-host:1010", updated_plan_env["CELERY_BROKER"])
-        peer_relation = self.harness.model.get_relation("indico-peers")
-        self.assertEqual(
-            self.harness.get_relation_data(peer_relation.id, self.harness.charm.app.name).get(
-                "secret-key"
-            ),
-            updated_plan_env["SECRET_KEY"],
-        )
-        self.assertEqual("indico.local", updated_plan_env["SERVICE_HOSTNAME"])
-        self.assertEqual("http", updated_plan_env["SERVICE_SCHEME"])
-        self.assertIsNone(updated_plan_env["SERVICE_PORT"])
-        self.assertEqual("redis://cache-host:1011", updated_plan_env["REDIS_CACHE_URL"])
-        self.assertFalse(updated_plan_env["ENABLE_ROOMBOOKING"])
-        self.assertEqual("support-tech@mydomain.local", updated_plan_env["INDICO_SUPPORT_EMAIL"])
-        self.assertEqual("support@mydomain.local", updated_plan_env["INDICO_PUBLIC_SUPPORT_EMAIL"])
-        self.assertEqual("noreply@mydomain.local", updated_plan_env["INDICO_NO_REPLY_EMAIL"])
-        self.assertFalse(updated_plan_env["CUSTOMIZATION_DEBUG"])
-        self.assertEqual("default", updated_plan_env["ATTACHMENT_STORAGE"])
-        storage_dict = literal_eval(updated_plan_env["STORAGE_DICT"])
-        self.assertEqual("fs:/srv/indico/archive", storage_dict["default"])
-        self.assertFalse(literal_eval(updated_plan_env["INDICO_AUTH_PROVIDERS"]))
-        self.assertFalse(literal_eval(updated_plan_env["INDICO_IDENTITY_PROVIDERS"]))
-        self.assertEqual("localhost", updated_plan_env["SMTP_SERVER"])
-        self.assertEqual(8025, updated_plan_env["SMTP_PORT"])
-        self.assertEqual("user", updated_plan_env["SMTP_LOGIN"])
-        self.assertEqual("pass", updated_plan_env["SMTP_PASSWORD"])
-        self.assertFalse(updated_plan_env["SMTP_USE_TLS"])
-
-        service = self.harness.model.unit.get_container("indico-celery").get_service(
-            "indico-celery"
-        )
+        service = self.harness.model.unit.get_container("indico").get_service("celery")
         self.assertTrue(service.is_running())
         self.assertEqual(self.harness.model.unit.status, ops.WaitingStatus("Waiting for pebble"))
 
@@ -328,34 +267,6 @@ class TestCore(TestBase):
             ["pip", "install", "--upgrade", "git+https://example.git/#subdirectory=themes_cern"],
             environment={},
         )
-
-        updated_plan = self.harness.get_container_pebble_plan("indico-celery").to_dict()
-        updated_plan_env = updated_plan["services"]["indico-celery"]["environment"]
-
-        self.assertEqual("example.local", updated_plan_env["SERVICE_HOSTNAME"])
-        self.assertTrue(updated_plan_env["ENABLE_ROOMBOOKING"])
-        self.assertEqual("example@email.local", updated_plan_env["INDICO_SUPPORT_EMAIL"])
-        self.assertEqual("public@email.local", updated_plan_env["INDICO_PUBLIC_SUPPORT_EMAIL"])
-        self.assertEqual("noreply@email.local", updated_plan_env["INDICO_NO_REPLY_EMAIL"])
-        self.assertEqual("example.local", updated_plan_env["SERVICE_HOSTNAME"])
-        self.assertEqual("https", updated_plan_env["SERVICE_SCHEME"])
-        self.assertEqual(8080, updated_plan_env["SERVICE_PORT"])
-        self.assertTrue(updated_plan_env["CUSTOMIZATION_DEBUG"])
-        self.assertEqual("s3", updated_plan_env["ATTACHMENT_STORAGE"])
-        storage_dict = literal_eval(updated_plan_env["STORAGE_DICT"])
-        self.assertEqual("fs:/srv/indico/archive", storage_dict["default"])
-        self.assertEqual(
-            "s3:bucket=test-bucket,access_key=12345,secret_key=topsecret",
-            storage_dict["s3"],
-        )
-        auth_providers = literal_eval(updated_plan_env["INDICO_AUTH_PROVIDERS"])
-        self.assertEqual("saml", auth_providers["ubuntu"]["type"])
-        self.assertEqual(
-            "https://example.local:8080",
-            auth_providers["ubuntu"]["saml_config"]["sp"]["entityId"],
-        )
-        identity_providers = literal_eval(updated_plan_env["INDICO_IDENTITY_PROVIDERS"])
-        self.assertEqual("saml", identity_providers["ubuntu"]["type"])
 
         self.harness.update_config({"site_url": "https://example.local"})
         # ops testing harness doesn't rerun the charm's __init__
@@ -476,12 +387,6 @@ class TestCore(TestBase):
         identity_providers = literal_eval(updated_plan_env["INDICO_IDENTITY_PROVIDERS"])
         self.assertEqual("saml_groups", identity_providers["ubuntu"]["type"])
 
-        updated_plan = self.harness.get_container_pebble_plan("indico-celery").to_dict()
-        updated_plan_env = updated_plan["services"]["indico-celery"]["environment"]
-
-        identity_providers = literal_eval(updated_plan_env["INDICO_IDENTITY_PROVIDERS"])
-        self.assertEqual("saml_groups", identity_providers["ubuntu"]["type"])
-
     @patch.object(ops.JujuVersion, "from_environ")
     def test_on_leader_elected_when_secrets_not_supported(self, mock_juju_env):
         """
@@ -522,3 +427,139 @@ class TestCore(TestBase):
             secret_id,
             self.harness.get_relation_data(rel_id, self.harness.charm.app.name).get("secret-id"),
         )
+
+    @patch.object(ops.JujuVersion, "from_environ")
+    def test_on_leader_elected_sets_celery_unit(self, mock_juju_env):
+        """
+        arrange: given a charm with an empty peer relation
+        act: trigger the leader elected event
+        assert: the peer relation containers the celery-unit
+        """
+        mock_juju_env.return_value = MagicMock(has_secrets=True)
+        rel_id = self.harness.add_relation("indico-peers", self.harness.charm.app.name)
+        self.harness.set_leader(True)
+        celery_unit = self.harness.get_relation_data(rel_id, self.harness.charm.app.name).get(
+            "celery-unit"
+        )
+        self.assertEqual(celery_unit, self.harness.charm.unit.name)
+
+    @patch.object(ops.JujuVersion, "from_environ")
+    def test_on_leader_elected_not_sets_celery_unit_when_existing(self, mock_juju_env):
+        """
+        arrange: given a charm with a peer relation with celery-unit in the databag
+        act: trigger the leader elected
+        assert: the stored celery-unit is not updated
+        """
+        mock_juju_env.return_value = MagicMock(has_secrets=True)
+        rel_id = self.harness.add_relation(
+            "indico-peers", self.harness.charm.app.name, app_data={"celery-unit": "example"}
+        )
+        self.harness.set_leader(True)
+        celery_unit = self.harness.get_relation_data(rel_id, self.harness.charm.app.name).get(
+            "celery-unit"
+        )
+        self.assertEqual(celery_unit, "example")
+
+    @patch.object(ops.JujuVersion, "from_environ")
+    def test_on_peer_relation_departed_no_celery_unit_relation_data_unchanged(self, mock_juju_env):
+        """
+        arrange: given a charm with two units and a peer relation with celery-unit in the databag
+        act: remove a unit not matching the celery-unit
+        assert: the stored celery-unit is not updated
+        """
+        mock_juju_env.return_value = MagicMock(has_secrets=True)
+        rel_id = self.harness.add_relation(
+            "indico-peers", self.harness.charm.app.name, app_data={"celery-unit": "example"}
+        )
+        self.harness.add_relation_unit(rel_id, "indico/0")
+        self.harness.add_relation_unit(rel_id, "indico/1")
+        self.harness.set_leader(True)
+        celery_unit = self.harness.get_relation_data(rel_id, self.harness.charm.app.name).get(
+            "celery-unit"
+        )
+        self.harness.remove_relation_unit(rel_id, "indico/1")
+        self.assertEqual(celery_unit, "example")
+
+    @patch.object(ops.JujuVersion, "from_environ")
+    def test_on_peer_relation_departed_celery_unit_relation_data_changed(self, mock_juju_env):
+        """
+        arrange: given a charm with two units and a peer relation with celery-unit in the databag
+        act: remove the unit matching the celery-unit
+        assert: the stored celery-unit is updated
+        """
+        mock_juju_env.return_value = MagicMock(has_secrets=True)
+        self.harness.set_can_connect(self.harness.model.unit.containers["indico"], True)
+        rel_id = self.harness.add_relation(
+            "indico-peers", self.harness.charm.app.name, app_data={"celery-unit": "indico/1"}
+        )
+        self.harness.add_relation_unit(rel_id, "indico/0")
+        self.harness.add_relation_unit(rel_id, "indico/1")
+        self.harness.set_leader(True)
+        self.harness.remove_relation_unit(rel_id, "indico/1")
+        celery_unit = self.harness.get_relation_data(rel_id, self.harness.charm.app.name).get(
+            "celery-unit"
+        )
+        self.assertEqual(celery_unit, "indico/0")
+
+    @patch.object(ops.JujuVersion, "from_environ")
+    def test_on_peer_relation_departed_celery_leder_unit_relation_data_changed(
+        self, mock_juju_env
+    ):
+        """
+        arrange: given a charm with two units and a peer relation with celery-unit in the databag
+        act: remove the leader unit matching the celery-unit
+        assert: the stored celery-unit is removed
+        """
+        mock_juju_env.return_value = MagicMock(has_secrets=True)
+        self.harness.set_can_connect(self.harness.model.unit.containers["indico"], True)
+        rel_id = self.harness.add_relation(
+            "indico-peers", self.harness.charm.app.name, app_data={"celery-unit": "indico/0"}
+        )
+        self.harness.add_relation_unit(rel_id, "indico/0")
+        self.harness.add_relation_unit(rel_id, "indico/1")
+        self.harness.set_leader(True)
+        self.harness.remove_relation_unit(rel_id, "indico/0")
+        celery_unit = self.harness.get_relation_data(rel_id, self.harness.charm.app.name).get(
+            "celery-unit"
+        )
+        self.assertIsNone(celery_unit)
+
+    @patch.object(ops.JujuVersion, "from_environ")
+    @patch.object(ops.Container, "exec")
+    def test_indico_pebble_ready_when_leader_includes_celery(self, mock_exec, mock_juju_env):
+        """
+        arrange: charm created, and relations established
+        act: trigger container pebble ready event for the Indico container on a leader unit
+        assert: the indico and celery services are running
+        """
+        mock_juju_env.return_value = MagicMock(has_secrets=False)
+        mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=("", None)))
+        self.set_up_all_relations()
+        self.harness.set_leader(True)
+
+        self.harness.container_pebble_ready("indico")
+
+        updated_plan = self.harness.get_container_pebble_plan("indico").to_dict()
+        assert "indico" in updated_plan["services"]
+        assert "celery" in updated_plan["services"]
+
+    @patch.object(ops.JujuVersion, "from_environ")
+    @patch.object(ops.Container, "exec")
+    def test_indico_pebble_ready_when_not_leader_doesnt_include_celery(
+        self, mock_exec, mock_juju_env
+    ):
+        """
+        arrange: charm created, and relations established
+        act: trigger container pebble ready event for the Indico container on a non leader unit
+        assert: the indico service is running and the celery service is not
+        """
+        mock_juju_env.return_value = MagicMock(has_secrets=False)
+        mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=("", None)))
+        self.set_up_all_relations()
+        self.harness.set_leader(False)
+
+        self.harness.container_pebble_ready("indico")
+
+        updated_plan = self.harness.get_container_pebble_plan("indico").to_dict()
+        assert "indico" in updated_plan["services"]
+        assert "celery" not in updated_plan["services"]
