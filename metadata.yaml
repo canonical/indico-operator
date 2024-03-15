@@ -66,6 +66,10 @@ requires:
   redis-cache:
     interface: redis
     limit: 1
+  saml:
+    interface: saml
+    limit: 1
+    optional: true
   smtp-legacy:
     interface: smtp
     limit: 1

@@ -8,6 +8,7 @@ import os
 from typing import Optional
 
 import ops
+from charms.saml_integrator.v0 import saml
 from charms.smtp_integrator.v0.smtp import SmtpRelationData, TransportSecurity
 
 # pylint: disable=no-name-in-module
@@ -95,12 +96,16 @@ class State:  # pylint: disable=too-few-public-methods
     """
 
     proxy_config: Optional[ProxyConfig]
+    saml_config: Optional[SamlRelationData]
     smtp_config: Optional[SmtpConfig]
 
     # pylint: disable=unused-argument
     @classmethod
     def from_charm(
-        cls, charm: ops.CharmBase, smtp_relation_data: Optional[SmtpRelationData]
+        cls,
+        charm: ops.CharmBase,
+        saml_relation_data: Optional[saml.SamlRelationData],
+        smtp_relation_data: Optional[SmtpRelationData],
     ) -> "State":
         """Initialize the state from charm.
 
@@ -116,6 +121,9 @@ class State:  # pylint: disable=too-few-public-methods
         """
         try:
             proxy_config = ProxyConfig.from_env()
+            saml_config = (
+                entity_id
+            )
             smtp_config = (
                 SmtpConfig(
                     host=smtp_relation_data.host,
