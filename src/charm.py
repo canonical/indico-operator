@@ -8,7 +8,7 @@ import logging
 import os
 import typing
 from re import findall
-from typing import Dict, Iterator, List, Optional, Tuple
+from typing import Any, Dict, Iterator, List, Optional, Tuple
 from urllib.parse import urlparse
 
 import ops.lib
@@ -16,7 +16,6 @@ from charms.grafana_k8s.v0.grafana_dashboard import GrafanaDashboardProvider
 from charms.nginx_ingress_integrator.v0.nginx_route import require_nginx_route
 from charms.prometheus_k8s.v0.prometheus_scrape import MetricsEndpointProvider
 from charms.redis_k8s.v0.redis import RedisRelationCharmEvents, RedisRequires
-from charms.saml_integrator.v0 import saml
 from ops.charm import ActionEvent, CharmBase, HookEvent, PebbleReadyEvent
 from ops.framework import StoredState
 from ops.jujuversion import JujuVersion
@@ -25,6 +24,7 @@ from ops.model import ActiveStatus, BlockedStatus, Container, MaintenanceStatus,
 from ops.pebble import ExecError
 
 from database_observer import DatabaseObserver
+from saml_observer import SamlObserver
 from smtp_observer import SmtpObserver
 from state import CharmConfigInvalidError, ProxyConfig, State
 
@@ -38,14 +38,12 @@ INDICO_CUSTOMIZATION_DIR = "/srv/indico/custom"
 NGINX_PROMEXP_PORT = "9113"
 PORT = 8080
 STATSD_PROMEXP_PORT = "9102"
-UBUNTU_SAML_URL = "https://login.ubuntu.com/saml/"
-STAGING_UBUNTU_SAML_URL = "https://login.staging.ubuntu.com/saml/"
 SAML_GROUPS_PLUGIN_NAME = "saml_groups"
 
 UWSGI_TOUCH_RELOAD = "/srv/indico/indico.wsgi"
 
 
-class IndicoOperatorCharm(CharmBase):
+class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attributes
     """Charm for Indico on kubernetes.
 
     Attrs:
@@ -64,9 +62,12 @@ class IndicoOperatorCharm(CharmBase):
         super().__init__(*args)
         self.database = DatabaseObserver(self)
         self.smtp = SmtpObserver(self)
+        self.saml = SamlObserver(self)
         try:
             self.state = State.from_charm(
-                self, smtp_relation_data=self.smtp.smtp.get_relation_data()
+                self,
+                smtp_relation_data=self.smtp.smtp.get_relation_data(),
+                saml_relation_data=self.saml.saml.get_relation_data(),
             )
         except CharmConfigInvalidError as exc:
             self.unit.status = ops.BlockedStatus(exc.msg)
@@ -97,8 +98,6 @@ class IndicoOperatorCharm(CharmBase):
             self.redis_cache.charm.on.redis_relation_updated, self._on_config_changed
         )
         self._require_nginx_route()
-        self.saml = saml.SamlRequires(self)
-        self.framework.observe(self.saml.on.saml_data_available, self._on_saml_data_available)
 
         self._metrics_endpoint = MetricsEndpointProvider(
             self,
@@ -521,46 +520,22 @@ class IndicoOperatorCharm(CharmBase):
         env_config["STORAGE_DICT"] = str(env_config["STORAGE_DICT"])
 
         # SAML configuration reference https://github.com/onelogin/python3-saml
-        relation = self.model.get_relation(saml.DEFAULT_RELATION_NAME)
-        if relation and relation.data[self.app] and relation.data[relation.app]:
-            endpoints = saml.SamlEndpoint.from_relation_data(relation.data[relation.app])
-            login_url = relation.data[relation.app]["single_sign_on_service_redirect_url"]
-            logout_url = relation.data[relation.app]["single_sign_on_service_redirect_url"]
-            fingerprint = relation.data[self.app].get("fingerprint")
-        
-        
-            saml_config = {
+        if self.state.saml_config:
+            saml_config: Dict[str, Any] = {
                 "strict": True,
                 "sp": {
                     "entityId": self.config["site_url"],
                 },
                 "idp": {
-                    "entityId": "https://login.ubuntu.com",
-                    "singleSignOnService": {
-                        "url": "https://login.ubuntu.com/saml/",
-                        "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect",
-                    },
-                    "singleLogoutService": {
-                        "url": "https://login.ubuntu.com/+logout",
-                        "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect",
-                    },
-                    "x509cert": (
-                        "MIICjzCCAfigAwIBAgIJALNN/vxaR1hyMA0GCSqGSIb3DQEBBQUAMDoxCzAJBgNVBAYTA"
-                        "kdCMRMwEQYDVQQIEwpTb21lLVN0YXRlMRYwFAYDVQQKEw1DYW5vbmljYWwgTHRkMB4XDT"
-                        "EyMDgxMDEyNDE0OFoXDTEzMDgxMDEyNDE0OFowOjELMAkGA1UEBhMCR0IxEzARBgNVBAg"
-                        "TClNvbWUtU3RhdGUxFjAUBgNVBAoTDUNhbm9uaWNhbCBMdGQwgZ8wDQYJKoZIhvcNAQEB"
-                        "BQADgY0AMIGJAoGBAMM4pmIxkv419q8zj5EojK57y6plU/+k3apX6w1PgAYeI0zhNuud/"
-                        "tiqKVQEDyZ6W7HNeGtWSh5rewy8c07BShcHG5Y8ibzBdIibGs5k6gvtmsRiXDE/F39+Rr"
-                        "PSW18beHhEuoVJM9RANp3MYMOK11SiClSiGo+NfBKFuoqNX3UjAgMBAAGjgZwwgZkwHQY"
-                        "DVR0OBBYEFH/no88pbywRnW6Fz+B4lQ04w/86MGoGA1UdIwRjMGGAFH/no88pbywRnW6F"
-                        "z+B4lQ04w/86oT6kPDA6MQswCQYDVQQGEwJHQjETMBEGA1UECBMKU29tZS1TdGF0ZTEWM"
-                        "BQGA1UEChMNQ2Fub25pY2FsIEx0ZIIJALNN/vxaR1hyMAwGA1UdEwQFMAMBAf8wDQYJKo"
-                        "ZIhvcNAQEFBQADgYEArTGbZ1rg++aBxnNuJ7eho62JKKtRW5O+kMBvBLWi7fKck5uXDE6"
-                        "d7Jv6hUy/gwUZV7r5kuPwRlw3Pu6AX4R60UsQuVG1/VVVI7nu32iCkXx5Vzq446IkVRdk"
-                        "/QOda1dRyq0oaifUUhJfwVFSsm95ENDFdGqD0raj7g77ajcBMf8="
-                    ),
+                    "entityId": self.state.saml_config.entity_id,
+                    "x509cert": self.state.saml_config.certificates[0],
                 },
             }
+            for endpoint in self.state.saml_config.endpoints:
+                saml_config["idp"][endpoint.name] = {
+                    "url": endpoint.name,
+                    "binding": endpoint.binding,
+                }
             auth_providers = {"ubuntu": {"type": "saml", "saml_config": saml_config}}
             env_config["INDICO_AUTH_PROVIDERS"] = str(auth_providers)
             identity_providers = {
@@ -614,18 +589,6 @@ class IndicoOperatorCharm(CharmBase):
             }
         return {}
 
-    def _is_saml_target_url_valid(self) -> bool:
-        """Check if the target SAML URL is currently supported.
-
-        Returns:
-            If the SAML config is valid or not.
-        """
-        return (
-            not self.config["saml_target_url"]
-            or UBUNTU_SAML_URL == self.config["saml_target_url"]
-            or STAGING_UBUNTU_SAML_URL == self.config["saml_target_url"]
-        )
-
     def _on_config_changed(self, event: HookEvent) -> None:
         """Handle changes in configuration.
 
@@ -633,12 +596,6 @@ class IndicoOperatorCharm(CharmBase):
             event: Event triggering the configuration change handler.
         """
         if not self._are_relations_ready(event):
-            return
-        if not self._is_saml_target_url_valid():
-            self.unit.status = BlockedStatus(
-                "Invalid saml_target_url option provided. "
-                f"Only {UBUNTU_SAML_URL} and {STAGING_UBUNTU_SAML_URL} are available."
-            )
             return
         if not self._are_pebble_instances_ready():
             self.unit.status = WaitingStatus("Waiting for pebble")

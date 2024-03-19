@@ -17,12 +17,7 @@ import urllib3.exceptions
 from ops.model import ActiveStatus, Application
 from pytest_operator.plugin import OpsTest
 
-from charm import (
-    CELERY_PROMEXP_PORT,
-    NGINX_PROMEXP_PORT,
-    STAGING_UBUNTU_SAML_URL,
-    STATSD_PROMEXP_PORT,
-)
+from charm import CELERY_PROMEXP_PORT, NGINX_PROMEXP_PORT, STATSD_PROMEXP_PORT
 
 ADMIN_USER_EMAIL = "sample@email.com"
 ADMIN_USER_EMAIL_FAIL = "sample2@email.com"
@@ -207,7 +202,6 @@ async def test_saml_auth(
     await app.set_config(  # type: ignore[attr-defined] # pylint: disable=W0106
         {
             "site_url": "https://events.staging.canonical.com",
-            "saml_target_url": STAGING_UBUNTU_SAML_URL,
         }
     )
     # The linter does not recognize wait_for_idle as a method,

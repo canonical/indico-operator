@@ -12,7 +12,7 @@ import pytest
 from ops.testing import Harness
 
 from charm import IndicoOperatorCharm
-from state import SmtpConfig
+from state import SamlConfig, SamlEndpoint, SmtpConfig
 from tests.unit.test_base import TestBase
 
 
@@ -270,6 +270,19 @@ class TestCore(TestBase):
         mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=("", None)))
 
         self.set_relations_and_leader()
+        saml_endpoint = SamlEndpoint(
+            name="singleSignOnService",
+            url="https://example.com/login",
+            binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect",
+            response_url="https://example.com/response",
+        )
+        saml_config = SamlConfig(
+            entity_id="entity",
+            metadata_url="https://example.com/metadata",
+            certificates=("cert1,", "cert2"),
+            endpoints=(saml_endpoint,),
+        )
+        self.harness.charm.state.saml_config = saml_config
         self.harness.update_config(
             {
                 "customization_debug": True,
@@ -279,7 +292,6 @@ class TestCore(TestBase):
                 "indico_support_email": "example@email.local",
                 "indico_public_support_email": "public@email.local",
                 "indico_no_reply_email": "noreply@email.local",
-                "saml_target_url": "https://login.ubuntu.com/saml/",
                 "site_url": "https://example.local:8080",
                 "s3_storage": "s3:bucket=test-bucket,access_key=12345,secret_key=topsecret",
             }
@@ -309,7 +321,6 @@ class TestCore(TestBase):
             "https://example.local:8080",
             auth_providers["ubuntu"]["saml_config"]["sp"]["entityId"],
         )
-        self.harness.update_config({"saml_target_url": "https://login.staging.ubuntu.com/saml/"})
         auth_providers = literal_eval(updated_plan_env["INDICO_AUTH_PROVIDERS"])
         self.assertEqual("saml", auth_providers["ubuntu"]["type"])
         self.assertEqual(
@@ -420,24 +431,6 @@ class TestCore(TestBase):
         self.assertEqual(self.harness.model.unit.status, ops.WaitingStatus("Waiting for pebble"))
 
     @patch.object(ops.Container, "exec")
-    def test_config_changed_when_saml_target_url_invalid(self, mock_exec):
-        """
-        arrange: charm created and relations established
-        act: trigger an invalid SAML URL configuration change for the charm
-        assert: the unit reaches blocked status
-        """
-        mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=("", None)))
-
-        self.set_relations_and_leader()
-
-        self.harness.update_config({"saml_target_url": "sample.com/saml"})
-        self.assertEqual(
-            self.harness.model.unit.status.name,
-            ops.BlockedStatus.name,
-        )
-        self.assertTrue("Invalid saml_target_url option" in self.harness.model.unit.status.message)
-
-    @patch.object(ops.Container, "exec")
     def test_config_changed_when_saml_groups_plugin_installed(self, mock_exec):
         """
         arrange: charm created and relations established and saml_groups plugin installed
@@ -463,10 +456,22 @@ class TestCore(TestBase):
 
         self.set_relations_and_leader()
 
+        saml_endpoint = SamlEndpoint(
+            name="singleSignOnService",
+            url="https://example.com/login",
+            binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect",
+            response_url="https://example.com/response",
+        )
+        saml_config = SamlConfig(
+            entity_id="entity",
+            metadata_url="https://example.com/metadata",
+            certificates=("cert1,", "cert2"),
+            endpoints=(saml_endpoint,),
+        )
+        self.harness.charm.state.saml_config = saml_config
         self.harness.update_config(
             {
                 "external_plugins": "git+https://example.git",
-                "saml_target_url": "https://login.ubuntu.com/saml/",
             }
         )
 
@@ -474,6 +479,7 @@ class TestCore(TestBase):
         updated_plan_env = updated_plan["services"]["indico"]["environment"]
 
         identity_providers = literal_eval(updated_plan_env["INDICO_IDENTITY_PROVIDERS"])
+        print(identity_providers)
         self.assertEqual("saml_groups", identity_providers["ubuntu"]["type"])
 
         updated_plan = self.harness.get_container_pebble_plan("indico-celery").to_dict()
