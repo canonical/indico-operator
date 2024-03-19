@@ -49,11 +49,18 @@ def requests_timeout():
     yield 15
 
 
+@fixture(scope="module", name="external_url")
+def external_url_fixture():
+    """Provides the external URL for Indico."""
+    return "https://events.staging.canonical.com"
+
+
 @pytest_asyncio.fixture(scope="module", name="app")
 async def app_fixture(
     ops_test: OpsTest,
     app_name: str,
     pytestconfig: Config,
+    external_url: str,
 ):
     """Indico charm used for integration testing.
 
@@ -84,7 +91,7 @@ async def app_fixture(
         "indico-nginx-image": pytestconfig.getoption("--indico-nginx-image"),
     }
 
-    indico_config = {"site_url": "https://events.staging.canonical.com"}
+    indico_config = {"site_url": external_url}
     if charm := pytestconfig.getoption("--charm-file"):
         application = await ops_test.model.deploy(
             f"./{charm}",

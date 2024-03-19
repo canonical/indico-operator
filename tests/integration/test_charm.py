@@ -8,6 +8,7 @@ import logging
 import re
 import socket
 from unittest.mock import patch
+from urllib.parse import urlparse
 
 import juju.action
 import pytest
@@ -38,7 +39,7 @@ async def test_active(app: Application):
 
 @pytest.mark.asyncio
 @pytest.mark.abort_on_fail
-async def test_indico_is_up(ops_test: OpsTest, app: Application):
+async def test_indico_is_up(ops_test: OpsTest, app: Application, external_url: str):
     """Check that the bootstrap page is reachable.
 
     Assume that the charm has already been built and is running.
@@ -50,9 +51,8 @@ async def test_indico_is_up(ops_test: OpsTest, app: Application):
     address = status["applications"][app.name]["units"][unit]["address"]
     # Send request to bootstrap page and set Host header to app_name (which the application
     # expects)
-    response = requests.get(
-        f"http://{address}:8080/bootstrap", headers={"Host": f"{app.name}.local"}, timeout=10
-    )
+    host = urlparse(external_url).netloc
+    response = requests.get(f"http://{address}:8080/bootstrap", headers={"Host": host}, timeout=10)
     assert response.status_code == 200
 
 
@@ -188,7 +188,9 @@ async def test_anonymize_user_fail(app: Application):
 @pytest.mark.asyncio
 @pytest.mark.abort_on_fail
 @pytest.mark.usefixtures("saml_integrator")
-async def test_saml_auth(saml_email: str, saml_password: str, requests_timeout: float):
+async def test_saml_auth(
+    saml_email: str, saml_password: str, requests_timeout: float, external_url: str
+):
     """
     arrange: given charm in its initial state
     act: configure and integrate the SAML integrator fire SAML authentication
@@ -196,7 +198,7 @@ async def test_saml_auth(saml_email: str, saml_password: str, requests_timeout: 
     """
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-    host = "events.staging.canonical.com"
+    host = urlparse(external_url).netloc
     original_getaddrinfo = socket.getaddrinfo
 
     def patched_getaddrinfo(*args):
