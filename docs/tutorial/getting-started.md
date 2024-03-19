@@ -35,7 +35,7 @@ To see the pod created by the Indico charm, run `kubectl get pods` on a namespac
 
 ```bash
 NAME                             READY   STATUS    RESTARTS   AGE
-indico-0                         4/4     Running   0         6h4m
+indico-0                         3/3     Running   0         6h4m
 ```
 
 Run [`juju status`](https://juju.is/docs/olm/juju-status) to see the current status of the deployment. In the Unit list, you can see that Indico is waiting:

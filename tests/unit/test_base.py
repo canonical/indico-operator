@@ -63,7 +63,6 @@ class TestBase(unittest.TestCase):
         self.is_ready(
             [
                 "indico",
-                "indico-celery",
                 "indico-nginx",
             ]
         )

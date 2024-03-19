@@ -557,7 +557,7 @@
     ]
   },
   "timezone": "utc",
-  "title": "Indico Celery",
-  "uid": "indico-celery-32s3",
+  "title": "Celery",
+  "uid": "celery-32s3",
   "version": 0
 }
