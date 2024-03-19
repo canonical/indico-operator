@@ -3,7 +3,7 @@
 
 """Indico charm unit tests."""
 
-# pylint:disable=protected-access
+# pylint:disable=duplicate-code,protected-access
 from ast import literal_eval
 from unittest.mock import MagicMock, patch
 
@@ -209,17 +209,24 @@ class TestCore(TestBase):
         mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=("", None)))
 
         self.set_relations_and_leader()
-        saml_endpoint = SamlEndpoint(
-            name="singleSignOnService",
-            url="https://example.com/login",
-            binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect",
-            response_url="https://example.com/response",
+        saml_endpoints = (
+            SamlEndpoint(
+                name="singleSignOnService",
+                url="https://example.com/login",
+                binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect",
+            ),
+            SamlEndpoint(
+                name="singleLogoutService",
+                url="https://example.com/logout",
+                binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect",
+                response_url="https://example.com/response",
+            ),
         )
         saml_config = SamlConfig(
             entity_id="entity",
             metadata_url="https://example.com/metadata",
             certificates=("cert1,", "cert2"),
-            endpoints=(saml_endpoint,),
+            endpoints=saml_endpoints,
         )
         self.harness.charm.state.saml_config = saml_config
         self.harness.update_config(
@@ -262,10 +269,32 @@ class TestCore(TestBase):
         )
         auth_providers = literal_eval(updated_plan_env["INDICO_AUTH_PROVIDERS"])
         self.assertEqual("saml", auth_providers["ubuntu"]["type"])
+        applied_saml_config = auth_providers["ubuntu"]["saml_config"]
+        self.assertEqual("https://example.local:8080", applied_saml_config["sp"]["entityId"])
+        self.assertEqual(saml_config.entity_id, applied_saml_config["idp"]["entityId"])
+        self.assertEqual(saml_config.certificates[0], applied_saml_config["idp"]["x509cert"])
         self.assertEqual(
-            "https://example.local:8080",
-            auth_providers["ubuntu"]["saml_config"]["sp"]["entityId"],
+            str(saml_config.endpoints[0].url),
+            applied_saml_config["idp"]["singleSignOnService"]["url"],
         )
+        self.assertEqual(
+            saml_config.endpoints[0].binding,
+            applied_saml_config["idp"]["singleSignOnService"]["binding"],
+        )
+        self.assertNotIn("response_url", applied_saml_config["idp"]["singleSignOnService"])
+        self.assertEqual(
+            str(saml_config.endpoints[1].url),
+            applied_saml_config["idp"]["singleLogoutService"]["url"],
+        )
+        self.assertEqual(
+            saml_config.endpoints[1].binding,
+            applied_saml_config["idp"]["singleLogoutService"]["binding"],
+        )
+        self.assertEqual(
+            str(saml_config.endpoints[1].response_url),
+            applied_saml_config["idp"]["singleLogoutService"]["response_url"],
+        )
+
         identity_providers = literal_eval(updated_plan_env["INDICO_IDENTITY_PROVIDERS"])
         self.assertEqual("saml", identity_providers["ubuntu"]["type"])
         mock_exec.assert_any_call(
@@ -390,7 +419,6 @@ class TestCore(TestBase):
         updated_plan_env = updated_plan["services"]["indico"]["environment"]
 
         identity_providers = literal_eval(updated_plan_env["INDICO_IDENTITY_PROVIDERS"])
-        print(identity_providers)
         self.assertEqual("saml_groups", identity_providers["ubuntu"]["type"])
 
     @patch.object(ops.JujuVersion, "from_environ")
