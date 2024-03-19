@@ -235,7 +235,7 @@ async def test_saml_auth(
                 "next": "/saml/process",
                 "continue": "",
                 "openid.usernamesecret": "",
-                "RelayState": "indico.local",
+                "RelayState": "events.staging.canonical.com",
             },
             headers={"Referer": login_page.url},
             timeout=requests_timeout,
