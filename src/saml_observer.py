@@ -1,7 +1,7 @@
 # Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-"""The SMTP relation observer."""
+"""The SAML relation observer."""
 import logging
 
 from charms.saml_integrator.v0.saml import SamlRequires

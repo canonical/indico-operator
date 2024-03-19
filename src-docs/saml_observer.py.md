@@ -3,7 +3,7 @@
 <a href="../src/saml_observer.py#L0"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 # <kbd>module</kbd> `saml_observer.py`
-The SMTP relation observer. 
+The SAML relation observer. 
 
 
 
