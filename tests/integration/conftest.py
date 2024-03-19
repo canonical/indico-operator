@@ -108,3 +108,23 @@ async def app(
     await ops_test.model.wait_for_idle(status="active", raise_on_error=False)
 
     yield application
+
+
+@pytest_asyncio.fixture(scope="module", name="saml_integrator")
+async def saml_integrator_fixture(ops_test: OpsTest):
+    """SAML integrator charm used for integration testing.
+
+    Builds the charm and deploys it.
+    """
+    assert ops_test.model
+    saml_config = {
+        "metadata_url": "https://login.staging.ubuntu.com/saml/metadata",
+        "entity_id": "https://login.staging.ubuntu.com",
+    }
+    saml_integrator = await ops_test.model.deploy(
+        "saml-integrator", channel="latest/stable", config=saml_config, trust=True
+    )
+    await ops_test.model.wait_for_idle(
+        apps=[saml_integrator.name], status="active", raise_on_error=False
+    )
+    yield saml_integrator

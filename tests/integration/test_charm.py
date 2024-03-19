@@ -186,27 +186,22 @@ async def test_anonymize_user_fail(app: Application):
 
 @pytest.mark.asyncio
 @pytest.mark.abort_on_fail
-async def test_saml_auth(
+async def test_saml_auth(  # pylint: disable=too-many-arguments
     ops_test: OpsTest,
     app: Application,
     saml_email: str,
     saml_password: str,
     requests_timeout: float,
+    saml_integrator: Application,
 ):
     """
     arrange: given charm in its initial state
-    act: configure a SAML target url and fire SAML authentication
+    act: configure and integrate the SAML integrator fire SAML authentication
     assert: The SAML authentication process is executed successfully.
     """
-    # The linter does not recognize set_config as a method, so this errors must be ignored.
-    await app.set_config(  # type: ignore[attr-defined] # pylint: disable=W0106
-        {
-            "site_url": "https://events.staging.canonical.com",
-        }
-    )
-    # The linter does not recognize wait_for_idle as a method,
-    # since ops_test has a model as Optional, so this error must be ignored.
-    await ops_test.model.wait_for_idle(status="active")  # type: ignore[union-attr]
+    assert ops_test.model
+    ops_test.model.add_relation(app.name, saml_integrator.name)
+    await ops_test.model.wait_for_idle(status="active")
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
     host = "events.staging.canonical.com"
