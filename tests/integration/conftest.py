@@ -8,6 +8,7 @@ from pathlib import Path
 
 import pytest_asyncio
 import yaml
+from ops import Application
 from pytest import Config, fixture
 from pytest_operator.plugin import OpsTest
 
@@ -48,8 +49,8 @@ def requests_timeout():
     yield 15
 
 
-@pytest_asyncio.fixture(scope="module")
-async def app(
+@pytest_asyncio.fixture(scope="module", name="app")
+async def app_fixture(
     ops_test: OpsTest,
     app_name: str,
     pytestconfig: Config,
@@ -83,11 +84,13 @@ async def app(
         "indico-nginx-image": pytestconfig.getoption("--indico-nginx-image"),
     }
 
+    indico_config = {"site_url": "https://events.staging.canonical.com"}
     if charm := pytestconfig.getoption("--charm-file"):
         application = await ops_test.model.deploy(
             f"./{charm}",
             resources=resources,
             application_name=app_name,
+            config=indico_config,
             series="focal",
         )
     else:
@@ -96,6 +99,7 @@ async def app(
             charm,
             resources=resources,
             application_name=app_name,
+            config=indico_config,
             series="focal",
         )
 
@@ -111,7 +115,7 @@ async def app(
 
 
 @pytest_asyncio.fixture(scope="module", name="saml_integrator")
-async def saml_integrator_fixture(ops_test: OpsTest):
+async def saml_integrator_fixture(ops_test: OpsTest, app: Application):
     """SAML integrator charm used for integration testing.
 
     Builds the charm and deploys it.
@@ -124,7 +128,8 @@ async def saml_integrator_fixture(ops_test: OpsTest):
     saml_integrator = await ops_test.model.deploy(
         "saml-integrator", channel="latest/stable", config=saml_config, trust=True
     )
+    ops_test.model.add_relation(app.name, saml_integrator.name)
     await ops_test.model.wait_for_idle(
-        apps=[saml_integrator.name], status="active", raise_on_error=False
+        apps=[saml_integrator.name, app.name], status="active", raise_on_error=False
     )
     yield saml_integrator
