@@ -47,14 +47,14 @@ async def test_indico_is_up(ops_test: OpsTest, app: Application, external_url: s
     assert ops_test.model
     # Read the IP address of indico
     status = await ops_test.model.get_status()
-    unit = list(status.applications[app.name].units)[0]
-    address = status["applications"][app.name]["units"][unit]["address"]
+    unit = list(status.applications["nginx-ingress-integrator"].units)[0]
+    address = status["applications"]["nginx-ingress-integrator"]["units"][unit]["address"]
     # Send request to bootstrap page and set Host header to app_name (which the application
     # expects)
     host = urlparse(external_url).netloc
     # The certificate is not signed
     response = requests.get(  # nosec
-        "https://127.0.0.1/bootstrap", headers={"Host": host}, timeout=10, verify=False
+        f"https://{address}/bootstrap", headers={"Host": host}, timeout=10, verify=False
     )
     assert response.status_code == 200
 
