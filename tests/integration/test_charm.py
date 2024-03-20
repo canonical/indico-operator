@@ -39,7 +39,8 @@ async def test_active(app: Application):
 
 @pytest.mark.asyncio
 @pytest.mark.abort_on_fail
-async def test_indico_is_up(ops_test: OpsTest, app: Application, external_url: str):
+@pytest.mark.usefixtures("app")
+async def test_indico_is_up(ops_test: OpsTest, external_url: str):
     """Check that the bootstrap page is reachable.
 
     Assume that the charm has already been built and is running.
