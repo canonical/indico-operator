@@ -55,7 +55,7 @@ async def test_indico_is_up(ops_test: OpsTest, external_url: str):
     host = urlparse(external_url).netloc
     # The certificate is not signed
     response = requests.get(  # nosec
-        f"https://127.0.0.1/bootstrap", headers={"Host": host}, timeout=10, verify=False
+        "https://127.0.0.1/bootstrap", headers={"Host": host}, timeout=10, verify=False
     )
     assert response.status_code == 200
 
