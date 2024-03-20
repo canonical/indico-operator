@@ -52,7 +52,10 @@ async def test_indico_is_up(ops_test: OpsTest, app: Application, external_url: s
     # Send request to bootstrap page and set Host header to app_name (which the application
     # expects)
     host = urlparse(external_url).netloc
-    response = requests.get(f"http://{address}:8080/bootstrap", headers={"Host": host}, timeout=10)
+    # The certificate is not signed
+    response = requests.get(  # nosec
+        f"https://{address}:8080/bootstrap", headers={"Host": host}, timeout=10, verify=False
+    )
     assert response.status_code == 200
 
 
