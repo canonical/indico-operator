@@ -68,7 +68,7 @@ LIBAPI = 0
 
 # Increment this PATCH version before using `charmcraft publish-lib` or reset
 # to 0 if you are raising the major API version
-LIBPATCH = 7
+LIBPATCH = 8
 
 # pylint: disable=wrong-import-position
 import re
@@ -297,10 +297,8 @@ class SamlRequires(ops.Object):
             SmtpRelationData: the relation data.
         """
         relation = self.model.get_relation(self.relation_name)
-        if not relation:
+        if not relation or not relation.app or not relation.data[relation.app]:
             return None
-        assert relation.data
-        assert relation.app
         return SamlRelationData.from_relation_data(relation.data[relation.app])
 
 
