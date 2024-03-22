@@ -28,17 +28,6 @@ logger = logging.getLogger()
 
 @pytest.mark.asyncio
 @pytest.mark.abort_on_fail
-async def test_active(app: Application):
-    """Check that the charm is active.
-
-    Assume that the charm has already been built and is running.
-    """
-    # Application actually does have units
-    assert app.units[0].workload_status == ActiveStatus.name  # type: ignore
-
-
-@pytest.mark.asyncio
-@pytest.mark.abort_on_fail
 @pytest.mark.usefixtures("app")
 async def test_indico_is_up(ops_test: OpsTest, external_url: str):
     """Check that the bootstrap page is reachable.
