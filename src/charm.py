@@ -539,7 +539,6 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
                 },
                 "idp": {
                     "entityId": self.state.saml_config.entity_id,
-                    "x509cert": self.state.saml_config.certificates[0],
                 },
             }
             for endpoint in self.state.saml_config.endpoints:
@@ -550,6 +549,7 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
                 }
                 if endpoint.response_url:
                     saml_config["idp"][endpoint.name]["response_url"] = str(endpoint.response_url)
+                saml_config["idp"]["x509cert"] = self.state.saml_config.certificates[0]
             auth_providers = {"ubuntu": {"type": "saml", "saml_config": saml_config}}
             env_config["INDICO_AUTH_PROVIDERS"] = str(auth_providers)
             identity_providers = {
