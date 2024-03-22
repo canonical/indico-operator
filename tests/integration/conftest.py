@@ -121,7 +121,7 @@ async def app_fixture(
         apps=[
             application.name,
             "nginx-ingress-integrator",
-            "redis-borker",
+            "redis-broker",
             "redis-cache",
             "postgresql-k8s",
         ],
