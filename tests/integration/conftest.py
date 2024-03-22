@@ -86,6 +86,7 @@ async def app_fixture(
     await ops_test.model.wait_for_idle(
         apps=["postgresql-k8s"], status="active", raise_on_error=False
     )
+
     resources = {
         "indico-image": pytestconfig.getoption("--indico-image"),
         "indico-nginx-image": pytestconfig.getoption("--indico-nginx-image"),
@@ -116,7 +117,17 @@ async def app_fixture(
         ops_test.model.add_relation(f"{app_name}:redis-cache", "redis-cache"),
         ops_test.model.add_relation(app_name, "nginx-ingress-integrator"),
     )
-    await ops_test.model.wait_for_idle(status="active", raise_on_error=False)
+    await ops_test.model.wait_for_idle(
+        apps=[
+            application.name,
+            "nginx-ingress-integrator",
+            "redis-borker",
+            "redis-cache",
+            "postgresql-k8s",
+        ],
+        status="active",
+        raise_on_error=False,
+    )
 
     yield application
 
