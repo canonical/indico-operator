@@ -46,10 +46,6 @@ async def test_indico_is_up(ops_test: OpsTest, external_url: str):
     Assume that the charm has already been built and is running.
     """
     assert ops_test.model
-    # Read the IP address of indico
-    status = await ops_test.model.get_status()
-    unit = list(status.applications["nginx-ingress-integrator"].units)[0]
-    address = status["applications"]["nginx-ingress-integrator"]["units"][unit]["address"]
     # Send request to bootstrap page and set Host header to app_name (which the application
     # expects)
     host = urlparse(external_url).netloc
