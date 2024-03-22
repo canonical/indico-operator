@@ -72,7 +72,6 @@ async def test_health_checks(app: Application):
         assert stdout.count("0/3") == container_checks[1]
 
 
-@pytest.mark.abort_on_fail
 @pytest_asyncio.fixture(scope="module")
 async def add_admin(app: Application):
     """
