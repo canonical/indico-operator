@@ -15,7 +15,7 @@ import pytest
 import pytest_asyncio
 import requests
 import urllib3.exceptions
-from ops.model import ActiveStatus, Application
+from ops.model import Application
 from pytest_operator.plugin import OpsTest
 
 from charm import CELERY_PROMEXP_PORT, NGINX_PROMEXP_PORT, STATSD_PROMEXP_PORT
