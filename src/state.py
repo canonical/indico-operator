@@ -5,13 +5,14 @@
 import dataclasses
 import logging
 import os
-from typing import Optional
+from typing import List, Optional, Tuple
 
 import ops
+from charms.saml_integrator.v0.saml import SamlRelationData
 from charms.smtp_integrator.v0.smtp import SmtpRelationData, TransportSecurity
 
 # pylint: disable=no-name-in-module
-from pydantic import BaseModel, Field, HttpUrl, ValidationError
+from pydantic import AnyHttpUrl, BaseModel, Field, HttpUrl, ValidationError
 
 logger = logging.getLogger(__name__)
 
@@ -67,6 +68,38 @@ class ProxyConfig(BaseModel):  # pylint: disable=too-few-public-methods
         )
 
 
+class SamlEndpoint(BaseModel):  # pylint: disable=too-few-public-methods
+    """SAML configuration.
+
+    Attributes:
+        name: Endpoint name.
+        url: Endpoint URL.
+        binding: Endpoint binding.
+        response_url: URL to address the response to.
+    """
+
+    name: str = Field(..., min_length=1)
+    url: AnyHttpUrl
+    binding: str = Field(..., min_length=1)
+    response_url: Optional[AnyHttpUrl]
+
+
+class SamlConfig(BaseModel):  # pylint: disable=too-few-public-methods
+    """SAML configuration.
+
+    Attributes:
+        entity_id: SAML entity ID.
+        metadata_url: Metadata URL.
+        certificates: List of x509 certificates.
+        endpoints: List of endpoints.
+    """
+
+    entity_id: str = Field(..., min_length=1)
+    metadata_url: AnyHttpUrl
+    certificates: Tuple[str, ...]
+    endpoints: Tuple[SamlEndpoint, ...]
+
+
 class SmtpConfig(BaseModel):  # pylint: disable=too-few-public-methods
     """SMTP configuration.
 
@@ -91,21 +124,27 @@ class State:  # pylint: disable=too-few-public-methods
 
     Attributes:
         proxy_config: Proxy configuration.
+        saml_config: SAML configuration.
         smtp_config: SMTP configuration.
     """
 
     proxy_config: Optional[ProxyConfig]
+    saml_config: Optional[SamlConfig]
     smtp_config: Optional[SmtpConfig]
 
     # pylint: disable=unused-argument
     @classmethod
     def from_charm(
-        cls, charm: ops.CharmBase, smtp_relation_data: Optional[SmtpRelationData]
+        cls,
+        charm: ops.CharmBase,
+        saml_relation_data: Optional[SamlRelationData] = None,
+        smtp_relation_data: Optional[SmtpRelationData] = None,
     ) -> "State":
         """Initialize the state from charm.
 
         Args:
             charm: The charm root IndicoOperatorCharm.
+            saml_relation_data: SAML relation data.
             smtp_relation_data: SMTP relation data.
 
         Returns:
@@ -115,6 +154,24 @@ class State:  # pylint: disable=too-few-public-methods
             CharmConfigInvalidError: if invalid state values were encountered.
         """
         try:
+            saml_config = None
+            if saml_relation_data:
+                endpoints: List[SamlEndpoint] = []
+                for endpoint in saml_relation_data.endpoints:
+                    endpoints.append(
+                        SamlEndpoint(
+                            name=endpoint.name,
+                            url=endpoint.url,
+                            binding=endpoint.binding,
+                            response_url=endpoint.response_url,
+                        )
+                    )
+                saml_config = SamlConfig(
+                    entity_id=saml_relation_data.entity_id,
+                    metadata_url=saml_relation_data.metadata_url,
+                    certificates=saml_relation_data.certificates,
+                    endpoints=tuple(endpoints),
+                )
             proxy_config = ProxyConfig.from_env()
             smtp_config = (
                 SmtpConfig(
@@ -130,4 +187,4 @@ class State:  # pylint: disable=too-few-public-methods
         except ValidationError as exc:
             logger.error("Invalid juju model proxy configuration, %s", exc)
             raise CharmConfigInvalidError("Invalid model proxy configuration.") from exc
-        return cls(proxy_config=proxy_config, smtp_config=smtp_config)
+        return cls(proxy_config=proxy_config, smtp_config=smtp_config, saml_config=saml_config)

@@ -18,7 +18,7 @@ Exception raised when a charm configuration is found to be invalid.
  
  - <b>`msg`</b>:  Explanation of the error. 
 
-<a href="../src/state.py#L30"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/state.py#L31"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>function</kbd> `__init__`
 
@@ -65,7 +65,7 @@ Configuration for accessing Indico through proxy.
 
 ---
 
-<a href="../src/state.py#L52"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/state.py#L53"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>classmethod</kbd> `from_env`
 
@@ -79,6 +79,42 @@ Instantiate ProxyConfig from juju charm environment.
 
 **Returns:**
   ProxyConfig if proxy configuration is provided, None otherwise. 
+
+
+---
+
+## <kbd>class</kbd> `SamlConfig`
+SAML configuration. 
+
+
+
+**Attributes:**
+ 
+ - <b>`entity_id`</b>:  SAML entity ID. 
+ - <b>`metadata_url`</b>:  Metadata URL. 
+ - <b>`certificates`</b>:  List of x509 certificates. 
+ - <b>`endpoints`</b>:  List of endpoints. 
+
+
+
+
+
+---
+
+## <kbd>class</kbd> `SamlEndpoint`
+SAML configuration. 
+
+
+
+**Attributes:**
+ 
+ - <b>`name`</b>:  Endpoint name. 
+ - <b>`url`</b>:  Endpoint URL. 
+ - <b>`binding`</b>:  Endpoint binding. 
+ - <b>`response_url`</b>:  URL to address the response to. 
+
+
+
 
 
 ---
@@ -110,6 +146,7 @@ The Indico operator charm state.
 **Attributes:**
  
  - <b>`proxy_config`</b>:  Proxy configuration. 
+ - <b>`saml_config`</b>:  SAML configuration. 
  - <b>`smtp_config`</b>:  SMTP configuration. 
 
 
@@ -117,14 +154,15 @@ The Indico operator charm state.
 
 ---
 
-<a href="../src/state.py#L101"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/state.py#L136"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>classmethod</kbd> `from_charm`
 
 ```python
 from_charm(
     charm: CharmBase,
-    smtp_relation_data: Optional[SmtpRelationData]
+    saml_relation_data: Optional[SamlRelationData] = None,
+    smtp_relation_data: Optional[SmtpRelationData] = None
 ) → State
 ```
 
@@ -135,6 +173,7 @@ Initialize the state from charm.
 **Args:**
  
  - <b>`charm`</b>:  The charm root IndicoOperatorCharm. 
+ - <b>`saml_relation_data`</b>:  SAML relation data. 
  - <b>`smtp_relation_data`</b>:  SMTP relation data. 
 
 

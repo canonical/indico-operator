@@ -15,7 +15,7 @@ export const options = {
 
 const params = {
   headers: {
-    'Host': 'indico.local',
+    'Host': 'events.staging.canonical.com',
   },
 };
 
