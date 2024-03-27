@@ -17,9 +17,10 @@ from pytest_operator.plugin import OpsTest
 
 from charm import STAGING_UBUNTU_SAML_URL
 
+
 @pytest.mark.asyncio
 @pytest.mark.abort_on_fail
-async def test_saml_auth(
+async def test_saml_auth(  # pylint: disable=too-many-arguments
     ops_test: OpsTest,
     app: Application,
     saml_email: str,
