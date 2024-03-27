@@ -211,12 +211,12 @@ class TestCore(TestBase):
         self.set_relations_and_leader()
         saml_endpoints = (
             SamlEndpoint(
-                name="singleSignOnService",
+                name="SingleSignOnService",
                 url="https://example.com/login",
                 binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect",
             ),
             SamlEndpoint(
-                name="singleLogoutService",
+                name="SingleLogoutService",
                 url="https://example.com/logout",
                 binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect",
                 response_url="https://example.com/response",
@@ -281,7 +281,7 @@ class TestCore(TestBase):
             saml_config.endpoints[0].binding,
             applied_saml_config["idp"]["singleSignOnService"]["binding"],
         )
-        self.assertNotIn("response_url", applied_saml_config["idp"]["singleSignOnService"])
+        self.assertEqual("", applied_saml_config["idp"]["singleSignOnService"]["response_url"])
         self.assertEqual(
             str(saml_config.endpoints[1].url),
             applied_saml_config["idp"]["singleLogoutService"]["url"],
@@ -396,17 +396,24 @@ class TestCore(TestBase):
 
         self.set_relations_and_leader()
 
-        saml_endpoint = SamlEndpoint(
-            name="singleSignOnService",
-            url="https://example.com/login",
-            binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect",
-            response_url="https://example.com/response",
+        saml_endpoints = (
+            SamlEndpoint(
+                name="SingleSignOnService",
+                url="https://example.com/login",
+                binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect",
+            ),
+            SamlEndpoint(
+                name="SingleLogoutService",
+                url="https://example.com/logout",
+                binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect",
+                response_url="https://example.com/response",
+            ),
         )
         saml_config = SamlConfig(
             entity_id="entity",
             metadata_url="https://example.com/metadata",
             certificates=("cert1,", "cert2"),
-            endpoints=(saml_endpoint,),
+            endpoints=saml_endpoints,
         )
         self.harness.charm.state.saml_config = saml_config
         self.harness.update_config(

@@ -46,13 +46,13 @@ def test_config_from_charm_env(proxy_config: state.ProxyConfig):
     )
     saml_endpoints = (
         SamlEndpoint(
-            name="singleSignOnService",
+            name="SingleSignOnService",
             url="https://example.com/login",
             binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect",
             response_url="https://example.com/response",
         ),
         SamlEndpoint(
-            name="singleLogoutService",
+            name="SingleLogoutService",
             url="https://example.com/logout",
             binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect",
         ),

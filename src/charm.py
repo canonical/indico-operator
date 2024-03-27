@@ -533,6 +533,7 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
         # SAML configuration reference https://github.com/onelogin/python3-saml
         if self.state.saml_config:
             endpoints = self.state.saml_config.endpoints
+            print(endpoints)
             single_sign_on_endpoint = list(
                 filter(lambda ep: (ep.name == "SingleSignOnService"), endpoints)
             )[0]
@@ -547,12 +548,22 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
                 "idp": {
                     "entityId": self.state.saml_config.entity_id,
                     "singleSignOnService": {
-                        "url": single_sign_on_endpoint.url,
+                        "url": str(single_sign_on_endpoint.url),
                         "binding": single_sign_on_endpoint.binding,
+                        "response_url": (
+                            str(single_sign_on_endpoint.response_url)
+                            if single_sign_on_endpoint.response_url
+                            else ""
+                        ),
                     },
                     "singleLogoutService": {
-                        "url": single_logout_endpoint.url,
+                        "url": str(single_logout_endpoint.url),
                         "binding": single_logout_endpoint.binding,
+                        "response_url": (
+                            str(single_logout_endpoint.response_url)
+                            if single_logout_endpoint.response_url
+                            else ""
+                        ),
                     },
                     "x509cert": self.state.saml_config.certificates[0],
                 },
