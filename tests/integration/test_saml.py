@@ -35,7 +35,7 @@ async def test_saml_auth(
     # The linter does not recognize set_config as a method, so this errors must be ignored.
     await app.set_config(  # type: ignore[attr-defined] # pylint: disable=W0106
         {
-            "site_url": "https://events.staging.canonical.com",
+            "site_url": external_url,
             "saml_target_url": STAGING_UBUNTU_SAML_URL,
         }
     )
