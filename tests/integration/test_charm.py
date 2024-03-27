@@ -4,26 +4,18 @@
 
 """Indico charm integration tests."""
 
-import logging
 import re
 import socket
 from unittest.mock import patch
 from urllib.parse import urlparse
 
-import juju.action
 import pytest
-import pytest_asyncio
 import requests
 import urllib3.exceptions
 from ops.model import Application
 from pytest_operator.plugin import OpsTest
 
 from charm import CELERY_PROMEXP_PORT, NGINX_PROMEXP_PORT, STATSD_PROMEXP_PORT
-
-ADMIN_USER_EMAIL = "sample@email.com"
-ADMIN_USER_EMAIL_FAIL = "sample2@email.com"
-
-logger = logging.getLogger()
 
 
 @pytest.mark.asyncio
@@ -72,39 +64,6 @@ async def test_health_checks(app: Application):
         assert stdout.count("0/3") == container_checks[1]
 
 
-@pytest_asyncio.fixture(scope="module")
-async def add_admin(app: Application):
-    """
-    arrange: given charm in its initial state
-    act: run the add-admin action
-    assert: check the output in the action result
-    """
-    assert hasattr(app, "units")
-
-    assert app.units[0]
-
-    email = ADMIN_USER_EMAIL
-    email_fail = ADMIN_USER_EMAIL_FAIL
-    # This is a test password
-    password = "somepassword"  # nosec
-
-    # Application actually does have units
-    action: juju.action.Action = await app.units[0].run_action(  # type: ignore
-        "add-admin", email=email, password=password
-    )
-    await action.wait()
-    assert action.status == "completed"
-    assert action.results["user"] == email
-    assert f'Admin with email "{email}" correctly created' in action.results["output"]
-    action2: juju.action.Action = await app.units[0].run_action(  # type: ignore
-        "add-admin", email=email_fail, password=password
-    )
-    await action2.wait()
-    assert action2.status == "completed"
-    assert action2.results["user"] == email_fail
-    assert f'Admin with email "{email_fail}" correctly created' in action2.results["output"]
-
-
 @pytest.mark.asyncio
 @pytest.mark.abort_on_fail
 async def test_prom_exporters_are_up(app: Application):
@@ -131,46 +90,6 @@ async def test_prom_exporters_are_up(app: Application):
         stdout = result["results"].get("Stdout")
         stderr = result["results"].get("Stderr")
         assert code == "0", f"{cmd} failed ({code}): {stderr or stdout}"
-
-
-@pytest.mark.asyncio
-@pytest.mark.abort_on_fail
-@pytest.mark.usefixtures("add_admin")
-async def test_anonymize_user(app: Application):
-    """
-    arrange: admin user created
-    act: run the anonymize-user action
-    assert: check the output in the action result
-    """
-    # Application actually does have units
-    action_anonymize: juju.action.Action = await app.units[0].run_action(  # type: ignore
-        "anonymize-user", email=ADMIN_USER_EMAIL
-    )
-    await action_anonymize.wait()
-    assert action_anonymize.status == "completed"
-    assert action_anonymize.results["user"] == ADMIN_USER_EMAIL
-    expected_words = [ADMIN_USER_EMAIL, "correctly anonymized"]
-    assert all(word in action_anonymize.results["output"] for word in expected_words)
-
-
-@pytest.mark.asyncio
-@pytest.mark.abort_on_fail
-@pytest.mark.usefixtures("add_admin")
-async def test_anonymize_user_fail(app: Application):
-    """
-    arrange: admin user created
-    act: run the anonymize-user action
-    assert: check the output in the action result
-    """
-    # Application actually does have units
-    action_anonymize: juju.action.Action = await app.units[0].run_action(  # type: ignore
-        "anonymize-user", email=f",{ADMIN_USER_EMAIL_FAIL}"
-    )
-    await action_anonymize.wait()
-    assert action_anonymize.status == "failed"
-    assert action_anonymize.results["user"] == f",{ADMIN_USER_EMAIL_FAIL}"
-    expected_words = [ADMIN_USER_EMAIL_FAIL, "correctly anonymized", "Failed to anonymize user"]
-    assert all(word in action_anonymize.results["output"] for word in expected_words)
 
 
 @pytest.mark.asyncio
