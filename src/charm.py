@@ -8,7 +8,7 @@ import logging
 import os
 import typing
 from re import findall
-from typing import Any, Dict, Iterator, List, Optional, Tuple
+from typing import Dict, Iterator, List, Optional, Tuple
 from urllib.parse import urlparse
 
 import ops.lib
@@ -532,24 +532,31 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
 
         # SAML configuration reference https://github.com/onelogin/python3-saml
         if self.state.saml_config:
-            saml_config: Dict[str, Any] = {
+            endpoints = self.state.saml_config.endpoints
+            single_sign_on_endpoint = list(
+                filter(lambda ep: (ep.name == "SingleSignOnService"), endpoints)
+            )[0]
+            single_logout_endpoint = list(
+                filter(lambda ep: (ep.name == "SingleLogoutService"), endpoints)
+            )[0]
+            saml_config = {
                 "strict": True,
                 "sp": {
                     "entityId": self.config["site_url"],
                 },
                 "idp": {
                     "entityId": self.state.saml_config.entity_id,
+                    "singleSignOnService": {
+                        "url": single_sign_on_endpoint.url,
+                        "binding": single_sign_on_endpoint.binding,
+                    },
+                    "singleLogoutService": {
+                        "url": single_logout_endpoint.url,
+                        "binding": single_logout_endpoint.binding,
+                    },
+                    "x509cert": self.state.saml_config.certificates[0],
                 },
             }
-            for endpoint in self.state.saml_config.endpoints:
-                endpoint_name = endpoint.name[:1].lower() + endpoint.name[1:]
-                saml_config["idp"][endpoint_name] = {
-                    "url": str(endpoint.url),
-                    "binding": endpoint.binding,
-                }
-                if endpoint.response_url:
-                    saml_config["idp"][endpoint.name]["response_url"] = str(endpoint.response_url)
-                saml_config["idp"]["x509cert"] = self.state.saml_config.certificates[0]
             auth_providers = {"ubuntu": {"type": "saml", "saml_config": saml_config}}
             env_config["INDICO_AUTH_PROVIDERS"] = str(auth_providers)
             identity_providers = {
