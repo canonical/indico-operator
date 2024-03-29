@@ -75,7 +75,7 @@ Optional: run `juju status --relations --watch 5s` to watch the status every 5 s
 
 ```bash
 App                       Version                       Status  Scale  Charm                     Channel  Rev  Address         Exposed  Message
-indico                 3.2                           active      1  indico                              138  10.152.183.68   no
+indico                 3.3                           active      1  indico                              182  10.152.183.68   no
 ```
 
 The deployment finishes when the status shows "Active".

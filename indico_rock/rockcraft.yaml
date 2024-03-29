@@ -52,7 +52,7 @@ parts:
     override-build: |
       craftctl default
       UWSGI_EMBED_PLUGINS=stats_pusher_statsd python3 -m pip install --no-cache-dir --no-warn-script-location --prefer-binary \
-        indico==3.2.8 \
+        indico==3.3 \
         indico-plugin-payment-paypal==3.2.1 \
         indico-plugin-piwik \
         indico-plugin-storage-s3 \
