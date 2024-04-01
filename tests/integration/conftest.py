@@ -122,8 +122,8 @@ async def saml_integrator_fixture(ops_test: OpsTest, app: Application):
     """SAML integrator charm used for integration testing."""
     assert ops_test.model
     saml_config = {
-        "metadata_url": "https://login.ubuntu.com/saml/metadata",
         "entity_id": "https://login.ubuntu.com",
+        "metadata_url": "https://login.ubuntu.com/saml/metadata",
     }
     saml_integrator = await ops_test.model.deploy(
         "saml-integrator", channel="latest/stable", config=saml_config, trust=True
