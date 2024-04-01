@@ -4,6 +4,7 @@
 
 """Indico charm integration tests."""
 
+import logging
 from urllib.parse import urlparse
 
 import pytest
@@ -12,6 +13,11 @@ from ops.model import Application
 from pytest_operator.plugin import OpsTest
 
 from charm import CELERY_PROMEXP_PORT, NGINX_PROMEXP_PORT, STATSD_PROMEXP_PORT
+
+ADMIN_USER_EMAIL = "sample@email.com"
+ADMIN_USER_EMAIL_FAIL = "sample2@email.com"
+
+logger = logging.getLogger()
 
 
 @pytest.mark.asyncio

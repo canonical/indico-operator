@@ -2,7 +2,7 @@
 # Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-"""Indico actions integration tests."""
+"""Indico charm actions integration tests."""
 
 import juju.action
 import pytest
@@ -13,6 +13,7 @@ ADMIN_USER_EMAIL = "sample@email.com"
 ADMIN_USER_EMAIL_FAIL = "sample2@email.com"
 
 
+@pytest.mark.abort_on_fail
 @pytest_asyncio.fixture(scope="module")
 async def add_admin(app: Application):
     """

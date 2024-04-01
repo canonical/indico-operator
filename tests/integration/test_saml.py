@@ -2,7 +2,7 @@
 # Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-"""Indico charm integration tests."""
+"""Indico SAML integration tests."""
 
 import re
 import socket
@@ -12,19 +12,27 @@ from urllib.parse import urlparse
 import pytest
 import requests
 import urllib3.exceptions
+from pytest_operator.plugin import OpsTest
 
 
 @pytest.mark.asyncio
 @pytest.mark.abort_on_fail
-@pytest.mark.usefixtures("saml_integrator")
+@pytest.mark.usefixtures("app")
 async def test_saml_auth(
-    saml_email: str, saml_password: str, requests_timeout: float, external_url: str
+    ops_test: OpsTest,
+    saml_email: str,
+    saml_password: str,
+    requests_timeout: float,
+    external_url: str,
 ):
     """
     arrange: given charm in its initial state
-    act: configure and integrate the SAML integrator fire SAML authentication
+    act: configure a SAML target url and fire SAML authentication
     assert: The SAML authentication process is executed successfully.
     """
+    # The linter does not recognize wait_for_idle as a method,
+    # since ops_test has a model as Optional, so this error must be ignored.
+    await ops_test.model.wait_for_idle(status="active")  # type: ignore[union-attr]
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
     host = urlparse(external_url).netloc
@@ -64,7 +72,7 @@ async def test_saml_auth(
                 "next": "/saml/process",
                 "continue": "",
                 "openid.usernamesecret": "",
-                "RelayState": "events.staging.canonical.com",
+                "RelayState": "indico.local",
             },
             headers={"Referer": login_page.url},
             timeout=requests_timeout,

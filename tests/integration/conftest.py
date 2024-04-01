@@ -13,6 +13,12 @@ from pytest import Config, fixture
 from pytest_operator.plugin import OpsTest
 
 
+@fixture(scope="module", name="external_url")
+def external_url_fixture():
+    """Provides the external URL for Indico."""
+    return "https://events.staging.canonical.com"
+
+
 @fixture(scope="module")
 def saml_email(pytestconfig: Config):
     """SAML login email address test argument for SAML integration tests"""
@@ -47,12 +53,6 @@ def app_name_fixture(metadata):
 def requests_timeout():
     """Provides a global default timeout for HTTP requests"""
     yield 15
-
-
-@fixture(scope="module", name="external_url")
-def external_url_fixture():
-    """Provides the external URL for Indico."""
-    return "https://events.staging.canonical.com"
 
 
 @pytest_asyncio.fixture(scope="module", name="app")
