@@ -5,11 +5,10 @@
 """Indico charm integration tests."""
 
 import logging
-from urllib.parse import urlparse
 
 import pytest
 import requests
-from ops.model import Application
+from ops.model import ActiveStatus, Application
 from pytest_operator.plugin import OpsTest
 
 from charm import CELERY_PROMEXP_PORT, NGINX_PROMEXP_PORT, STATSD_PROMEXP_PORT
@@ -22,19 +21,31 @@ logger = logging.getLogger()
 
 @pytest.mark.asyncio
 @pytest.mark.abort_on_fail
-@pytest.mark.usefixtures("app")
-async def test_indico_is_up(ops_test: OpsTest, external_url: str):
+async def test_active(app: Application):
+    """Check that the charm is active.
+
+    Assume that the charm has already been built and is running.
+    """
+    # Application actually does have units
+    assert app.units[0].workload_status == ActiveStatus.name  # type: ignore
+
+
+@pytest.mark.asyncio
+@pytest.mark.abort_on_fail
+async def test_indico_is_up(ops_test: OpsTest, app: Application):
     """Check that the bootstrap page is reachable.
 
     Assume that the charm has already been built and is running.
     """
     assert ops_test.model
+    # Read the IP address of indico
+    status = await ops_test.model.get_status()
+    unit = list(status.applications[app.name].units)[0]
+    address = status["applications"][app.name]["units"][unit]["address"]
     # Send request to bootstrap page and set Host header to app_name (which the application
     # expects)
-    host = urlparse(external_url).netloc
-    # The certificate is not signed
-    response = requests.get(  # nosec
-        "https://127.0.0.1/bootstrap", headers={"Host": host}, timeout=10, verify=False
+    response = requests.get(
+        f"http://{address}:8080/bootstrap", headers={"Host": f"{app.name}.local"}, timeout=10
     )
     assert response.status_code == 200
 

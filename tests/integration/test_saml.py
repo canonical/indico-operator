@@ -12,14 +12,18 @@ from urllib.parse import urlparse
 import pytest
 import requests
 import urllib3.exceptions
+from ops.model import Application
 from pytest_operator.plugin import OpsTest
+
+from charm import STAGING_UBUNTU_SAML_URL
 
 
 @pytest.mark.asyncio
 @pytest.mark.abort_on_fail
-@pytest.mark.usefixtures("app")
-async def test_saml_auth(
+@pytest.mark.usefixtures("saml_integrator")
+async def test_saml_auth(  # pylint: disable=too-many-arguments
     ops_test: OpsTest,
+    app: Application,
     saml_email: str,
     saml_password: str,
     requests_timeout: float,
@@ -30,6 +34,10 @@ async def test_saml_auth(
     act: configure a SAML target url and fire SAML authentication
     assert: The SAML authentication process is executed successfully.
     """
+    # The linter does not recognize set_config as a method, so this errors must be ignored.
+    await app.set_config(  # type: ignore[attr-defined] # pylint: disable=W0106
+        {"site_url": external_url}
+    )
     # The linter does not recognize wait_for_idle as a method,
     # since ops_test has a model as Optional, so this error must be ignored.
     await ops_test.model.wait_for_idle(status="active")  # type: ignore[union-attr]
@@ -104,3 +112,7 @@ async def test_saml_auth(
             timeout=requests_timeout,
         )
         assert dashboard_page.status_code == 200
+        # Revert SAML config for zap to be able to run
+        await app.set_config(  # type: ignore[attr-defined] # pylint: disable=W0106
+            {"site_url": ""}
+        )

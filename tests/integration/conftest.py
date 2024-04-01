@@ -60,7 +60,6 @@ async def app_fixture(
     ops_test: OpsTest,
     app_name: str,
     pytestconfig: Config,
-    external_url: str,
 ):
     """Indico charm used for integration testing.
 
@@ -91,13 +90,11 @@ async def app_fixture(
         "indico-nginx-image": pytestconfig.getoption("--indico-nginx-image"),
     }
 
-    indico_config = {"site_url": external_url}
     if charm := pytestconfig.getoption("--charm-file"):
         application = await ops_test.model.deploy(
             f"./{charm}",
             resources=resources,
             application_name=app_name,
-            config=indico_config,
             series="focal",
         )
     else:
@@ -106,7 +103,6 @@ async def app_fixture(
             charm,
             resources=resources,
             application_name=app_name,
-            config=indico_config,
             series="focal",
         )
 
