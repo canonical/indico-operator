@@ -114,3 +114,11 @@ async def test_saml_auth(  # pylint: disable=too-many-arguments
             timeout=requests_timeout,
         )
         assert dashboard_page.status_code == 200
+        # Revert SAML config for zap to be able to run
+        await app.set_config(  # type: ignore[attr-defined] # pylint: disable=W0106
+        {
+            "site_url": "",
+            "saml_target_url": "",
+        }
+    )
+
