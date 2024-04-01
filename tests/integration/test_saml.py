@@ -15,11 +15,10 @@ import urllib3.exceptions
 from ops.model import Application
 from pytest_operator.plugin import OpsTest
 
-from charm import STAGING_UBUNTU_SAML_URL
-
 
 @pytest.mark.asyncio
 @pytest.mark.abort_on_fail
+@pytest.mark.usefixtures("saml_integrator")
 async def test_saml_auth(  # pylint: disable=too-many-arguments
     ops_test: OpsTest,
     app: Application,
@@ -35,10 +34,7 @@ async def test_saml_auth(  # pylint: disable=too-many-arguments
     """
     # The linter does not recognize set_config as a method, so this errors must be ignored.
     await app.set_config(  # type: ignore[attr-defined] # pylint: disable=W0106
-        {
-            "site_url": external_url,
-            "saml_target_url": STAGING_UBUNTU_SAML_URL,
-        }
+        {"site_url": external_url}
     )
     # The linter does not recognize wait_for_idle as a method,
     # since ops_test has a model as Optional, so this error must be ignored.
@@ -116,8 +112,5 @@ async def test_saml_auth(  # pylint: disable=too-many-arguments
         assert dashboard_page.status_code == 200
         # Revert SAML config for zap to be able to run
         await app.set_config(  # type: ignore[attr-defined] # pylint: disable=W0106
-            {
-                "site_url": "",
-                "saml_target_url": "",
-            }
+            {"site_url": ""}
         )

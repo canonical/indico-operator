@@ -15,7 +15,7 @@ def sendingRequest(msg, initiator, helper):  # noqa: N802
     Returns:
         HttpMessage: returns HttpMessage updated
     """
-    msg.setUserObject({"host": "indico.local"})
+    msg.setUserObject({"host": "events.staging.canonical.com"})
     return msg
 
 
