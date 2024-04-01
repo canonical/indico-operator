@@ -119,10 +119,7 @@ async def app_fixture(
 
 @pytest_asyncio.fixture(scope="module", name="saml_integrator")
 async def saml_integrator_fixture(ops_test: OpsTest, app: Application):
-    """SAML integrator charm used for integration testing.
-
-    Builds the charm and deploys it.
-    """
+    """SAML integrator charm used for integration testing."""
     assert ops_test.model
     saml_config = {
         "metadata_url": "https://login.ubuntu.com/saml/metadata",
