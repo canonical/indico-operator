@@ -281,7 +281,7 @@ class TestCore(TestBase):
             saml_config.endpoints[0].binding,
             applied_saml_config["idp"]["singleSignOnService"]["binding"],
         )
-        self.assertEqual("", applied_saml_config["idp"]["singleSignOnService"]["response_url"])
+        self.assertNotIn("response_url", applied_saml_config["idp"]["singleSignOnService"])
         self.assertEqual(
             str(saml_config.endpoints[1].url),
             applied_saml_config["idp"]["singleLogoutService"]["url"],
