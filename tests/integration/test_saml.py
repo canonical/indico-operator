@@ -15,8 +15,6 @@ import urllib3.exceptions
 from ops.model import Application
 from pytest_operator.plugin import OpsTest
 
-from charm import STAGING_UBUNTU_SAML_URL
-
 
 @pytest.mark.asyncio
 @pytest.mark.abort_on_fail
