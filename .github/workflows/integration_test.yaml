@@ -1,7 +1,4 @@
 name: Integration tests
-defaults:
-  run:
-    shell: bash -leo pipefail {0}
 
 on:
   pull_request:
