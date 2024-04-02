@@ -5,8 +5,8 @@ name: indico-nginx
 summary: Indico nginx rock
 description: Nginx OCI image for the Indico charm
 version: "1.0"
-base: ubuntu@22.04
-build-base: ubuntu@22.04
+base: ubuntu@24.04
+build-base: devel
 license: Apache-2.0
 platforms:
   amd64:
@@ -43,7 +43,7 @@ parts:
     python-packages:
       - indico==3.3.1
     organize:
-      lib/python3.10/site-packages/indico/web/static: srv/indico/static
+      lib/python3.12/site-packages/indico/web/static: srv/indico/static
     stage:
       - srv/indico/static
     stage-packages:
