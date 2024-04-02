@@ -25,6 +25,7 @@ parts:
       common_headers.conf: etc/nginx/common_headers.conf
   nginx:
     stage-packages:
+      - nginx-common=1.24.0-2ubuntu4
       - nginx
     stage-snaps:
       - gtrkiller-nginx-prometheus-exporter/latest/edge
