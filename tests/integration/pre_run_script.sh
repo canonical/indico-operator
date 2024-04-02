@@ -29,4 +29,4 @@ EOF
 
 pyenv install 3.12.2
 pyenv global 3.12.2
-python --version
+python3 --version
