@@ -5,8 +5,8 @@ name: indico
 summary: Indico rock
 description: Indico OCI image for the Indico charm
 version: "1.0"
-base: ubuntu:22.04
-build-base: ubuntu:22.04
+base: ubuntu@22.04
+build-base: ubuntu@22.04
 license: Apache-2.0
 platforms:
   amd64:
