@@ -22,6 +22,7 @@ cat <<- "EOF" >> "$HOME"/.profile
         eval "$(pyenv virtualenv-init -)"
 EOF
 
+pyenv doctor
 pyenv install 3.12.2
 pyenv global 3.12.2
 python3 --version

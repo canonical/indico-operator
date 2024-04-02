@@ -12,7 +12,7 @@ jobs:
     secrets: inherit
     with:
       self-hosted-runner: true
-      self-hosted-runner-label: "edge"
+      self-hosted-runner-label: "jammy"
       pre-run-script: |
         -c " chmod +x tests/integration/pre_run_script.sh
         ./tests/integration/pre_run_script.sh"
