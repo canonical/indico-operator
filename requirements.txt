@@ -1,2 +1,2 @@
 pydantic==1.10.14
-ops
+ops==2.12.0
