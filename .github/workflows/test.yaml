@@ -1,7 +1,7 @@
 name: Tests
 defaults:
   run:
-    shell: bash -ieo pipefail {0}
+    shell: bash -leo pipefail {0}
 
 on:
   pull_request:
@@ -28,8 +28,3 @@ jobs:
           pip install virtualenv-pyenv
           pip install tox
       - run: tox -e plugins
-      - name: Setup tmate session
-        if: ${{ failure() }}
-        uses: mxschmitt/action-tmate@v3
-        with:
-          limit-access-to-actor: true
