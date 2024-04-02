@@ -68,7 +68,7 @@ class TestActions(TestBase):
         charm: IndicoOperatorCharm = typing.cast(IndicoOperatorCharm, self.harness.charm)
 
         email = "sample@email.com"
-        password = "somepassword"  # nosec
+        password = token_hex(16)
         event = MagicMock(spec=ActionEvent)
         event.params = {
             "email": email,
@@ -163,7 +163,7 @@ class TestActions(TestBase):
         charm: IndicoOperatorCharm = typing.cast(IndicoOperatorCharm, self.harness.charm)
 
         email = "sample@email.com"
-        password = "somepassword"  # nosec
+        password = token_hex(16)
         event = MagicMock(spec=ActionEvent)
         event.params = {
             "email": email,

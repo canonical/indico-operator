@@ -1,7 +1,7 @@
 # Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-"""SMTP observer unit tests."""
+"""S3 observer unit tests."""
 
 # pylint: disable=duplicate-code
 
@@ -10,14 +10,14 @@ from secrets import token_hex
 import ops
 from ops.testing import Harness
 
-from smtp_observer import SmtpObserver
+from s3_observer import S3Observer
 from state import State
 
 REQUIRER_METADATA = """
 name: observer-charm
 requires:
-  smtp-legacy:
-    interface: smtp
+  s3:
+    interface: s3
 """
 
 
@@ -31,7 +31,7 @@ class ObservedCharm(ops.CharmBase):
             args: Variable list of positional arguments passed to the parent constructor.
         """
         super().__init__(*args)
-        self.smtp = SmtpObserver(self)
+        self.s3 = S3Observer(self)
         self.state = State.from_charm(charm=self)
         self.events = []
         self.framework.observe(self.on.config_changed, self._record_event)
@@ -45,22 +45,38 @@ class ObservedCharm(ops.CharmBase):
         self.events.append(event)
 
 
-def test_smtp_related_emits_config_changed_event_and_updates_charm_state():
+def test_credentials_changed_emits_config_changed_event_and_updates_charm_state():
     """
-    arrange: set up a charm and a smtp relation.
-    act: trigger a relation changed event.
+    arrange: set up a charm.
+    act: integrate with S3.
     assert: a config change event is emitted and the state, updated.
     """
     relation_data = {
-        "host": "example.smtp",
-        "port": "25",
-        "user": "example_user",
-        "password": token_hex(16),
-        "auth_type": "plain",
-        "transport_security": "tls",
-        "domain": "domain",
+        "bucket": "some-bucket",
+        "host": "example.s3",
+        "access-key": token_hex(16),
+        "secret-key": token_hex(16),
     }
     harness = Harness(ObservedCharm, meta=REQUIRER_METADATA)
     harness.begin()
-    harness.add_relation("smtp-legacy", "smtp-integrator", app_data=relation_data)
+    harness.add_relation("s3", "s3-integrator", app_data=relation_data)
     assert len(harness.charm.events) == 1
+
+
+def test_credentials_gone_emits_config_changed_event_and_updates_charm_state():
+    """
+    arrange: set up a charm and a s3 relation.
+    act: remove the S3 relation.
+    assert: a config change event is emitted and the state, updated.
+    """
+    relation_data = {
+        "bucket": "some-bucket",
+        "host": "example.s3",
+        "access-key": token_hex(16),
+        "secret-key": token_hex(16),
+    }
+    harness = Harness(ObservedCharm, meta=REQUIRER_METADATA)
+    harness.begin()
+    relation_id = harness.add_relation("s3", "s3-integrator", app_data=relation_data)
+    harness.remove_relation(relation_id)
+    assert len(harness.charm.events) == 2

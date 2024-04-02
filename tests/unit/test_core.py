@@ -5,6 +5,7 @@
 
 # pylint:disable=duplicate-code,protected-access
 from ast import literal_eval
+from secrets import token_hex
 from unittest.mock import MagicMock, patch
 
 import ops
@@ -12,7 +13,7 @@ import pytest
 from ops.testing import Harness
 
 from charm import IndicoOperatorCharm
-from state import SamlConfig, SamlEndpoint, SmtpConfig
+from state import S3Config, SamlConfig, SamlEndpoint, SmtpConfig
 from tests.unit.test_base import TestBase
 
 
@@ -152,14 +153,14 @@ class TestCore(TestBase):
         mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=("", None)))
         self.set_up_all_relations()
         self.harness.set_leader(True)
-        self.harness.charm.state.smtp_config = SmtpConfig(
+        smtp_config = SmtpConfig(
             host="localhost",
             port=8025,
             login="user",
-            password="pass",  # nosec
+            password=token_hex(16),
             use_tls=False,
         )
-
+        self.harness.charm.state.smtp_config = smtp_config
         self.harness.container_pebble_ready("indico")
 
         updated_plan = self.harness.get_container_pebble_plan("indico").to_dict()
@@ -187,10 +188,10 @@ class TestCore(TestBase):
         self.assertEqual("default", updated_plan_env["ATTACHMENT_STORAGE"])
         storage_dict = literal_eval(updated_plan_env["STORAGE_DICT"])
         self.assertEqual("fs:/srv/indico/archive", storage_dict["default"])
-        self.assertEqual("localhost", updated_plan_env["SMTP_SERVER"])
-        self.assertEqual(8025, updated_plan_env["SMTP_PORT"])
-        self.assertEqual("user", updated_plan_env["SMTP_LOGIN"])
-        self.assertEqual("pass", updated_plan_env["SMTP_PASSWORD"])
+        self.assertEqual(smtp_config.host, updated_plan_env["SMTP_SERVER"])
+        self.assertEqual(smtp_config.port, updated_plan_env["SMTP_PORT"])
+        self.assertEqual(smtp_config.login, updated_plan_env["SMTP_LOGIN"])
+        self.assertEqual(smtp_config.password, updated_plan_env["SMTP_PASSWORD"])
         self.assertFalse(updated_plan_env["SMTP_USE_TLS"])
 
         service = self.harness.model.unit.get_container("indico").get_service("indico")
@@ -228,6 +229,13 @@ class TestCore(TestBase):
             certificates=("cert1,", "cert2"),
             endpoints=saml_endpoints,
         )
+        s3_config = S3Config(
+            bucket="test-bucket",
+            host="s3.example.com",
+            access_key=token_hex(16),
+            secret_key=token_hex(16),
+        )
+        self.harness.charm.state.s3_config = s3_config
         self.harness.charm.state.saml_config = saml_config
         self.harness.update_config(
             {
@@ -239,7 +247,6 @@ class TestCore(TestBase):
                 "indico_public_support_email": "public@email.local",
                 "indico_no_reply_email": "noreply@email.local",
                 "site_url": "https://example.local:8080",
-                "s3_storage": "s3:bucket=test-bucket,access_key=12345,secret_key=topsecret",
             }
         )
 
@@ -258,7 +265,10 @@ class TestCore(TestBase):
         self.assertEqual("s3", updated_plan_env["ATTACHMENT_STORAGE"])
         self.assertEqual("fs:/srv/indico/archive", storage_dict["default"])
         self.assertEqual(
-            "s3:bucket=test-bucket,access_key=12345,secret_key=topsecret",
+            (
+                f"s3:bucket={s3_config.bucket},host={s3_config.host},"
+                f"access_key={s3_config.access_key},secret_key={s3_config.secret_key},proxy=true"
+            ),
             storage_dict["s3"],
         )
         auth_providers = literal_eval(updated_plan_env["INDICO_AUTH_PROVIDERS"])

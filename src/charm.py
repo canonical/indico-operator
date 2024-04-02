@@ -24,6 +24,7 @@ from ops.model import ActiveStatus, BlockedStatus, Container, MaintenanceStatus,
 from ops.pebble import ExecError
 
 from database_observer import DatabaseObserver
+from s3_observer import S3Observer
 from saml_observer import SamlObserver
 from smtp_observer import SmtpObserver
 from state import CharmConfigInvalidError, ProxyConfig, State
@@ -61,11 +62,13 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
         """
         super().__init__(*args)
         self.database = DatabaseObserver(self)
+        self.s3 = S3Observer(self)
         self.smtp = SmtpObserver(self)
         self.saml = SamlObserver(self)
         try:
             self.state = State.from_charm(
                 self,
+                s3_relation_data=self.s3.s3.get_s3_connection_info(),
                 smtp_relation_data=self.smtp.smtp.get_relation_data(),
                 saml_relation_data=self.saml.saml.get_relation_data(),
             )
@@ -525,8 +528,10 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
 
         # Piwik settings can't be configured using the config file for the time being:
         # https://github.com/indico/indico-plugins/issues/182
-        if self.config["s3_storage"]:
-            env_config["STORAGE_DICT"].update({"s3": self.config["s3_storage"]})  # type:ignore
+        # S3 available config options:
+        # https://github.com/indico/indico-plugins/blob/master/storage_s3/README.md#available-config-options
+        if self.state.s3_config:
+            env_config["STORAGE_DICT"].update({"s3": self.state.s3_config.get_connection_string()})
             env_config["ATTACHMENT_STORAGE"] = "s3"
         env_config["STORAGE_DICT"] = str(env_config["STORAGE_DICT"])
 
