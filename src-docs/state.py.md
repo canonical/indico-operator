@@ -83,6 +83,38 @@ Instantiate ProxyConfig from juju charm environment.
 
 ---
 
+## <kbd>class</kbd> `S3Config`
+S3 configuration. 
+
+
+
+**Attributes:**
+ 
+ - <b>`bucket`</b>:  the S3 bucket. 
+ - <b>`host`</b>:  S3 host. 
+ - <b>`access_key`</b>:  S3 access key. 
+ - <b>`secret_key`</b>:  S3 secrrt key. 
+
+
+
+
+---
+
+<a href="../src/state.py#L86"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+
+### <kbd>function</kbd> `get_connection_string`
+
+```python
+get_connection_string() → str
+```
+
+Retrieve a connection string for this instance. 
+
+Returns: the connection string for this instance. 
+
+
+---
+
 ## <kbd>class</kbd> `SamlConfig`
 SAML configuration. 
 
@@ -148,19 +180,21 @@ The Indico operator charm state.
  - <b>`proxy_config`</b>:  Proxy configuration. 
  - <b>`saml_config`</b>:  SAML configuration. 
  - <b>`smtp_config`</b>:  SMTP configuration. 
+ - <b>`s3_config`</b>:  S3 configuration. 
 
 
 
 
 ---
 
-<a href="../src/state.py#L136"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/state.py#L164"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>classmethod</kbd> `from_charm`
 
 ```python
 from_charm(
     charm: CharmBase,
+    s3_relation_data: Optional[Dict[str, str]] = None,
     saml_relation_data: Optional[SamlRelationData] = None,
     smtp_relation_data: Optional[SmtpRelationData] = None
 ) → State
@@ -173,6 +207,7 @@ Initialize the state from charm.
 **Args:**
  
  - <b>`charm`</b>:  The charm root IndicoOperatorCharm. 
+ - <b>`s3_relation_data`</b>:  S3 relation data. 
  - <b>`saml_relation_data`</b>:  SAML relation data. 
  - <b>`smtp_relation_data`</b>:  SMTP relation data. 
 
