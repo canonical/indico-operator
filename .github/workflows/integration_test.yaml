@@ -19,6 +19,4 @@ jobs:
       zap-target: localhost
       zap-target-port: 80
       zap-rules-file-name: "zap_rules.tsv"
-      pre-run-script: |
-        -c " chmod +x tests/integration/pre_run_script.sh
-        ./tests/integration/pre_run_script.sh"
+      pre-run-script: tests/integration/pre_run_script.sh
