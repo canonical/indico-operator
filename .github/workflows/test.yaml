@@ -1,7 +1,7 @@
 name: Tests
-defaults:
-  run:
-    shell: bash -leo pipefail {0}
+# defaults:
+#   run:
+#     shell: bash -leo pipefail {0}
 
 on:
   pull_request:
