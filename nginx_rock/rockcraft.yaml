@@ -41,7 +41,7 @@ parts:
     plugin: python
     source: .
     python-packages:
-      - indico==3.3
+      - indico==3.3.1
     organize:
       lib/python3.10/site-packages/indico/web/static: srv/indico/static
     stage:
