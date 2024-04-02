@@ -5,8 +5,8 @@ name: indico
 summary: Indico rock
 description: Indico OCI image for the Indico charm
 version: "1.0"
-base: ubuntu@22.04
-build-base: ubuntu@22.04
+base: ubuntu@24.04
+build-base: devel
 license: Apache-2.0
 platforms:
   amd64:
@@ -51,9 +51,9 @@ parts:
     plugin: nil
     override-build: |
       craftctl default
-      UWSGI_EMBED_PLUGINS=stats_pusher_statsd python3 -m pip install --no-cache-dir --no-warn-script-location --prefer-binary \
+      UWSGI_EMBED_PLUGINS=stats_pusher_statsd python3 -m pip install --no-cache-dir --no-warn-script-location --prefer-binary --break-system-packages \
         indico==3.3.1 \
-        indico-plugin-payment-paypal==3.2.1 \
+        indico-plugin-payment-paypal==3.3 \
         indico-plugin-piwik \
         indico-plugin-storage-s3 \
         python3-saml \
@@ -64,8 +64,8 @@ parts:
       craftctl default
       /bin/bash -c "mkdir -p --mode=775 srv/indico/{archive,cache,custom,etc,log,tmp}"
       /bin/bash -c "chown 2000:2000 srv/indico srv/indico/{archive,cache,custom,etc,log,tmp}"
-      cp $CRAFT_PART_INSTALL/usr/local/lib/python3.10/dist-packages/indico/web/indico.wsgi srv/indico/indico.wsgi
-      cp -R $CRAFT_PART_INSTALL/usr/local/lib/python3.10/dist-packages/indico/web/static srv/indico/static
+      cp $CRAFT_PART_INSTALL/usr/local/lib/python3.12/dist-packages/indico/web/indico.wsgi srv/indico/indico.wsgi
+      cp -R $CRAFT_PART_INSTALL/usr/local/lib/python3.12/dist-packages/indico/web/static srv/indico/static
       # Replace shebangs in Python executables to match the path in the resulting OCI image
       # This can be removed when switching to the python plugin, currently not working due to
       # https://github.com/canonical/rockcraft/issues/194
@@ -73,6 +73,8 @@ parts:
       # Copy root certificates
       mkdir -p etc/ssl/certs/
       cp /etc/ssl/certs/ca-certificates.crt etc/ssl/certs/
+    stage:
+      - -bin
   copy-config:
     plugin: dump
     source: .
@@ -82,9 +84,9 @@ parts:
       - owner: 2000
         group: 2000
       - path: srv/indico/start-indico.sh
-        mode: 544
+        mode: "544"
       - path: etc/
-        mode: 755
+        mode: "755"
     prime:
       - etc/*
       - srv/indico/start-indico.sh
