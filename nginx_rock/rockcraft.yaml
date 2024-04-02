@@ -24,15 +24,15 @@ parts:
       nginx.conf: etc/nginx/nginx.conf
       common_headers.conf: etc/nginx/common_headers.conf
   nginx:
-    build-packages:
-      - nginx
-      - nginx-common=1.24.0-2ubuntu4
-    overlay-packages:
+    stage-packages:
       - nginx
       - nginx-common=1.24.0-2ubuntu4
     stage-snaps:
       - gtrkiller-nginx-prometheus-exporter/latest/edge
     plugin: nil
+    override-build: |
+      craftctl default
+      rm $CRAFT_PART_INSTALL/etc/nginx/nginx.conf
     override-prime: |
       craftctl default
       mkdir run
