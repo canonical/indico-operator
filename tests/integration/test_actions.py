@@ -9,7 +9,7 @@ from secrets import token_hex
 import juju.action
 import pytest
 import pytest_asyncio
-from ops.model import Application
+from ops import Application
 
 ADMIN_USER_EMAIL = "sample@email.com"
 ADMIN_USER_EMAIL_FAIL = "sample2@email.com"

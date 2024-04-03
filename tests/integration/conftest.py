@@ -5,6 +5,7 @@
 
 import asyncio
 from pathlib import Path
+from secrets import token_hex
 
 import pytest_asyncio
 import yaml
@@ -133,3 +134,25 @@ async def saml_integrator_fixture(ops_test: OpsTest, app: Application):
         apps=[saml_integrator.name, app.name], status="active", raise_on_error=False
     )
     yield saml_integrator
+
+
+@pytest_asyncio.fixture(scope="module", name="s3_integrator")
+async def s3_integrator_fixture(ops_test: OpsTest, app: Application):
+    """SAML integrator charm used for integration testing."""
+    assert ops_test.model
+    s3_config = {
+        "bucket": "some-bucket",
+        "endpoint": "s3.example.com",
+    }
+    s3_integrator = await ops_test.model.deploy(
+        "s3-integrator", channel="latest/stable", config=s3_config, trust=True
+    )
+    # Application actually does have units
+    await s3_integrator.units[0].run_action(  # type: ignore
+        "sync-s3-credentials", access_key=token_hex(16), secret_key=token_hex(16)
+    )
+    await ops_test.model.add_relation(app.name, s3_integrator.name)
+    await ops_test.model.wait_for_idle(
+        apps=[s3_integrator.name, app.name], status="active", raise_on_error=False
+    )
+    yield s3_integrator

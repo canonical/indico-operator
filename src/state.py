@@ -218,8 +218,8 @@ class State:  # pylint: disable=too-few-public-methods
                 S3Config(
                     bucket=s3_relation_data["bucket"],
                     host=s3_relation_data["endpoint"],
-                    access_key=s3_relation_data["access_key"],
-                    secret_key=s3_relation_data["secret_key"],
+                    access_key=s3_relation_data["access-key"],
+                    secret_key=s3_relation_data["secret-key"],
                 )
                 if s3_relation_data
                 else None
