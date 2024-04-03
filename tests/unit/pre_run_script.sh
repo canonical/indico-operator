@@ -1,5 +1,9 @@
 #!/bin/bash
 # Install python 3.12.2
+
+# Copyright 2024 Canonical Ltd.
+# See LICENSE file for licensing details.
+
 # We don't activate this since this is not required by default
 curl https://pyenv.run | bash
 export PYENV_ROOT="$HOME/.pyenv"
