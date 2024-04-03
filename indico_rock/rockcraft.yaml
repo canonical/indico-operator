@@ -1,12 +1,16 @@
 # Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
+package-repositories:
+  - type: apt
+    ppa: deadsnakes/ppa
+    priority: always
 
 name: indico
 summary: Indico rock
 description: Indico OCI image for the Indico charm
 version: "1.0"
-base: ubuntu@24.04
-build-base: devel
+base: ubuntu@22.04
+build-base: ubuntu@22.04
 license: Apache-2.0
 platforms:
   amd64:
@@ -18,15 +22,34 @@ parts:
       groupadd -R $CRAFT_OVERLAY --gid 2000 indico
       useradd -R $CRAFT_OVERLAY --system --gid 2000 --uid 2000 --home /srv/indico indico
   indico:
+    plugin: python
+    build-environment:
+      - PARTS_PYTHON_INTERPRETER: python3.12
+      - UWSGI_EMBED_PLUGINS: stats_pusher_statsd
+    python-packages:
+      - setuptools
+      - wheel
+      - indico==3.3.1
+      - indico-plugin-payment-paypal==3.3
+      - indico-plugin-piwik
+      - indico-plugin-storage-s3
+      - python3-saml
+      - uwsgi
+      - ./anonymize
+      - ./autocreate
+    source: plugins
     build-packages:
+      - python3.12-venv
+      - python3.12-dev
       - build-essential
       - libpq-dev
       - libsasl2-dev
       - libxmlsec1-dev
       - pkg-config
-      - python3-dev
       - wget
     stage-packages:
+      - python3.12-venv
+      - python3.12-dev
       - bash
       - build-essential
       - ca-certificates
@@ -38,8 +61,6 @@ parts:
       - locales
       - pkg-config
       - postgresql-client
-      - python3-dev
-      - python3-pip
       - shared-mime-info
       - texlive-fonts-recommended
       - texlive-plain-generic
@@ -47,34 +68,15 @@ parts:
     stage-snaps:
       - celery-prometheus-exporter/latest/edge
       - gtrkiller-statsd-prometheus-exporter/latest/edge
-    source: plugins
-    plugin: nil
-    override-build: |
-      craftctl default
-      UWSGI_EMBED_PLUGINS=stats_pusher_statsd python3 -m pip install --no-cache-dir --no-warn-script-location --prefer-binary --break-system-packages \
-        indico==3.3.1 \
-        indico-plugin-payment-paypal==3.3 \
-        indico-plugin-piwik \
-        indico-plugin-storage-s3 \
-        python3-saml \
-        uwsgi \
-        ./anonymize \
-        ./autocreate
     override-prime: |
       craftctl default
       /bin/bash -c "mkdir -p --mode=775 srv/indico/{archive,cache,custom,etc,log,tmp}"
       /bin/bash -c "chown 2000:2000 srv/indico srv/indico/{archive,cache,custom,etc,log,tmp}"
-      cp $CRAFT_PART_INSTALL/usr/local/lib/python3.12/dist-packages/indico/web/indico.wsgi srv/indico/indico.wsgi
-      cp -R $CRAFT_PART_INSTALL/usr/local/lib/python3.12/dist-packages/indico/web/static srv/indico/static
-      # Replace shebangs in Python executables to match the path in the resulting OCI image
-      # This can be removed when switching to the python plugin, currently not working due to
-      # https://github.com/canonical/rockcraft/issues/194
-      find ./usr/local/bin/ -maxdepth 1 -type f | xargs sed -i 's/#!\/root\/parts\/indico\/install\/usr\/bin\/python3/#!\/usr\/bin\/python3/'
+      cp $CRAFT_PART_INSTALL/lib/python3.12/site-packages/indico/web/indico.wsgi srv/indico/indico.wsgi
+      cp -R $CRAFT_PART_INSTALL/lib/python3.12/site-packages/indico/web/static srv/indico/static
       # Copy root certificates
       mkdir -p etc/ssl/certs/
       cp /etc/ssl/certs/ca-certificates.crt etc/ssl/certs/
-    stage:
-      - -bin
   copy-config:
     plugin: dump
     source: .
