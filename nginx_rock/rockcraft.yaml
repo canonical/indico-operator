@@ -1,5 +1,9 @@
 # Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
+package-repositories:
+  - type: apt
+    ppa: deadsnakes/ppa
+    priority: always
 
 name: indico-nginx
 summary: Indico nginx rock
@@ -36,17 +40,19 @@ parts:
       craftctl default
       mkdir run
   indico-files:
+    build-environment:
+      - PARTS_PYTHON_INTERPRETER: python3.12
+    python-packages:
+      - indico==3.3.1
     build-packages:
       - libpq-dev
     plugin: python
     source: .
-    python-packages:
-      - indico==3.2.8
     organize:
-      lib/python3.10/site-packages/indico/web/static: srv/indico/static
+      lib/python3.12/site-packages/indico/web/static: srv/indico/static
     stage:
       - srv/indico/static
     stage-packages:
       - build-essential
-      - python3-dev
-      - python3-venv
+      - python3.12-dev
+      - python3.12-venv
