@@ -40,8 +40,8 @@ def test_config_from_charm_env(proxy_config: state.ProxyConfig):
     s3_relation_data = {
         "bucket": "sample-bucket",
         "endpoint": "s3.example.com",
-        "access_key": token_hex(16),
-        "secret_key": token_hex(16),
+        "access-key": token_hex(16),
+        "secret-key": token_hex(16),
     }
     saml_endpoints = (
         SamlEndpoint(
@@ -83,8 +83,8 @@ def test_config_from_charm_env(proxy_config: state.ProxyConfig):
     assert config.proxy_config.no_proxy == proxy_config.no_proxy
     assert config.s3_config.bucket == s3_relation_data["bucket"]
     assert config.s3_config.host == s3_relation_data["endpoint"]
-    assert config.s3_config.access_key == s3_relation_data["access_key"]
-    assert config.s3_config.secret_key == s3_relation_data["secret_key"]
+    assert config.s3_config.access_key == s3_relation_data["access-key"]
+    assert config.s3_config.secret_key == s3_relation_data["secret-key"]
     assert config.saml_config.entity_id == saml_relation_data.entity_id
     assert config.saml_config.metadata_url == saml_relation_data.metadata_url
     assert config.saml_config.certificates == saml_relation_data.certificates
