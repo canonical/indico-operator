@@ -65,6 +65,7 @@ parts:
       - texlive-fonts-recommended
       - texlive-plain-generic
       - texlive-xetex
+      - libpangocairo-1.0-0 # required for python3.12
     stage-snaps:
       - celery-prometheus-exporter/latest/edge
       - gtrkiller-statsd-prometheus-exporter/latest/edge
