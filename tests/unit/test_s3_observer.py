@@ -49,7 +49,7 @@ def test_credentials_changed_emits_config_changed_event_and_updates_charm_state(
     """
     arrange: set up a charm.
     act: integrate with S3.
-    assert: a config change event is emitted and the state, updated.
+    assert: a config change event is emitted.
     """
     relation_data = {
         "bucket": "some-bucket",
@@ -67,7 +67,7 @@ def test_credentials_gone_emits_config_changed_event_and_updates_charm_state():
     """
     arrange: set up a charm and a s3 relation.
     act: remove the S3 relation.
-    assert: a config change event is emitted and the state, updated.
+    assert: a config change event is emitted.
     """
     relation_data = {
         "bucket": "some-bucket",
