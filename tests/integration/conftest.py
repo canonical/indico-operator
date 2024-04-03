@@ -151,8 +151,8 @@ async def s3_integrator_fixture(ops_test: OpsTest, app: Application):
     await s3_integrator.units[0].run_action(  # type: ignore
         "sync-s3-credentials",
         params={
-            "access_key": token_hex(16),
-            "secret_key": token_hex(16),
+            "access-key": token_hex(16),
+            "secret-key": token_hex(16),
         },
     )
     await ops_test.model.add_relation(app.name, s3_integrator.name)
