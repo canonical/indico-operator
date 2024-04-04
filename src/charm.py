@@ -307,7 +307,7 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
                 "celery": {
                     "override": "replace",
                     "summary": "Indico celery",
-                    "command": "/usr/local/bin/indico celery worker -B -E",
+                    "command": "/usr/bin/indico celery worker -B -E",
                     "startup": "enabled",
                     "user": "indico",
                     "environment": indico_env_config,
@@ -320,7 +320,7 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
                     "period": "120s",
                     "timeout": "119s",
                     "exec": {
-                        "command": "/usr/local/bin/indico celery inspect ping",
+                        "command": "/usr/bin/indico celery inspect ping",
                         "environment": indico_env_config,
                     },
                 },
@@ -816,7 +816,7 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
         indico_env_config = self._get_indico_env_config_str(container)
 
         cmd = [
-            "/usr/local/bin/indico",
+            "/usr/bin/indico",
             "autocreate",
             "admin",
             event.params["email"],
@@ -854,7 +854,7 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
         indico_env_config = self._get_indico_env_config_str(container)
         for email in event.params["email"].split(EMAIL_LIST_SEPARATOR):
             cmd = [
-                "/usr/local/bin/indico",
+                "/usr/bin/indico",
                 "anonymize",
                 "user",
                 email,

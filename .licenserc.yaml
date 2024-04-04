@@ -35,4 +35,5 @@ header:
     - 'lib/**'
     - 'indico_rock/etc/logging.yaml'
     - 'indico_rock/etc/uwsgi.ini'
+    - 'tests/unit/pre_run_script.sh'
   comment: on-failure
