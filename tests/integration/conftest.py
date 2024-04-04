@@ -145,11 +145,13 @@ async def s3_integrator_fixture(ops_test: OpsTest, app: Application):
         "endpoint": "s3.example.com",
     }
     s3_integrator = await ops_test.model.deploy(
-        "s3-integrator", channel="latest/stable", config=s3_config, trust=True
+        "s3-integrator", channel="latest/edge", config=s3_config
     )
+    await ops_test.model.wait_for_idle(apps=[s3_integrator.name], idle_period=5, status="blocked")
     params = {"access-key": token_hex(16), "secret-key": token_hex(16)}
     # Application actually does have units
-    await s3_integrator.units[0].run_action("sync-s3-credentials", **params)  # type: ignore
+    action_sync_s3_credentials = await s3_integrator.units[0].run_action("sync-s3-credentials", **params)  # type: ignore
+    await action_sync_s3_credentials.wait()
     await ops_test.model.wait_for_idle(
         apps=[s3_integrator.name], status="active", raise_on_error=False
     )
