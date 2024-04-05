@@ -21,7 +21,7 @@ async def test_s3(app: Application, s3_integrator: Application):
     assert: the pebble plan matches the S3 values as configured by the integrator.
     """
     # Application actually does have units
-    indico_container = app.units[0].containers["indico"]  # type: ignore
+    indico_container = app.units[0].get_container("indico")  # type: ignore
     indico_env = indico_container.get_plan().services["indico"].environment
     storage_config = json.loads(indico_env["STORAGE_DICT"])
     # Application actually does have units

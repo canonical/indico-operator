@@ -221,7 +221,7 @@ class State:  # pylint: disable=too-few-public-methods
                     access_key=s3_relation_data["access-key"],
                     secret_key=s3_relation_data["secret-key"],
                 )
-                if s3_relation_data and "endpoint" in s3_relation_data
+                if s3_relation_data and "access-key" in s3_relation_data
                 else None
             )
         except ValidationError as exc:
