@@ -4,12 +4,11 @@
 
 """Indico S3 integration tests."""
 
-import json
 import re
-import yaml
 
 import juju
 import pytest
+import yaml
 from ops import Application
 from pytest_operator.plugin import OpsTest
 
@@ -23,7 +22,6 @@ async def test_s3(app: Application, s3_integrator: Application, ops_test: OpsTes
     act: do nothing.
     assert: the pebble plan matches the S3 values as configured by the integrator.
     """
-
     # Application actually does have units
     return_code, stdout, _ = await ops_test.juju(
         "ssh", "--container", app.name, app.units[0].name, "pebble", "plan"  # type: ignore
