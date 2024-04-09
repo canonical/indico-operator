@@ -8,7 +8,8 @@ _Supported charms_: [postgresql-k8s](https://charmhub.io/postgresql-k8s), [postg
 Database integration is a required relation for the indico charm to supply structured data
 storage for Indico.
 
-Example db integrate command: `juju integrate indico postgresql-k8s:db`
+Example db integrate command: `juju integrate indico postgresql-k8s`
+
 
 ### redis
 
