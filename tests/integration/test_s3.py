@@ -40,7 +40,7 @@ async def test_s3(app: Application, s3_integrator: Application, ops_test: OpsTes
     assert action.status == "completed"
     # in get-s3-connection-info, access_key and secret_key are redacted
     assert re.match(
-        f"s3:host={action.results['endpoint']},"
-        f"access_key=[^=]+,secret_key=[^=]+,proxy=true,bucket={action.results['bucket']}",
+        f"s3:bucket={action.results['bucket']},"
+        f"access_key=[^=]+,secret_key=[^=]+,proxy=true,host={action.results['endpoint']}",
         storage_config["s3"],
     )
