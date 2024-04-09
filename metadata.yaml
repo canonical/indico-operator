@@ -1,4 +1,4 @@
-# Copyright 2023 Canonical Ltd.
+# Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
 
 name: indico
@@ -36,8 +36,6 @@ containers:
     resource: indico-image
   indico-nginx:
     resource: indico-nginx-image
-  indico-celery:
-    resource: indico-image
 
 resources:
   indico-image:
@@ -66,6 +64,10 @@ requires:
   redis-cache:
     interface: redis
     limit: 1
+  saml:
+    interface: saml
+    limit: 1
+    optional: true
   smtp-legacy:
     interface: smtp
     limit: 1

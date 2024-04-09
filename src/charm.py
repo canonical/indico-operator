@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2023 Canonical Ltd.
+# Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
 
 """Charm for Indico on kubernetes."""
@@ -8,7 +8,7 @@ import logging
 import os
 import typing
 from re import findall
-from typing import Dict, Iterator, List, Optional, Tuple
+from typing import Any, Dict, Iterator, List, Optional, Tuple
 from urllib.parse import urlparse
 
 import ops.lib
@@ -16,7 +16,7 @@ from charms.grafana_k8s.v0.grafana_dashboard import GrafanaDashboardProvider
 from charms.nginx_ingress_integrator.v0.nginx_route import require_nginx_route
 from charms.prometheus_k8s.v0.prometheus_scrape import MetricsEndpointProvider
 from charms.redis_k8s.v0.redis import RedisRelationCharmEvents, RedisRequires
-from ops.charm import ActionEvent, CharmBase, HookEvent, PebbleReadyEvent
+from ops.charm import ActionEvent, CharmBase, HookEvent, PebbleReadyEvent, RelationDepartedEvent
 from ops.framework import StoredState
 from ops.jujuversion import JujuVersion
 from ops.main import main
@@ -24,6 +24,7 @@ from ops.model import ActiveStatus, BlockedStatus, Container, MaintenanceStatus,
 from ops.pebble import ExecError
 
 from database_observer import DatabaseObserver
+from saml_observer import SamlObserver
 from smtp_observer import SmtpObserver
 from state import CharmConfigInvalidError, ProxyConfig, State
 
@@ -37,14 +38,12 @@ INDICO_CUSTOMIZATION_DIR = "/srv/indico/custom"
 NGINX_PROMEXP_PORT = "9113"
 PORT = 8080
 STATSD_PROMEXP_PORT = "9102"
-UBUNTU_SAML_URL = "https://login.ubuntu.com/saml/"
-STAGING_UBUNTU_SAML_URL = "https://login.staging.ubuntu.com/saml/"
 SAML_GROUPS_PLUGIN_NAME = "saml_groups"
 
 UWSGI_TOUCH_RELOAD = "/srv/indico/indico.wsgi"
 
 
-class IndicoOperatorCharm(CharmBase):
+class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attributes
     """Charm for Indico on kubernetes.
 
     Attrs:
@@ -63,9 +62,12 @@ class IndicoOperatorCharm(CharmBase):
         super().__init__(*args)
         self.database = DatabaseObserver(self)
         self.smtp = SmtpObserver(self)
+        self.saml = SamlObserver(self)
         try:
             self.state = State.from_charm(
-                self, smtp_relation_data=self.smtp.smtp.get_relation_data()
+                self,
+                smtp_relation_data=self.smtp.smtp.get_relation_data(),
+                saml_relation_data=self.saml.saml.get_relation_data(),
             )
         except CharmConfigInvalidError as exc:
             self.unit.status = ops.BlockedStatus(exc.msg)
@@ -73,7 +75,6 @@ class IndicoOperatorCharm(CharmBase):
         self.framework.observe(self.on.config_changed, self._on_config_changed)
         self.framework.observe(self.on.leader_elected, self._on_leader_elected)
         self.framework.observe(self.on.indico_pebble_ready, self._on_pebble_ready)
-        self.framework.observe(self.on.indico_celery_pebble_ready, self._on_pebble_ready)
         self.framework.observe(self.on.indico_nginx_pebble_ready, self._on_pebble_ready)
         self.framework.observe(
             self.on.refresh_external_resources_action, self._refresh_external_resources_action
@@ -94,6 +95,9 @@ class IndicoOperatorCharm(CharmBase):
         self.redis_cache = RedisRequires(self, self._stored, "redis-cache")
         self.framework.observe(
             self.redis_cache.charm.on.redis_relation_updated, self._on_config_changed
+        )
+        self.framework.observe(
+            self.on["indico-peers"].relation_departed, self._on_peer_relation_departed
         )
         self._require_nginx_route()
 
@@ -211,7 +215,7 @@ class IndicoOperatorCharm(CharmBase):
             container: Container to be configured by Pebble.
         """
         self.unit.status = MaintenanceStatus(f"Adding {container.name} layer to pebble")
-        if container.name in ["indico", "indico-celery"]:
+        if container.name == "indico":
             plugins = (
                 self.config["external_plugins"].split(",")
                 if self.config["external_plugins"]
@@ -220,20 +224,28 @@ class IndicoOperatorCharm(CharmBase):
             self._install_plugins(container, plugins)
         # The plugins need to be installed before adding the layer so that they are included in
         # the corresponding env vars
-        pebble_config_func = getattr(
-            self, f"_get_{container.name.replace('-', '_')}_pebble_config"
-        )
-        pebble_config = pebble_config_func(container)
-        container.add_layer(container.name, pebble_config, combine=True)
         if container.name == "indico":
-            celery_config = self._get_celery_prometheus_exporter_pebble_config(container)
+            indico_config = self._get_indico_pebble_config(container)
+            container.add_layer(container.name, indico_config, combine=True)
+            peer_relation = self.model.get_relation("indico-peers")
+            if (
+                not peer_relation
+                or peer_relation.data[self.app].get("celery-unit") == self.unit.name
+            ):
+                celery_config = self._get_celery_pebble_config(container)
+                container.add_layer("celery", celery_config, combine=True)
+                celery_exporter_config = self._get_celery_prometheus_exporter_pebble_config(
+                    container
+                )
+                container.add_layer("celery-exporter", celery_exporter_config, combine=True)
             statsd_config = self._get_statsd_prometheus_exporter_pebble_config(container)
-            container.add_layer("celery", celery_config, combine=True)
             container.add_layer("statsd", statsd_config, combine=True)
             self._download_customization_changes(container)
         if container.name == "indico-nginx":
-            pebble_config = self._get_nginx_prometheus_exporter_pebble_config(container)
-            container.add_layer("nginx", pebble_config, combine=True)
+            nginx_config = self._get_nginx_pebble_config(container)
+            container.add_layer(container.name, nginx_config, combine=True)
+            nginx_exporter_config = self._get_nginx_prometheus_exporter_pebble_config(container)
+            container.add_layer("nginx", nginx_exporter_config, combine=True)
         self.unit.status = MaintenanceStatus(f"Starting {container.name} container")
         container.pebble.replan_services()
         if self._are_pebble_instances_ready():
@@ -275,8 +287,8 @@ class IndicoOperatorCharm(CharmBase):
         }
         return typing.cast(ops.pebble.LayerDict, layer)
 
-    def _get_indico_celery_pebble_config(self, container: Container) -> Dict:
-        """Generate pebble config for the indico-celery container.
+    def _get_celery_pebble_config(self, container: Container) -> ops.pebble.LayerDict:
+        """Generate pebble config for the celery container.
 
         Args:
             container: Celery container that has the target configuration.
@@ -285,14 +297,14 @@ class IndicoOperatorCharm(CharmBase):
             The pebble configuration for the container.
         """
         indico_env_config = self._get_indico_env_config(container)
-        return {
+        layer = {
             "summary": "Indico celery layer",
             "description": "Indico celery layer",
             "services": {
-                "indico-celery": {
+                "celery": {
                     "override": "replace",
                     "summary": "Indico celery",
-                    "command": "/usr/local/bin/indico celery worker -B -E",
+                    "command": "/usr/bin/indico celery worker -B -E",
                     "startup": "enabled",
                     "user": "indico",
                     "environment": indico_env_config,
@@ -305,20 +317,21 @@ class IndicoOperatorCharm(CharmBase):
                     "period": "120s",
                     "timeout": "119s",
                     "exec": {
-                        "command": "/usr/local/bin/indico celery inspect ping",
+                        "command": "/usr/bin/indico celery inspect ping",
                         "environment": indico_env_config,
                     },
                 },
             },
         }
+        return typing.cast(ops.pebble.LayerDict, layer)
 
-    def _get_indico_nginx_pebble_config(self, _) -> Dict:
+    def _get_nginx_pebble_config(self, _) -> ops.pebble.LayerDict:
         """Generate pebble config for the indico-nginx container.
 
         Returns:
             The pebble configuration for the container.
         """
-        return {
+        layer = {
             "summary": "Indico nginx layer",
             "description": "Indico nginx layer",
             "services": {
@@ -337,6 +350,7 @@ class IndicoOperatorCharm(CharmBase):
                 },
             },
         }
+        return typing.cast(ops.pebble.LayerDict, layer)
 
     def _get_celery_prometheus_exporter_pebble_config(self, container) -> ops.pebble.LayerDict:
         """Generate pebble config for the celery-prometheus-exporter container.
@@ -457,9 +471,8 @@ class IndicoOperatorCharm(CharmBase):
             secret_value = peer_relation.data[self.app].get("secret-key")
         else:
             secret_id = peer_relation.data[self.app].get("secret-id")
-            if secret_id:
-                secret = self.model.get_secret(id=secret_id)
-                secret_value = secret.get_content().get("secret-key")
+            secret = self.model.get_secret(id=secret_id)
+            secret_value = secret.get_content().get("secret-key")
         return secret_value
 
     def _get_indico_env_config(self, container: Container) -> Dict:
@@ -518,80 +531,26 @@ class IndicoOperatorCharm(CharmBase):
         env_config["STORAGE_DICT"] = str(env_config["STORAGE_DICT"])
 
         # SAML configuration reference https://github.com/onelogin/python3-saml
-        if self.config["saml_target_url"]:
-            saml_config = {}
-            if self.config["saml_target_url"] == UBUNTU_SAML_URL:
-                saml_config = {
-                    "strict": True,
-                    "sp": {
-                        "entityId": self.config["site_url"],
-                    },
-                    "idp": {
-                        "entityId": "https://login.ubuntu.com",
-                        "singleSignOnService": {
-                            "url": "https://login.ubuntu.com/saml/",
-                            "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect",
-                        },
-                        "singleLogoutService": {
-                            "url": "https://login.ubuntu.com/+logout",
-                            "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect",
-                        },
-                        "x509cert": (
-                            "MIICjzCCAfigAwIBAgIJALNN/vxaR1hyMA0GCSqGSIb3DQEBBQUAMDoxCzAJBgNVBAYTA"
-                            "kdCMRMwEQYDVQQIEwpTb21lLVN0YXRlMRYwFAYDVQQKEw1DYW5vbmljYWwgTHRkMB4XDT"
-                            "EyMDgxMDEyNDE0OFoXDTEzMDgxMDEyNDE0OFowOjELMAkGA1UEBhMCR0IxEzARBgNVBAg"
-                            "TClNvbWUtU3RhdGUxFjAUBgNVBAoTDUNhbm9uaWNhbCBMdGQwgZ8wDQYJKoZIhvcNAQEB"
-                            "BQADgY0AMIGJAoGBAMM4pmIxkv419q8zj5EojK57y6plU/+k3apX6w1PgAYeI0zhNuud/"
-                            "tiqKVQEDyZ6W7HNeGtWSh5rewy8c07BShcHG5Y8ibzBdIibGs5k6gvtmsRiXDE/F39+Rr"
-                            "PSW18beHhEuoVJM9RANp3MYMOK11SiClSiGo+NfBKFuoqNX3UjAgMBAAGjgZwwgZkwHQY"
-                            "DVR0OBBYEFH/no88pbywRnW6Fz+B4lQ04w/86MGoGA1UdIwRjMGGAFH/no88pbywRnW6F"
-                            "z+B4lQ04w/86oT6kPDA6MQswCQYDVQQGEwJHQjETMBEGA1UECBMKU29tZS1TdGF0ZTEWM"
-                            "BQGA1UEChMNQ2Fub25pY2FsIEx0ZIIJALNN/vxaR1hyMAwGA1UdEwQFMAMBAf8wDQYJKo"
-                            "ZIhvcNAQEFBQADgYEArTGbZ1rg++aBxnNuJ7eho62JKKtRW5O+kMBvBLWi7fKck5uXDE6"
-                            "d7Jv6hUy/gwUZV7r5kuPwRlw3Pu6AX4R60UsQuVG1/VVVI7nu32iCkXx5Vzq446IkVRdk"
-                            "/QOda1dRyq0oaifUUhJfwVFSsm95ENDFdGqD0raj7g77ajcBMf8="
-                        ),
-                    },
+        if self.state.saml_config:
+            saml_config: Dict[str, Any] = {
+                "strict": True,
+                "sp": {
+                    "entityId": self.config["site_url"],
+                },
+                "idp": {
+                    "entityId": self.state.saml_config.entity_id,
+                    "x509cert": self.state.saml_config.certificates[0],
+                },
+            }
+            for endpoint in self.state.saml_config.endpoints:
+                # First letter needs to be lowercase
+                endpoint_name = endpoint.name[:1].lower() + endpoint.name[1:]
+                saml_config["idp"][endpoint_name] = {
+                    "url": str(endpoint.url),
+                    "binding": endpoint.binding,
                 }
-            elif self.config["saml_target_url"] == STAGING_UBUNTU_SAML_URL:
-                saml_config = {
-                    "strict": True,
-                    "sp": {
-                        "entityId": self.config["site_url"],
-                    },
-                    "idp": {
-                        "entityId": "https://login.staging.ubuntu.com",
-                        "singleSignOnService": {
-                            "url": "https://login.staging.ubuntu.com/saml/",
-                            "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect",
-                        },
-                        "singleLogoutService": {
-                            "url": "https://login.staging.ubuntu.com/+logout",
-                            "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect",
-                        },
-                        "x509cert": (
-                            "MIIDuzCCAqOgAwIBAgIJALRwYFkmH3k9MA0GCSqGSIb3DQEBCwUAMHQxCzAJBgNVBAYTA"
-                            "kdCMRMwEQYDVQQIDApTb21lLVN0YXRlMSswKQYDVQQKDCJTU08gU3RhZ2luZyBrZXkgZm"
-                            "9yIEV4cGVuc2lmeSBTQU1MMSMwIQYDVQQDDBpTU08gU3RhZ2luZyBFeHBlbnNpZnkgU0F"
-                            "NTDAeFw0xNTA5MjUxMDUzNTZaFw0xNjA5MjQxMDUzNTZaMHQxCzAJBgNVBAYTAkdCMRMw"
-                            "EQYDVQQIDApTb21lLVN0YXRlMSswKQYDVQQKDCJTU08gU3RhZ2luZyBrZXkgZm9yIEV4c"
-                            "GVuc2lmeSBTQU1MMSMwIQYDVQQDDBpTU08gU3RhZ2luZyBFeHBlbnNpZnkgU0FNTDCCAS"
-                            "IwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBANyt2LqrD3DSmJMtNUA5xjJpbUNuiaH"
-                            "FdO0AduOegfM7YnKIp0Y001S07ffEcv/zNo7Gg6wAZwLtW2/+eUkRj8PLEyYDyU2NiwD7"
-                            "stAzhz50AjTbLojRyZdrEo6xu+f43xFNqf78Ix8mEKFr0ZRVVkkNRifa4niXPDdzIUiv5"
-                            "UZUGjW0ybFKdM3zm6xjEwMwo8ixu/IbAn74PqC7nypllCvLjKLFeYmYN24oYaVKWIRhQu"
-                            "GL3m98eQWFiVUL40palHtgcy5tffg8UOyAOqg5OF2kGVeyPZNmjq/jVHYyBUtBaMvrTLU"
-                            "lOKRRC3I+aW9tXs7aqclQytOiFQxq+aEapB8CAwEAAaNQME4wHQYDVR0OBBYEFA9Ub7RI"
-                            "fw21Qgbnf4IA3n4jUpAlMB8GA1UdIwQYMBaAFA9Ub7RIfw21Qgbnf4IA3n4jUpAlMAwGA"
-                            "1UdEwQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAGBHECvs8V3xBKGRvNfBaTbY2FpbwL"
-                            "heSm3MUM4/hswvje24oknoHMF3dFNVnosOLXYdaRf8s0rsJfYuoUTap9tKzv0osGoA3mM"
-                            "w18LYW3a+mUHurx+kJZP+VN3emk84TXiX44CCendMVMxHxDQwg40YxALNc4uew2hlLReB"
-                            "8nC+55OlsIInIqPcIvtqUZgeNp2iecKnCgZPDaElez52GY5GRFszJd04sAQIrpg2+xfZv"
-                            "LMtvWwb9rpdto5oIdat2gIoMLdrmJUAYWP2+BLiKVpe9RtzfvqtQrk1lDoTj3adJYutNI"
-                            "PbTGOfI/Vux0HCw9KCrNTspdsfGTIQFJJi01E="
-                        ),
-                    },
-                }
+                if endpoint.response_url:
+                    saml_config["idp"][endpoint_name]["response_url"] = str(endpoint.response_url)
             auth_providers = {"ubuntu": {"type": "saml", "saml_config": saml_config}}
             env_config["INDICO_AUTH_PROVIDERS"] = str(auth_providers)
             identity_providers = {
@@ -645,18 +604,6 @@ class IndicoOperatorCharm(CharmBase):
             }
         return {}
 
-    def _is_saml_target_url_valid(self) -> bool:
-        """Check if the target SAML URL is currently supported.
-
-        Returns:
-            If the SAML config is valid or not.
-        """
-        return (
-            not self.config["saml_target_url"]
-            or UBUNTU_SAML_URL == self.config["saml_target_url"]
-            or STAGING_UBUNTU_SAML_URL == self.config["saml_target_url"]
-        )
-
     def _on_config_changed(self, event: HookEvent) -> None:
         """Handle changes in configuration.
 
@@ -664,12 +611,6 @@ class IndicoOperatorCharm(CharmBase):
             event: Event triggering the configuration change handler.
         """
         if not self._are_relations_ready(event):
-            return
-        if not self._is_saml_target_url_valid():
-            self.unit.status = BlockedStatus(
-                "Invalid saml_target_url option provided. "
-                f"Only {UBUNTU_SAML_URL} and {STAGING_UBUNTU_SAML_URL} are available."
-            )
             return
         if not self._are_pebble_instances_ready():
             self.unit.status = WaitingStatus("Waiting for pebble")
@@ -824,6 +765,30 @@ class IndicoOperatorCharm(CharmBase):
         ):
             secret = self.app.add_secret({"secret-key": secret_value})
             peer_relation.data[self.app].update({"secret-id": secret.id})
+        if peer_relation and not peer_relation.data[self.app].get("celery-unit"):
+            peer_relation.data[self.app].update({"celery-unit": self.unit.name})
+
+    def _on_peer_relation_departed(self, event: RelationDepartedEvent) -> None:
+        """Handle the peer relation departed event.
+
+        Args:
+            event: the event triggering the handler.
+        """
+        peer_relation = self.model.get_relation("indico-peers")
+        if (
+            self.unit.is_leader()
+            and peer_relation
+            and event.departing_unit
+            and peer_relation.data[self.app].get("celery-unit") == event.departing_unit.name
+        ):
+            if self.unit != event.departing_unit:
+                peer_relation.data[self.app].update({"celery-unit": self.unit.name})
+                container = self.unit.get_container("indico")
+                if self._are_relations_ready(event) and container.can_connect():
+                    self._config_pebble(container)
+            else:
+                # Leadership election will select a new celery-unit
+                peer_relation.data[self.app].update({"celery-unit": ""})
 
     def _has_secrets(self) -> bool:
         """Check if current Juju version supports secrets.
@@ -846,7 +811,7 @@ class IndicoOperatorCharm(CharmBase):
         indico_env_config = self._get_indico_env_config_str(container)
 
         cmd = [
-            "/usr/local/bin/indico",
+            "/usr/bin/indico",
             "autocreate",
             "admin",
             event.params["email"],
@@ -884,7 +849,7 @@ class IndicoOperatorCharm(CharmBase):
         indico_env_config = self._get_indico_env_config_str(container)
         for email in event.params["email"].split(EMAIL_LIST_SEPARATOR):
             cmd = [
-                "/usr/local/bin/indico",
+                "/usr/bin/indico",
                 "anonymize",
                 "user",
                 email,

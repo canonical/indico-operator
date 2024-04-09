@@ -1,4 +1,4 @@
-# Copyright 2023 Canonical Ltd.
+# Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
 
 """Indico charm unit tests."""
@@ -63,7 +63,6 @@ class TestBase(unittest.TestCase):
         self.is_ready(
             [
                 "indico",
-                "indico-celery",
                 "indico-nginx",
             ]
         )

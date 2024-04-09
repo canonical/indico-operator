@@ -1,4 +1,4 @@
-# Copyright 2023 Canonical Ltd.
+# Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
 
 """Indico charm unit tests."""
@@ -87,7 +87,7 @@ class TestActions(TestBase):
 
         indico_env_config = charm._get_indico_env_config_str(container)
         expected_cmd = [
-            "/usr/local/bin/indico",
+            "/usr/bin/indico",
             "autocreate",
             "admin",
             email,
@@ -182,7 +182,7 @@ class TestActions(TestBase):
 
         indico_env_config = charm._get_indico_env_config_str(container)
         expected_cmd = [
-            "/usr/local/bin/indico",
+            "/usr/bin/indico",
             "autocreate",
             "admin",
             email,
@@ -230,7 +230,7 @@ class TestActions(TestBase):
             """
             # Check if command was called
             expected_cmd = [
-                "/usr/local/bin/indico",
+                "/usr/bin/indico",
                 "anonymize",
                 "user",
                 email,
@@ -332,7 +332,7 @@ class TestActions(TestBase):
         email = token_hex(16)
         error_msg = "Execution error"
         expected_cmd = [
-            "/usr/local/bin/indico",
+            "/usr/bin/indico",
             "anonymize",
             "user",
             email,

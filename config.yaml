@@ -1,4 +1,4 @@
-# Copyright 2023 Canonical Ltd.
+# Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
 
 options:
@@ -30,10 +30,6 @@ options:
     type: string
     description: Email address of the technical manager of the Indico instance.
     default: 'support-tech@mydomain.local'
-  saml_target_url:
-    type: string
-    description: Target URL for SAML SSO authentication.
-    default: ''
   site_url:
     type: string
     description: URL through which Indico is accessed by users.

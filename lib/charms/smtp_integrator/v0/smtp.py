@@ -1,4 +1,4 @@
-# Copyright 2023 Canonical Ltd.
+# Copyright 2024 Canonical Ltd.
 # Licensed under the Apache2.0. See LICENSE file in charm source for details.
 
 """Library to manage the integration with the SMTP Integrator charm.
@@ -68,7 +68,9 @@ LIBAPI = 0
 
 # Increment this PATCH version before using `charmcraft publish-lib` or reset
 # to 0 if you are raising the major API version
-LIBPATCH = 6
+LIBPATCH = 8
+
+PYDEPS = ["pydantic>=2"]
 
 # pylint: disable=wrong-import-position
 import itertools
@@ -129,12 +131,12 @@ class SmtpRelationData(BaseModel):
 
     host: str = Field(..., min_length=1)
     port: int = Field(None, ge=1, le=65536)
-    user: Optional[str]
-    password: Optional[str]
-    password_id: Optional[str]
+    user: Optional[str] = None
+    password: Optional[str] = None
+    password_id: Optional[str] = None
     auth_type: AuthType
     transport_security: TransportSecurity
-    domain: Optional[str]
+    domain: Optional[str] = None
 
     def to_relation_data(self) -> Dict[str, str]:
         """Convert an instance of SmtpRelationData to the relation representation.
@@ -344,4 +346,9 @@ class SmtpProvides(ops.Object):
             relation: the relation for which to update the data.
             smtp_data: a SmtpRelationData instance wrapping the data to be updated.
         """
-        relation.data[self.charm.model.app].update(smtp_data.to_relation_data())
+        relation_data = smtp_data.to_relation_data()
+        if relation_data["auth_type"] == AuthType.NONE.value:
+            logger.warning('Insecure setting: auth_type has a value "none"')
+        if relation_data["transport_security"] == TransportSecurity.NONE.value:
+            logger.warning('Insecure setting: transport_security has value "none"')
+        relation.data[self.charm.model.app].update(relation_data)
