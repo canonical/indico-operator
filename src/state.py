@@ -79,7 +79,7 @@ class S3Config(BaseModel):  # pylint: disable=too-few-public-methods
     """
 
     bucket: str
-    host: str
+    host: Optional[str]
     access_key: str
     secret_key: str
 
@@ -88,10 +88,13 @@ class S3Config(BaseModel):  # pylint: disable=too-few-public-methods
 
         Returns: the connection string for this instance.
         """
-        return (
-            f"s3:bucket={self.bucket},host={self.host},access_key={self.access_key},"
+        connection_string = (
+            f"s3:bucket={self.bucket},access_key={self.access_key},"
             f"secret_key={self.secret_key},proxy=true"
         )
+        if self.host:
+            connection_string = f"{connection_string},host={self.host}"
+        return connection_string
 
 
 class SamlEndpoint(BaseModel):  # pylint: disable=too-few-public-methods

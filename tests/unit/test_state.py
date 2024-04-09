@@ -122,6 +122,27 @@ def test_s3_config_get_connection_string():
     connection_string = s3_config.get_connection_string()
 
     assert connection_string == (
-        f"s3:bucket=sample-bucket,host=s3.example.com,access_key={access_key},"
-        f"secret_key={secret_key},proxy=true"
+        f"s3:bucket=sample-bucket,access_key={access_key},"
+        f"secret_key={secret_key},proxy=true,host=s3.example.com"
+    )
+
+
+def test_s3_config_get_connection_string_without_host():
+    """
+    arrange: create an S3Config object.
+    act: call the get_connection_string method.
+    assert: the returned value matches the object attributes.
+    """
+    access_key = token_hex(16)
+    secret_key = token_hex(16)
+    s3_config = state.S3Config(
+        bucket="sample-bucket",
+        access_key=access_key,
+        secret_key=secret_key,
+    )
+
+    connection_string = s3_config.get_connection_string()
+
+    assert connection_string == (
+        f"s3:bucket=sample-bucket,access_key={access_key},secret_key={secret_key},proxy=true"
     )

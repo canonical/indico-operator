@@ -266,8 +266,8 @@ class TestCore(TestBase):
         self.assertEqual("fs:/srv/indico/archive", storage_dict["default"])
         self.assertEqual(
             (
-                f"s3:bucket={s3_config.bucket},host={s3_config.host},"
-                f"access_key={s3_config.access_key},secret_key={s3_config.secret_key},proxy=true"
+                f"s3:bucket={s3_config.bucket},access_key={s3_config.access_key},"
+                f"secret_key={s3_config.secret_key},proxy=true,host={s3_config.host}"
             ),
             storage_dict["s3"],
         )
