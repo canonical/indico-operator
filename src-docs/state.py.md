@@ -93,7 +93,7 @@ S3 configuration.
  - <b>`bucket`</b>:  the S3 bucket. 
  - <b>`host`</b>:  S3 host. 
  - <b>`access_key`</b>:  S3 access key. 
- - <b>`secret_key`</b>:  S3 secrrt key. 
+ - <b>`secret_key`</b>:  S3 secret key. 
 
 
 

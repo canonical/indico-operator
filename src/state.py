@@ -75,7 +75,7 @@ class S3Config(BaseModel):  # pylint: disable=too-few-public-methods
         bucket: the S3 bucket.
         host: S3 host.
         access_key: S3 access key.
-        secret_key: S3 secrrt key.
+        secret_key: S3 secret key.
     """
 
     bucket: str
