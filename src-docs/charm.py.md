@@ -26,7 +26,7 @@ Charm for Indico on kubernetes.
 
 Attrs:  on: Redis relation charm events. 
 
-<a href="../src/charm.py#L56"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/charm.py#L57"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>function</kbd> `__init__`
 

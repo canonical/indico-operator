@@ -4,16 +4,17 @@
 
 """Indico charm actions integration tests."""
 
+from secrets import token_hex
+
 import juju.action
 import pytest
 import pytest_asyncio
-from ops.model import Application
+from ops import Application
 
 ADMIN_USER_EMAIL = "sample@email.com"
 ADMIN_USER_EMAIL_FAIL = "sample2@email.com"
 
 
-@pytest.mark.abort_on_fail
 @pytest_asyncio.fixture(scope="module")
 async def add_admin(app: Application):
     """
@@ -28,7 +29,7 @@ async def add_admin(app: Application):
     email = ADMIN_USER_EMAIL
     email_fail = ADMIN_USER_EMAIL_FAIL
     # This is a test password
-    password = "somepassword"  # nosec
+    password = token_hex(16)
 
     # Application actually does have units
     action: juju.action.Action = await app.units[0].run_action(  # type: ignore

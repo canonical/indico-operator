@@ -43,7 +43,7 @@ class ObservedCharm(ops.CharmBase):  # pylint: disable=duplicate-code
         self.events.append(event)
 
 
-def test_saml_related_emits_config_changed_eventand_updates_charm_state():
+def test_saml_related_emits_config_changed_event_and_updates_charm_state():
     """
     arrange: set up a charm and a saml relation.
     act: trigger a relation changed event.

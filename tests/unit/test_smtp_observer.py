@@ -5,6 +5,8 @@
 
 # pylint: disable=duplicate-code
 
+from secrets import token_hex
+
 import ops
 from ops.testing import Harness
 
@@ -43,7 +45,7 @@ class ObservedCharm(ops.CharmBase):
         self.events.append(event)
 
 
-def test_smtp_related_emits_config_changed_eventand_updates_charm_state():
+def test_smtp_related_emits_config_changed_event_and_updates_charm_state():
     """
     arrange: set up a charm and a smtp relation.
     act: trigger a relation changed event.
@@ -53,7 +55,7 @@ def test_smtp_related_emits_config_changed_eventand_updates_charm_state():
         "host": "example.smtp",
         "port": "25",
         "user": "example_user",
-        "password": "somepassword",  # nosec
+        "password": token_hex(16),
         "auth_type": "plain",
         "transport_security": "tls",
         "domain": "domain",

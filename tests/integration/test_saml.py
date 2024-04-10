@@ -12,7 +12,7 @@ from urllib.parse import urlparse
 import pytest
 import requests
 import urllib3.exceptions
-from ops.model import Application
+from ops import Application
 from pytest_operator.plugin import OpsTest
 
 
