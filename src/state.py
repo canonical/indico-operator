@@ -5,7 +5,7 @@
 import dataclasses
 import logging
 import os
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import ops
 from charms.saml_integrator.v0.saml import SamlRelationData
@@ -68,6 +68,35 @@ class ProxyConfig(BaseModel):  # pylint: disable=too-few-public-methods
         )
 
 
+class S3Config(BaseModel):  # pylint: disable=too-few-public-methods
+    """S3 configuration.
+
+    Attributes:
+        bucket: the S3 bucket.
+        host: S3 host.
+        access_key: S3 access key.
+        secret_key: S3 secret key.
+    """
+
+    bucket: str
+    host: Optional[str]
+    access_key: str
+    secret_key: str
+
+    def get_connection_string(self) -> str:
+        """Retrieve a connection string for this instance.
+
+        Returns: the connection string for this instance.
+        """
+        connection_string = (
+            f"s3:bucket={self.bucket},access_key={self.access_key},"
+            f"secret_key={self.secret_key},proxy=true"
+        )
+        if self.host:
+            connection_string = f"{connection_string},host={self.host}"
+        return connection_string
+
+
 class SamlEndpoint(BaseModel):  # pylint: disable=too-few-public-methods
     """SAML configuration.
 
@@ -126,17 +155,20 @@ class State:  # pylint: disable=too-few-public-methods
         proxy_config: Proxy configuration.
         saml_config: SAML configuration.
         smtp_config: SMTP configuration.
+        s3_config: S3 configuration.
     """
 
     proxy_config: Optional[ProxyConfig]
     saml_config: Optional[SamlConfig]
     smtp_config: Optional[SmtpConfig]
+    s3_config: Optional[S3Config]
 
     # pylint: disable=unused-argument
     @classmethod
     def from_charm(
         cls,
         charm: ops.CharmBase,
+        s3_relation_data: Optional[Dict[str, str]] = None,
         saml_relation_data: Optional[SamlRelationData] = None,
         smtp_relation_data: Optional[SmtpRelationData] = None,
     ) -> "State":
@@ -144,6 +176,7 @@ class State:  # pylint: disable=too-few-public-methods
 
         Args:
             charm: The charm root IndicoOperatorCharm.
+            s3_relation_data: S3 relation data.
             saml_relation_data: SAML relation data.
             smtp_relation_data: SMTP relation data.
 
@@ -184,7 +217,22 @@ class State:  # pylint: disable=too-few-public-methods
                 if smtp_relation_data
                 else None
             )
+            s3_config = (
+                S3Config(
+                    bucket=s3_relation_data["bucket"],
+                    host=s3_relation_data["endpoint"],
+                    access_key=s3_relation_data["access-key"],
+                    secret_key=s3_relation_data["secret-key"],
+                )
+                if s3_relation_data and "access-key" in s3_relation_data
+                else None
+            )
         except ValidationError as exc:
             logger.error("Invalid juju model proxy configuration, %s", exc)
             raise CharmConfigInvalidError("Invalid model proxy configuration.") from exc
-        return cls(proxy_config=proxy_config, smtp_config=smtp_config, saml_config=saml_config)
+        return cls(
+            proxy_config=proxy_config,
+            smtp_config=smtp_config,
+            saml_config=saml_config,
+            s3_config=s3_config,
+        )

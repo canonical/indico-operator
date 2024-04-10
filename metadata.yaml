@@ -64,6 +64,9 @@ requires:
   redis-cache:
     interface: redis
     limit: 1
+  s3:
+    interface: s3
+    limit: 1
   saml:
     interface: saml
     limit: 1

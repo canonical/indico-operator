@@ -8,7 +8,7 @@ import logging
 
 import pytest
 import requests
-from ops.model import ActiveStatus, Application
+from ops import ActiveStatus, Application
 from pytest_operator.plugin import OpsTest
 
 from charm import CELERY_PROMEXP_PORT, NGINX_PROMEXP_PORT, STATSD_PROMEXP_PORT
