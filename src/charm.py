@@ -149,7 +149,7 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
             Tuple containing as first element whether the configuration is valid.
             and a string with the error, if any, as second element.
         """
-        site_url = self.config["site_url"]
+        site_url = typing.cast(str, self.config["site_url"])
         if site_url and not urlparse(site_url).hostname:
             return False, "Configuration option site_url is not valid"
         return True, ""
@@ -160,7 +160,7 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
         Returns:
             The site URL defined as part of the site_url configuration or a default value.
         """
-        site_url = self.config["site_url"]
+        site_url = typing.cast(str, self.config["site_url"])
         if not site_url or not (hostname := urlparse(site_url).hostname):
             return f"{self.app.name}.local"
         return hostname
@@ -171,7 +171,7 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
         Returns:
             The HTTP schema.
         """
-        site_url = self.config["site_url"]
+        site_url = typing.cast(str, self.config["site_url"])
         return urlparse(site_url).scheme if site_url else "http"
 
     def _get_external_port(self) -> Optional[int]:
@@ -180,7 +180,7 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
         Returns:
             The port number.
         """
-        site_url = self.config["site_url"]
+        site_url = typing.cast(str, self.config["site_url"])
         return urlparse(site_url).port
 
     def _are_relations_ready(self, _) -> bool:
@@ -220,7 +220,7 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
         self.unit.status = MaintenanceStatus(f"Adding {container.name} layer to pebble")
         if container.name == "indico":
             plugins = (
-                self.config["external_plugins"].split(",")
+                typing.cast(str, self.config["external_plugins"]).split(",")
                 if self.config["external_plugins"]
                 else []
             )
@@ -712,7 +712,13 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
                     self.config["customization_sources_url"],
                 )
                 self._exec_cmd_in_custom_dir(
-                    container, ["git", "clone", self.config["customization_sources_url"], "."]
+                    container,
+                    [
+                        "git",
+                        "clone",
+                        typing.cast(str, self.config["customization_sources_url"]),
+                        ".",
+                    ],
                 )
 
     def _refresh_external_resources(self, _) -> Dict:
@@ -739,7 +745,7 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
                 results["customization-changes"] = True
             if self.config["external_plugins"]:
                 logging.debug("Upgrading external plugins %s", self.config["external_plugins"])
-                plugins = self.config["external_plugins"].split(",")
+                plugins = typing.cast(str, self.config["external_plugins"]).split(",")
                 self._install_plugins(container, plugins)
                 results["plugin-updates"] = plugins
         return results
