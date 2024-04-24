@@ -34,7 +34,12 @@ async def test_saml_auth(  # pylint: disable=too-many-arguments
     """
     # The linter does not recognize set_config as a method, so this errors must be ignored.
     await app.set_config(  # type: ignore[attr-defined] # pylint: disable=W0106
-        {"site_url": external_url}
+        {
+            "site_url": external_url,
+            "external_plugins": (
+                "https://github.com/canonical/flask-multipass-saml-groups/releases/download/1.2.0/flask_multipass_saml_groups-1.2.0-py3-none-any.whl"
+            ),
+        }
     )
     # The linter does not recognize wait_for_idle as a method,
     # since ops_test has a model as Optional, so this error must be ignored.
