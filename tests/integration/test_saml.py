@@ -38,7 +38,7 @@ async def test_saml_auth(  # pylint: disable=too-many-arguments
             "site_url": external_url,
             "external_plugins": (
                 "https://github.com/canonical/flask-multipass-saml-groups/releases/download"
-                "/1.2.0/flask_multipass_saml_groups-1.2.0-py3-none-any.whl"
+                "/1.2.1/flask_multipass_saml_groups-1.2.1-py3-none-any.whl"
             ),
         }
     )
