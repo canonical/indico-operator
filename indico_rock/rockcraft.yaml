@@ -57,7 +57,6 @@ parts:
       - libglib2.0-data
       - libpq-dev
       - libsasl2-dev
-      - libxmlsec1-dev
       - locales
       - pkg-config
       - postgresql-client
@@ -66,6 +65,8 @@ parts:
       - texlive-plain-generic
       - texlive-xetex
       - libpangocairo-1.0-0 # required for python3.12
+    overlay-packages:
+      - libxmlsec1-dev
     stage-snaps:
       - celery-prometheus-exporter/latest/edge
       - gtrkiller-statsd-prometheus-exporter/latest/edge

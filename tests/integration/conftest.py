@@ -114,7 +114,13 @@ async def app_fixture(
         ops_test.model.add_relation(app_name, "nginx-ingress-integrator"),
     )
     await ops_test.model.wait_for_idle(status="active", raise_on_error=False)
-
+    # Install saml_groups plugin
+    # Disabling line-too-long lint since we are installing the plugin via gh release
+    await application.set_config(
+        {
+            "external_plugins": "https://github.com/canonical/flask-multipass-saml-groups/releases/download/1.2.1/flask_multipass_saml_groups-1.2.1-py3-none-any.whl"  # noqa: E501 pylint: disable=line-too-long
+        }
+    )
     yield application
 
 
