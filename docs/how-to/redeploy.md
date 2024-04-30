@@ -10,7 +10,7 @@ Follow the instructions in [the charm migration documentation](https://charmhub.
 
 If your media files are stored in an S3 bucket, you have two options:
 
-1. Provide the new Indico charm instance with the same credentials and connection information for the object storage.This allows the new instance to automatically access the existing files.
+1. Provide the new Indico charm instance with the same credentials and connection information for the object storage. This allows the new instance to automatically access the existing files.
 2. Use tools like [rclone](https://rclone.org) to copy files from the old
    storage bucket to a new bucket for the new deployment.
 
