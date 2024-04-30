@@ -115,6 +115,12 @@ async def app_fixture(
     )
     await ops_test.model.wait_for_idle(status="active", raise_on_error=False)
 
+    # Install saml_groups plugin
+    await application.set_config(
+        {
+            "external_plugins": "https://github.com/canonical/flask-multipass-saml-groups/releases/download/1.2.1/flask_multipass_saml_groups-1.2.1-py3-none-any.whl"
+        }
+    )
     yield application
 
 
