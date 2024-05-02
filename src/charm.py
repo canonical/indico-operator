@@ -775,7 +775,7 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
             and not peer_relation.data[self.app].get("secret-id")
         ):
             secret = self.app.add_secret({"secret-key": secret_value})
-            peer_relation.data[self.app].update({"secret-id": secret.id})
+            peer_relation.data[self.app].update({"secret-id": typing.cast(str, secret.id)})
         if peer_relation and not peer_relation.data[self.app].get("celery-unit"):
             peer_relation.data[self.app].update({"celery-unit": self.unit.name})
 
