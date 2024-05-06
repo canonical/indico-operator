@@ -8,8 +8,7 @@ import logging
 import os
 import typing
 from re import findall
-from typing import Any, Dict, Iterator, List, Optional, Tuple
-from urllib.parse import urlparse
+from typing import Any, Dict, Iterator, List, Optional
 
 import ops.lib
 from charms.grafana_k8s.v0.grafana_dashboard import GrafanaDashboardProvider
@@ -141,9 +140,9 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
             self.unit.get_container(container_name).can_connect()
             for container_name in self.model.unit.containers
         )
-    
+
     def _get_site_url(self) -> str:
-        return f"https://{self._get_external_hostname}"
+        return f"https://{self._get_external_hostname()}"
 
     def _get_external_hostname(self) -> str:
         """Extract and return hostname from the nginx-route relation data.

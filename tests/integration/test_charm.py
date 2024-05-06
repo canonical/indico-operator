@@ -32,7 +32,7 @@ async def test_active(app: Application):
 
 @pytest.mark.asyncio
 @pytest.mark.abort_on_fail
-async def test_indico_is_up(ops_test: OpsTest, app: Application):
+async def test_indico_is_up(ops_test: OpsTest, app: Application, hostname: str):
     """Check that the bootstrap page is reachable.
 
     Assume that the charm has already been built and is running.
@@ -45,7 +45,7 @@ async def test_indico_is_up(ops_test: OpsTest, app: Application):
     # Send request to bootstrap page and set Host header to app_name (which the application
     # expects)
     response = requests.get(
-        f"http://{address}:8080/bootstrap", headers={"Host": f"{app.name}.local"}, timeout=10
+        f"http://{address}:8080/bootstrap", headers={"Host": hostname}, timeout=10
     )
     assert response.status_code == 200
 

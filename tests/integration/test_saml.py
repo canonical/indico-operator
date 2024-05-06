@@ -7,7 +7,6 @@
 import re
 import socket
 from unittest.mock import patch
-from urllib.parse import urlparse
 
 import pytest
 import requests
@@ -79,7 +78,7 @@ async def test_saml_auth(  # pylint: disable=too-many-arguments
         )
         assert len(saml_response_matches), saml_callback.text
         session.post(
-            f"https://{host}/multipass/saml/ubuntu/acs",
+            f"https://{hostname}/multipass/saml/ubuntu/acs",
             data={
                 "RelayState": "None",
                 "SAMLResponse": saml_response_matches[0],
