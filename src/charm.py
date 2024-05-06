@@ -141,14 +141,17 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
             self.unit.get_container(container_name).can_connect()
             for container_name in self.model.unit.containers
         )
+    
+    def _get_site_url(self) -> str:
+        return f"https://{self._get_external_hostname}"
 
     def _get_external_hostname(self) -> str:
-        """Extract and return hostname from site_url or default to [application name].local.
+        """Extract and return hostname from the nginx-route relation data.
 
         Returns:
-            The site URL defined as part of the site_url configuration or a default value.
+            The hostname configured in the NGINX ingress integrator.
         """
-        return self.nginx_route.config["external_hostname"]
+        return self.nginx_route.config.get("external_hostname")
 
     def _get_external_scheme(self) -> str:
         """Extract and return schema from site_url.
@@ -523,7 +526,7 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
             saml_config: Dict[str, Any] = {
                 "strict": True,
                 "sp": {
-                    "entityId": self.config["site_url"],
+                    "entityId": self._get_site_url(),
                 },
                 "idp": {
                     "entityId": self.state.saml_config.entity_id,
