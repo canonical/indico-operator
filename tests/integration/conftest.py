@@ -14,10 +14,10 @@ from pytest import Config, fixture
 from pytest_operator.plugin import OpsTest
 
 
-@fixture(scope="module", name="external_url")
-def external_url_fixture():
+@fixture(scope="module", name="hostname")
+def hostname_fixture():
     """Provides the external URL for Indico."""
-    return "https://events.staging.canonical.com"
+    return "events.staging.canonical.com"
 
 
 @fixture(scope="module")
@@ -60,6 +60,7 @@ def requests_timeout():
 async def app_fixture(
     ops_test: OpsTest,
     app_name: str,
+    hostname: str,
     pytestconfig: Config,
 ):
     """Indico charm used for integration testing.
@@ -80,7 +81,9 @@ async def app_fixture(
         ops_test.model.deploy("redis-k8s", "redis-broker", channel="latest/edge"),
         ops_test.model.deploy("redis-k8s", "redis-cache", channel="latest/edge"),
         ops_test.model.deploy(
-            "nginx-ingress-integrator", channel="latest/edge", series="focal", trust=True
+            "nginx-ingress-integrator", channel="latest/edge", series="focal", config={
+                "service-hostname": hostname,
+            }, trust=True
         ),
     )
     await ops_test.model.wait_for_idle(

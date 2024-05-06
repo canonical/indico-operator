@@ -20,28 +20,19 @@ from pytest_operator.plugin import OpsTest
 @pytest.mark.abort_on_fail
 @pytest.mark.usefixtures("saml_integrator")
 async def test_saml_auth(  # pylint: disable=too-many-arguments
-    ops_test: OpsTest,
     app: Application,
     saml_email: str,
     saml_password: str,
     requests_timeout: float,
-    external_url: str,
+    hostname: str,
 ):
     """
     arrange: given charm in its initial state
     act: configure a SAML target url and fire SAML authentication
     assert: The SAML authentication process is executed successfully.
     """
-    # The linter does not recognize set_config as a method, so this errors must be ignored.
-    await app.set_config(  # type: ignore[attr-defined] # pylint: disable=W0106
-        {"site_url": external_url}
-    )
-    # The linter does not recognize wait_for_idle as a method,
-    # since ops_test has a model as Optional, so this error must be ignored.
-    await ops_test.model.wait_for_idle(status="active")  # type: ignore[union-attr]
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-    host = urlparse(external_url).netloc
     original_getaddrinfo = socket.getaddrinfo
 
     def patched_getaddrinfo(*args):
@@ -53,14 +44,14 @@ async def test_saml_auth(  # pylint: disable=too-many-arguments
         Returns:
             Address information with localhost as the patched IP.
         """
-        if args[0] == host:
+        if args[0] == hostname:
             return original_getaddrinfo("127.0.0.1", *args[1:])
         return original_getaddrinfo(*args)
 
     with patch.multiple(socket, getaddrinfo=patched_getaddrinfo), requests.session() as session:
-        session.get(f"https://{host}", verify=False)
+        session.get(f"https://{hostname}", verify=False)
         login_page = session.get(
-            f"https://{host}/login",
+            f"https://{hostname}/login",
             verify=False,
             timeout=requests_timeout,
         )
@@ -98,14 +89,14 @@ async def test_saml_auth(  # pylint: disable=too-many-arguments
             timeout=requests_timeout,
         )
         session.post(
-            f"https://{host}/multipass/saml/ubuntu/acs",
+            f"https://{hostname}/multipass/saml/ubuntu/acs",
             data={"SAMLResponse": saml_response_matches[0], "SameSite": "1"},
             verify=False,
             timeout=requests_timeout,
         )
 
         dashboard_page = session.get(
-            f"https://{host}/register/ubuntu",
+            f"https://{hostname}/register/ubuntu",
             verify=False,
             timeout=requests_timeout,
         )
