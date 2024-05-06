@@ -163,7 +163,7 @@ class NginxRouteRequirer(ops.framework.Object):
             delete_keys = {
                 relation_field
                 for relation_field in relation_app_data
-                if relation_field not in self._config
+                if relation_field not in self.config
             }
             for delete_key in delete_keys:
                 del relation_app_data[delete_key]
