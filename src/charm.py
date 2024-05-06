@@ -122,7 +122,12 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
         self._grafana_dashboards = GrafanaDashboardProvider(self)
 
     def _require_nginx_route(self) -> NginxRouteRequirer:
-        """Require nginx ingress."""
+        """Require nginx ingress.
+
+        Returns:
+            The NginxRouteRequirer.
+        """
+        print("PASOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO")
         return require_nginx_route(
             charm=self,
             service_hostname=f"{self.app.name}.local",
@@ -142,6 +147,11 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
         )
 
     def _get_site_url(self) -> str:
+        """Get the site URL.
+
+        Returns:
+            The site's URL.
+        """
         return f"https://{self._get_external_hostname()}"
 
     def _get_external_hostname(self) -> str:
@@ -153,7 +163,7 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
         return self.nginx_route.config.get("external_hostname")
 
     def _get_external_scheme(self) -> str:
-        """Extract and return schema from site_url.
+        """Get the HTTP schema.
 
         Returns:
             The HTTP schema.
@@ -161,7 +171,7 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
         return "https"
 
     def _get_external_port(self) -> Optional[int]:
-        """Extract and return port from site_url.
+        """Get the HTTP port.
 
         Returns:
             The port number.

@@ -60,7 +60,6 @@ def requests_timeout():
 async def app_fixture(
     ops_test: OpsTest,
     app_name: str,
-    hostname: str,
     pytestconfig: Config,
 ):
     """Indico charm used for integration testing.

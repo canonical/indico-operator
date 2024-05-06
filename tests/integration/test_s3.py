@@ -22,6 +22,7 @@ async def test_s3(app: Application, s3_integrator: Application, ops_test: OpsTes
     act: do nothing.
     assert: the pebble plan matches the S3 values as configured by the integrator.
     """
+    assert ops_test.model
     await ops_test.model.applications["nginx-ingress-integrator"].set_config(
         {"external_hostname": hostname}
     )

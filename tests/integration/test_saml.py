@@ -11,7 +11,6 @@ from unittest.mock import patch
 import pytest
 import requests
 import urllib3.exceptions
-from ops import Application
 from pytest_operator.plugin import OpsTest
 
 
@@ -30,9 +29,9 @@ async def test_saml_auth(  # pylint: disable=too-many-arguments
     act: configure a SAML target url and fire SAML authentication
     assert: The SAML authentication process is executed successfully.
     """
-    await ops_test.model.applications["nginx-ingress-integrator"].set_config(
-        {"external_hostname": hostname}
-    )
+    assert ops_test.model
+    nginx_ingress_integrator_app = ops_test.model.applications["nginx-ingress-integrator"]
+    await nginx_ingress_integrator_app.set_config({"external_hostname": hostname})
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
     original_getaddrinfo = socket.getaddrinfo
@@ -104,6 +103,4 @@ async def test_saml_auth(  # pylint: disable=too-many-arguments
         )
         assert dashboard_page.status_code == 200
         # Revert SAML config for zap to be able to run
-        await ops_test.model.applications["nginx-ingress-integrator"].set_config(
-            {"external_hostname": ""}
-        )
+        await nginx_ingress_integrator_app.set_config({"external_hostname": ""})
