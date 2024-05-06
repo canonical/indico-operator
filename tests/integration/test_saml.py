@@ -19,7 +19,7 @@ from pytest_operator.plugin import OpsTest
 @pytest.mark.abort_on_fail
 @pytest.mark.usefixtures("saml_integrator")
 async def test_saml_auth(  # pylint: disable=too-many-arguments
-    app: Application,
+    ops_test: OpsTest,
     saml_email: str,
     saml_password: str,
     requests_timeout: float,
@@ -30,6 +30,9 @@ async def test_saml_auth(  # pylint: disable=too-many-arguments
     act: configure a SAML target url and fire SAML authentication
     assert: The SAML authentication process is executed successfully.
     """
+    await ops_test.model.applications["nginx-ingress-integrator"].set_config(
+        {"external_hostname": hostname}
+    )
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
     original_getaddrinfo = socket.getaddrinfo
@@ -101,3 +104,6 @@ async def test_saml_auth(  # pylint: disable=too-many-arguments
         )
         assert dashboard_page.status_code == 200
         # Revert SAML config for zap to be able to run
+        await ops_test.model.applications["nginx-ingress-integrator"].set_config(
+            {"external_hostname": ""}
+        )
