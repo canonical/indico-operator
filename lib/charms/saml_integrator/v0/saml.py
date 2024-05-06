@@ -68,7 +68,7 @@ LIBAPI = 0
 
 # Increment this PATCH version before using `charmcraft publish-lib` or reset
 # to 0 if you are raising the major API version
-LIBPATCH = 8
+LIBPATCH = 9
 
 # pylint: disable=wrong-import-position
 import re
@@ -178,7 +178,7 @@ class SamlRelationData(BaseModel):
         return result
 
     @classmethod
-    def from_relation_data(cls, relation_data: typing.Dict[str, str]) -> "SamlRelationData":
+    def from_relation_data(cls, relation_data: ops.RelationDataContent) -> "SamlRelationData":
         """Get a SamlRelationData wrapping the relation data.
 
         Arguments:

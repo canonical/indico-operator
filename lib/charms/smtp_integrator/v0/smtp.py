@@ -68,13 +68,14 @@ LIBAPI = 0
 
 # Increment this PATCH version before using `charmcraft publish-lib` or reset
 # to 0 if you are raising the major API version
-LIBPATCH = 8
+LIBPATCH = 9
 
 PYDEPS = ["pydantic>=2"]
 
 # pylint: disable=wrong-import-position
 import itertools
 import logging
+import typing
 from enum import Enum
 from typing import Dict, Optional
 
@@ -179,31 +180,31 @@ class SmtpDataAvailableEvent(ops.RelationEvent):
     def host(self) -> str:
         """Fetch the SMTP host from the relation."""
         assert self.relation.app
-        return self.relation.data[self.relation.app].get("host")
+        return typing.cast(str, self.relation.data[self.relation.app].get("host"))
 
     @property
     def port(self) -> int:
         """Fetch the SMTP port from the relation."""
         assert self.relation.app
-        return int(self.relation.data[self.relation.app].get("port"))
+        return int(typing.cast(str, self.relation.data[self.relation.app].get("port")))
 
     @property
     def user(self) -> str:
         """Fetch the SMTP user from the relation."""
         assert self.relation.app
-        return self.relation.data[self.relation.app].get("user")
+        return typing.cast(str, self.relation.data[self.relation.app].get("user"))
 
     @property
     def password(self) -> str:
         """Fetch the SMTP password from the relation."""
         assert self.relation.app
-        return self.relation.data[self.relation.app].get("password")
+        return typing.cast(str, self.relation.data[self.relation.app].get("password"))
 
     @property
     def password_id(self) -> str:
         """Fetch the SMTP password from the relation."""
         assert self.relation.app
-        return self.relation.data[self.relation.app].get("password_id")
+        return typing.cast(str, self.relation.data[self.relation.app].get("password_id"))
 
     @property
     def auth_type(self) -> AuthType:
@@ -221,7 +222,7 @@ class SmtpDataAvailableEvent(ops.RelationEvent):
     def domain(self) -> str:
         """Fetch the SMTP domain from the relation."""
         assert self.relation.app
-        return self.relation.data[self.relation.app].get("domain")
+        return typing.cast(str, self.relation.data[self.relation.app].get("domain"))
 
 
 class SmtpRequiresEvents(ops.CharmEvents):
@@ -278,13 +279,13 @@ class SmtpRequires(ops.Object):
         assert relation.app
         relation_data = relation.data[relation.app]
         return SmtpRelationData(
-            host=relation_data.get("host"),
-            port=relation_data.get("port"),
+            host=typing.cast(str, relation_data.get("host")),
+            port=typing.cast(int, relation_data.get("port")),
             user=relation_data.get("user"),
             password=relation_data.get("password"),
             password_id=relation_data.get("password_id"),
-            auth_type=relation_data.get("auth_type"),
-            transport_security=relation_data.get("transport_security"),
+            auth_type=AuthType(relation_data.get("auth_type")),
+            transport_security=TransportSecurity(relation_data.get("transport_security")),
             domain=relation_data.get("domain"),
         )
 
