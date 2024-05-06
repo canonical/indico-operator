@@ -126,7 +126,7 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
         """Require nginx ingress."""
         return require_nginx_route(
             charm=self,
-            service_hostname=None,
+            service_hostname=self.app.name,
             service_name=self.app.name,
             service_port=8080,
         )
