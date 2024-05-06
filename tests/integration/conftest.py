@@ -60,6 +60,7 @@ def requests_timeout():
 async def app_fixture(
     ops_test: OpsTest,
     app_name: str,
+    hostname: str,
     pytestconfig: Config,
 ):
     """Indico charm used for integration testing.
@@ -80,7 +81,9 @@ async def app_fixture(
         ops_test.model.deploy("redis-k8s", "redis-broker", channel="latest/edge"),
         ops_test.model.deploy("redis-k8s", "redis-cache", channel="latest/edge"),
         ops_test.model.deploy(
-            "nginx-ingress-integrator", channel="latest/edge", series="focal", trust=True
+            "nginx-ingress-integrator", channel="latest/edge", series="focal", config={
+                "service-hostname": hostname,
+            }, trust=True
         ),
     )
     await ops_test.model.wait_for_idle(
