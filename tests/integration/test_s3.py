@@ -24,7 +24,7 @@ async def test_s3(app: Application, s3_integrator: Application, ops_test: OpsTes
     """
     assert ops_test.model
     await ops_test.model.applications["nginx-ingress-integrator"].set_config(
-        {"external_hostname": hostname}
+        {"service-hostname": hostname}
     )
     # The linter does not recognize wait_for_idle as a method,
     # since ops_test has a model as Optional, so this error must be ignored.
