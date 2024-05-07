@@ -45,7 +45,10 @@ async def test_indico_is_up(ops_test: OpsTest, app: Application):
     # Send request to bootstrap page and set Host header to app_name (which the application
     # expects)
     response = requests.get(
-        f"http://{address}:8080/bootstrap", headers={"Host": f"{app.name}.local"}, timeout=10
+        f"https://{address}:8080/bootstrap",
+        headers={"Host": f"{app.name}.local"},
+        timeout=10,
+        verify=False,
     )
     assert response.status_code == 200
 
