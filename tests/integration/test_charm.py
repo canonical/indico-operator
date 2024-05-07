@@ -48,7 +48,7 @@ async def test_indico_is_up(ops_test: OpsTest, app: Application):
         f"https://{app.name}.local/bootstrap",
         timeout=10,
         verify=False,
-        proxies = {"https": f"http://{address}:8080"},
+        proxies = {"https": f"http://{address}"},
     )
     assert response.status_code == 200
 
