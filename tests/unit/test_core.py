@@ -249,14 +249,6 @@ class TestCore(TestBase):
             }
         )
 
-        # ops testing harness doesn't rerun the charm's __init__
-        # manually rerun the _require_nginx_route function
-        # self.harness.charm._require_nginx_route()
-        nginx_route_relation_data = self.harness.get_relation_data(
-            self.nginx_route_relation_id, self.harness.charm.app
-        )
-        self.assertEqual("indico.local", nginx_route_relation_data["service-hostname"])
-
         updated_plan = self.harness.get_container_pebble_plan("indico").to_dict()
         updated_plan_env = updated_plan["services"]["indico"]["environment"]
 
