@@ -127,7 +127,6 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
         Returns:
             The NginxRouteRequirer.
         """
-        print("PASOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO")
         return require_nginx_route(
             charm=self,
             service_hostname=f"{self.app.name}.local",
@@ -160,7 +159,7 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
         Returns:
             The hostname configured in the NGINX ingress integrator.
         """
-        return self.nginx_route.config.get("external_hostname")
+        return self.nginx_route.config.get("service-hostname")
 
     def _get_external_scheme(self) -> str:
         """Get the HTTP schema.
@@ -169,14 +168,6 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
             The HTTP schema.
         """
         return "https"
-
-    def _get_external_port(self) -> Optional[int]:
-        """Get the HTTP port.
-
-        Returns:
-            The port number.
-        """
-        return 443
 
     def _are_relations_ready(self, _) -> bool:
         """Check if the needed relations are established.
@@ -503,7 +494,7 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
             "REDIS_CACHE_URL": self.redis_cache.url,
             "SECRET_KEY": self._get_indico_secret_key_from_relation(),
             "SERVICE_HOSTNAME": self._get_external_hostname(),
-            "SERVICE_PORT": self._get_external_port(),
+            "SERVICE_PORT": "",
             "SERVICE_SCHEME": self._get_external_scheme(),
             "STORAGE_DICT": {
                 "default": "fs:/srv/indico/archive",

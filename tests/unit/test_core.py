@@ -126,7 +126,7 @@ class TestCore(TestBase):
             updated_plan_env["SECRET_KEY"],
         )
         self.assertEqual("indico.local", updated_plan_env["SERVICE_HOSTNAME"])
-        self.assertIsNone(updated_plan_env["SERVICE_PORT"])
+        self.assertEqual("", updated_plan_env["SERVICE_PORT"])
         self.assertEqual("redis://cache-host:1011", updated_plan_env["REDIS_CACHE_URL"])
         self.assertFalse(updated_plan_env["ENABLE_ROOMBOOKING"])
         self.assertEqual("support-tech@mydomain.local", updated_plan_env["INDICO_SUPPORT_EMAIL"])
@@ -178,7 +178,7 @@ class TestCore(TestBase):
         secret_value = secret.get_content().get("secret-key")
         self.assertEqual(secret_value, updated_plan_env["SECRET_KEY"])
         self.assertEqual("indico.local", updated_plan_env["SERVICE_HOSTNAME"])
-        self.assertIsNone(updated_plan_env["SERVICE_PORT"])
+        self.assertEqual("", updated_plan_env["SERVICE_PORT"])
         self.assertEqual("redis://cache-host:1011", updated_plan_env["REDIS_CACHE_URL"])
         self.assertFalse(updated_plan_env["ENABLE_ROOMBOOKING"])
         self.assertEqual("support-tech@mydomain.local", updated_plan_env["INDICO_SUPPORT_EMAIL"])
@@ -255,7 +255,6 @@ class TestCore(TestBase):
         nginx_route_relation_data = self.harness.get_relation_data(
             self.nginx_route_relation_id, self.harness.charm.app
         )
-        print(nginx_route_relation_data)
         self.assertEqual("indico.local", nginx_route_relation_data["service-hostname"])
 
         updated_plan = self.harness.get_container_pebble_plan("indico").to_dict()
@@ -267,7 +266,7 @@ class TestCore(TestBase):
         self.assertEqual("public@email.local", updated_plan_env["INDICO_PUBLIC_SUPPORT_EMAIL"])
         self.assertEqual("noreply@email.local", updated_plan_env["INDICO_NO_REPLY_EMAIL"])
         self.assertEqual("https", updated_plan_env["SERVICE_SCHEME"])
-        self.assertEqual(443, updated_plan_env["SERVICE_PORT"])
+        self.assertEqual("", updated_plan_env["SERVICE_PORT"])
         self.assertTrue(updated_plan_env["CUSTOMIZATION_DEBUG"])
         storage_dict = literal_eval(updated_plan_env["STORAGE_DICT"])
         self.assertEqual("s3", updated_plan_env["ATTACHMENT_STORAGE"])
