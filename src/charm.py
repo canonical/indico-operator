@@ -479,7 +479,7 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
             "SECRET_KEY": self._get_indico_secret_key_from_relation(),
             "SERVICE_HOSTNAME": self._get_external_hostname(),
             "SERVICE_PORT": "",
-            "SERVICE_SCHEME": "https",
+            "SERVICE_SCHEME": "http",
             "STORAGE_DICT": {
                 "default": "fs:/srv/indico/archive",
             },

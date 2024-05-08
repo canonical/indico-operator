@@ -13,10 +13,9 @@ jobs:
       modules: '["test_actions.py", "test_charm.py", "test_s3.py", "test_saml.py"]'
       trivy-fs-enabled: true
       trivy-image-config: "trivy.yaml"
-      zap-before-command: "curl -k -H \"Host: indico.local\" https://localhost/bootstrap --data-raw 'csrf_token=00000000-0000-0000-0000-000000000000&first_name=admin&last_name=admin&email=admin%40admin.com&username=admin&password=lunarlobster&confirm_password=lunarlobster&affiliation=Canonical'"
+      zap-before-command: "curl -k -H \"Host: indico.local\" http://localhost/bootstrap --data-raw 'csrf_token=00000000-0000-0000-0000-000000000000&first_name=admin&last_name=admin&email=admin%40admin.com&username=admin&password=lunarlobster&confirm_password=lunarlobster&affiliation=Canonical'"
       zap-enabled: true
       zap-cmd-options: '-T 60 -z "-addoninstall jython" --hook "/zap/wrk/tests/zap/hook.py"'
       zap-target: localhost
       zap-target-port: 80
-      zap-target-protocol: "https"
       zap-rules-file-name: "zap_rules.tsv"
