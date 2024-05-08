@@ -103,4 +103,4 @@ async def test_saml_auth(  # pylint: disable=too-many-arguments
         )
         assert dashboard_page.status_code == 200
         # Revert SAML config for zap to be able to run
-        await nginx_ingress_integrator_app.set_config({"service-hostname": ""})
+        await nginx_ingress_integrator_app.reset_config(["service-hostname"])
