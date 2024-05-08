@@ -145,14 +145,6 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
             for container_name in self.model.unit.containers
         )
 
-    def _get_site_url(self) -> str:
-        """Get the site URL.
-
-        Returns:
-            The site's URL.
-        """
-        return f"https://{self._get_external_hostname()}"
-
     def _get_external_hostname(self) -> str:
         """Extract and return hostname from the nginx-route relation data.
 
@@ -160,14 +152,6 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
             The hostname configured in the NGINX ingress integrator.
         """
         return self.nginx_route.config.get("service-hostname")
-
-    def _get_external_scheme(self) -> str:
-        """Get the HTTP schema.
-
-        Returns:
-            The HTTP schema.
-        """
-        return "https"
 
     def _are_relations_ready(self, _) -> bool:
         """Check if the needed relations are established.
@@ -495,7 +479,7 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
             "SECRET_KEY": self._get_indico_secret_key_from_relation(),
             "SERVICE_HOSTNAME": self._get_external_hostname(),
             "SERVICE_PORT": "",
-            "SERVICE_SCHEME": self._get_external_scheme(),
+            "SERVICE_SCHEME": "https",
             "STORAGE_DICT": {
                 "default": "fs:/srv/indico/archive",
             },
@@ -526,7 +510,7 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
             saml_config: Dict[str, Any] = {
                 "strict": True,
                 "sp": {
-                    "entityId": self._get_site_url(),
+                    "entityId": f"https://{self._get_external_hostname()}",
                 },
                 "idp": {
                     "entityId": self.state.saml_config.entity_id,
