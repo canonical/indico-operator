@@ -86,7 +86,7 @@ LIBAPI = 0
 
 # Increment this PATCH version before using `charmcraft publish-lib` or reset
 # to 0 if you are raising the major API version
-LIBPATCH = 6
+LIBPATCH = 7
 
 __all__ = ["require_nginx_route", "provide_nginx_route"]
 
@@ -119,7 +119,7 @@ class _NginxRouteCharmEvents(ops.charm.CharmEvents):
     nginx_route_broken = ops.framework.EventSource(_NginxRouteBrokenEvent)
 
 
-class _NginxRouteRequirer(ops.framework.Object):
+class NginxRouteRequirer(ops.framework.Object):
     """This class defines the functionality for the 'requires' side of the 'nginx-route' relation.
 
     Hook events observed:
@@ -148,7 +148,7 @@ class _NginxRouteRequirer(ops.framework.Object):
             self._config_reconciliation,
         )
         # Set default values.
-        self._config: typing.Dict[str, typing.Union[str, int, bool]] = {
+        self.config: typing.Dict[str, typing.Union[str, int, bool]] = {
             "service-namespace": self._charm.model.name,
             **config,
         }
@@ -163,11 +163,11 @@ class _NginxRouteRequirer(ops.framework.Object):
             delete_keys = {
                 relation_field
                 for relation_field in relation_app_data
-                if relation_field not in self._config
+                if relation_field not in self.config
             }
             for delete_key in delete_keys:
                 del relation_app_data[delete_key]
-            relation_app_data.update({k: str(v) for k, v in self._config.items()})
+            relation_app_data.update({k: str(v) for k, v in self.config.items()})
 
 
 # C901 is ignored since the method has too many ifs but wouldn't be
@@ -195,7 +195,7 @@ def require_nginx_route(  # pylint: disable=too-many-locals,too-many-branches,to
     session_cookie_max_age: typing.Optional[int] = None,
     tls_secret_name: typing.Optional[str] = None,
     nginx_route_relation_name: str = "nginx-route",
-) -> None:
+) -> NginxRouteRequirer:
     """Set up nginx-route relation handlers on the requirer side.
 
     This function must be invoked in the charm class constructor.
@@ -242,6 +242,9 @@ def require_nginx_route(  # pylint: disable=too-many-locals,too-many-branches,to
         nginx_route_relation_name: Specifies the relation name of
             the relation handled by this requirer class. The relation
             must have the nginx-route interface.
+
+    Returns:
+        the NginxRouteRequirer.
     """
     config: typing.Dict[str, typing.Union[str, int, bool]] = {}
     if service_hostname is not None:
@@ -281,7 +284,7 @@ def require_nginx_route(  # pylint: disable=too-many-locals,too-many-branches,to
     if tls_secret_name is not None:
         config["tls-secret-name"] = tls_secret_name
 
-    _NginxRouteRequirer(
+    return NginxRouteRequirer(
         charm=charm, config=config, nginx_route_relation_name=nginx_route_relation_name
     )
 
