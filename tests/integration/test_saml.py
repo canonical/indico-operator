@@ -32,6 +32,7 @@ async def test_saml_auth(  # pylint: disable=too-many-arguments
     assert ops_test.model
     nginx_ingress_integrator_app = ops_test.model.applications["nginx-ingress-integrator"]
     await nginx_ingress_integrator_app.set_config({"service-hostname": hostname})
+    await ops_test.model.wait_for_idle(status="active")
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
     original_getaddrinfo = socket.getaddrinfo
