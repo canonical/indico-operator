@@ -257,7 +257,7 @@ class TestCore(TestBase):
         self.assertEqual("example@email.local", updated_plan_env["INDICO_SUPPORT_EMAIL"])
         self.assertEqual("public@email.local", updated_plan_env["INDICO_PUBLIC_SUPPORT_EMAIL"])
         self.assertEqual("noreply@email.local", updated_plan_env["INDICO_NO_REPLY_EMAIL"])
-        self.assertEqual("http", updated_plan_env["SERVICE_SCHEME"])
+        self.assertEqual("https", updated_plan_env["SERVICE_SCHEME"])
         self.assertEqual("", updated_plan_env["SERVICE_PORT"])
         self.assertTrue(updated_plan_env["CUSTOMIZATION_DEBUG"])
         storage_dict = literal_eval(updated_plan_env["STORAGE_DICT"])
