@@ -242,6 +242,7 @@ def require_nginx_route(  # pylint: disable=too-many-locals,too-many-branches,to
         nginx_route_relation_name: Specifies the relation name of
             the relation handled by this requirer class. The relation
             must have the nginx-route interface.
+
     Returns:
         the NginxRouteRequirer.
     """
