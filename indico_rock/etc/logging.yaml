@@ -55,7 +55,8 @@ handlers:
     class: logging.StreamHandler
     formatter: default
   email:
-    class: indico.core.logger.FormattedSubjectSMTPHandler
+    class: logging.FileHandler
+    filename: email.log
     formatter: email
     level: ERROR
 
