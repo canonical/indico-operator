@@ -57,6 +57,7 @@ handlers:
   email:
     class: logging.FileHandler
     filename: email.log
+    filters: [indico.email]
     formatter: email
     level: ERROR
 
