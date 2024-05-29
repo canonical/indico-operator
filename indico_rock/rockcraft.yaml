@@ -85,6 +85,7 @@ parts:
     source: .
     organize:
       start-indico.sh: srv/indico/start-indico.sh
+      logrotate.conf: srv/indico/logrotate.conf
     permissions:
       - owner: 2000
         group: 2000
