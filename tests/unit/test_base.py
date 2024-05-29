@@ -44,7 +44,7 @@ class TestBase(unittest.TestCase):
             "redis-cache", "redis-cache", unit_data={"hostname": "cache-host", "port": "1011"}
         )
         self.nginx_route_relation_id = self.harness.add_relation(  # pylint: disable=W0201
-            "nginx-route", "ingress"
+            "nginx-route", "ingress", app_data={"service-hostname": "example.local"}
         )
 
     def is_ready(self, apps: List[str]):
@@ -58,8 +58,8 @@ class TestBase(unittest.TestCase):
 
     def set_relations_and_leader(self):
         """Set Indico relations, the leader and check container readiness."""
-        self.set_up_all_relations()
         self.harness.set_leader(True)
+        self.set_up_all_relations()
         self.is_ready(
             [
                 "indico",

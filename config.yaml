@@ -30,7 +30,3 @@ options:
     type: string
     description: Email address of the technical manager of the Indico instance.
     default: 'support-tech@mydomain.local'
-  site_url:
-    type: string
-    description: URL through which Indico is accessed by users.
-    default: ''

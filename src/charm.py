@@ -8,18 +8,17 @@ import logging
 import os
 import typing
 from re import findall
-from typing import Any, Dict, Iterator, List, Optional, Tuple
-from urllib.parse import urlparse
+from typing import Any, Dict, Iterator, List, Optional
 
 import ops.lib
 from charms.grafana_k8s.v0.grafana_dashboard import GrafanaDashboardProvider
-from charms.nginx_ingress_integrator.v0.nginx_route import require_nginx_route
+from charms.nginx_ingress_integrator.v0.nginx_route import NginxRouteRequirer, require_nginx_route
 from charms.prometheus_k8s.v0.prometheus_scrape import MetricsEndpointProvider
 from charms.redis_k8s.v0.redis import RedisRelationCharmEvents, RedisRequires
 from ops.charm import ActionEvent, CharmBase, HookEvent, PebbleReadyEvent, RelationDepartedEvent
 from ops.jujuversion import JujuVersion
 from ops.main import main
-from ops.model import ActiveStatus, BlockedStatus, Container, MaintenanceStatus, WaitingStatus
+from ops.model import ActiveStatus, Container, MaintenanceStatus, WaitingStatus
 from ops.pebble import ExecError
 
 from database_observer import DatabaseObserver
@@ -94,7 +93,7 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
         self.framework.observe(
             self.on["indico-peers"].relation_departed, self._on_peer_relation_departed
         )
-        self._require_nginx_route()
+        self.nginx_route = self._require_nginx_route()
 
         self._metrics_endpoint = MetricsEndpointProvider(
             self,
@@ -114,11 +113,15 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
         )
         self._grafana_dashboards = GrafanaDashboardProvider(self)
 
-    def _require_nginx_route(self) -> None:
-        """Require nginx ingress."""
-        require_nginx_route(
+    def _require_nginx_route(self) -> NginxRouteRequirer:
+        """Require nginx ingress.
+
+        Returns:
+            The NginxRouteRequirer.
+        """
+        return require_nginx_route(
             charm=self,
-            service_hostname=self._get_external_hostname(),
+            service_hostname=f"{self.app.name}.local",
             service_name=self.app.name,
             service_port=8080,
         )
@@ -134,46 +137,13 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
             for container_name in self.model.unit.containers
         )
 
-    def _is_configuration_valid(self) -> Tuple[bool, str]:
-        """Validate charm configuration.
-
-        Returns:
-            Tuple containing as first element whether the configuration is valid.
-            and a string with the error, if any, as second element.
-        """
-        site_url = typing.cast(str, self.config["site_url"])
-        if site_url and not urlparse(site_url).hostname:
-            return False, "Configuration option site_url is not valid"
-        return True, ""
-
     def _get_external_hostname(self) -> str:
-        """Extract and return hostname from site_url or default to [application name].local.
+        """Extract and return hostname from the nginx-route relation data.
 
         Returns:
-            The site URL defined as part of the site_url configuration or a default value.
+            The hostname configured in the NGINX ingress integrator.
         """
-        site_url = typing.cast(str, self.config["site_url"])
-        if not site_url or not (hostname := urlparse(site_url).hostname):
-            return f"{self.app.name}.local"
-        return hostname
-
-    def _get_external_scheme(self) -> str:
-        """Extract and return schema from site_url.
-
-        Returns:
-            The HTTP schema.
-        """
-        site_url = typing.cast(str, self.config["site_url"])
-        return urlparse(site_url).scheme if site_url else "http"
-
-    def _get_external_port(self) -> Optional[int]:
-        """Extract and return port from site_url.
-
-        Returns:
-            The port number.
-        """
-        site_url = typing.cast(str, self.config["site_url"])
-        return urlparse(site_url).port
+        return self.nginx_route.config.get("service-hostname")
 
     def _are_relations_ready(self, _) -> bool:
         """Check if the needed relations are established.
@@ -500,8 +470,8 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
             "REDIS_CACHE_URL": self.redis_cache.url,
             "SECRET_KEY": self._get_indico_secret_key_from_relation(),
             "SERVICE_HOSTNAME": self._get_external_hostname(),
-            "SERVICE_PORT": self._get_external_port(),
-            "SERVICE_SCHEME": self._get_external_scheme(),
+            "SERVICE_PORT": "",
+            "SERVICE_SCHEME": "https",
             "STORAGE_DICT": {
                 "default": "fs:/srv/indico/archive",
             },
@@ -532,7 +502,7 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
             saml_config: Dict[str, Any] = {
                 "strict": True,
                 "sp": {
-                    "entityId": self.config["site_url"],
+                    "entityId": f"https://{self._get_external_hostname()}",
                 },
                 "idp": {
                     "entityId": self.state.saml_config.entity_id,
@@ -613,10 +583,6 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
             self.unit.status = WaitingStatus("Waiting for pebble")
             return
         self.model.unit.status = MaintenanceStatus("Configuring pod")
-        is_valid, error = self._is_configuration_valid()
-        if not is_valid:
-            self.model.unit.status = BlockedStatus(error)
-            return
         for container_name in self.model.unit.containers:
             self._config_pebble(self.unit.get_container(container_name))
 
