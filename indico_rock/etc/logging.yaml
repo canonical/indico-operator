@@ -59,7 +59,7 @@ handlers:
     filename: email.log
     filters: [indico.email]
     formatter: email
-    level: ERROR
+    level: WARNING
 
 formatters:
   default:
