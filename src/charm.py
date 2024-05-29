@@ -17,7 +17,6 @@ from charms.nginx_ingress_integrator.v0.nginx_route import require_nginx_route
 from charms.prometheus_k8s.v0.prometheus_scrape import MetricsEndpointProvider
 from charms.redis_k8s.v0.redis import RedisRelationCharmEvents, RedisRequires
 from ops.charm import ActionEvent, CharmBase, HookEvent, PebbleReadyEvent, RelationDepartedEvent
-from ops.framework import StoredState
 from ops.jujuversion import JujuVersion
 from ops.main import main
 from ops.model import ActiveStatus, BlockedStatus, Container, MaintenanceStatus, WaitingStatus
@@ -51,7 +50,6 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
         on: Redis relation charm events.
     """
 
-    _stored = StoredState()
     on = RedisRelationCharmEvents()
 
     def __init__(self, *args):
@@ -85,17 +83,11 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
         # self.framework.observe(self.on.update_status, self._refresh_external_resources)
         self.framework.observe(self.on.add_admin_action, self._add_admin_action)
         self.framework.observe(self.on.anonymize_user_action, self._anonymize_user_action)
-
-        # Still needed by the library
-        self._stored.set_default(
-            redis_relation={},
-        )
-
-        self.redis_broker = RedisRequires(self, self._stored, "redis-broker")
+        self.redis_broker = RedisRequires(self, "redis-broker")
         self.framework.observe(
             self.redis_broker.charm.on.redis_relation_updated, self._on_config_changed
         )
-        self.redis_cache = RedisRequires(self, self._stored, "redis-cache")
+        self.redis_cache = RedisRequires(self, "redis-cache")
         self.framework.observe(
             self.redis_cache.charm.on.redis_relation_updated, self._on_config_changed
         )
