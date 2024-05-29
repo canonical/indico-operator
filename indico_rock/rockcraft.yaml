@@ -96,3 +96,4 @@ parts:
     prime:
       - etc/*
       - srv/indico/start-indico.sh
+      - srv/indico/logrotate.conf
