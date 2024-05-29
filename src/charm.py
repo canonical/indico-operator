@@ -23,6 +23,7 @@ from ops.model import ActiveStatus, BlockedStatus, Container, MaintenanceStatus,
 from ops.pebble import ExecError
 
 from database_observer import DatabaseObserver
+from lib.charms.loki_k8s.v0.loki_push_api import LogProxyConsumer
 from s3_observer import S3Observer
 from saml_observer import SamlObserver
 from smtp_observer import SmtpObserver
@@ -113,6 +114,12 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
             ],
         )
         self._grafana_dashboards = GrafanaDashboardProvider(self)
+        self._logging = LogProxyConsumer(
+            self,
+            relation_name="logging",
+            log_files="/srv/indico/log/indico.log",
+            container_name="indico",
+        )
 
     def _require_nginx_route(self) -> None:
         """Require nginx ingress."""
@@ -220,6 +227,7 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
         # The plugins need to be installed before adding the layer so that they are included in
         # the corresponding env vars
         if container.name == "indico":
+            container.add_layer(container.name, self._get_logrotate_config(), combine=True)
             indico_config = self._get_indico_pebble_config(container)
             container.add_layer(container.name, indico_config, combine=True)
             peer_relation = self.model.get_relation("indico-peers")
@@ -249,6 +257,27 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
         else:
             self.unit.status = WaitingStatus("Waiting for pebble")
 
+    def _get_logrotate_config(self) -> ops.pebble.LayerDict:
+        """Generate logrotate pebble layer.
+
+        Returns:
+            The logrotate pebble layer configuration.
+        """
+        layer = {
+            "summary": "Logrotate service",
+            "description": "Logrotate service",
+            "services": {
+                "logrotate": {
+                    "override": "replace",
+                    "command": 'bash -c "while :; '
+                    "do sleep 3600; logrotate /srv/indico/logrotate.conf; "
+                    'done"',
+                    "startup": "enabled",
+                },
+            },
+        }
+        return typing.cast(ops.pebble.LayerDict, layer)
+
     def _get_indico_pebble_config(self, container: Container) -> ops.pebble.LayerDict:
         """Generate pebble config for the indico container.
 
@@ -259,6 +288,7 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
             The pebble configuration for the container.
         """
         indico_env_config = self._get_indico_env_config(container)
+        indico_env_config["INDICO_LOGGING_CONFIG_FILE"] = "indico.logging.yaml"
         layer = {
             "summary": "Indico layer",
             "description": "Indico layer",
@@ -292,6 +322,7 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
             The pebble configuration for the container.
         """
         indico_env_config = self._get_indico_env_config(container)
+        indico_env_config["INDICO_LOGGING_CONFIG_FILE"] = "celery.logging.yaml"
         layer = {
             "summary": "Indico celery layer",
             "description": "Indico celery layer",

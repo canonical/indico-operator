@@ -58,6 +58,7 @@ parts:
       - libpq-dev
       - libsasl2-dev
       - locales
+      - logrotate
       - pkg-config
       - postgresql-client
       - shared-mime-info

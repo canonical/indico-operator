@@ -74,6 +74,8 @@ requires:
   smtp-legacy:
     interface: smtp
     limit: 1
+  logging:
+    interface: loki_push_api
 
 peers:
   indico-peers:
