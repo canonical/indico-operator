@@ -114,6 +114,8 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
             ],
         )
         self._grafana_dashboards = GrafanaDashboardProvider(self)
+        # port 9080 conflicts with the nginx exporter
+        charms.loki_k8s.v0.loki_push_api.HTTP_LISTEN_PORT = 9090
         self._logging = LogProxyConsumer(
             self,
             relation_name="logging",
