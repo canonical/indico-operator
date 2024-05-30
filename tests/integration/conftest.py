@@ -174,7 +174,9 @@ async def s3_integrator_fixture(ops_test: OpsTest, app: Application):
 async def loki_fixture(ops_test: OpsTest, app: Application):
     """Loki charm used for integration testing."""
     assert ops_test.model
-    loki = await ops_test.model.deploy("loki-k8s", channel="latest/edge", trust=True, revision=97)
+    loki = await ops_test.model.deploy(
+        "loki-k8s", channel="latest/edge", trust=True, revision=97, series="jammy"
+    )
     await ops_test.model.add_relation(app.name, loki.name)
     await ops_test.model.wait_for_idle(
         apps=[loki.name, app.name], status="active", raise_on_error=False
