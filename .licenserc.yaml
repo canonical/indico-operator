@@ -33,7 +33,6 @@ header:
     - 'trivy.yaml'
     - 'zap_rules.tsv'
     - 'lib/**'
-    - 'indico_rock/etc/logging.yaml'
-    - 'indico_rock/etc/uwsgi.ini'
+    - 'indico_rock/etc/*'
     - 'tests/unit/pre_run_script.sh'
   comment: on-failure
