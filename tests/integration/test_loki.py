@@ -10,12 +10,11 @@ import pytest
 import requests
 from juju.application import Application
 from juju.unit import Unit
-from pytest_operator.plugin import OpsTest
 
 
 @pytest.mark.asyncio
 @pytest.mark.abort_on_fail
-async def test_loki(app: Application, loki: Application, ops_test: OpsTest):
+async def test_loki(loki: Application):
     """
     arrange: given charm integrated with Loki.
     act: do nothing.
