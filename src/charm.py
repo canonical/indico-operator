@@ -117,7 +117,7 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
         self._logging = LogProxyConsumer(
             self,
             relation_name="logging",
-            log_files="/srv/indico/log/indico.log",
+            log_files="/srv/indico/log/*",
             container_name="indico",
         )
 
