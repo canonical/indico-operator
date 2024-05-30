@@ -15,4 +15,4 @@ handlers:
 
 formatters:
   default:
-    format: '%(asctime)s  %(levelname)-7s  %(filename)s:%(lineno)d  %(request_id)s  %(user_id)-6s  %(name)-25s %(message)s'
+    format: '%(asctime)s  %(levelname)-7s  %(name)-25s  %(request_id)s  %(user_id)-6s  %(filename)s:%(lineno)d  %(message)s'
