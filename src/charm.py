@@ -11,8 +11,9 @@ from re import findall
 from typing import Any, Dict, Iterator, List, Optional, Tuple
 from urllib.parse import urlparse
 
-import ops.lib
+import ops
 from charms.grafana_k8s.v0.grafana_dashboard import GrafanaDashboardProvider
+from charms.loki_k8s.v0.loki_push_api import LogProxyConsumer
 from charms.nginx_ingress_integrator.v0.nginx_route import require_nginx_route
 from charms.prometheus_k8s.v0.prometheus_scrape import MetricsEndpointProvider
 from charms.redis_k8s.v0.redis import RedisRelationCharmEvents, RedisRequires
@@ -23,7 +24,6 @@ from ops.model import ActiveStatus, BlockedStatus, Container, MaintenanceStatus,
 from ops.pebble import ExecError
 
 from database_observer import DatabaseObserver
-from lib.charms.loki_k8s.v0.loki_push_api import LogProxyConsumer
 from s3_observer import S3Observer
 from saml_observer import SamlObserver
 from smtp_observer import SmtpObserver
