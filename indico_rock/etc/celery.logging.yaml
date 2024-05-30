@@ -6,7 +6,7 @@ root:
 
 handlers:
   file:
-    class: logging.WatchedFileHandler
+    class: logging.handlers.WatchedFileHandler
     filename: /srv/indico/log/celery.log
     formatter: default
   stderr:
