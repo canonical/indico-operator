@@ -25,14 +25,17 @@ async def test_loki(loki: Application):
     deadline = time.time() + 600
     logged_files = []
     while time.time() < deadline:
-        logged_files = (
-            requests.get(
-                f"http://{loki_ip}:3100/loki/api/v1/label/filename/values",
-                timeout=10,
+        try:
+            logged_files = (
+                requests.get(
+                    f"http://{loki_ip}:3100/loki/api/v1/label/filename/values",
+                    timeout=10,
+                )
+                .json()
+                .get("data", [])
             )
-            .json()
-            .get("data", [])
-        )
+        except (requests.exceptions.RequestException, TimeoutError):
+            pass
         if all(
             file in logged_files
             for file in ["/srv/indico/log/celery.log", "/srv/indico/log/indico.log"]
