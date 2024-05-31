@@ -26,7 +26,7 @@ async def test_loki(loki: Application, ops_test: OpsTest):
     """
     _, status, _ = await ops_test.juju("status", "--format", "json")
     status = json.loads(status)
-    loki_ip = next(status["applications"][loki.name]["units"].values())["address"]
+    loki_ip = list(status["applications"][loki.name]["units"].values())[0]["address"]
     logger.info("loki IP: %s", loki_ip)
     deadline = time.time() + 1200
     logged_files = []
