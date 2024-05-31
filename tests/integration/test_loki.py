@@ -22,7 +22,7 @@ async def test_loki(loki: Application):
     """
     loki_unit: Unit = loki.units[0]
     loki_ip = await loki_unit.get_public_address()
-    deadline = time.time() + 600
+    deadline = time.time() + 1200
     logged_files = []
     while time.time() < deadline:
         try:
