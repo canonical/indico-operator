@@ -58,6 +58,7 @@ parts:
       - libpq-dev
       - libsasl2-dev
       - locales
+      - logrotate
       - pkg-config
       - postgresql-client
       - shared-mime-info
@@ -84,6 +85,7 @@ parts:
     source: .
     organize:
       start-indico.sh: srv/indico/start-indico.sh
+      etc/logrotate.conf: srv/indico/logrotate.conf
     permissions:
       - owner: 2000
         group: 2000
@@ -94,3 +96,4 @@ parts:
     prime:
       - etc/*
       - srv/indico/start-indico.sh
+      - srv/indico/logrotate.conf
