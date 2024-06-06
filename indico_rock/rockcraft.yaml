@@ -79,7 +79,9 @@ parts:
       cp -R $CRAFT_PART_INSTALL/lib/python3.12/site-packages/indico/web/static srv/indico/static
       # Copy root certificates
       mkdir -p usr/lib/ssl
-      cp /etc/ssl/certs/ca-certificates.crt usr/lib/ssl/cert.pem
+      mkdir -p etc/ssl/certs/
+      cp /etc/ssl/certs/ca-certificates.crt etc/ssl/certs/ca-certificates.crt
+      ln -s /etc/ssl/certs/ca-certificates.crt usr/lib/ssl/cert.pem
   copy-config:
     plugin: dump
     source: .
