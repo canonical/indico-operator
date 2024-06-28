@@ -221,15 +221,14 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
         """
         self.unit.status = MaintenanceStatus(f"Adding {container.name} layer to pebble")
         if container.name == "indico":
+            # Plugins need to be installed before adding the layer so that
+            # they are included in the corresponding env vars
             plugins = (
                 typing.cast(str, self.config["external_plugins"]).split(",")
                 if self.config["external_plugins"]
                 else []
             )
             self._install_plugins(container, plugins)
-        # The plugins need to be installed before adding the layer so that they are included in
-        # the corresponding env vars
-        if container.name == "indico":
             container.add_layer(container.name, self._get_logrotate_config(), combine=True)
             indico_config = self._get_indico_pebble_config(container)
             container.add_layer(container.name, indico_config, combine=True)
@@ -681,11 +680,14 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
             plugins: List of plugins to be installed.
         """
         if plugins:
+            install_command = ["pip", "install", "--upgrade"] + plugins
+            logger.info("About to run: %s", " ".join(install_command))
             process = container.exec(
-                ["pip", "install", "--upgrade"] + plugins,
+                install_command,
                 environment=self._get_http_proxy_configuration(self.state.proxy_config),
             )
-            process.wait_output()
+            output, _ = process.wait_output()
+            logger.info("Output was: %s", output)
 
     def _get_indico_version(self) -> str:
         """Retrieve the current version of Indico.
