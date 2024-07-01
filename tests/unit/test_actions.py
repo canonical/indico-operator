@@ -38,18 +38,30 @@ class TestActions(TestBase):
         )
 
         charm: IndicoOperatorCharm = typing.cast(IndicoOperatorCharm, self.harness.charm)
-        charm._refresh_external_resources(MagicMock())
+        with self.assertLogs(level="INFO") as logger:
+            charm._refresh_external_resources(MagicMock())
 
-        mock_exec.assert_any_call(
-            ["git", "pull"],
-            working_dir="/srv/indico/custom",
-            user="indico",
-            environment={},
-        )
-        mock_exec.assert_any_call(
-            ["pip", "install", "--upgrade", "git+https://example.git/#subdirectory=themes_cern"],
-            environment={},
-        )
+            mock_exec.assert_any_call(
+                ["git", "pull"],
+                working_dir="/srv/indico/custom",
+                user="indico",
+                environment={},
+            )
+            mock_exec.assert_any_call(
+                [
+                    "pip",
+                    "install",
+                    "--upgrade",
+                    "git+https://example.git/#subdirectory=themes_cern",
+                ],
+                environment={},
+            )
+            expected_logs = [
+                "INFO:charm:About to run: pip install --upgrade "
+                "git+https://example.git/#subdirectory=themes_cern",
+                "INFO:charm:Output was: ",
+            ]
+            assert logger.output == expected_logs
 
     @patch.object(Container, "exec")
     def test_add_admin(self, mock_exec):
