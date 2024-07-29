@@ -67,7 +67,7 @@ Provide integration between Indico and PostgreSQL:
 juju integrate indico postgresql-k8s:database
 ```
 
-Note: `database` is the name of the relation. This is needed because establishes that the two charms are compatible with each other.  You can run `juju info indico` to check what are the relation names required by the Indico application.
+Note: `database` is the name of the integration. This is needed because establishes that the two charms are compatible with each other.  You can run `juju info indico` to check what are the integration names required by the Indico application.
 
 Enable PostgreSQL extensions:
 
