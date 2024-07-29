@@ -51,8 +51,8 @@ This means that Indico charm isn't integrated with Redis yet.
 Provide integration between Indico and Redis by running the following [`juju integrate`](https://juju.is/docs/juju/juju-integrate) commands:
 
 ```bash
-juju integrate redis-broker indico
-juju integrate redis-cache indico
+juju integrate indico:redis-broker redis-broker
+juju integrate indico:redis-cache redis-cache
 ```
 
 Run `juju status` to see that the message has changed:
@@ -64,10 +64,17 @@ indico/0*                 waiting   idle   10.1.74.70             Waiting for da
 Provide integration between Indico and PostgreSQL:
 
 ```bash
-juju integrate indico postgresql-k8s:db
+juju integrate indico postgresql-k8s:database
 ```
 
-Note: `db` is the name of the relation. This is needed because establishes that the two charms are compatible with each other.  You can run `juju info indico` to check what are the relation names required by the Indico application.
+Note: `database` is the name of the integration. This is needed because establishes that the two charms are compatible with each other.  You can run `juju info indico` to check what are the integration names required by the Indico application.
+
+Enable PostgreSQL extensions:
+
+```bash
+juju config postgresql plugin_pg_trgm_enable=true plugin_unaccent_enable=true
+``` 
+
 
 Run `juju status` and wait until the Application status is `Active` as the following example:
 
