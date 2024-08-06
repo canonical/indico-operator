@@ -1,16 +1,12 @@
 # Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
-package-repositories:
-  - type: apt
-    ppa: deadsnakes/ppa
-    priority: always
 
 name: indico
 summary: Indico rock
 description: Indico OCI image for the Indico charm
 version: "1.0"
-base: ubuntu@22.04
-build-base: ubuntu@22.04
+base: ubuntu@24.04
+build-base: ubuntu@24.04
 license: Apache-2.0
 platforms:
   amd64:
@@ -24,7 +20,6 @@ parts:
   indico:
     plugin: python
     build-environment:
-      - PARTS_PYTHON_INTERPRETER: python3.12
       - UWSGI_EMBED_PLUGINS: stats_pusher_statsd
     python-packages:
       - setuptools
@@ -39,8 +34,6 @@ parts:
       - ./autocreate
     source: plugins
     build-packages:
-      - python3.12-venv
-      - python3.12-dev
       - build-essential
       - libpq-dev
       - libsasl2-dev
@@ -48,9 +41,8 @@ parts:
       - pkg-config
       - wget
     stage-packages:
-      - python3.12-venv
-      - python3.12-dev
-      - bash
+      - python3-venv
+      - python3-dev
       - build-essential
       - ca-certificates
       - git-core
@@ -68,20 +60,17 @@ parts:
       - libpangocairo-1.0-0 # required for python3.12
     overlay-packages:
       - libxmlsec1-dev
+      - bash
     stage-snaps:
       - celery-prometheus-exporter/latest/edge
       - gtrkiller-statsd-prometheus-exporter/latest/edge
-    override-prime: |
+    override-stage: |
+      mkdir -p --mode=775 $CRAFT_PART_INSTALL/srv/indico/{archive,cache,custom,etc,log,tmp}
+      cp $CRAFT_PART_INSTALL/lib/python3.12/site-packages/indico/web/indico.wsgi $CRAFT_PART_INSTALL/srv/indico/indico.wsgi
+      cp -R $CRAFT_PART_INSTALL/lib/python3.12/site-packages/indico/web/static $CRAFT_PART_INSTALL/srv/indico/
+      chown -R 2000:2000 $CRAFT_PART_INSTALL/srv/indico
+      cp /etc/ssl/certs/ca-certificates.crt  $CRAFT_PART_INSTALL/etc/ssl/certs/ca-certificates.crt
       craftctl default
-      /bin/bash -c "mkdir -p --mode=775 srv/indico/{archive,cache,custom,etc,log,tmp}"
-      cp $CRAFT_PART_INSTALL/lib/python3.12/site-packages/indico/web/indico.wsgi srv/indico/indico.wsgi
-      /bin/bash -c "chown 2000:2000 srv/indico srv/indico/{archive,cache,custom,etc,indico.wsgi,log,tmp}"
-      cp -R $CRAFT_PART_INSTALL/lib/python3.12/site-packages/indico/web/static srv/indico/static
-      # Copy root certificates
-      mkdir -p usr/lib/ssl
-      mkdir -p etc/ssl/certs/
-      cp /etc/ssl/certs/ca-certificates.crt etc/ssl/certs/ca-certificates.crt
-      ln -s /etc/ssl/certs/ca-certificates.crt usr/lib/ssl/cert.pem
   copy-config:
     plugin: dump
     source: .
