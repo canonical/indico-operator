@@ -60,7 +60,6 @@ parts:
       - libpangocairo-1.0-0 # required for python3.12
     overlay-packages:
       - libxmlsec1-dev
-      - bash
     stage-snaps:
       - celery-prometheus-exporter/latest/edge
       - gtrkiller-statsd-prometheus-exporter/latest/edge
