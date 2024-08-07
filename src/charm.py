@@ -680,7 +680,7 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
             plugins: List of plugins to be installed.
         """
         if plugins:
-            install_command = ["pip", "install", "--upgrade", "--break-system-packages"] + plugins
+            install_command = ["pip", "install", "--upgrade"] + plugins
             logger.info("About to run: %s", " ".join(install_command))
             process = container.exec(
                 install_command,

@@ -70,6 +70,8 @@ parts:
       chown -R 2000:2000 $CRAFT_PART_INSTALL/srv/indico
       cp /etc/ssl/certs/ca-certificates.crt  $CRAFT_PART_INSTALL/etc/ssl/certs/ca-certificates.crt
       craftctl default
+    prime:
+      - -usr/lib/python3.12/EXTERNALLY-MANAGED
   copy-config:
     plugin: dump
     source: .
