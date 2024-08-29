@@ -38,10 +38,16 @@ class TestBase(unittest.TestCase):
 
         self.harness.add_relation("indico-peers", self.harness.charm.app.name)
         self.harness.add_relation(
-            "redis-broker", "redis-broker", unit_data={"hostname": "broker-host", "port": "1010"}
+            "redis-broker",
+            "redis-broker",
+            unit_data={"hostname": "broker-host", "port": "1010"},
+            app_data={"leader-host": "broker-host"},
         )
         self.harness.add_relation(
-            "redis-cache", "redis-cache", unit_data={"hostname": "cache-host", "port": "1011"}
+            "redis-cache",
+            "redis-cache",
+            unit_data={"hostname": "cache-host", "port": "1011"},
+            app_data={"leader-host": "cache-host"},
         )
         self.nginx_route_relation_id = self.harness.add_relation(  # pylint: disable=W0201
             "nginx-route", "ingress"

@@ -80,7 +80,8 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
         self.framework.observe(self.on.indico_pebble_ready, self._on_pebble_ready)
         self.framework.observe(self.on.indico_nginx_pebble_ready, self._on_pebble_ready)
         self.framework.observe(
-            self.on.refresh_external_resources_action, self._refresh_external_resources_action
+            self.on.refresh_external_resources_action,
+            self._refresh_external_resources_action,
         )
         # self.framework.observe(self.on.update_status, self._refresh_external_resources)
         self.framework.observe(self.on.add_admin_action, self._add_admin_action)
@@ -380,6 +381,36 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
         }
         return typing.cast(ops.pebble.LayerDict, layer)
 
+    def _get_redis_cache_url(self) -> str:
+        """Get Url for redis-cache charm.
+
+        Returns:
+            Url for the redis-cache charm.
+        """
+        relation = self.model.get_relation(self.redis_cache.relation_name)
+        if relation:
+            relation_data = relation.data[self.model.relations["redis-cache"][0].app]
+            ip = relation_data["leader-host"]
+            unit_relation = self.redis_cache.relation_data
+            port = unit_relation["port"]
+            return f"redis://{ip}:{port}"
+        return ""
+
+    def _get_redis_broker_url(self) -> str:
+        """Get Url for redis-broker charm.
+
+        Returns:
+            Url for the redis-broker charm.
+        """
+        relation = self.model.get_relation(self.redis_broker.relation_name)
+        if relation:
+            relation_data = relation.data[self.model.relations["redis-broker"][0].app]
+            ip = relation_data["leader-host"]
+            unit_relation = self.redis_broker.relation_data
+            port = unit_relation["port"]
+            return f"redis://{ip}:{port}"
+        return ""
+
     def _get_celery_prometheus_exporter_pebble_config(self, container) -> ops.pebble.LayerDict:
         """Generate pebble config for the celery-prometheus-exporter container.
 
@@ -399,7 +430,7 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
                     "summary": "Celery Exporter",
                     "command": (
                         "celery-exporter"
-                        f" --broker-url={self.redis_broker.url}"
+                        f" --broker-url={self._get_redis_broker_url()}"
                         " --retry-interval=5"
                     ),
                     "environment": indico_env_config,
@@ -516,7 +547,7 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
 
         env_config = {
             "ATTACHMENT_STORAGE": "default",
-            "CELERY_BROKER": self.redis_broker.url,
+            "CELERY_BROKER": self._get_redis_broker_url(),
             "CE_ACCEPT_CONTENT": "json,pickle",
             "CUSTOMIZATION_DEBUG": self.config["customization_debug"],
             "ENABLE_ROOMBOOKING": self.config["enable_roombooking"],
@@ -530,7 +561,7 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
             "LANG": "C.UTF-8",
             "LC_ALL": "C.UTF-8",
             "LC_LANG": "C.UTF-8",
-            "REDIS_CACHE_URL": self.redis_cache.url,
+            "REDIS_CACHE_URL": self._get_redis_cache_url(),
             "SECRET_KEY": self._get_indico_secret_key_from_relation(),
             "SERVICE_HOSTNAME": self._get_external_hostname(),
             "SERVICE_PORT": self._get_external_port(),
