@@ -399,11 +399,14 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
 
         relation = self.model.get_relation(redis.relation_name)
         if relation:
-            relation_data = relation.data[self.model.relations[redis_name][0].app]
-            ip = relation_data["leader-host"]
-            unit_relation = redis.relation_data
-            port = unit_relation["port"]
-            return f"redis://{ip}:{port}"
+            try:
+                relation_data = relation.data[self.model.relations[redis_name][0].app]
+                ip = relation_data["leader-host"]
+                unit_relation = redis.relation_data
+                port = unit_relation["port"]
+                return f"redis://{ip}:{port}"
+            except KeyError:
+                return ""
         return ""
 
     def _get_celery_prometheus_exporter_pebble_config(self, container) -> ops.pebble.LayerDict:
