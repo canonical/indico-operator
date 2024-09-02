@@ -381,32 +381,27 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
         }
         return typing.cast(ops.pebble.LayerDict, layer)
 
-    def _get_redis_cache_url(self) -> str:
-        """Get Url for redis-cache charm.
+    def _get_redis_url(self, redis_name: str) -> str:
+        """Get Url for redis charm.
+
+        Args:
+            redis_name (str): Name of the redis charm to connect to.
 
         Returns:
-            Url for the redis-cache charm.
+            Url for the redis charm.
         """
-        relation = self.model.get_relation(self.redis_cache.relation_name)
-        if relation:
-            relation_data = relation.data[self.model.relations["redis-cache"][0].app]
-            ip = relation_data["leader-host"]
-            unit_relation = self.redis_cache.relation_data
-            port = unit_relation["port"]
-            return f"redis://{ip}:{port}"
-        return ""
+        if redis_name == "redis-broker":
+            redis = self.redis_broker
+        elif redis_name == "redis-cache":
+            redis = self.redis_cache
+        else:
+            return ""
 
-    def _get_redis_broker_url(self) -> str:
-        """Get Url for redis-broker charm.
-
-        Returns:
-            Url for the redis-broker charm.
-        """
-        relation = self.model.get_relation(self.redis_broker.relation_name)
+        relation = self.model.get_relation(redis.relation_name)
         if relation:
-            relation_data = relation.data[self.model.relations["redis-broker"][0].app]
+            relation_data = relation.data[self.model.relations[redis_name][0].app]
             ip = relation_data["leader-host"]
-            unit_relation = self.redis_broker.relation_data
+            unit_relation = redis.relation_data
             port = unit_relation["port"]
             return f"redis://{ip}:{port}"
         return ""
@@ -430,7 +425,7 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
                     "summary": "Celery Exporter",
                     "command": (
                         "celery-exporter"
-                        f" --broker-url={self._get_redis_broker_url()}"
+                        f" --broker-url={self._get_redis_url('redis-broker')}"
                         " --retry-interval=5"
                     ),
                     "environment": indico_env_config,
@@ -547,7 +542,7 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
 
         env_config = {
             "ATTACHMENT_STORAGE": "default",
-            "CELERY_BROKER": self._get_redis_broker_url(),
+            "CELERY_BROKER": self._get_redis_url("redis-broker"),
             "CE_ACCEPT_CONTENT": "json,pickle",
             "CUSTOMIZATION_DEBUG": self.config["customization_debug"],
             "ENABLE_ROOMBOOKING": self.config["enable_roombooking"],
@@ -561,7 +556,7 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
             "LANG": "C.UTF-8",
             "LC_ALL": "C.UTF-8",
             "LC_LANG": "C.UTF-8",
-            "REDIS_CACHE_URL": self._get_redis_cache_url(),
+            "REDIS_CACHE_URL": self._get_redis_url("redis-cache"),
             "SECRET_KEY": self._get_indico_secret_key_from_relation(),
             "SERVICE_HOSTNAME": self._get_external_hostname(),
             "SERVICE_PORT": self._get_external_port(),
