@@ -44,11 +44,6 @@ class TestBase(unittest.TestCase):
             app_data={"leader-host": "broker-host"},
         )
         self.harness.add_relation_unit(redis_broker_relation_id, "redis-broker/1")
-        self.harness.update_relation_data(
-            redis_broker_relation_id,
-            "redis-broker/1",
-            {"hostname": "broker-host-1", "port": "1010"},
-        )
         redis_cache_relation_id = self.harness.add_relation(
             "redis-cache",
             "redis-cache",
@@ -56,11 +51,6 @@ class TestBase(unittest.TestCase):
             app_data={"leader-host": "cache-host"},
         )
         self.harness.add_relation_unit(redis_cache_relation_id, "redis-cache/1")
-        self.harness.update_relation_data(
-            redis_cache_relation_id,
-            "redis-cache/1",
-            {"hostname": "cache-host-1", "port": "1011"},
-        )
         self.nginx_route_relation_id = self.harness.add_relation(  # pylint: disable=W0201
             "nginx-route", "ingress"
         )
