@@ -45,6 +45,10 @@ SAML_GROUPS_PLUGIN_NAME = "saml_groups"
 UWSGI_TOUCH_RELOAD = "/srv/indico/indico.wsgi"
 
 
+class InvalidRedisNameError(Exception):
+    """Represents invalid redis name error."""
+
+
 class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attributes
     """Charm for Indico on kubernetes.
 
@@ -388,13 +392,16 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
 
         Returns:
             Url for the redis charm.
+
+        Raises:
+           InvalidRedisNameError: If redis name is invalid
         """
         if redis_name == "redis-broker":
             redis = self.redis_broker
         elif redis_name == "redis-cache":
             redis = self.redis_cache
         else:
-            return ""
+            raise InvalidRedisNameError(f"Invalid Redis name: {redis_name}")
 
         relation = self.model.get_relation(redis.relation_name)
         if relation:
