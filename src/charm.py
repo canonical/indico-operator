@@ -408,8 +408,7 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
             try:
                 relation_data = relation.data[self.model.relations[redis_name][0].app]
                 ip = relation_data["leader-host"]
-                unit_relation = redis.relation_data
-                port = unit_relation["port"]
+                port = redis.relation_data["port"]
                 return f"redis://{ip}:{port}"
             except KeyError:
                 return ""
