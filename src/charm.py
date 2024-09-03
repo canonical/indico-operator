@@ -80,8 +80,7 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
         self.framework.observe(self.on.indico_pebble_ready, self._on_pebble_ready)
         self.framework.observe(self.on.indico_nginx_pebble_ready, self._on_pebble_ready)
         self.framework.observe(
-            self.on.refresh_external_resources_action,
-            self._refresh_external_resources_action,
+            self.on.refresh_external_resources_action, self._refresh_external_resources_action
         )
         # self.framework.observe(self.on.update_status, self._refresh_external_resources)
         self.framework.observe(self.on.add_admin_action, self._add_admin_action)
