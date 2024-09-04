@@ -29,7 +29,7 @@ def test_proxyconfig_invalid(monkeypatch: pytest.MonkeyPatch):
     assert harness.model.unit.status.name == ops.BlockedStatus().name
 
 
-class TestCore(TestBase):
+class TestCore(TestBase):  # pylint: disable=too-many-public-methods
     """Indico charm unit tests."""
 
     def test_redis_ha(self):
@@ -86,6 +86,34 @@ class TestCore(TestBase):
             redis_cache_relation_id,
             "redis-cache",
             {"leader-host": cache_host},
+        )
+        broker_url = self.harness.charm._get_redis_url("redis-broker")
+        cache_url = self.harness.charm._get_redis_url("redis-cache")
+        self.assertEqual(broker_url, f"redis://{broker_host}:{broker_port}")
+        self.assertEqual(cache_url, f"redis://{cache_host}:{cache_port}")
+
+    def test_redis_ha_old(self):
+        """
+        arrange: charm created
+        act: add redis relation with old redis databag
+        assert: the charm gets the correct url
+        """
+        self.setUp()
+        broker_host = "broker-host"
+        broker_port = "1010"
+        cache_host = "cache-host"
+        cache_port = "1011"
+
+        self.harness.add_relation(
+            "redis-broker",
+            "redis-broker",
+            unit_data={"hostname": broker_host, "port": broker_port},
+        )
+
+        self.harness.add_relation(
+            "redis-cache",
+            "redis-cache",
+            unit_data={"hostname": cache_host, "port": cache_port},
         )
         broker_url = self.harness.charm._get_redis_url("redis-broker")
         cache_url = self.harness.charm._get_redis_url("redis-cache")

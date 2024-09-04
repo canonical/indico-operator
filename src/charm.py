@@ -384,7 +384,7 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
         }
         return typing.cast(ops.pebble.LayerDict, layer)
 
-    def _get_redis_url(self, redis_name: str) -> str:
+    def _get_redis_url(self, redis_name: str) -> Optional[str]:
         """Get Url for redis charm.
 
         Args:
@@ -404,15 +404,23 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
             raise InvalidRedisNameError(f"Invalid Redis name: {redis_name}")
 
         relation = self.model.get_relation(redis.relation_name)
-        if relation:
-            try:
-                relation_data = relation.data[self.model.relations[redis_name][0].app]
-                ip = relation_data["leader-host"]
-                port = redis.relation_data["port"]
-                return f"redis://{ip}:{port}"
-            except KeyError:
-                return ""
-        return ""
+        if not relation:
+            return None
+        relation_app_data = relation.data[relation.app]
+        redis_hostname = (
+            str(relation_app_data.get("leader-host"))
+            if relation_app_data.get("leader-host")
+            else None
+        )
+
+        try:
+            if not redis_hostname:
+                return redis.url
+            port = redis.relation_data["port"]
+            return f"redis://{redis_hostname}:{port}"
+        except KeyError:
+            return None
+        return None
 
     def _get_celery_prometheus_exporter_pebble_config(self, container) -> ops.pebble.LayerDict:
         """Generate pebble config for the celery-prometheus-exporter container.
