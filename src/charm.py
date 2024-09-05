@@ -407,16 +407,16 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
         if not relation:
             return None
         relation_app_data = relation.data[relation.app]
-        redis_hostname = (
-            str(relation_app_data.get("leader-host"))
-            if relation_app_data.get("leader-host")
-            else None
-        )
+        relation_unit_data = redis.relation_data
 
         try:
-            if not redis_hostname:
-                return redis.url
-            port = redis.relation_data["port"]
+            redis_hostname = (
+                str(relation_app_data["leader-host"])
+                if relation_app_data.get("leader-host")
+                else relation_unit_data["hostname"]
+            )
+
+            port = relation_unit_data["port"]
             return f"redis://{redis_hostname}:{port}"
         except KeyError:
             return None
