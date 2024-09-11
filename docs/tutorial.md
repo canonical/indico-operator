@@ -11,7 +11,7 @@ Through the process, you'll inspect the Kubernetes resources created, verify the
 ## Requirements
 
 - Juju 3 installed.
-- Juju microk8s controller created and active.
+- Juju MicroK8s controller created and active.
 - NGINX Ingress Controller. If you're using [MicroK8s](https://microk8s.io/), this can be done by running the command `microk8s enable ingress`. For more details, see [Addon: Ingress](https://microk8s.io/docs/addon-ingress).
 
 For more information about how to install Juju, see [Get started with Juju](https://juju.is/docs/olm/get-started-with-juju).
@@ -19,7 +19,7 @@ For more information about how to install Juju, see [Get started with Juju](http
 ### Add a Juju model for the tutorial
 
 To manage resources effectively and to separate this tutorial's workload from
-your usual work, we recommend creating a new model using the following command.
+your usual work, create a new model using the following command:
 
 ```
 juju add-model indico-tutorial
@@ -153,7 +153,7 @@ Optional: run `echo "127.0.0.1 indico.local" >> /etc/hosts` to redirect the outp
 After that, visit `http://indico.local` in a browser and you'll be presented with a screen to create an initial admin account.
 
 
-## Cleaning up the Environment
+## Clean up the Environment
 
 Well done! You've successfully completed the Indico tutorial. To remove the
 model environment you created during this tutorial, use the following command.
