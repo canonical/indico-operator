@@ -1,4 +1,4 @@
-# Quick guide
+# Deploy the Indico charm for the first time
 
 ## What you’ll do
 
@@ -26,8 +26,8 @@ Deploy the charms:
 
 ```bash
 juju deploy postgresql-k8s --trust
-juju deploy redis-k8s redis-broker
-juju deploy redis-k8s redis-cache
+juju deploy redis-k8s redis-broker --channel=latest/edge
+juju deploy redis-k8s redis-cache --channel=latest/edge
 juju deploy indico
 ```
 
@@ -72,7 +72,7 @@ Note: `database` is the name of the integration. This is needed because establis
 Enable PostgreSQL extensions:
 
 ```bash
-juju config postgresql plugin_pg_trgm_enable=true plugin_unaccent_enable=true
+juju config postgresql-k8s plugin_pg_trgm_enable=true plugin_unaccent_enable=true
 ``` 
 
 
