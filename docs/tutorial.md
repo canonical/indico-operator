@@ -1,4 +1,4 @@
-# Quick guide
+# Deploy the Indico charm for the first time
 
 ## What you’ll do
 
@@ -11,10 +11,19 @@ Through the process, you'll inspect the Kubernetes resources created, verify the
 ## Requirements
 
 - Juju 3 installed.
-- Juju controller and model created.
+- Juju MicroK8s controller created and active.
 - NGINX Ingress Controller. If you're using [MicroK8s](https://microk8s.io/), this can be done by running the command `microk8s enable ingress`. For more details, see [Addon: Ingress](https://microk8s.io/docs/addon-ingress).
 
 For more information about how to install Juju, see [Get started with Juju](https://juju.is/docs/olm/get-started-with-juju).
+
+### Add a Juju model for the tutorial
+
+To manage resources effectively and to separate this tutorial's workload from
+your usual work, create a new model using the following command:
+
+```
+juju add-model indico-tutorial
+```
 
 ### Deploy the Indico charm
 
@@ -26,12 +35,12 @@ Deploy the charms:
 
 ```bash
 juju deploy postgresql-k8s --trust
-juju deploy redis-k8s redis-broker
-juju deploy redis-k8s redis-cache
+juju deploy redis-k8s redis-broker --channel=latest/edge
+juju deploy redis-k8s redis-cache --channel=latest/edge
 juju deploy indico
 ```
 
-To see the pod created by the Indico charm, run `kubectl get pods` on a namespace named for the Juju model you've deployed the Indico charm into. The output is similar to the following:
+To see the pod created by the Indico charm, run `kubectl get pods -n indico-tutorial`, where the namespace is the name of the Juju model. The output is similar to the following:
 
 ```bash
 NAME                             READY   STATUS    RESTARTS   AGE
@@ -72,7 +81,7 @@ Note: `database` is the name of the integration. This is needed because establis
 Enable PostgreSQL extensions:
 
 ```bash
-juju config postgresql plugin_pg_trgm_enable=true plugin_unaccent_enable=true
+juju config postgresql-k8s plugin_pg_trgm_enable=true plugin_unaccent_enable=true
 ``` 
 
 
@@ -142,3 +151,13 @@ The default hostname for the Indico application is `indico.local`. To resolve it
 Optional: run `echo "127.0.0.1 indico.local" >> /etc/hosts` to redirect the output of the command `echo` to the end of the file `/etc/hosts`.
 
 After that, visit `http://indico.local` in a browser and you'll be presented with a screen to create an initial admin account.
+
+
+## Clean up the Environment
+
+Well done! You've successfully completed the Indico tutorial. To remove the
+model environment you created during this tutorial, use the following command.
+
+```
+juju destroy-model indico-tutorial --no-prompt --destroy-storage=true
+```
