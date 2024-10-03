@@ -9,9 +9,8 @@
 Through the process, you'll inspect the Kubernetes resources created, verify the workload state, and log in to your Indico instance.
 
 ## Requirements
-
-- Juju 3 installed.
-- Juju MicroK8s controller created and active.
+- A working station, e.g., a laptop, with amd64 architecture.
+- Juju 3 installed and bootstrapped to a MicroK8s controller. You can accomplish this process by following this guide: [Set up / Tear down your test environment](https://juju.is/docs/juju/set-up--tear-down-your-test-environment)
 - NGINX Ingress Controller. If you're using [MicroK8s](https://microk8s.io/), this can be done by running the command `microk8s enable ingress`. For more details, see [Addon: Ingress](https://microk8s.io/docs/addon-ingress).
 
 For more information about how to install Juju, see [Get started with Juju](https://juju.is/docs/olm/get-started-with-juju).
@@ -19,9 +18,9 @@ For more information about how to install Juju, see [Get started with Juju](http
 ### Add a Juju model for the tutorial
 
 To manage resources effectively and to separate this tutorial's workload from
-your usual work, create a new model using the following command:
+your usual work, create a new model in the MicroK8s controller using the following command:
 
-```
+```bash
 juju add-model indico-tutorial
 ```
 
@@ -82,7 +81,7 @@ Enable PostgreSQL extensions:
 
 ```bash
 juju config postgresql-k8s plugin_pg_trgm_enable=true plugin_unaccent_enable=true
-``` 
+```
 
 
 Run `juju status` and wait until the Application status is `Active` as the following example:
@@ -94,7 +93,7 @@ App                       Version                       Status  Scale  Charm    
 indico                 3.3                           active      1  indico                              182  10.152.183.68   no
 ```
 
-The deployment finishes when the status shows "Active".
+The deployment finishes when the status shows "Active" for all charms.
 
 ### Integrate with Ingress by using NGINX Ingress Integrator charm
 
@@ -104,13 +103,19 @@ If you want to make Indico charm available to external clients, you need to depl
 
 See more details in [Adding the Ingress Relation to a Charm](https://charmhub.io/nginx-ingress-integrator/docs/adding-ingress-relation).
 
+Enable the ingress on MicroK8s first:
+
+```bash
+sudo microk8s enable ingress
+```
+
 Deploy the charm NGINX Ingress Integrator:
 
 ```bash
 juju deploy nginx-ingress-integrator
 ```
 
-If your cluster has [RBAC](https://kubernetes.io/docs/reference/access-authn-authz/rbac/) enabled, you'll be prompted to run the following:
+If your cluster has [RBAC](https://kubernetes.io/docs/reference/access-authn-authz/rbac/) enabled, you'll be prompted to run the following (If you are working inside the Multipass vm chances are you have RBAC enabled):
 
 ```bash
 juju trust nginx-ingress-integrator --scope cluster
@@ -122,7 +127,6 @@ Provide integration between Indico and NGINX Ingress Integrator:
 
 ```bash
 juju integrate indico nginx-ingress-integrator
-
 ```
 
 To see the Ingress resource created, run `kubectl get ingress` on a namespace named for the Juju model you've deployed the Indico charm into. The output is similar to the following:
@@ -135,20 +139,54 @@ indico-local-ingress      public   indico.local   127.0.0.1   80      2d
 Run `juju status` to see the same Ingress IP in the `nginx-ingress-integrator` message:
 
 ```bash
-nginx-ingress-integrator                                active      1  nginx-ingress-integrator  stable    45  10.152.183.233  no       Ingress IP(s): 127.0.0.1, Service IP(s): 10.152.183.66
+nginx-ingress-integrator                                active      1  nginx-ingress-integrator  stable    45  10.152.183.233  no       Ingress IP(s): 127.0.0.1
 ```
 
 The browser uses entries in the /etc/hosts file to override what is returned by a DNS server.
 
 Usually a charm default hostname is the application name but since Indico requires a "." in the hostname for the app to respond, so the charm configures the default to `indico.local`.
 
-The default hostname for the Indico application is `indico.local`. To resolve it to your Ingress IP, edit [`/etc/hosts`](https://manpages.ubuntu.com/manpages/kinetic/man5/hosts.5.html) file and add the following line accordingly:
+If you are deploying to a local machine you need to add the `127.0.0.1` to the `/etc/hosts` file. The default hostname for the Indico application is `indico.local`. To resolve it to your Ingress IP, edit [`/etc/hosts`](https://manpages.ubuntu.com/manpages/kinetic/man5/hosts.5.html) file and add the following line accordingly:
 
 ```bash
 127.0.0.1 indico.local
 ```
 
 Optional: run `echo "127.0.0.1 indico.local" >> /etc/hosts` to redirect the output of the command `echo` to the end of the file `/etc/hosts`.
+
+If you are using a Multipass instance you need to forward the request from your local to the Multipass instance.
+First get the Multipass instances ip address:
+
+```bash
+$ multipass info my-juju-vm
+Name:           my-juju-vm
+State:          Running
+Snapshots:      0
+IPv4:           10.131.49.76
+                10.118.8.1
+                10.1.32.128
+Release:        Ubuntu 22.04.5 LTS
+Image hash:     5da0b3d37d02 (Ubuntu 22.04 LTS)
+CPU(s):         4
+Load:           0.88 0.88 1.02
+Disk usage:     16.3GiB out of 48.4GiB
+Memory usage:   3.4GiB out of 7.7GiB
+Mounts:         --
+```
+
+Run the following command to route traffic into the Multipass instance:
+
+```bash
+sudo ip route add 127.0.0.1 via 10.131.49.76
+```
+
+`127.0.0.1` is the ip inside the Multipass instance and `10.131.49.76` is the ip address of the Multipass instance. Multipass instance ip will be different for you so be careful.
+
+Add the ip address to the `/etc/hosts` file:
+
+```bash
+echo "10.131.49.76 indico.local" >> /etc/hosts
+```
 
 After that, visit `http://indico.local` in a browser and you'll be presented with a screen to create an initial admin account.
 
@@ -160,4 +198,10 @@ model environment you created during this tutorial, use the following command.
 
 ```
 juju destroy-model indico-tutorial --no-prompt --destroy-storage=true
+```
+
+To remove the Multipass instance you created for this tutorial, use the following command.
+
+```bash
+multipass delete --purge my-juju-vm
 ```
