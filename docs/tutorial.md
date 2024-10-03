@@ -15,6 +15,13 @@ Through the process, you'll inspect the Kubernetes resources created, verify the
 
 For more information about how to install Juju, see [Get started with Juju](https://juju.is/docs/olm/get-started-with-juju).
 
+### Shell into the Multipass VM
+
+To be able to work inside the Multipass VM first you need to log in with the following command:
+```bash
+multipass shell my-juju-vm
+```
+
 ### Add a Juju model for the tutorial
 
 To manage resources effectively and to separate this tutorial's workload from
@@ -155,40 +162,20 @@ If you are deploying to a local machine you need to add the `127.0.0.1` to the `
 Optional: run `echo "127.0.0.1 indico.local" >> /etc/hosts` to redirect the output of the command `echo` to the end of the file `/etc/hosts`.
 
 If you are using a Multipass instance you need to forward the request from your local to the Multipass instance.
-First get the Multipass instances IP address. To get the IP address of a Multipass instance run the following command:
+First get the Multipass instances IP address. Since the indico is served on the local address of the Multipass VM we need to use the ip address of the VM. To get the IP address of a Multipass instance run the following command:
 
 ```bash
-multipass info my-juju-vm
+ip a | awk '/inet .* ens3/{print $2}' | cut -d'/' -f1
 ```
 The result should be something like this:
 ```bash
-Name:           my-juju-vm
-State:          Running
-Snapshots:      0
-IPv4:           10.131.49.76
-                10.118.8.1
-                10.1.32.128
-Release:        Ubuntu 22.04.5 LTS
-Image hash:     5da0b3d37d02 (Ubuntu 22.04 LTS)
-CPU(s):         4
-Load:           0.88 0.88 1.02
-Disk usage:     16.3GiB out of 48.4GiB
-Memory usage:   3.4GiB out of 7.7GiB
-Mounts:         --
+10.131.49.76
 ```
-
-Run the following command to route traffic into the Multipass instance:
-
-```bash
-sudo ip route add 127.0.0.1 via 10.131.49.76
-```
-
-`127.0.0.1` is the IP inside the Multipass instance and `10.131.49.76` is the IP address of the Multipass instance. Multipass instance IP will be different for you so be careful.
 
 Add the IP address to the `/etc/hosts` file:
 
 ```bash
-echo "10.131.49.76 indico.local" >> /etc/hosts
+echo "10.131.49.76 indico.local" | sudo tee -a /etc/hosts
 ```
 
 After that, visit `http://indico.local` in a browser and you'll be presented with a screen to create an initial admin account.
@@ -208,3 +195,4 @@ To remove the Multipass instance you created for this tutorial, use the followin
 ```bash
 multipass delete --purge my-juju-vm
 ```
+It is also a good idea to remove the `10.131.49.76 indico.local` line from the `/etc/hosts` file.
