@@ -115,7 +115,7 @@ Deploy the charm NGINX Ingress Integrator:
 juju deploy nginx-ingress-integrator
 ```
 
-If your cluster has [RBAC](https://kubernetes.io/docs/reference/access-authn-authz/rbac/) enabled, you'll be prompted to run the following (If you are working inside the Multipass vm chances are you have RBAC enabled):
+If your cluster has [RBAC](https://kubernetes.io/docs/reference/access-authn-authz/rbac/) enabled, you'll be prompted to run the following (If you are working inside the Multipass VM chances are you have RBAC enabled):
 
 ```bash
 juju trust nginx-ingress-integrator --scope cluster
@@ -155,10 +155,13 @@ If you are deploying to a local machine you need to add the `127.0.0.1` to the `
 Optional: run `echo "127.0.0.1 indico.local" >> /etc/hosts` to redirect the output of the command `echo` to the end of the file `/etc/hosts`.
 
 If you are using a Multipass instance you need to forward the request from your local to the Multipass instance.
-First get the Multipass instances ip address:
+First get the Multipass instances IP address. To get the IP address of a Multipass instance run the following command:
 
 ```bash
-$ multipass info my-juju-vm
+multipass info my-juju-vm
+```
+The result should be something like this:
+```bash
 Name:           my-juju-vm
 State:          Running
 Snapshots:      0
@@ -180,9 +183,9 @@ Run the following command to route traffic into the Multipass instance:
 sudo ip route add 127.0.0.1 via 10.131.49.76
 ```
 
-`127.0.0.1` is the ip inside the Multipass instance and `10.131.49.76` is the ip address of the Multipass instance. Multipass instance ip will be different for you so be careful.
+`127.0.0.1` is the IP inside the Multipass instance and `10.131.49.76` is the IP address of the Multipass instance. Multipass instance IP will be different for you so be careful.
 
-Add the ip address to the `/etc/hosts` file:
+Add the IP address to the `/etc/hosts` file:
 
 ```bash
 echo "10.131.49.76 indico.local" >> /etc/hosts
