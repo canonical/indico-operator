@@ -203,4 +203,4 @@ To remove the Multipass instance you created for this tutorial, use the followin
 ```bash
 multipass delete --purge my-juju-vm
 ```
-It is also a good idea to remove the `10.131.49.76 indico.local` line from the `/etc/hosts` file.
+Finally, remove the `10.131.49.76 indico.local` line from the `/etc/hosts` file.
