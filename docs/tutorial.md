@@ -121,9 +121,17 @@ Deploy the charm NGINX Ingress Integrator:
 ```bash
 juju deploy nginx-ingress-integrator
 ```
+To check if RBAC is enabled run the following command:
+```bash
+microk8s status | grep rbac
+```
+If it is enabled, then the output should be like the following:
+```bash
+rbac                 # (core) Role-Based Access Control for authorisation
+```
+If the output is empty then RBAC is not enabled.
 
-If your cluster has [RBAC](https://kubernetes.io/docs/reference/access-authn-authz/rbac/) enabled, you'll be prompted to run the following (If you are working inside the Multipass VM chances are you have RBAC enabled):
-
+If your cluster has RBAC enabled, you'll be prompted to run the following (If you are working inside the Multipass VM, chances are you have RBAC enabled):
 ```bash
 juju trust nginx-ingress-integrator --scope cluster
 ```
@@ -165,7 +173,7 @@ If you are using a Multipass instance you need to forward the request from your 
 First get the Multipass instances IP address. Since the indico is served on the local address of the Multipass VM we need to use the ip address of the VM. To get the IP address of a Multipass instance run the following command:
 
 ```bash
-ip a | awk '/inet .* ens3/{print $2}' | cut -d'/' -f1
+ip -4 -j route get 2.2.2.2 | jq -r '.[] | .prefsrc'
 ```
 The result should be something like this:
 ```bash
@@ -186,7 +194,7 @@ After that, visit `http://indico.local` in a browser and you'll be presented wit
 Well done! You've successfully completed the Indico tutorial. To remove the
 model environment you created during this tutorial, use the following command.
 
-```
+```bash
 juju destroy-model indico-tutorial --no-prompt --destroy-storage=true
 ```
 
