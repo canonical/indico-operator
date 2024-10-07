@@ -15,7 +15,7 @@ jobs:
       self-hosted-runner-label: "edge"
   plugins-test:
     name: Specific test for the plugin
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Install python3.12
