@@ -49,6 +49,6 @@ This charm can be integrated with other Juju charms and services:
 * [Troubleshooting](https://chat.charmhub.io/charmhub/channels/charm-dev) <!--(Optional) Link to a page or section about troubleshooting/FAQ-->
 
 ## Project and community
-* [Issues](https://github.com/canonical/is-charms-template-repo/issues) <!--Link to GitHub issues (if applicable)-->
+* [Issues](https://github.com/canonical/indico-operator/issues) <!--Link to GitHub issues (if applicable)-->
 * [Contributing](https://charmhub.io/indico/docs/how-to-contribute) <!--Link to any contribution guides-->
 * [Matrix](https://chat.charmhub.io/charmhub/channels/charm-dev) <!--Link to contact info (if applicable), e.g. Matrix channel-->
