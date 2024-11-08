@@ -19,7 +19,7 @@ from pytest_operator.plugin import OpsTest
 @pytest.mark.asyncio
 @pytest.mark.abort_on_fail
 @pytest.mark.usefixtures("saml_integrator")
-async def test_saml_auth(  # pylint: disable=too-many-arguments
+async def test_saml_auth(  # pylint: disable=too-many-arguments, too-many-positional-arguments
     ops_test: OpsTest,
     app: Application,
     saml_email: str,
