@@ -40,15 +40,14 @@ This charm can be integrated with other Juju charms and services:
     - [S3](https://charmhub.io/s3-integrator): Amazon Simple Storage Service (Amazon S3) is an object storage service that provides secure, durable, highly available storage with massive scalability and low latency.
     - [Postgresql](https://charmhub.io/postgresql-k8s): PostgreSQL is a powerful, open source object-relational database system. It has more than 15 years of active development and a proven architecture that has earned it a strong reputation for reliability, data integrity, and correctness.
 
-    and much more. You can find the full list of integrations [here](https://charmhub.io/indico).
+    and much more. You can find the full list of integrations [here](https://charmhub.io/indico/integrations).
 
 ## Learn more
 * [Read more](https://charmhub.io/indico) <!--Link to the charm's official documentation-->
-* [Developer documentation](https://charmhub.io/indico/docs) <!--Link to any developer documentation-->
+* [Developer documentation](https://docs.getindico.io/en/stable/) <!--Link to any developer documentation-->
 * [Official webpage](https://indico.cern.ch/) <!--(Optional) Link to official webpage/blog/marketing content-->
-* [Troubleshooting](https://chat.charmhub.io/charmhub/channels/charm-dev) <!--(Optional) Link to a page or section about troubleshooting/FAQ-->
 
 ## Project and community
 * [Issues](https://github.com/canonical/indico-operator/issues) <!--Link to GitHub issues (if applicable)-->
 * [Contributing](https://charmhub.io/indico/docs/how-to-contribute) <!--Link to any contribution guides-->
-* [Matrix](https://chat.charmhub.io/charmhub/channels/charm-dev) <!--Link to contact info (if applicable), e.g. Matrix channel-->
+* [Matrix](https://matrix.to/#/#charmhub-charmdev:ubuntu.com) <!--Link to contact info (if applicable), e.g. Matrix channel-->
