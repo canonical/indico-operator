@@ -46,7 +46,7 @@ This charm can be integrated with other Juju charms and services:
 * [Read more](https://charmhub.io/indico) <!--Link to the charm's official documentation-->
 * [Developer documentation](https://docs.getindico.io/en/stable/) <!--Link to any developer documentation-->
 * [Official webpage](https://indico.cern.ch/) <!--(Optional) Link to official webpage/blog/marketing content-->
-
+* [Troubleshooting](https://matrix.to/#/#charmhub-charmdev:ubuntu.com) <!--(Optional) Link to a page or section about troubleshooting/FAQ-->
 ## Project and community
 * [Issues](https://github.com/canonical/indico-operator/issues) <!--Link to GitHub issues (if applicable)-->
 * [Contributing](https://charmhub.io/indico/docs/how-to-contribute) <!--Link to any contribution guides-->
