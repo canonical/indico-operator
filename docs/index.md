@@ -41,7 +41,7 @@ Thinking about using the Indico Operator for your next project? [Get in touch](h
 | Level | Path | Navlink |
 | --- | --- | --- |
 | 1 | tutorial | [Tutorial](/t/indico-docs-quick-guide/8676) |
-| 1 | how-to | How to |
+| 1 | how-to | [How to]() |
 | 2 | how-to-configure-a-proxy | [Configure a proxy](/t/indico-docs-how-to-configure-a-proxy/8678) |
 | 2 | how-to-configure-s3 | [Configure S3](/t/indico-docs-how-to-configure-s3/8680) |
 | 2 | how-to-configure-saml | [Configure SAML](/t/indico-docs-how-to-configure-saml/8664) |
@@ -51,12 +51,12 @@ Thinking about using the Indico Operator for your next project? [Get in touch](h
 | 2 | how-to-customize-theme | [Customize theme](/t/indico-docs-how-to-customize-theme/8682) |
 | 2 | how-to-install-plugins | [Install plugins](/t/indico-docs-how-to-install-plugins/8662) |
 | 2 | how-to-redeploy | [How to redeploy](/t/indico-docs-how-to-redeploy-indico/15928) |
-| 1 | reference | Reference |
+| 1 | reference | [Reference]() |
 | 2 | reference-actions | [Actions](/t/indico-docs-actions/8668) |
 | 2 | reference-configurations | [Configurations](/t/indico-docs-configurations/8670) |
 | 2 | reference-external-access | [External access](/t/indico-docs-external-access/15929) |
 | 2 | reference-integrations | [Integrations](/t/indico-docs-integrations/8672) |
 | 2 | reference-plugins | [Plugins](/t/indico-docs-plugins/7567) |
 | 2 | reference-theme-customization | [Theme customization](/t/indico-docs-theme-customization/8674) |
-| 1 | explanation | Explanation |
+| 1 | explanation | [Explanation]() |
 | 2 | explanation-charm-architecture | [Charm architecture](/t/indico-docs-charm-architecture/7559) |
