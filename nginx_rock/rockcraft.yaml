@@ -50,4 +50,4 @@ parts:
       - build-essential
       - python3.12-dev
       - python3.12-venv
-      - golang
+      - golang-1.23
