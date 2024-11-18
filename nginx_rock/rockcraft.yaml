@@ -1,16 +1,12 @@
 # Copyright 2024 Canonical Ltd.
 # See LICENSE file for licensing details.
-package-repositories:
-  - type: apt
-    ppa: deadsnakes/ppa
-    priority: always
 
 name: indico-nginx
 summary: Indico nginx rock
 description: Nginx OCI image for the Indico charm
 version: "1.0"
-base: ubuntu@22.04
-build-base: ubuntu@22.04
+base: ubuntu@24.04
+build-base: ubuntu@24.04
 license: Apache-2.0
 platforms:
   amd64:
@@ -40,8 +36,6 @@ parts:
       craftctl default
       mkdir run
   indico-files:
-    build-environment:
-      - PARTS_PYTHON_INTERPRETER: python3.12
     python-packages:
       - indico==3.3.1
     build-packages:
