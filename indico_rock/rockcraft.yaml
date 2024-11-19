@@ -24,7 +24,7 @@ parts:
     python-packages:
       - setuptools
       - wheel
-      - indico==3.3.1
+      - indico==3.3.4
       - indico-plugin-payment-paypal==3.3
       - indico-plugin-piwik
       - indico-plugin-storage-s3
