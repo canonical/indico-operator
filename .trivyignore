@@ -1,0 +1,17 @@
+# go stdlib
+# pebble
+CVE-2024-34156
+# usr/bin/statsd_exporter
+CVE-2024-24790
+CVE-2023-39325
+CVE-2023-29403
+CVE-2023-45283
+CVE-2023-45287
+CVE-2023-45288
+# python packages
+# Authlib
+CVE-2024-37568
+# Flask-Cors
+CVE-2024-6221
+# Werkzeug
+CVE-2024-34069
