@@ -36,23 +36,27 @@ The Indico Operator is a member of the Ubuntu family. It's an open-source projec
 
 Thinking about using the Indico Operator for your next project? [Get in touch](https://matrix.to/#/#charmhub-charmdev:ubuntu.com)!
 
-# Contents
+# Navigation
 
-1. [Tutorial](tutorial.md)
-1. [How to](how-to)
-  1. [Configure a proxy](how-to/configure-a-proxy.md)
-  1. [Configure S3](how-to/configure-s3.md)
-  1. [Configure SAML](how-to/configure-saml.md)
-  1. [Configure SMTP](how-to/configure-smtp.md)
-  1. [Configure the external hostname](how-to/configure-the-external-hostname.md)
-  1. [Contribute](how-to/contribute.md)
-  1. [Customize theme](how-to/customize-theme.md)
-  1. [Install plugins](how-to/install-plugins.md)
-1. [Reference](reference)
-  1. [Actions](reference/actions.md)
-  1. [Configurations](reference/configurations.md)
-  1. [Integrations](reference/integrations.md)
-  1. [Plugins](reference/plugins.md)
-  1. [Theme customization](reference/theme-customization.md)
-1. [Explanation](explanation)
-  1. [Charm architecture](explanation/charm-architecture.md)
+| Level | Path | Navlink |
+| --- | --- | --- |
+| 1 | tutorial | [Tutorial](/t/indico-docs-quick-guide/8676) |
+| 1 | how-to | [How to]() |
+| 2 | how-to-configure-a-proxy | [Configure a proxy](/t/indico-docs-how-to-configure-a-proxy/8678) |
+| 2 | how-to-configure-s3 | [Configure S3](/t/indico-docs-how-to-configure-s3/8680) |
+| 2 | how-to-configure-saml | [Configure SAML](/t/indico-docs-how-to-configure-saml/8664) |
+| 2 | how-to-configure-smtp | [Configure SMTP](/t/indico-docs-how-to-configure-smtp/8666) |
+| 2 | how-to-configure-the-external-hostname | [Configure the external hostname](/t/indico-docs-how-to-configure-the-external-hostname/8660) |
+| 2 | how-to-contribute | [Contribute](/t/indico-docs-how-to-contribute/7561) |
+| 2 | how-to-customize-theme | [Customize theme](/t/indico-docs-how-to-customize-theme/8682) |
+| 2 | how-to-install-plugins | [Install plugins](/t/indico-docs-how-to-install-plugins/8662) |
+| 2 | how-to-redeploy | [How to redeploy](/t/indico-docs-how-to-redeploy-indico/15928) |
+| 1 | reference | [Reference]() |
+| 2 | reference-actions | [Actions](/t/indico-docs-actions/8668) |
+| 2 | reference-configurations | [Configurations](/t/indico-docs-configurations/8670) |
+| 2 | reference-external-access | [External access](/t/indico-docs-external-access/15929) |
+| 2 | reference-integrations | [Integrations](/t/indico-docs-integrations/8672) |
+| 2 | reference-plugins | [Plugins](/t/indico-docs-plugins/7567) |
+| 2 | reference-theme-customization | [Theme customization](/t/indico-docs-theme-customization/8674) |
+| 1 | explanation | [Explanation]() |
+| 2 | explanation-charm-architecture | [Charm architecture](/t/indico-docs-charm-architecture/7559) |
