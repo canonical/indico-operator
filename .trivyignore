@@ -15,3 +15,5 @@ CVE-2024-37568
 CVE-2024-6221
 # Werkzeug
 CVE-2024-34069
+# python-pillow: buffer overflow in _imagingcms.c
+CVE-2024-28219
