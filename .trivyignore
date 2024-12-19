@@ -19,3 +19,4 @@ CVE-2024-34069
 CVE-2024-28219
 # usr/bin/nginx-prometheus-exporter 
 CVE-2024-45337 # golang.org/x/crypto
+CVE-2024-45338 # golang.org/x/net
