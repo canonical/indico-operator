@@ -8,6 +8,8 @@ CVE-2023-29403
 CVE-2023-45283
 CVE-2023-45287
 CVE-2023-45288
+CVE-2024-45338
+CVE-2024-45337
 # python packages
 # Authlib
 CVE-2024-37568
@@ -17,3 +19,5 @@ CVE-2024-6221
 CVE-2024-34069
 # python-pillow: buffer overflow in _imagingcms.c
 CVE-2024-28219
+# ubuntu 24.04
+CVE-2024-53103 # linux-libc-dev no fix yet
