@@ -8,6 +8,8 @@ CVE-2023-29403
 CVE-2023-45283
 CVE-2023-45287
 CVE-2023-45288
+CVE-2024-45338
+CVE-2024-45337
 # python packages
 # Authlib
 CVE-2024-37568
@@ -22,4 +24,3 @@ CVE-2024-45337 # golang.org/x/crypto
 CVE-2024-45338 # golang.org/x/net
 # indico
 CVE-2024-56658 # linux-libc-dev
-
