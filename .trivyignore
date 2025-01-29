@@ -1,6 +1,3 @@
-# go stdlib
-# pebble
-CVE-2024-34156
 # usr/bin/statsd_exporter
 CVE-2024-24790
 CVE-2023-39325
@@ -19,8 +16,6 @@ CVE-2024-6221
 CVE-2024-34069
 # python-pillow: buffer overflow in _imagingcms.c
 CVE-2024-28219
-# usr/bin/nginx-prometheus-exporter 
-CVE-2024-45337 # golang.org/x/crypto
-CVE-2024-45338 # golang.org/x/net
-# indico
-CVE-2024-56658 # linux-libc-dev
+# ubuntu 24.04
+CVE-2024-53103 # linux-libc-dev no fix yet
+CVE-2024-56658
