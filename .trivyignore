@@ -21,3 +21,4 @@ CVE-2024-34069
 CVE-2024-28219
 # ubuntu 24.04
 CVE-2024-53103 # linux-libc-dev no fix yet
+CVE-2024-56658
