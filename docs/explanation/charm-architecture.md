@@ -26,13 +26,13 @@ And if you run `kubectl describe pod indico-0`, all the containers will have as 
 ## OCI images
 
 We use [Rockcraft](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/) to build OCI Images for Indico and NGINX. 
-The images are defined in [NGINX rock](https://github.com/canonical/indico-operator/tree/main/nginx_rock/) and [Indico rock](https://github.com/canonical/indico-operator/tree/main/indico_rock).
+The images are defined in [NGINX ROCK](https://github.com/canonical/indico-operator/tree/main/nginx_rock/) and [Indico ROCK](https://github.com/canonical/indico-operator/tree/main/indico_rock).
 They are published to [Charmhub](https://charmhub.io/), the official repository of charms.
 This is done by publishing a resource to Charmhub as described in the [Juju SDK How-to guides](https://juju.is/docs/sdk/publishing).
 
 ## Containers
 
-Configuration files for the containers can be found in the respective directories that define the rocks, see the section above.
+Configuration files for the containers can be found in the respective directories that define the ROCKs, see the section above.
 
 ### NGINX
 
@@ -40,7 +40,7 @@ This container is the entry point for all web traffic to the pod (on port `8080`
 
 The reason for that is since NGINX provides cache static content, reverse proxy, and load balance among multiple application servers, as well as other features it can be used in front of uWSGI server to significantly reduce server and network load.
 
-The workload that this container is running is defined in the [NGINX rock](https://github.com/canonical/indico-operator/tree/main/nginx_rock/).
+The workload that this container is running is defined in the [NGINX ROCK](https://github.com/canonical/indico-operator/tree/main/nginx_rock/).
 
 ### Indico
 
@@ -48,13 +48,13 @@ Indico is a Flask application run by the uWSGI server, one of the most popular s
 
 The uWSGI server is started in HTTP mode (port `8081`) serving Indico Application so NGINX can forward non-static traffic to it.
 
-The workload that this container is running is defined in the [Indico rock](https://github.com/canonical/indico-operator/tree/main/indico_rock).
+The workload that this container is running is defined in the [Indico ROCK](https://github.com/canonical/indico-operator/tree/main/indico_rock).
 
 ### Celery
 
 The Celery is used to process tasks asynchronously created by the Indico application such as sending e-mails, survey notifications, event reminders, etc.
 
-Celery runs in the same container as the Indico container, as defined in the [Indico rock](https://github.com/canonical/indico-operator/tree/main/indico_rock).
+Celery runs in the same container as the Indico container, as defined in the [Indico ROCK](https://github.com/canonical/indico-operator/tree/main/indico_rock).
 
 ## Metrics
 Inside the above mentioned containers, additional Pebble layers are defined in order to provide metrics.
