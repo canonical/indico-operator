@@ -1,16 +1,12 @@
-# Copyright 2024 Canonical Ltd.
+# Copyright 2025 Canonical Ltd.
 # See LICENSE file for licensing details.
-package-repositories:
-  - type: apt
-    ppa: deadsnakes/ppa
-    priority: always
 
 name: indico-nginx
 summary: Indico nginx rock
 description: Nginx OCI image for the Indico charm
 version: "1.0"
-base: ubuntu@22.04
-build-base: ubuntu@22.04
+base: ubuntu@24.04
+build-base: ubuntu@24.04
 license: Apache-2.0
 platforms:
   amd64:
@@ -27,11 +23,16 @@ parts:
     organize:
       nginx.conf: etc/nginx/nginx.conf
       common_headers.conf: etc/nginx/common_headers.conf
+  nginx-prometheus-exporter:
+    plugin: go
+    build-snaps:
+      - go
+    source: https://github.com/nginxinc/nginx-prometheus-exporter
+    source-tag: v1.3.0
+    source-type: git
   nginx:
     stage-packages:
       - nginx
-    stage-snaps:
-      - gtrkiller-nginx-prometheus-exporter/latest/edge
     plugin: nil
     override-build: |
       craftctl default
@@ -40,8 +41,6 @@ parts:
       craftctl default
       mkdir run
   indico-files:
-    build-environment:
-      - PARTS_PYTHON_INTERPRETER: python3.12
     python-packages:
       - indico==3.3.1
     build-packages:

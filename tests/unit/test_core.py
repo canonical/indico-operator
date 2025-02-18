@@ -1,4 +1,4 @@
-# Copyright 2024 Canonical Ltd.
+# Copyright 2025 Canonical Ltd.
 # See LICENSE file for licensing details.
 
 """Indico charm unit tests."""
@@ -29,8 +29,96 @@ def test_proxyconfig_invalid(monkeypatch: pytest.MonkeyPatch):
     assert harness.model.unit.status.name == ops.BlockedStatus().name
 
 
-class TestCore(TestBase):
+class TestCore(TestBase):  # pylint: disable=too-many-public-methods
     """Indico charm unit tests."""
+
+    def test_redis_ha(self):
+        """
+        arrange: charm created
+        act: change leader-host
+        assert: the charm gets the changed url
+        """
+        self.setUp()
+        broker_host = "broker-host"
+        broker_port = "1010"
+        cache_host = "cache-host"
+        cache_port = "1011"
+
+        redis_broker_relation_id = self.harness.add_relation(
+            "redis-broker",
+            "redis-broker",
+            unit_data={"hostname": broker_host, "port": broker_port},
+            app_data={"leader-host": broker_host},
+        )
+        self.harness.add_relation_unit(redis_broker_relation_id, "redis-broker/1")
+        self.harness.update_relation_data(
+            redis_broker_relation_id,
+            "redis-broker/1",
+            {"hostname": "broker-host-1", "port": broker_port},
+        )
+        redis_cache_relation_id = self.harness.add_relation(
+            "redis-cache",
+            "redis-cache",
+            unit_data={"hostname": cache_host, "port": cache_port},
+            app_data={"leader-host": cache_host},
+        )
+        self.harness.add_relation_unit(redis_cache_relation_id, "redis-cache/1")
+        self.harness.update_relation_data(
+            redis_cache_relation_id,
+            "redis-cache/1",
+            {"hostname": "cache-host-1", "port": cache_port},
+        )
+
+        broker_url = self.harness.charm._get_redis_url("redis-broker")
+        cache_url = self.harness.charm._get_redis_url("redis-cache")
+        self.assertEqual(broker_url, f"redis://{broker_host}:{broker_port}")
+        self.assertEqual(cache_url, f"redis://{cache_host}:{cache_port}")
+        broker_host = "broker-host-1"
+        cache_host = "cache-host-1"
+
+        self.harness.update_relation_data(
+            redis_broker_relation_id,
+            "redis-broker",
+            {"leader-host": broker_host},
+        )
+
+        self.harness.update_relation_data(
+            redis_cache_relation_id,
+            "redis-cache",
+            {"leader-host": cache_host},
+        )
+        broker_url = self.harness.charm._get_redis_url("redis-broker")
+        cache_url = self.harness.charm._get_redis_url("redis-cache")
+        self.assertEqual(broker_url, f"redis://{broker_host}:{broker_port}")
+        self.assertEqual(cache_url, f"redis://{cache_host}:{cache_port}")
+
+    def test_redis_ha_old(self):
+        """
+        arrange: charm created
+        act: add redis relation with old redis databag
+        assert: the charm gets the correct url
+        """
+        self.setUp()
+        broker_host = "broker-host"
+        broker_port = "1010"
+        cache_host = "cache-host"
+        cache_port = "1011"
+
+        self.harness.add_relation(
+            "redis-broker",
+            "redis-broker",
+            unit_data={"hostname": broker_host, "port": broker_port},
+        )
+
+        self.harness.add_relation(
+            "redis-cache",
+            "redis-cache",
+            unit_data={"hostname": cache_host, "port": cache_port},
+        )
+        broker_url = self.harness.charm._get_redis_url("redis-broker")
+        cache_url = self.harness.charm._get_redis_url("redis-cache")
+        self.assertEqual(broker_url, f"redis://{broker_host}:{broker_port}")
+        self.assertEqual(cache_url, f"redis://{cache_host}:{cache_port}")
 
     def test_missing_relations(self):
         """

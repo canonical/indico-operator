@@ -1,4 +1,4 @@
-# Copyright 2024 Canonical Ltd.
+# Copyright 2025 Canonical Ltd.
 # See LICENSE file for licensing details.
 
 """Fixtures for Indico charm integration tests."""
@@ -171,3 +171,17 @@ async def s3_integrator_fixture(ops_test: OpsTest, app: Application):
         apps=[s3_integrator.name, app.name], status="active", raise_on_error=False
     )
     yield s3_integrator
+
+
+@pytest_asyncio.fixture(scope="module", name="loki")
+async def loki_fixture(ops_test: OpsTest, app: Application):
+    """Loki charm used for integration testing."""
+    assert ops_test.model
+    loki = await ops_test.model.deploy(
+        "loki-k8s", channel="latest/edge", trust=True, revision=97, series="focal"
+    )
+    await ops_test.model.add_relation(app.name, loki.name)
+    await ops_test.model.wait_for_idle(
+        apps=[loki.name, app.name], status="active", raise_on_error=False
+    )
+    yield loki

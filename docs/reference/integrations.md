@@ -8,7 +8,11 @@ _Supported charms_: [postgresql-k8s](https://charmhub.io/postgresql-k8s), [postg
 Database integration is a required relation for the indico charm to supply structured data
 storage for Indico.
 
-Example db integrate command: `juju integrate indico postgresql-k8s:db`
+Example db integrate command: 
+
+```
+juju integrate indico postgresql-k8s:db
+```
 
 ### redis
 
@@ -19,7 +23,11 @@ Redis integration is a required relation for the indico charm to supply caching 
 a message broker to interface with Celery. As such, two instances are needed, `redis-cache` and 
 `redis-broker`.
 
-Example db integrate commands: `juju integrate redis-cache indico`, `juju integrate redis-broker indico`
+Example db integrate commands: 
+```
+juju integrate redis-cache indico 
+juju integrate redis-broker indico
+```
 
 ### ingress
 
@@ -32,7 +40,10 @@ charm enables additional `blog_hostname` and `use_nginx_ingress_modesec` configu
 kubernetes cluster must already have an nginx ingress controller already deployed. Documentation to
 enable ingress in microk8s can be found [here](https://microk8s.io/docs/addon-ingress).
 
-Example ingress integrate command: `juju integrate indico nginx-ingress-integrator`
+Example ingress integrate command: 
+```
+juju integrate indico nginx-ingress-integrator
+```
 
 ### metrics-endpoint
 
@@ -45,7 +56,10 @@ apache’s `/server-status` route is not exposed and can only be accessed from w
 Kubernetes pod. The metrics are exposed in the [open metrics format](https://github.com/OpenObservability/OpenMetrics/blob/main/specification/OpenMetrics.md#data-model) and will only be scraped by Prometheus once the relation becomes active. For more
 information about the metrics exposed, please refer to the apache-exporter [documentation](https://github.com/Lusitaniae/apache_exporter#collectors).
 
-Metrics-endpoint integrate command: `juju integrate indico prometheus-k8s`
+Metrics-endpoint integrate command: 
+```
+juju integrate indico prometheus-k8s
+```
 
 ### grafana-dashboard
 
@@ -58,7 +72,13 @@ be found at `/src/grafana_dashboards/indico.json`. In Grafana UI, it can be foun
 Operator Overview" under the General section of the dashboard browser (`/dashboards`). Modifications
 to the dashboard can be made but will not be persisted upon restart/redeployment of the charm.
 
-Grafana-Prometheus integrate command: `juju integrate grafana-k8s:grafana-source prometheus-k8s:grafana-source`  
-Grafana-dashboard integrate command: `juju integrate indico grafana-dashboard`
+Grafana-Prometheus integrate command: 
+```
+juju integrate grafana-k8s:grafana-source prometheus-k8s:grafana-source
+```  
+Grafana-dashboard integrate command: 
+```
+juju integrate indico grafana-dashboard
+```
 
 See more information in [Charm Architecture](https://charmhub.io/indico/docs/explanation-charm-architecture).

@@ -68,7 +68,7 @@ LIBAPI = 0
 
 # Increment this PATCH version before using `charmcraft publish-lib` or reset
 # to 0 if you are raising the major API version
-LIBPATCH = 9
+LIBPATCH = 10
 
 # pylint: disable=wrong-import-position
 import re
@@ -92,7 +92,7 @@ class SamlEndpoint(BaseModel):
     """
 
     name: str = Field(..., min_length=1)
-    url: AnyHttpUrl
+    url: typing.Optional[AnyHttpUrl]
     binding: str = Field(..., min_length=1)
     response_url: typing.Optional[AnyHttpUrl]
 
@@ -108,7 +108,8 @@ class SamlEndpoint(BaseModel):
         # Transform name into snakecase
         lowercase_name = re.sub(r"(?<!^)(?=[A-Z])", "_", self.name).lower()
         prefix = f"{lowercase_name}_{http_method}_"
-        result[f"{prefix}url"] = str(self.url)
+        if self.url:
+            result[f"{prefix}url"] = str(self.url)
         result[f"{prefix}binding"] = self.binding
         if self.response_url:
             result[f"{prefix}response_url"] = str(self.response_url)
@@ -137,7 +138,11 @@ class SamlEndpoint(BaseModel):
         prefix = f"{lowercase_name}_{http_method}_"
         return cls(
             name=name,
-            url=parse_obj_as(AnyHttpUrl, relation_data[f"{prefix}url"]),
+            url=(
+                parse_obj_as(AnyHttpUrl, relation_data[f"{prefix}url"])
+                if relation_data[f"{prefix}url"]
+                else None
+            ),
             binding=relation_data[f"{prefix}binding"],
             response_url=(
                 parse_obj_as(AnyHttpUrl, relation_data[f"{prefix}response_url"])
@@ -158,7 +163,7 @@ class SamlRelationData(BaseModel):
     """
 
     entity_id: str = Field(..., min_length=1)
-    metadata_url: AnyHttpUrl
+    metadata_url: typing.Optional[AnyHttpUrl]
     certificates: typing.Tuple[str, ...]
     endpoints: typing.Tuple[SamlEndpoint, ...]
 
@@ -170,9 +175,10 @@ class SamlRelationData(BaseModel):
         """
         result = {
             "entity_id": self.entity_id,
-            "metadata_url": str(self.metadata_url),
             "x509certs": ",".join(self.certificates),
         }
+        if self.metadata_url:
+            result["metadata_url"] = str(self.metadata_url)
         for endpoint in self.endpoints:
             result.update(endpoint.to_relation_data())
         return result
@@ -201,8 +207,10 @@ class SamlRelationData(BaseModel):
         endpoints.sort(key=lambda ep: ep.name)
         return cls(
             entity_id=relation_data.get("entity_id"),  # type: ignore
-            metadata_url=parse_obj_as(
-                AnyHttpUrl, relation_data.get("metadata_url")
+            metadata_url=(
+                parse_obj_as(AnyHttpUrl, relation_data.get("metadata_url"))
+                if relation_data.get("metadata_url")
+                else None
             ),  # type: ignore
             certificates=tuple(relation_data.get("x509certs").split(",")),  # type: ignore
             endpoints=tuple(endpoints),
@@ -232,7 +240,7 @@ class SamlDataAvailableEvent(ops.RelationEvent):
         return self.saml_relation_data.entity_id
 
     @property
-    def metadata_url(self) -> str:
+    def metadata_url(self) -> typing.Optional[str]:
         """Fetch the SAML metadata URL from the relation."""
         return str(self.saml_relation_data.metadata_url)
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2024 Canonical Ltd.
+# Copyright 2025 Canonical Ltd.
 # See LICENSE file for licensing details.
 
 """Charm for Indico on kubernetes."""
@@ -10,13 +10,14 @@ import typing
 from re import findall
 from typing import Any, Dict, Iterator, List, Optional
 
-import ops.lib
+import charms.loki_k8s.v0.loki_push_api
+import ops
 from charms.grafana_k8s.v0.grafana_dashboard import GrafanaDashboardProvider
 from charms.nginx_ingress_integrator.v0.nginx_route import NginxRouteRequirer, require_nginx_route
+from charms.loki_k8s.v0.loki_push_api import LogProxyConsumer
 from charms.prometheus_k8s.v0.prometheus_scrape import MetricsEndpointProvider
 from charms.redis_k8s.v0.redis import RedisRelationCharmEvents, RedisRequires
 from ops.charm import ActionEvent, CharmBase, HookEvent, PebbleReadyEvent, RelationDepartedEvent
-from ops.framework import StoredState
 from ops.jujuversion import JujuVersion
 from ops.main import main
 from ops.model import ActiveStatus, Container, MaintenanceStatus, WaitingStatus
@@ -43,6 +44,10 @@ SAML_GROUPS_PLUGIN_NAME = "saml_groups"
 UWSGI_TOUCH_RELOAD = "/srv/indico/indico.wsgi"
 
 
+class InvalidRedisNameError(Exception):
+    """Represents invalid redis name error."""
+
+
 class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attributes
     """Charm for Indico on kubernetes.
 
@@ -50,7 +55,6 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
         on: Redis relation charm events.
     """
 
-    _stored = StoredState()
     on = RedisRelationCharmEvents()
 
     def __init__(self, *args):
@@ -84,17 +88,11 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
         # self.framework.observe(self.on.update_status, self._refresh_external_resources)
         self.framework.observe(self.on.add_admin_action, self._add_admin_action)
         self.framework.observe(self.on.anonymize_user_action, self._anonymize_user_action)
-
-        # Still needed by the library
-        self._stored.set_default(
-            redis_relation={},
-        )
-
-        self.redis_broker = RedisRequires(self, self._stored, "redis-broker")
+        self.redis_broker = RedisRequires(self, "redis-broker")
         self.framework.observe(
             self.redis_broker.charm.on.redis_relation_updated, self._on_config_changed
         )
-        self.redis_cache = RedisRequires(self, self._stored, "redis-cache")
+        self.redis_cache = RedisRequires(self, "redis-cache")
         self.framework.observe(
             self.redis_cache.charm.on.redis_relation_updated, self._on_config_changed
         )
@@ -120,6 +118,14 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
             ],
         )
         self._grafana_dashboards = GrafanaDashboardProvider(self)
+        # port 9080 conflicts with the nginx exporter
+        charms.loki_k8s.v0.loki_push_api.HTTP_LISTEN_PORT = 9090
+        self._logging = LogProxyConsumer(
+            self,
+            relation_name="logging",
+            log_files="/srv/indico/log/*",
+            container_name="indico",
+        )
 
     def _require_nginx_route(self) -> NginxRouteRequirer:
         """Require nginx ingress.
@@ -189,15 +195,15 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
         """
         self.unit.status = MaintenanceStatus(f"Adding {container.name} layer to pebble")
         if container.name == "indico":
+            # Plugins need to be installed before adding the layer so that
+            # they are included in the corresponding env vars
             plugins = (
                 typing.cast(str, self.config["external_plugins"]).split(",")
                 if self.config["external_plugins"]
                 else []
             )
             self._install_plugins(container, plugins)
-        # The plugins need to be installed before adding the layer so that they are included in
-        # the corresponding env vars
-        if container.name == "indico":
+            container.add_layer(container.name, self._get_logrotate_config(), combine=True)
             indico_config = self._get_indico_pebble_config(container)
             container.add_layer(container.name, indico_config, combine=True)
             peer_relation = self.model.get_relation("indico-peers")
@@ -227,6 +233,27 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
         else:
             self.unit.status = WaitingStatus("Waiting for pebble")
 
+    def _get_logrotate_config(self) -> ops.pebble.LayerDict:
+        """Generate logrotate pebble layer.
+
+        Returns:
+            The logrotate pebble layer configuration.
+        """
+        layer = {
+            "summary": "Logrotate service",
+            "description": "Logrotate service",
+            "services": {
+                "logrotate": {
+                    "override": "replace",
+                    "command": 'bash -c "while :; '
+                    "do sleep 3600; logrotate /srv/indico/logrotate.conf; "
+                    'done"',
+                    "startup": "enabled",
+                },
+            },
+        }
+        return typing.cast(ops.pebble.LayerDict, layer)
+
     def _get_indico_pebble_config(self, container: Container) -> ops.pebble.LayerDict:
         """Generate pebble config for the indico container.
 
@@ -237,6 +264,7 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
             The pebble configuration for the container.
         """
         indico_env_config = self._get_indico_env_config(container)
+        indico_env_config["INDICO_LOGGING_CONFIG_FILE"] = "indico.logging.yaml"
         layer = {
             "summary": "Indico layer",
             "description": "Indico layer",
@@ -270,6 +298,7 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
             The pebble configuration for the container.
         """
         indico_env_config = self._get_indico_env_config(container)
+        indico_env_config["INDICO_LOGGING_CONFIG_FILE"] = "celery.logging.yaml"
         layer = {
             "summary": "Indico celery layer",
             "description": "Indico celery layer",
@@ -325,6 +354,41 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
         }
         return typing.cast(ops.pebble.LayerDict, layer)
 
+    def _get_redis_url(self, redis_name: str) -> Optional[str]:
+        """Get Url for redis charm.
+
+        Args:
+            redis_name (str): Name of the redis charm to connect to.
+
+        Returns:
+            Url for the redis charm.
+
+        Raises:
+           InvalidRedisNameError: If redis name is invalid
+        """
+        if redis_name == "redis-broker":
+            redis = self.redis_broker
+        elif redis_name == "redis-cache":
+            redis = self.redis_cache
+        else:
+            raise InvalidRedisNameError(f"Invalid Redis name: {redis_name}")
+
+        relation = self.model.get_relation(redis.relation_name)
+        if not relation:
+            return None
+        relation_app_data = relation.data[relation.app]
+        relation_unit_data = redis.relation_data
+
+        try:
+            redis_hostname = str(
+                relation_app_data.get("leader-host", relation_unit_data["hostname"])
+            )
+            redis_port = int(relation_unit_data["port"])
+            return f"redis://{redis_hostname}:{redis_port}"
+        except KeyError:
+            return None
+        return None
+
     def _get_celery_prometheus_exporter_pebble_config(self, container) -> ops.pebble.LayerDict:
         """Generate pebble config for the celery-prometheus-exporter container.
 
@@ -344,7 +408,7 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
                     "summary": "Celery Exporter",
                     "command": (
                         "celery-exporter"
-                        f" --broker-url={self.redis_broker.url}"
+                        f" --broker-url={self._get_redis_url('redis-broker')}"
                         " --retry-interval=5"
                     ),
                     "environment": indico_env_config,
@@ -461,7 +525,7 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
 
         env_config = {
             "ATTACHMENT_STORAGE": "default",
-            "CELERY_BROKER": self.redis_broker.url,
+            "CELERY_BROKER": self._get_redis_url("redis-broker"),
             "CE_ACCEPT_CONTENT": "json,pickle",
             "CUSTOMIZATION_DEBUG": self.config["customization_debug"],
             "ENABLE_ROOMBOOKING": self.config["enable_roombooking"],
@@ -475,7 +539,7 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
             "LANG": "C.UTF-8",
             "LC_ALL": "C.UTF-8",
             "LC_LANG": "C.UTF-8",
-            "REDIS_CACHE_URL": self.redis_cache.url,
+            "REDIS_CACHE_URL": self._get_redis_url("redis-cache"),
             "SECRET_KEY": self._get_indico_secret_key_from_relation(),
             "SERVICE_HOSTNAME": self._get_external_hostname(),
             "SERVICE_PORT": "",
@@ -621,11 +685,14 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
             plugins: List of plugins to be installed.
         """
         if plugins:
+            install_command = ["pip", "install", "--upgrade"] + plugins
+            logger.info("About to run: %s", " ".join(install_command))
             process = container.exec(
-                ["pip", "install", "--upgrade"] + plugins,
+                install_command,
                 environment=self._get_http_proxy_configuration(self.state.proxy_config),
             )
-            process.wait_output()
+            output, _ = process.wait_output()
+            logger.info("Output was: %s", output)
 
     def _get_indico_version(self) -> str:
         """Retrieve the current version of Indico.

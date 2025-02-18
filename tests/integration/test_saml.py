@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright 2024 Canonical Ltd.
+# Copyright 2025 Canonical Ltd.
 # See LICENSE file for licensing details.
 
 """Indico SAML integration tests."""
@@ -17,7 +17,7 @@ from pytest_operator.plugin import OpsTest
 @pytest.mark.asyncio
 @pytest.mark.abort_on_fail
 @pytest.mark.usefixtures("saml_integrator")
-async def test_saml_auth(  # pylint: disable=too-many-arguments
+async def test_saml_auth(  # pylint: disable=too-many-arguments, too-many-positional-arguments
     ops_test: OpsTest,
     saml_email: str,
     saml_password: str,

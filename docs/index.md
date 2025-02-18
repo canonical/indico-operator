@@ -1,6 +1,12 @@
+# Indico Operator
+
 A [Juju](https://juju.is/) [charm](https://juju.is/docs/olm/charmed-operators) deploying and managing [Indico](https://getindico.io/) on Kubernetes. Indico is an open-source tool for event organisation, archival, and collaboration.
 
-This charm simplifies initial deployment and "day N" operations of Indico on Kubernetes, such as scaling the number of instances, integration with SSO, access to S3 for redundant file storage, and more. It allows for deployment on many different Kubernetes platforms, from [MicroK8s](https://microk8s.io) to [Charmed Kubernetes](https://ubuntu.com/kubernetes) and public cloud Kubernetes offerings.
+Like any Juju charm, this charm supports one-line deployment, configuration, integration, scaling, and more. For Indico, this includes:
+- Integrations with SSO
+- Access to S3
+
+The Indico charm allows for deployment on many different Kubernetes platforms, from [MicroK8s](https://microk8s.io) to [Charmed Kubernetes](https://ubuntu.com/kubernetes) and public cloud Kubernetes offerings.
 
 As such, the charm makes it easy for those looking to take control of their own events management system whilst keeping operations simple and gives them the freedom to deploy on the Kubernetes platform of their choice.
 
@@ -25,10 +31,10 @@ The Indico Operator is a member of the Ubuntu family. It's an open-source projec
 
 - [Code of conduct](https://ubuntu.com/community/code-of-conduct)
 - [Get support](https://discourse.charmhub.io/)
-- [Join our online chat](https://chat.charmhub.io/charmhub/channels/charm-dev)
+- [Join our online chat](https://matrix.to/#/#charmhub-charmdev:ubuntu.com)
 - [Contribute](Contribute)
 
-Thinking about using the Indico Operator for your next project? [Get in touch](https://chat.charmhub.io/charmhub/channels/charm-dev)!
+Thinking about using the Indico Operator for your next project? [Get in touch](https://matrix.to/#/#charmhub-charmdev:ubuntu.com)!
 
 # Contents
 
@@ -42,9 +48,11 @@ Thinking about using the Indico Operator for your next project? [Get in touch](h
   1. [Contribute](how-to/contribute.md)
   1. [Customize theme](how-to/customize-theme.md)
   1. [Install plugins](how-to/install-plugins.md)
+  1. [How to redeploy](how-to/redeploy.md)
 1. [Reference](reference)
   1. [Actions](reference/actions.md)
   1. [Configurations](reference/configurations.md)
+  1. [External access](reference/external-access.md)
   1. [Integrations](reference/integrations.md)
   1. [Plugins](reference/plugins.md)
   1. [Theme customization](reference/theme-customization.md)

@@ -1,4 +1,4 @@
-# Copyright 2024 Canonical Ltd.
+# Copyright 2025 Canonical Ltd.
 # See LICENSE file for licensing details.
 
 name: indico
@@ -74,6 +74,8 @@ requires:
   smtp-legacy:
     interface: smtp
     limit: 1
+  logging:
+    interface: loki_push_api
 
 peers:
   indico-peers:
