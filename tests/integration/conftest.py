@@ -14,10 +14,10 @@ from pytest import Config, fixture
 from pytest_operator.plugin import OpsTest
 
 
-@fixture(scope="module", name="external_url")
-def external_url_fixture():
+@fixture(scope="module", name="hostname")
+def hostname_fixture():
     """Provides the external URL for Indico."""
-    return "https://events.staging.canonical.com"
+    return "events.staging.canonical.com"
 
 
 @fixture(scope="module")
@@ -60,6 +60,7 @@ def requests_timeout():
 async def app_fixture(
     ops_test: OpsTest,
     app_name: str,
+    hostname: str,
     pytestconfig: Config,
 ):
     """Indico charm used for integration testing.
@@ -80,11 +81,9 @@ async def app_fixture(
         ops_test.model.deploy("redis-k8s", "redis-broker", channel="latest/edge"),
         ops_test.model.deploy("redis-k8s", "redis-cache", channel="latest/edge"),
         ops_test.model.deploy(
-            "nginx-ingress-integrator",
-            channel="latest/edge",
-            revision=133,
-            series="focal",
-            trust=True,
+            "nginx-ingress-integrator", channel="latest/edge", series="focal", config={
+                "service-hostname": hostname,
+            }, trust=True
         ),
     )
     await ops_test.model.wait_for_idle(
@@ -117,7 +116,6 @@ async def app_fixture(
         ops_test.model.add_relation(f"{app_name}:redis-cache", "redis-cache"),
         ops_test.model.add_relation(app_name, "nginx-ingress-integrator"),
     )
-    await ops_test.model.wait_for_idle(status="active", raise_on_error=False)
     # Install saml_groups plugin
     # Disabling line-too-long lint since we are installing the plugin via gh release
     await application.set_config(
@@ -125,6 +123,7 @@ async def app_fixture(
             "external_plugins": "https://github.com/canonical/flask-multipass-saml-groups/releases/download/1.2.1/flask_multipass_saml_groups-1.2.1-py3-none-any.whl"  # noqa: E501 pylint: disable=line-too-long
         }
     )
+    await ops_test.model.wait_for_idle(status="active", raise_on_error=False)
     yield application
 
 
