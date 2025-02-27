@@ -8,7 +8,6 @@ Below is a diagram of the application architecture of Indico-
 
 ```mermaid
 C4Container
-title Component Diagram for Indico Charm
 
 System_Boundary(indicocharm, "Indico Charm") {
     Container_Boundary(nginx_container, "NGINX Container") {
