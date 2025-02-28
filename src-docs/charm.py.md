@@ -26,7 +26,7 @@ Charm for Indico on kubernetes.
 
 Attrs:  on: Redis relation charm events. 
 
-<a href="../src/charm.py#L57"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="../src/charm.py#L61"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>function</kbd> `__init__`
 
@@ -78,6 +78,15 @@ Shortcut for more simple access the model.
 #### <kbd>property</kbd> unit
 
 Unit that this execution is responsible for. 
+
+
+
+
+---
+
+## <kbd>class</kbd> `InvalidRedisNameError`
+Represents invalid redis name error. 
+
 
 
 
