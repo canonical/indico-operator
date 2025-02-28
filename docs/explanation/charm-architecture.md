@@ -4,7 +4,7 @@ At its core, [Indico](https://getindico.io/) is a [Flask](https://flask.palletsp
 
 ## Charm architecture diagram
 
-Below is a diagram of the application architecture of Indico-
+Below is a diagram of the application architecture of Indico.
 
 ```mermaid
 C4Container
