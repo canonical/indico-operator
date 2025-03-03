@@ -2,6 +2,39 @@
 
 At its core, [Indico](https://getindico.io/) is a [Flask](https://flask.palletsprojects.com/) application that integrates with [PostgreSQL](https://www.postgresql.org/), [Redis](https://redis.io/), and [Celery](https://docs.celeryq.dev/en/stable/).
 
+## Charm architecture diagram
+
+Below is a diagram of the application architecture of Indico.
+
+```mermaid
+C4Container
+
+System_Boundary(indicocharm, "Indico Charm") {
+    Container_Boundary(nginx_container, "NGINX Container") {
+        Component(nginx, "NGINX", "Web Server", "Serves static resources, handles web traffic")
+    }
+    
+    Container_Boundary(indico_container, "Indico Workload Container") {
+        Component(indico_core, "Indico", "Flask Application", "Observes events, serves web requests")
+        Component(celery, "Celery", "Task Queue", "Processes tasks asynchronously")
+    }
+
+    Container_Boundary(charm_container, "Charm Container") {
+        Component(charm_logic, "Charm Logic", "Juju Operator Framework", "Controls application deployment & config")
+    }
+}
+
+Rel(nginx, indico_core, "Forwards<br>HTTP requests")
+Rel(indico_core, celery, "Delegates<br>async tasks")
+Rel(charm_logic, indico_core, "Supervises<br>process")
+
+UpdateRelStyle(nginx, indico_core, $offsetX="-40", $offsetY="20")
+UpdateRelStyle(indico_core, celery, $offsetX="10")
+UpdateRelStyle(charm_logic, indico_core, $offsetX="-120")
+
+
+```
+
 The charm design leverages the [sidecar](https://kubernetes.io/blog/2015/06/the-distributed-system-toolkit-patterns/#example-1-sidecar-containers) pattern to allow multiple containers in each pod with [Pebble](https://juju.is/docs/sdk/pebble) running as the workload container’s entrypoint.
 
 Pebble is a lightweight, API-driven process supervisor that is responsible for configuring processes to run in a container and controlling those processes throughout the workload lifecycle.
@@ -19,7 +52,7 @@ NAME                             READY   STATUS    RESTARTS   AGE
 indico-0                         3/3     Running   0         6h4m
 ```
 
-This shows there are 4 containers - the three named above, as well as a container for the charm code itself.
+This shows there are 3 containers - the two named above, as well as a container for the charm code itself.
 
 And if you run `kubectl describe pod indico-0`, all the containers will have as Command ```/charm/bin/pebble```. That's because Pebble is responsible for the processes startup as explained above.
 
