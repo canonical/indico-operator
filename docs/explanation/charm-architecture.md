@@ -162,20 +162,20 @@ Accordingly to the [Juju SDK](https://juju.is/docs/sdk/event): "an event is a da
 
 For this charm, the following events are observed:
 
-1. [<container name>_pebble_ready](https://juju.is/docs/sdk/container-name-pebble-ready-event): fired on Kubernetes charms when the requested container is ready.
+1. [<container name>_pebble_ready](https://canonical-juju.readthedocs-hosted.com/en/latest/user/reference/hook/#container-pebble-ready): fired on Kubernetes charms when the requested container is ready.
 Action: wait for the integrations, and configure the containers.
-2. [config_changed](https://juju.is/docs/sdk/config-changed-event): usually fired in response to a configuration change using the CLI.
+2. [config_changed](https://canonical-juju.readthedocs-hosted.com/en/latest/user/reference/hook/#config-changed): usually fired in response to a configuration change using the CLI.
 Action: wait for the integrations, validate the configuration, update Ingress, and restart the containers.
 3. [database_relation_joined](https://github.com/canonical/ops-lib-pgsql): for when the PostgreSQL relation has been joined.
 Action: if the unit is the leader, add the extensions [`pg_trgm:public`](https://www.postgresql.org/docs/current/pgtrgm.html) and [`unaccent:public`](https://www.postgresql.org/docs/current/unaccent.html).
-4. [leader_elected](https://juju.is/docs/sdk/leader-elected-event): is emitted for a unit that is elected as leader.
+4. [leader_elected](https://canonical-juju.readthedocs-hosted.com/en/latest/user/reference/hook/#leader-elected): is emitted for a unit that is elected as leader.
 Action: guarantee that all Indico workers have the same [secret key](https://docs.getindico.io/en/latest/config/settings/?highlight=secret_key#SECRET_KEY) that is used to sign tokens in URLs and select a unit to run Celery.
 5. [master_changed](https://github.com/canonical/ops-lib-pgsql): PostgreSQLClient custom event for when the connection details to the master database on this relation change.
 Action: Update the database connection string configuration and emit config_changed event.
 6. [redis_relation_changed](https://github.com/canonical/redis-k8s-operator): Fired when Redis is changed (host, for example).
 Action: Same as config_changed.
 7. [refresh_external_resources_action](https://charmhub.io/indico/actions): fired when refresh-external-resources action is executed.
-8. [indico_peers_relation_departed](https://juju.is/docs/sdk/relation-name-relation-departed-event): fired when a Indico unit departs. Action: elect a new unit to run Celery on if the departed unit was running Celery and replans the services accordingly.
+8. [indico_peers_relation_departed](https://canonical-juju.readthedocs-hosted.com/en/latest/user/reference/hook/#endpoint-relation-departed): fired when a Indico unit departs. Action: elect a new unit to run Celery on if the departed unit was running Celery and replans the services accordingly.
 
 ## Charm code overview
 
@@ -183,7 +183,7 @@ The `src/charm.py` is the default entry point for a charm and has the IndicoOper
 
 CharmBase is the base class from which all Charms are formed, defined by [Ops](https://juju.is/docs/sdk/ops) (Python framework for developing charms).
 
-See more information in [Charm](https://juju.is/docs/sdk/constructs#heading--charm).
+See more information in [Charm](https://canonical-juju.readthedocs-hosted.com/en/latest/user/reference/charm/).
 
 The `__init__` method guarantees that the charm observes all events relevant to its operation and handles them.
 
