@@ -47,7 +47,7 @@ Thinking about using the Indico Operator for your next project? [Get in touch](h
   1. [Configure the external hostname](how-to/configure-the-external-hostname.md)
   1. [Install plugins](how-to/install-plugins.md)
   1. [Customize theme](how-to/customize-theme.md)
-  1. [How to redeploy](how-to/redeploy.md)
+  1. [Redeploy](how-to/redeploy.md)
   1. [Contribute](how-to/contribute.md)
 1. [Reference](reference)
   1. [Actions](reference/actions.md)
