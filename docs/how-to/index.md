@@ -5,11 +5,11 @@ and using the Indico charm.
 
 
 ## Basic operations
-* [Configure the external hostname]
-* [Configure Aproxy]
+* [Configure a proxy]
 * [Configure S3]
 * [Configure SAML]
 * [Configure SMTP]
+* [Configure the external hostname]
 * [Install plugins]
 * [Customize theme]
 
@@ -21,11 +21,11 @@ and using the Indico charm.
 
 <!--Links-->
 
-[Configure the external hostname]: configure-the-external-hostname.md
-[Configure Aproxy]: configure-a-proxy.md
+[Configure a proxy]: configure-a-proxy.md
 [Configure S3]: configure-s3.md
 [Configure SAML]: configure-saml.md
 [Configure SMTP]: configure-smtp.md
+[Configure the external hostname]: configure-the-external-hostname.md
 [Install plugins]: install-plugins.md
 [Customize theme]: customize-theme.md
 [Redeploy]: redeploy.md
