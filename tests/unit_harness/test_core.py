@@ -14,7 +14,7 @@ from ops.testing import Harness
 
 from charm import IndicoOperatorCharm
 from state import S3Config, SamlConfig, SamlEndpoint, SmtpConfig
-from tests.unit.test_base import TestBase
+from tests.unit_harness.test_base import TestBase
 
 
 def test_proxyconfig_invalid(monkeypatch: pytest.MonkeyPatch):

@@ -48,3 +48,9 @@ namespace_packages = true
 
 [tool.pylint]
 disable = "wrong-import-order"
+
+[tool.pytest.ini_options]
+pythonpath = [
+  "lib",
+  "src"
+]
