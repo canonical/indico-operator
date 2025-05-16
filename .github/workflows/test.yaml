@@ -20,8 +20,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install python3.12
         run: |
-          chmod +x tests/unit/pre_run_script.sh
-          ./tests/unit/pre_run_script.sh
+          chmod +x tests/unit_harness/pre_run_script.sh
+          ./tests/unit_harness/pre_run_script.sh
       - name: Install tox
         run: |
           python -m pip install --upgrade pip

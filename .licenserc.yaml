@@ -34,5 +34,5 @@ header:
     - 'zap_rules.tsv'
     - 'lib/**'
     - 'indico_rock/etc/*'
-    - 'tests/unit/pre_run_script.sh'
+    - 'tests/unit_harness/pre_run_script.sh'
   comment: on-failure
