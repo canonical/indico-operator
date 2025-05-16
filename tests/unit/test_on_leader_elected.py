@@ -23,7 +23,7 @@ def test_on_leader_elected_when_secrets_supported(mock_juju_env, base_state: dic
         charm_type=IndicoOperatorCharm,
     )
 
-    context.run(context.on.leader_elected(), state)
+    state = context.run(context.on.leader_elected(), state)
 
     print(state.get_relations("indico-peers"))
     secret_id = state.get_relations("indico-peers")[0].local_app_data["secret-id"]
