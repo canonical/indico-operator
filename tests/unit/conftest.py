@@ -1,6 +1,8 @@
 # Copyright 2025 Canonical Ltd.
 # See LICENSE file for licensing details.
 
+"""Fixtures for unit tests."""
+
 import pytest
 from ops import pebble, testing
 

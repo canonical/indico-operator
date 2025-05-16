@@ -1,6 +1,8 @@
 # Copyright 2025 Canonical Ltd.
 # See LICENSE file for licensing details.
 
+"""Indico charm unit tests."""
+
 from unittest.mock import MagicMock, patch
 
 import ops
