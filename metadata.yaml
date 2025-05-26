@@ -55,18 +55,23 @@ requires:
   database:
     interface: postgresql_client
     limit: 1
+    optional: false
   nginx-route:
     interface: nginx-route
     limit: 1
+    optional: false
   redis-broker:
     interface: redis
     limit: 1
+    optional: false
   redis-cache:
     interface: redis
     limit: 1
+    optional: false
   s3:
     interface: s3
     limit: 1
+    optional: true
   saml:
     interface: saml
     limit: 1
@@ -74,9 +79,12 @@ requires:
   smtp-legacy:
     interface: smtp
     limit: 1
+    optional: true
   logging:
     interface: loki_push_api
+    optional: true
 
 peers:
   indico-peers:
     interface: indico-instance
+    optional: true

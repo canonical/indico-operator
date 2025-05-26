@@ -82,3 +82,12 @@ Unit that this execution is responsible for.
 
 
 
+---
+
+## <kbd>class</kbd> `InvalidRedisNameError`
+Represents invalid redis name error. 
+
+
+
+
+
