@@ -1,10 +1,9 @@
 # How to contribute
 
-This section explains how you can contribute to the project.
+This document explains the processes and practices recommended for contributing enhancements to the Indico operator.
 
 ## Overview
 
-This document explains the processes and practices recommended for contributing enhancements to the Indico operator.
 
 - Generally, before developing enhancements to this charm, you should consider [opening an issue
   ](https://github.com/canonical/indico-operator/issues) explaining your use case.

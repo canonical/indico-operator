@@ -1,6 +1,6 @@
 # Integrations
 
-An overview of the different integration points.
+An overview of the different relation endpoints.
 
 ### Db
 
