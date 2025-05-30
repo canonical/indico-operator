@@ -52,7 +52,7 @@ NAME                             READY   STATUS    RESTARTS   AGE
 indico-0                         3/3     Running   0         6h4m
 ```
 
-This shows there are 3 containers - the two named above, as well as a container for the charm code itself.
+This shows there are three containers - the two named above, as well as a container for the charm code itself.
 
 And if you run `kubectl describe pod indico-0`, all the containers will have as Command ```/charm/bin/pebble```. That's because Pebble is responsible for the processes startup as explained above.
 
@@ -67,7 +67,7 @@ This is done by publishing a resource to Charmhub as described in the [Juju SDK 
 
 Configuration files for the containers can be found in the respective directories that define the ROCKs, see the section above.
 
-### NGINX
+### Nginx
 
 This container is the entry point for all web traffic to the pod (on port `8080`). Serves some static files directly and forwards non-static requests to the Indico container (on port `8081`).
 
@@ -92,7 +92,7 @@ Celery runs in the same container as the Indico container, as defined in the [In
 ## Metrics
 Inside the above mentioned containers, additional Pebble layers are defined in order to provide metrics.
 
-### NGINX Prometheus exporter
+### Nginx Prometheus exporter
 
 Inside the NGINX container, the  [NGINX Prometheus Exporter](https://github.com/nginxinc/nginx-prometheus-exporter) runs to provide statistics on web traffic.
 
@@ -115,7 +115,7 @@ Inside the Indico container, the  [Celery Exporter](https://github.com/danihodov
 The `Celery Exporter` is started with:
 
 - `--broker-url=`: scrape metrics from the Redis (broker) container.
-- `--retry-interval=5`: retry after 5 seconds in case of errors communicating with the broker.
+- `--retry-interval=5`: retry after five seconds in case of errors communicating with the broker.
 
 Since Indico Celery serializers are set to work with [Pickle](https://docs.python.org/3/library/pickle.html) instead of [JSON](https://www.json.org/), the environment variable `CE_ACCEPT_CONTENT` is set to `"json,pickle"` so the exporter will be able to read the data.
 

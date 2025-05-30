@@ -1,8 +1,9 @@
 # How to contribute
 
+This document explains the processes and practices recommended for contributing enhancements to the Indico operator.
+
 ## Overview
 
-This document explains the processes and practices recommended for contributing enhancements to the Indico operator.
 
 - Generally, before developing enhancements to this charm, you should consider [opening an issue
   ](https://github.com/canonical/indico-operator/issues) explaining your use case.
@@ -87,6 +88,6 @@ juju deploy ./indico_ubuntu-20.04-amd64.charm \
   --resource indico-nginx-image=localhost:32000/indico-nginx:latest
 ```
 
-## Canonical Contributor Agreement
+## Canonical contributor agreement
 
 Canonical welcomes contributions to the Indico Operator. Please check out our [contributor agreement](https://ubuntu.com/legal/contributors) if you're interested in contributing to the solution.
