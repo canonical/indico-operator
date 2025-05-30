@@ -1,4 +1,4 @@
-# Indico Operator
+# Indico operator
 
 A [Juju](https://juju.is/) [charm](https://juju.is/docs/olm/charmed-operators) deploying and managing [Indico](https://getindico.io/) on Kubernetes. Indico is an open-source tool for event organisation, archival, and collaboration.
 

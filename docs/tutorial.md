@@ -10,7 +10,7 @@ Through the process, you'll inspect the Kubernetes resources created, verify the
 
 ## Requirements
 - A working station, e.g., a laptop, with amd64 architecture.
-- Juju 3 installed and bootstrapped to a MicroK8s controller. You can accomplish this process by using a Multipass VM as outlined in this guide: [Set up / Tear down your test environment](https://juju.is/docs/juju/set-up--tear-down-your-test-environment)
+- Juju three installed and bootstrapped to a MicroK8s controller. You can accomplish this process by using a Multipass VM as outlined in this guide: [Set up / Tear down your test environment](https://juju.is/docs/juju/set-up--tear-down-your-test-environment)
 - NGINX Ingress Controller. If you're using [MicroK8s](https://microk8s.io/), this can be done by running the command `microk8s enable ingress`. For more details, see [Addon: Ingress](https://microk8s.io/docs/addon-ingress).
 
 For more information about how to install Juju, see [Get started with Juju](https://juju.is/docs/olm/get-started-with-juju).
@@ -97,7 +97,7 @@ juju config postgresql-k8s plugin_pg_trgm_enable=true plugin_unaccent_enable=tru
 
 Run `juju status` and wait until the Application status is `Active` as the following example:
 
-Optional: run `juju status --relations --watch 5s` to watch the status every 5 seconds with the Relations section.
+Optional: run `juju status --relations --watch 5s` to watch the status every five seconds with the Relations section.
 
 ```
 App                       Version                       Status  Scale  Charm                     Channel  Rev  Address         Exposed  Message
@@ -106,7 +106,7 @@ indico                 3.3                           active      1  indico      
 
 The deployment finishes when the status shows "Active" for all charms.
 
-### Integrate with Ingress by using NGINX Ingress Integrator charm
+### Integrate with Ingress by using Nginx ingress integrator charm
 
 The NGINX Ingress Integrator charm can deploy and manage external access to HTTP/HTTPS services in a Kubernetes cluster.
 
@@ -131,7 +131,7 @@ microk8s status | grep rbac
 ```
 If it is enabled, then the output should be like the following:
 ```
-rbac                 # (core) Role-Based Access Control for authorisation
+rbac
 ```
 If the output is empty then RBAC is not enabled.
 
@@ -177,7 +177,7 @@ Optional: run `echo "127.0.0.1 indico.local" >> /etc/hosts` to redirect the outp
 After that, visit `http://indico.local` in a browser and you'll be presented with a screen to create an initial admin account.
 
 
-## Clean up the Environment
+## Clean up the environment
 
 Well done! You've successfully completed the Indico tutorial. To remove the
 model environment you created during this tutorial, use the following command.
