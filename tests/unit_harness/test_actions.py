@@ -14,7 +14,7 @@ from ops.model import Container
 from ops.pebble import ExecError
 
 from charm import EMAIL_LIST_MAX, EMAIL_LIST_SEPARATOR, IndicoOperatorCharm
-from tests.unit.test_base import TestBase
+from tests.unit_harness.test_base import TestBase
 
 
 class TestActions(TestBase):
