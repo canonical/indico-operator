@@ -16,12 +16,19 @@ from pytest_operator.plugin import OpsTest
 @pytest.mark.asyncio
 @pytest.mark.abort_on_fail
 @pytest.mark.usefixtures("s3_integrator")
-async def test_s3(app: Application, s3_integrator: Application, ops_test: OpsTest):
+async def test_s3(app: Application, s3_integrator: Application, ops_test: OpsTest, hostname: str):
     """
     arrange: given charm integrated with S3.
     act: do nothing.
     assert: the pebble plan matches the S3 values as configured by the integrator.
     """
+    assert ops_test.model
+    await ops_test.model.applications["nginx-ingress-integrator"].set_config(
+        {"service-hostname": hostname}
+    )
+    # The linter does not recognize wait_for_idle as a method,
+    # since ops_test has a model as Optional, so this error must be ignored.
+    await ops_test.model.wait_for_idle(status="active")  # type: ignore[union-attr]
     # Application actually does have units
     return_code, stdout, _ = await ops_test.juju(
         "ssh", "--container", app.name, app.units[0].name, "pebble", "plan"  # type: ignore
