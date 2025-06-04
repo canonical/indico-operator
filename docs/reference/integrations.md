@@ -1,6 +1,8 @@
 # Integrations
 
-### db
+An overview of the different relation endpoints.
+
+### Db
 
 _Interface_: pgsql  
 _Supported charms_: [postgresql-k8s](https://charmhub.io/postgresql-k8s), [postgresql](https://charmhub.io/postgresql)
@@ -14,7 +16,7 @@ Example db integrate command:
 juju integrate indico postgresql-k8s:db
 ```
 
-### redis
+### Redis
 
 _Interface_: redis  
 _Supported charms_: [redis-k8s](https://charmhub.io/redis-k8s)
@@ -29,7 +31,7 @@ juju integrate redis-cache indico
 juju integrate redis-broker indico
 ```
 
-### ingress
+### Ingress
 
 _Interface_: ingress  
 _Supported charms_: [nginx-ingress-integrator](https://charmhub.io/nginx-ingress-integrator)
@@ -45,7 +47,7 @@ Example ingress integrate command:
 juju integrate indico nginx-ingress-integrator
 ```
 
-### metrics-endpoint
+### Metrics-endpoint
 
 _Interface_: [prometheus_scrape](https://charmhub.io/interfaces/prometheus_scrape-v0)  
 _Supported charms_: [prometheus-k8s](https://charmhub.io/prometheus-k8s)
@@ -61,7 +63,7 @@ Metrics-endpoint integrate command:
 juju integrate indico prometheus-k8s
 ```
 
-### grafana-dashboard
+### Grafana-dashboard
 
 _Interface_: grafana-dashboard  
 _Supported charms_: [grafana-k8s](https://charmhub.io/grafana-k8s)
