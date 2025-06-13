@@ -38,14 +38,13 @@ async def test_indico_is_up(ops_test: OpsTest, app: Application):
     Assume that the charm has already been built and is running.
     """
     assert ops_test.model
-    # Read the IP address of indico
-    status = await ops_test.model.get_status()
-    unit = list(status.applications[app.name].units)[0]
-    address = status["applications"][app.name]["units"][unit]["address"]
     # Send request to bootstrap page and set Host header to app_name (which the application
     # expects)
     response = requests.get(
-        f"http://{address}:8080/bootstrap", headers={"Host": f"{app.name}.local"}, timeout=10
+        "https://127.0.0.1/bootstrap",
+        headers={"Host": f"{app.name}.local"},
+        timeout=10,
+        verify=False,  # nosec
     )
     assert response.status_code == 200
 

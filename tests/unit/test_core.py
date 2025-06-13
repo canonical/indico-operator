@@ -126,7 +126,7 @@ class TestCore(TestBase):  # pylint: disable=too-many-public-methods
         act: trigger a configuration update
         assert: the charm is in waiting status until all relations have been set
         """
-        self.harness.update_config({"site_url": "foo"})
+        self.harness.update_config({"customization_debug": True})
         self.assertEqual(
             self.harness.model.unit.status,
             ops.WaitingStatus("Waiting for redis-broker availability"),
@@ -214,7 +214,7 @@ class TestCore(TestBase):  # pylint: disable=too-many-public-methods
             updated_plan_env["SECRET_KEY"],
         )
         self.assertEqual("indico.local", updated_plan_env["SERVICE_HOSTNAME"])
-        self.assertIsNone(updated_plan_env["SERVICE_PORT"])
+        self.assertEqual("", updated_plan_env["SERVICE_PORT"])
         self.assertEqual("redis://cache-host:1011", updated_plan_env["REDIS_CACHE_URL"])
         self.assertFalse(updated_plan_env["ENABLE_ROOMBOOKING"])
         self.assertEqual("support-tech@mydomain.local", updated_plan_env["INDICO_SUPPORT_EMAIL"])
@@ -266,7 +266,7 @@ class TestCore(TestBase):  # pylint: disable=too-many-public-methods
         secret_value = secret.get_content().get("secret-key")
         self.assertEqual(secret_value, updated_plan_env["SECRET_KEY"])
         self.assertEqual("indico.local", updated_plan_env["SERVICE_HOSTNAME"])
-        self.assertIsNone(updated_plan_env["SERVICE_PORT"])
+        self.assertEqual("", updated_plan_env["SERVICE_PORT"])
         self.assertEqual("redis://cache-host:1011", updated_plan_env["REDIS_CACHE_URL"])
         self.assertFalse(updated_plan_env["ENABLE_ROOMBOOKING"])
         self.assertEqual("support-tech@mydomain.local", updated_plan_env["INDICO_SUPPORT_EMAIL"])
@@ -334,20 +334,19 @@ class TestCore(TestBase):  # pylint: disable=too-many-public-methods
                 "indico_support_email": "example@email.local",
                 "indico_public_support_email": "public@email.local",
                 "indico_no_reply_email": "noreply@email.local",
-                "site_url": "https://example.local:8080",
             }
         )
 
         updated_plan = self.harness.get_container_pebble_plan("indico").to_dict()
         updated_plan_env = updated_plan["services"]["indico"]["environment"]
 
-        self.assertEqual("example.local", updated_plan_env["SERVICE_HOSTNAME"])
+        self.assertEqual("indico.local", updated_plan_env["SERVICE_HOSTNAME"])
         self.assertTrue(updated_plan_env["ENABLE_ROOMBOOKING"])
         self.assertEqual("example@email.local", updated_plan_env["INDICO_SUPPORT_EMAIL"])
         self.assertEqual("public@email.local", updated_plan_env["INDICO_PUBLIC_SUPPORT_EMAIL"])
         self.assertEqual("noreply@email.local", updated_plan_env["INDICO_NO_REPLY_EMAIL"])
         self.assertEqual("https", updated_plan_env["SERVICE_SCHEME"])
-        self.assertEqual(8080, updated_plan_env["SERVICE_PORT"])
+        self.assertEqual("", updated_plan_env["SERVICE_PORT"])
         self.assertTrue(updated_plan_env["CUSTOMIZATION_DEBUG"])
         storage_dict = literal_eval(updated_plan_env["STORAGE_DICT"])
         self.assertEqual("s3", updated_plan_env["ATTACHMENT_STORAGE"])
@@ -362,13 +361,13 @@ class TestCore(TestBase):  # pylint: disable=too-many-public-methods
         auth_providers = literal_eval(updated_plan_env["INDICO_AUTH_PROVIDERS"])
         self.assertEqual("saml", auth_providers["ubuntu"]["type"])
         self.assertEqual(
-            "https://example.local:8080",
+            "https://indico.local",
             auth_providers["ubuntu"]["saml_config"]["sp"]["entityId"],
         )
         auth_providers = literal_eval(updated_plan_env["INDICO_AUTH_PROVIDERS"])
         self.assertEqual("saml", auth_providers["ubuntu"]["type"])
         applied_saml_config = auth_providers["ubuntu"]["saml_config"]
-        self.assertEqual("https://example.local:8080", applied_saml_config["sp"]["entityId"])
+        self.assertEqual("https://indico.local", applied_saml_config["sp"]["entityId"])
         self.assertEqual(saml_config.entity_id, applied_saml_config["idp"]["entityId"])
         self.assertEqual(saml_config.certificates[0], applied_saml_config["idp"]["x509cert"])
         self.assertEqual(
@@ -404,31 +403,6 @@ class TestCore(TestBase):  # pylint: disable=too-many-public-methods
         mock_exec.assert_any_call(
             ["pip", "install", "--upgrade", "git+https://example.git/#subdirectory=themes_cern"],
             environment={},
-        )
-
-        self.harness.update_config({"site_url": "https://example.local"})
-        # ops testing harness doesn't rerun the charm's __init__
-        # manually rerun the _require_nginx_route function
-        self.harness.charm._require_nginx_route()
-        nginx_route_relation_data = self.harness.get_relation_data(
-            self.nginx_route_relation_id, self.harness.charm.app
-        )
-        self.assertEqual("example.local", nginx_route_relation_data["service-hostname"])
-
-    @patch.object(ops.Container, "exec")
-    def test_config_changed_when_config_invalid(self, mock_exec):
-        """
-        arrange: charm created and relations established
-        act: trigger an invalid site URL configuration change for the charm
-        assert: the unit reaches blocked status
-        """
-        mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=("", None)))
-
-        self.set_relations_and_leader()
-        self.harness.update_config({"site_url": "example.local"})
-        self.assertEqual(
-            self.harness.model.unit.status,
-            ops.BlockedStatus("Configuration option site_url is not valid"),
         )
 
     @patch.object(ops.Container, "exec")
