@@ -28,7 +28,6 @@ async def test_active(app: Application):
     """
     # Application actually does have units
     assert app.units[0].workload_status == ActiveStatus.name  # type: ignore
-    assert False
 
 
 @pytest.mark.asyncio
