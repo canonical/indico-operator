@@ -83,7 +83,6 @@ async def app_fixture(
             "nginx-ingress-integrator",
             channel="latest/edge",
             revision=133,
-            series="focal",
             trust=True,
         ),
     )
@@ -97,7 +96,6 @@ async def app_fixture(
             f"./{charm}",
             resources=resources,
             application_name=app_name,
-            series="focal",
         )
     else:
         charm = await ops_test.build_charm(".")
@@ -105,7 +103,6 @@ async def app_fixture(
             charm,
             resources=resources,
             application_name=app_name,
-            series="focal",
             config={
                 "external_plugins": "https://github.com/canonical/flask-multipass-saml-groups/releases/download/1.2.1/flask_multipass_saml_groups-1.2.1-py3-none-any.whl"  # noqa: E501 pylint: disable=line-too-long
             },
@@ -182,7 +179,7 @@ async def loki_fixture(ops_test: OpsTest, app: Application):
     """Loki charm used for integration testing."""
     assert ops_test.model
     loki = await ops_test.model.deploy(
-        "loki-k8s", channel="latest/edge", trust=True, revision=97, series="focal"
+        "loki-k8s", channel="latest/edge", trust=True, revision=97
     )
     await ops_test.model.add_relation(app.name, loki.name)
     await ops_test.model.wait_for_idle(
