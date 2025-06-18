@@ -106,7 +106,7 @@ async def app_fixture(
             resources=resources,
             application_name=app_name,
             config={
-                "external_plugins": "https://github.com/canonical/flask-multipass-saml-groups/releases/download/1.2.1/flask_multipass_saml_groups-1.2.1-py3-none-any.whl"  # noqa: E501 pylint: disable=line-too-long
+                "external_plugins": "https://github.com/canonical/flask-multipass-saml-groups/releases/download/1.2.2/flask_multipass_saml_groups-1.2.2-py3-none-any.whl"  # noqa: E501 pylint: disable=line-too-long
             },
             series="focal",
         )
