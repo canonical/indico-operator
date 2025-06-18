@@ -5,7 +5,7 @@
 
 # Indico Operator
 
-A Juju charm deploying and managing Indico on Kubernetes. Indico is an
+A Juju  charm deploying and managing Indico on Kubernetes. Indico is an
 open-source tool for event organisation, archival and collaboration. It allows for deployment on
 many different Kubernetes platforms, from [MicroK8s](https://microk8s.io) to
 [Charmed Kubernetes](https://ubuntu.com/kubernetes) to public cloud Kubernetes
