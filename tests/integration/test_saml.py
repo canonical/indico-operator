@@ -36,6 +36,7 @@ async def test_saml_auth(  # pylint: disable=too-many-arguments, too-many-positi
     await app.set_config(  # type: ignore[attr-defined] # pylint: disable=W0106
         {"site_url": external_url}
     )
+    print("5")
     # The linter does not recognize wait_for_idle as a method,
     # since ops_test has a model as Optional, so this error must be ignored.
     await ops_test.model.wait_for_idle(status="active")  # type: ignore[union-attr]
