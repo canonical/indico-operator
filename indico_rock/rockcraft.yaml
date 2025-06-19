@@ -65,11 +65,9 @@ parts:
       - gtrkiller-statsd-prometheus-exporter/latest/edge
     override-build: |
       craftctl default
-      source /root/parts/indico/install/bin/activate
-      pip uninstall -y lxml
-      STATIC_DEPS=true pip install lxml==5.3.0
-      # Error here to stop for debugging
-      pip install xyz
+      cd /root/parts/indico/install/lib/python3.12/site-packages/
+      rm -rf lxml* lxml-*.dist-info
+      STATIC_DEPS=true pip install --target=/root/parts/indico/install/lib/python3.12/site-packages --no-cache-dir lxml==5.3.0
     override-stage: |
       mkdir -p --mode=775 $CRAFT_PART_INSTALL/srv/indico/{archive,cache,custom,etc,log,tmp}
       cp $CRAFT_PART_INSTALL/lib/python3.12/site-packages/indico/web/indico.wsgi $CRAFT_PART_INSTALL/srv/indico/indico.wsgi
