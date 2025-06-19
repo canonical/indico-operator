@@ -1,6 +1,7 @@
 # go stdlib
 CVE-2024-34156
 CVE-2025-22869
+CVE-2025-22874
 # usr/bin/statsd_exporter
 CVE-2024-24790
 CVE-2023-39325
@@ -27,4 +28,3 @@ CVE-2024-56672 # linux-libc-dev no fix yet
 CVE-2024-57798 # linux-libc-dev no fix yet
 CVE-2024-56595 # linux-libc-dev no fix yet
 CVE-2025-22088 # linux-libc-dev no fix yet
-

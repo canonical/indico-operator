@@ -83,12 +83,9 @@ async def app_fixture(
             "nginx-ingress-integrator",
             channel="latest/edge",
             revision=133,
-            series="focal",
             trust=True,
+            series="focal",
         ),
-    )
-    await ops_test.model.wait_for_idle(
-        apps=["postgresql-k8s"], status="active", raise_on_error=False
     )
     resources = {
         "indico-image": pytestconfig.getoption("--indico-image"),
@@ -108,6 +105,9 @@ async def app_fixture(
             charm,
             resources=resources,
             application_name=app_name,
+            config={
+                "external_plugins": "https://github.com/canonical/flask-multipass-saml-groups/releases/download/1.2.2/flask_multipass_saml_groups-1.2.2-py3-none-any.whl"  # noqa: E501 pylint: disable=line-too-long
+            },
             series="focal",
         )
 
@@ -117,13 +117,16 @@ async def app_fixture(
         ops_test.model.add_relation(f"{app_name}:redis-cache", "redis-cache"),
         ops_test.model.add_relation(app_name, "nginx-ingress-integrator"),
     )
-    await ops_test.model.wait_for_idle(status="active", raise_on_error=False)
-    # Install saml_groups plugin
-    # Disabling line-too-long lint since we are installing the plugin via gh release
-    await application.set_config(
-        {
-            "external_plugins": "https://github.com/canonical/flask-multipass-saml-groups/releases/download/1.2.1/flask_multipass_saml_groups-1.2.1-py3-none-any.whl"  # noqa: E501 pylint: disable=line-too-long
-        }
+    await ops_test.model.wait_for_idle(
+        apps=[
+            application.name,
+            "postgresql-k8s",
+            "redis-broker",
+            "redis-cache",
+            "nginx-ingress-integrator",
+        ],
+        status="active",
+        raise_on_error=True,
     )
     yield application
 
@@ -141,7 +144,7 @@ async def saml_integrator_fixture(ops_test: OpsTest, app: Application):
     )
     await ops_test.model.add_relation(app.name, saml_integrator.name)
     await ops_test.model.wait_for_idle(
-        apps=[saml_integrator.name, app.name], status="active", raise_on_error=False
+        apps=[saml_integrator.name, app.name], status="active", raise_on_error=True
     )
     yield saml_integrator
 
@@ -165,11 +168,11 @@ async def s3_integrator_fixture(ops_test: OpsTest, app: Application):
     )
     await action_sync_s3_credentials.wait()
     await ops_test.model.wait_for_idle(
-        apps=[s3_integrator.name], status="active", raise_on_error=False
+        apps=[s3_integrator.name], status="active", raise_on_error=True
     )
     await ops_test.model.add_relation(app.name, s3_integrator.name)
     await ops_test.model.wait_for_idle(
-        apps=[s3_integrator.name, app.name], status="active", raise_on_error=False
+        apps=[s3_integrator.name, app.name], status="active", raise_on_error=True
     )
     yield s3_integrator
 
@@ -183,6 +186,6 @@ async def loki_fixture(ops_test: OpsTest, app: Application):
     )
     await ops_test.model.add_relation(app.name, loki.name)
     await ops_test.model.wait_for_idle(
-        apps=[loki.name, app.name], status="active", raise_on_error=False
+        apps=[loki.name, app.name], status="active", raise_on_error=True
     )
     yield loki
