@@ -14,7 +14,7 @@
         "target": {
           "limit": 100,
           "matchAny": false,
-          "tags": [],
+          "tags": ["service-health"],
           "type": "dashboard"
         },
         "type": "dashboard"
