@@ -182,7 +182,7 @@ async def loki_fixture(ops_test: OpsTest, app: Application):
     """Loki charm used for integration testing."""
     assert ops_test.model
     loki = await ops_test.model.deploy(
-        "loki-k8s", channel="latest/edge", trust=True, revision=97, series="focal"
+        "loki-k8s", channel="1/edge", trust=True, revision=97, series="focal"
     )
     await ops_test.model.add_relation(app.name, loki.name)
     await ops_test.model.wait_for_idle(
