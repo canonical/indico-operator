@@ -21,7 +21,7 @@ For information about how to deploy, integrate, and manage this charm, see the O
 
 ## Get started
 
-You can follow the tutorial [here](https://charmhub.io/indico/docs/getting-started).
+You can follow the tutorial [here](https://charmhub.io/indico/docs/tutorial).
 
 ### Basic operations
 
