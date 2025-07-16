@@ -24,8 +24,9 @@ parts:
     python-packages:
       - setuptools
       - wheel
-      - indico==3.3.1
-      - indico-plugin-payment-paypal==3.3
+      - indico==3.3.6
+      - boto3==1.35.99 # Due to issue https://github.com/boto/boto3/issues/4398
+      - indico-plugin-payment-paypal==3.3.2
       - indico-plugin-piwik
       - indico-plugin-storage-s3
       - python3-saml
@@ -63,6 +64,11 @@ parts:
     stage-snaps:
       - celery-prometheus-exporter/latest/edge
       - gtrkiller-statsd-prometheus-exporter/latest/edge
+    override-build: |
+      craftctl default
+      cd $CRAFT_PART_INSTALL/lib/python3.12/site-packages/
+      rm -rf lxml* lxml-*.dist-info
+      pip install --target=$CRAFT_PART_INSTALL/lib/python3.12/site-packages --no-cache-dir --no-binary=lxml lxml==5.3.0
     override-stage: |
       mkdir -p --mode=775 $CRAFT_PART_INSTALL/srv/indico/{archive,cache,custom,etc,log,tmp}
       cp $CRAFT_PART_INSTALL/lib/python3.12/site-packages/indico/web/indico.wsgi $CRAFT_PART_INSTALL/srv/indico/indico.wsgi
