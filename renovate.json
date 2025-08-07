@@ -12,7 +12,25 @@
       "# renovate: base:\\s+(?<depName>[^:]*):(?<currentValue>[^\\s@]*)(@(?<currentDigest>sha256:[0-9a-f]*))?"],
       "datasourceTemplate": "docker",
       "versioningTemplate": "ubuntu"
-    }
+    },
+    {
+      "fileMatch": ["(^|/)rockcraft.yaml$"],
+      "description": "Update nginx exporter",
+      "matchStringsStrategy": "any",
+      "matchStrings": ["source:.*nginx-prometheus-exporter.*\n.*source-tag: (?<currentValue>.+)"],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "nginxinc/nginx-prometheus-exporter",
+      "versioningTemplate": "semver-coerced"
+    },
+    {
+      "fileMatch": ["(^|/)rockcraft.yaml$"],
+      "description": "Update indico",
+      "matchStringsStrategy": "any",
+      "matchStrings": [".*- indico==(?<currentValue>.+)"],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "indico/indico",
+      "versioningTemplate": "semver-coerced"
+    },
   ],
   "packageRules": [
     {
