@@ -32,3 +32,5 @@ CVE-2025-22088 # linux-libc-dev no fix yet
 CVE-2025-21887
 # Golang - statds
 CVE-2025-22868
+# stdlib
+CVE-2025-47907
