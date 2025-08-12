@@ -28,3 +28,9 @@ CVE-2024-56672 # linux-libc-dev no fix yet
 CVE-2024-57798 # linux-libc-dev no fix yet
 CVE-2024-56595 # linux-libc-dev no fix yet
 CVE-2025-22088 # linux-libc-dev no fix yet
+# Kernel
+CVE-2025-21887
+# Golang - statds
+CVE-2025-22868
+# stdlib
+CVE-2025-47907
