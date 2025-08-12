@@ -17,7 +17,7 @@ jobs:
     name: Specific test for the plugin
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install python3.12
         run: |
           chmod +x tests/unit/pre_run_script.sh
