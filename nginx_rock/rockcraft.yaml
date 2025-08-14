@@ -42,7 +42,7 @@ parts:
       mkdir run
   indico-files:
     python-packages:
-      - indico==3.3.6
+      - indico==3.3.7
     build-packages:
       - libpq-dev
     plugin: python
