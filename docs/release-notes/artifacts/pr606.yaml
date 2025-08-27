@@ -2,7 +2,7 @@
 
 schema_version: 1
 changes:
-  - title: Update documentation with fixes raised by Vale report
+  - title: Updated documentation with fixes raised by Vale report
     author: srbouffard
     type: minor
     description: |
