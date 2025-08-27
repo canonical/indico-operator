@@ -2,7 +2,7 @@
 
 schema_version: 1
 changes:
-  - title: Add Service Health Grafana dashboard
+  - title: Added Service Health Grafana dashboard
     author: amandahla
     type: minor
     description: |
