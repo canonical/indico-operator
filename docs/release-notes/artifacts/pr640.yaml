@@ -2,7 +2,7 @@
 
 schema_version: 1
 changes:
-  - title: Bump Indico version to 3.3.6 and Paypal-payment plugin to 3.3.2
+  - title: Bumped Indico version to 3.3.6 and Paypal-payment plugin to 3.3.2
     author: DeeKay3
     type: major
     description: |
