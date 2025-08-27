@@ -2,7 +2,7 @@
 
 schema_version: 1
 changes:
-  - title: Pinning boto3 version to 1.35.99 to fix S3 storage issue
+  - title: Pinned boto3 version to 1.35.99 to fix S3 storage issue
     author: DeeKay3
     type: bugfix
     description: |
