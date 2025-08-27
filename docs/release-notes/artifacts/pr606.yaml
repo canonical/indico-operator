@@ -8,7 +8,7 @@ changes:
     description: |
       Following a local audit of this repository's documentation using the Vale style checker and Canonical's style rules, several fixes have been applied to the documentation.
     urls: 
-      pr: https://github.com/canonical/indico-operator/pull/653
+      pr: https://github.com/canonical/indico-operator/pull/606
       related_doc:
       related_issue: 
     visibility: public

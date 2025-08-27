@@ -13,4 +13,4 @@ changes:
       related_doc:
       related_issue: https://github.com/boto/boto3/issues/4398
     visibility: public
-    highlight: true
+    highlight: false
