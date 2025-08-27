@@ -2,7 +2,7 @@
 
 schema_version: 1
 changes:
-  - title: Pinning boto3 version to 1.35.99
+  - title: Pinning boto3 version to 1.35.99 to fix S3 storage issue
     author: DeeKay3
     type: bugfix
     description: |
@@ -10,7 +10,7 @@ changes:
       Pinning the version to 1.35.99 to avoid this issue.
     urls: 
       pr: https://github.com/canonical/indico-operator/pull/645
-      related_doc:
+      related_doc: ""
       related_issue: https://github.com/boto/boto3/issues/4398
     visibility: public
     highlight: false

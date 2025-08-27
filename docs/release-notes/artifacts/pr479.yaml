@@ -9,7 +9,7 @@ changes:
       A charm architecture diagram has been added to describe how the charm works internally.
     urls: 
       pr: https://github.com/canonical/indico-operator/pull/494
-      related_doc:
-      related_issue: 
-    visibility: public
+      related_doc: ""
+      related_issue: ""
+    visibility: hidden
     highlight: false

@@ -10,7 +10,7 @@ changes:
       The dashboard is based on the four golden signals, making it easier to troubleshoot issues and assess system performance.
     urls: 
       pr: https://github.com/canonical/indico-operator/pull/622
-      related_doc:
+      related_doc: ""
       related_issue: ""
     visibility: public
     highlight: false
