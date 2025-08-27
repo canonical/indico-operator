@@ -2,7 +2,7 @@
 
 schema_version: 1
 changes:
-  - title: Update the rock base, websockets version pinned
+  - title: Updated the rock base and pinned websockets version
     author: alithethird
     type: minor
     description: Updated the indico-nginx-rock base, updated the nginx-prometheus-exporter from a snap to source. Pinned the websockets version.
