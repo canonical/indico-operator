@@ -2,7 +2,7 @@
 
 schema_version: 1
 changes:
-  - title: Add how-to index file and changelog
+  - title: Added how-to index file and changelog
     author: alithethird
     type: minor
     description: |
