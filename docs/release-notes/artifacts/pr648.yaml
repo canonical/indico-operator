@@ -2,7 +2,7 @@
 
 schema_version: 1
 changes:
-  - title: Update nginx-prometheus-exporter to 1.4.2 in Indico NGINX Rock
+  - title: Updated nginx-prometheus-exporter to 1.4.2 in Indico NGINX Rock
     author: amandahla
     type: minor
     description: |
