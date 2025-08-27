@@ -2,7 +2,7 @@
 
 schema_version: 1
 changes:
-  - title: Add architecture diagram
+  - title: Added architecture diagram
     author: swetha1654
     type: minor
     description: |
