@@ -1,0 +1,15 @@
+# --- Release notes artifact ----
+
+schema_version: 1
+changes:
+  - title: Update nginx-prometheus-exporter to 1.4.2 in Indico NGINX Rock
+    author: amandahla
+    type: minor
+    description: |
+      Updating the nginx-prometheus-exporter to 1.4.2 in the Indico NGINX Rock charm along with adding xmlsec library to the Indico rock.
+    urls: 
+      pr: https://github.com/canonical/indico-operator/pull/648
+      related_doc:
+      related_issue: 
+    visibility: public
+    highlight: false

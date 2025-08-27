@@ -1,0 +1,16 @@
+# --- Release notes artifact ----
+
+schema_version: 1
+changes:
+  - title: SQA CharmQA metadata.yaml validation based on charm behavior.
+    author: moisesbenzan
+    type: minor
+    description: |
+      Properly sets the interface optional flag on the metadata.yaml file to reflect the actual charms behavior.
+      This is part of an initiative modelling how charms should expose the metadata to Juju and the Charmhub store in order to be eligible for automated testing as part of this initiative.
+    urls: 
+      pr: https://github.com/canonical/indico-operator/pull/480
+      related_doc: https://docs.google.com/presentation/d/16yj8VEuP8eI719eOZJIl748bz53jr56C23mZsUXfDZs/edit?slide=id.g2a1f120bd9b_0_43#slide=id.g2a1f120bd9b_0_43
+      related_issue: ""
+    visibility: public
+    highlight: false

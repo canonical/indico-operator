@@ -1,0 +1,15 @@
+# --- Release notes artifact ----
+
+schema_version: 1
+changes:
+  - title: Update documentation with fixes raised by Vale report
+    author: srbouffard
+    type: minor
+    description: |
+      Following a local audit of this repository's documentation using the Vale style checker and Canonical's style rules, several fixes have been applied to the documentation.
+    urls: 
+      pr: https://github.com/canonical/indico-operator/pull/653
+      related_doc:
+      related_issue: 
+    visibility: public
+    highlight: false
