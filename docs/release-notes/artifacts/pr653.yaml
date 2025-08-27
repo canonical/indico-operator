@@ -2,7 +2,7 @@
 
 schema_version: 1
 changes:
-  - title: Add Indico terraform module 
+  - title: Added Indico terraform module 
     author: amandahla
     type: minor
     description: |
