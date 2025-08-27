@@ -1,0 +1,14 @@
+# --- Release notes artifact ----
+
+schema_version: 1
+changes:
+  - title: ""
+    author: ""
+    type: ""
+    description: ""
+    urls: 
+      pr: ""
+      related_doc: ""
+      related_issue: ""
+    visibility: public
+    highlight: false
