@@ -2,7 +2,7 @@
 
 schema_version: 1
 changes:
-  - title: SQA CharmQA metadata.yaml validation based on charm behavior.
+  - title: Validated SQA CharmQA metadata.yaml based on charm behavior
     author: moisesbenzan
     type: minor
     description: |
