@@ -1,0 +1,14 @@
+# list of change artifacts included in the release
+included_changes:
+
+# earliest revision included in the release
+earliest_revision:
+
+# latest revision included in the release
+latest_revision:
+
+# earliest date included in the release
+earliest_date:
+
+# latest date included in the release
+latest_date:
