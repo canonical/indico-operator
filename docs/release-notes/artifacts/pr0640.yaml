@@ -1,0 +1,16 @@
+# --- Release notes artifact ----
+
+schema_version: 1
+changes:
+  - title: Bumped Indico version to 3.3.6 and Paypal-payment plugin to 3.3.2
+    author: DeeKay3
+    type: major
+    description: |
+      Bumping the indico version from 3.3.1 to ( 3.3.6 ). This bumps the paypal-payment plugin from 3.3 to 3.3.2 as well.
+      Indico released new version with security updates. This change ensures we have them.
+    urls: 
+      pr: https://github.com/canonical/indico-operator/pull/640
+      related_doc: ""
+      related_issue: ""
+    visibility: public
+    highlight: true

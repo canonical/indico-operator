@@ -1,0 +1,15 @@
+# --- Release notes artifact ----
+
+schema_version: 1
+changes:
+  - title: Added Indico terraform module 
+    author: amandahla
+    type: minor
+    description: |
+      Add Indico terraform module, tests and changes Renovate for updating the test and the provider versions.
+    urls: 
+      pr: https://github.com/canonical/indico-operator/pull/653
+      related_doc: ""
+      related_issue: ""
+    visibility: internal
+    highlight: false

@@ -1,0 +1,16 @@
+# --- Release notes artifact ----
+
+schema_version: 1
+changes:
+  - title: Pinned boto3 version to 1.35.99 to fix S3 storage issue
+    author: DeeKay3
+    type: bugfix
+    description: |
+      With boto3 1.36.00, there is a new checksum behavior that breaks the S3 storage deployed by s3-integrator charm.
+      Pinning the version to 1.35.99 to avoid this issue.
+    urls: 
+      pr: https://github.com/canonical/indico-operator/pull/645
+      related_doc: ""
+      related_issue: https://github.com/boto/boto3/issues/4398
+    visibility: public
+    highlight: false
