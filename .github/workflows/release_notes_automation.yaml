@@ -5,7 +5,7 @@ on:
     branches:
       - 'main'
     paths:
-      - './docs/release-notes/artifacts'
+      - './docs/release-notes/releases'
 
 jobs:
   release-notes:
@@ -14,7 +14,8 @@ jobs:
     with:
         change-artifact-dir: ./docs/release-notes/artifacts
         release-output-dir: ./docs/release-notes
-        release-artifact-dir: ./docs/release-notes/artifacts
+        release-artifact-dir: ./docs/release-notes/releases
         common-file: ./docs/release-notes/common.yaml
-        template-dir: ./docs/release-notes/templates
+        template-dir: ./docs/release-notes/template
         template-file-name: release-template.md.j2
+
