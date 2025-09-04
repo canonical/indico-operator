@@ -3,7 +3,7 @@
 [![Promote charm](https://github.com/canonical/indico-operator/actions/workflows/promote_charm.yaml/badge.svg)](https://github.com/canonical/indico-operator/actions/workflows/promote_charm.yaml)
 [![Discourse Status](https://img.shields.io/discourse/status?server=https%3A%2F%2Fdiscourse.charmhub.io&style=flat&label=CharmHub%20Discourse)](https://discourse.charmhub.io)
 
-# Indico Operator
+# Indico operator
 
 A Juju charm deploying and managing Indico on Kubernetes. Indico is an
 open-source tool for event organisation, archival and collaboration. It allows for deployment on
@@ -26,9 +26,9 @@ You can follow the tutorial [here](https://charmhub.io/indico/docs/tutorial).
 ### Basic operations
 
 The following actions are available for this charm:
-  - refresh-external-resources: refresh the external resources (e.g. S3 bucket)
-  - add-admmin: add an admin user
-  - anonymize-user: anonymize a user
+  - `refresh-external-resources`: refresh the external resources (e.g. S3 bucket)
+  - `add-admmin`: add an admin user
+  - `anonymize-user`: anonymize a user
 
 You can check out the [full list of actions here](https://charmhub.io/indico/actions).
 
@@ -38,7 +38,7 @@ This charm can be integrated with other Juju charms and services:
 
   - [Redis](https://charmhub.io/redis-k8s): Redis is an open source (BSD licensed), in-memory data structure store, used as a database, cache and message broker.
   - [S3](https://charmhub.io/s3-integrator): Amazon Simple Storage Service (Amazon S3) is an object storage service that provides secure, durable, highly available storage with massive scalability and low latency.
-  - [Postgresql](https://charmhub.io/postgresql-k8s): PostgreSQL is a powerful, open source object-relational database system. It has more than 15 years of active development and a proven architecture that has earned it a strong reputation for reliability, data integrity, and correctness.
+  - [PostgreSQL](https://charmhub.io/postgresql-k8s): PostgreSQL is a powerful, open source object-relational database system. It has more than 15 years of active development and a proven architecture that has earned it a strong reputation for reliability, data integrity, and correctness.
 
   and much more. You can find the full list of integrations [here](https://charmhub.io/indico/integrations).
 

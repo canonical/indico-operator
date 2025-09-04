@@ -6,4 +6,4 @@ If you wish to apply a set of customisation files, set the configuration option 
 
 The theme changes can be pulled by running the [refresh-external-resources action](https://charmhub.io/indico/actions#refresh-external-resources).
 
-For more details on the configuration options and their default values see the [configuration reference](https://charmhub.io/indico/configure).
+For more details on the configuration options and their default values see the [configuration reference](https://charmhub.io/indico/configurations).

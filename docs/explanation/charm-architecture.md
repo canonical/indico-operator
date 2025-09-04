@@ -35,7 +35,7 @@ UpdateRelStyle(charm_logic, indico_core, $offsetX="-120")
 
 ```
 
-The charm design leverages the [sidecar](https://kubernetes.io/blog/2015/06/the-distributed-system-toolkit-patterns/#example-1-sidecar-containers) pattern to allow multiple containers in each pod with [Pebble](https://juju.is/docs/sdk/pebble) running as the workload container’s entrypoint.
+The charm design leverages the [sidecar](https://kubernetes.io/blog/2015/06/the-distributed-system-toolkit-patterns/#example-1-sidecar-containers) pattern to allow multiple containers in each pod with [Pebble](https://documentation.ubuntu.com/pebble/) running as the workload container’s entrypoint.
 
 Pebble is a lightweight, API-driven process supervisor that is responsible for configuring processes to run in a container and controlling those processes throughout the workload lifecycle.
 
@@ -61,7 +61,7 @@ And if you run `kubectl describe pod indico-0`, all the containers will have as 
 We use [Rockcraft](https://canonical-rockcraft.readthedocs-hosted.com/en/latest/) to build OCI Images for Indico and NGINX. 
 The images are defined in [NGINX ROCK](https://github.com/canonical/indico-operator/tree/main/nginx_rock/) and [Indico ROCK](https://github.com/canonical/indico-operator/tree/main/indico_rock).
 They are published to [Charmhub](https://charmhub.io/), the official repository of charms.
-This is done by publishing a resource to Charmhub as described in the [Juju SDK How-to guides](https://juju.is/docs/sdk/publishing).
+This is done by publishing a resource to Charmhub as described in the [Charmcraft How-to guides](https://documentation.ubuntu.com/charmcraft/stable/howto/manage-charms/#publish-a-charm-on-charmhub).
 
 ## Containers
 
@@ -134,7 +134,7 @@ Grafana is an open-source visualization tool that allows to query, visualize, al
 
 The Indico charm also supports being integrated with [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/#what-is-ingress) by using [NGINX Ingress Integrator](https://charmhub.io/nginx-ingress-integrator/).
 
-In this case, an existing Ingress controller is required. For more information, see [Adding the Ingress Relation to a Charm](https://charmhub.io/nginx-ingress-integrator/docs/adding-ingress-relation).
+In this case, an existing Ingress controller is required. For more information, see [Adding the Ingress Relation to a Charm](https://charmhub.io/nginx-ingress-integrator/docs/add-the-ingress-relation).
 
 ### PostgreSQL
 
@@ -158,30 +158,28 @@ Redis is an open-source in-memory data structure store used here as two independ
  
 ## Juju events
 
-Accordingly to the [Juju SDK](https://juju.is/docs/sdk/event): "an event is a data structure that encapsulates part of the execution context of a charm".
-
 For this charm, the following events are observed:
 
-1. [<container name>_pebble_ready](https://canonical-juju.readthedocs-hosted.com/en/latest/user/reference/hook/#container-pebble-ready): fired on Kubernetes charms when the requested container is ready.
+1. [`<container name>_pebble_ready`](https://canonical-juju.readthedocs-hosted.com/en/latest/user/reference/hook/#container-pebble-ready): fired on Kubernetes charms when the requested container is ready.
 Action: wait for the integrations, and configure the containers.
-2. [config_changed](https://canonical-juju.readthedocs-hosted.com/en/latest/user/reference/hook/#config-changed): usually fired in response to a configuration change using the CLI.
+2. [`config_changed`](https://canonical-juju.readthedocs-hosted.com/en/latest/user/reference/hook/#config-changed): usually fired in response to a configuration change using the CLI.
 Action: wait for the integrations, validate the configuration, update Ingress, and restart the containers.
-3. [database_relation_joined](https://github.com/canonical/ops-lib-pgsql): for when the PostgreSQL relation has been joined.
+3. [`database_relation_joined`](https://github.com/canonical/ops-lib-pgsql): for when the PostgreSQL relation has been joined.
 Action: if the unit is the leader, add the extensions [`pg_trgm:public`](https://www.postgresql.org/docs/current/pgtrgm.html) and [`unaccent:public`](https://www.postgresql.org/docs/current/unaccent.html).
-4. [leader_elected](https://canonical-juju.readthedocs-hosted.com/en/latest/user/reference/hook/#leader-elected): is emitted for a unit that is elected as leader.
+4. [`leader_elected`](https://canonical-juju.readthedocs-hosted.com/en/latest/user/reference/hook/#leader-elected): is emitted for a unit that is elected as leader.
 Action: guarantee that all Indico workers have the same [secret key](https://docs.getindico.io/en/latest/config/settings/?highlight=secret_key#SECRET_KEY) that is used to sign tokens in URLs and select a unit to run Celery.
-5. [master_changed](https://github.com/canonical/ops-lib-pgsql): PostgreSQLClient custom event for when the connection details to the master database on this relation change.
-Action: Update the database connection string configuration and emit config_changed event.
-6. [redis_relation_changed](https://github.com/canonical/redis-k8s-operator): Fired when Redis is changed (host, for example).
-Action: Same as config_changed.
-7. [refresh_external_resources_action](https://charmhub.io/indico/actions): fired when refresh-external-resources action is executed.
-8. [indico_peers_relation_departed](https://canonical-juju.readthedocs-hosted.com/en/latest/user/reference/hook/#endpoint-relation-departed): fired when a Indico unit departs. Action: elect a new unit to run Celery on if the departed unit was running Celery and replans the services accordingly.
+5. [`master_changed`](https://github.com/canonical/ops-lib-pgsql): PostgreSQLClient custom event for when the connection details to the main database on this relation change.
+Action: Update the database connection string configuration and emit `config_changed` event.
+6. [`redis_relation_changed`](https://github.com/canonical/redis-k8s-operator): Fired when Redis is changed (host, for example).
+Action: Same as `config_changed`.
+7. [`refresh_external_resources_action`](https://charmhub.io/indico/actions): fired when refresh-external-resources action is executed.
+8. [`indico_peers_relation_departed`](https://canonical-juju.readthedocs-hosted.com/en/latest/user/reference/hook/#endpoint-relation-departed): fired when a Indico unit departs. Action: elect a new unit to run Celery on if the departed unit was running Celery and re-plans the services accordingly.
 
 ## Charm code overview
 
 The `src/charm.py` is the default entry point for a charm and has the IndicoOperatorCharm Python class which inherits from CharmBase.
 
-CharmBase is the base class from which all Charms are formed, defined by [Ops](https://juju.is/docs/sdk/ops) (Python framework for developing charms).
+CharmBase is the base class from which all Charms are formed, defined by [Ops](https://documentation.ubuntu.com/ops/latest/) (Python framework for developing charms).
 
 See more information in [Charm](https://canonical-juju.readthedocs-hosted.com/en/latest/user/reference/charm/).
 

@@ -14,4 +14,4 @@ juju trust nginx-ingress-integrator --scope cluster # if RBAC is enabled
 juju integrate nginx-ingress-integrator indico
 ```
 
-For more details on the configuration options and their default values see the [configuration reference](https://charmhub.io/indico/configure).
+For more details on the configuration options and their default values see the [configuration reference](https://charmhub.io/indico/configurations).
