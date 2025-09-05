@@ -12,14 +12,6 @@ See our [Release policy and schedule](docs/release-notes/landing-page.md).
 
 ## Requirements and compatibility
 
-<!--
-Specify the workload version; link to the workload's release notes if available.
-Add information about the requirements for this charm in the table
-below, for instance, a minimum Juju version. 
-If the user will need any specific upgrade instructions for this
-release, include those instructions here.
--->
-
 The charm operates Indico 3.3.6.
 
 The table below shows the required or supported versions of the software necessary to operate the charm.
@@ -48,8 +40,6 @@ Relevant links:
 
 The `nginx-prometheus-exporter` was updated to 1.4.2 in the Indico NGINX Rock charm,
 and the `xmlsec` library was added to the Indico rock.
-
-<Add more context and information about the entry>
 
 Relevant links:
 
