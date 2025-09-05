@@ -27,10 +27,9 @@ The table below shows the required or supported versions of the software necessa
 | Software                | Required version |
 |-------------------------|------------------|
 | Juju                    | 3.x              |
-| Terraform               | XXXX             |
-| Terraform Juju provider | XXXX             |
-| Ubuntu                  | XXXX             |
-| XXXX                    | XXXX             |
+| Terraform               | >=1.12           |
+| Terraform Juju provider | >=0.21           |
+| Ubuntu                  | >=20.04          |
 
 ## Updates
 
