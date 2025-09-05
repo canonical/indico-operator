@@ -9,7 +9,7 @@ changes:
       Updating the nginx-prometheus-exporter to 1.4.2 in the Indico NGINX Rock charm along with adding xmlsec library to the Indico rock.
     urls: 
       pr: https://github.com/canonical/indico-operator/pull/648
-      related_doc: ""
-      related_issue: ""
+      related_doc: 
+      related_issue: 
     visibility: public
     highlight: false
