@@ -10,7 +10,7 @@ changes:
       This is part of an initiative modelling how charms should expose the metadata to Juju and the Charmhub store in order to be eligible for automated testing as part of this initiative.
     urls: 
       pr: https://github.com/canonical/indico-operator/pull/480
-      related_doc: ""
-      related_issue: ""
+      related_doc: 
+      related_issue: 
     visibility: public
     highlight: false

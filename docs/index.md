@@ -58,3 +58,6 @@ Thinking about using the Indico Operator for your next project? [Get in touch](h
   1. [Theme customization](reference/theme-customization.md)
 1. [Explanation](explanation)
   1. [Charm architecture](explanation/charm-architecture.md)
+1. [Release notes](release-notes)
+  1. [Overview](release-notes/landing-page.md)
+  1. [Release notes (revisions 234-266)](release-notes/release-notes-0001.md)
