@@ -27,7 +27,9 @@ The table below shows the required or supported versions of the software necessa
 
 The following major and minor features were added in this release.
 
+<!-- vale Canonical.007-Headings-sentence-case = NO -->
 ### Added Service Health Grafana dashboard
+<!-- vale Canonical.007-Headings-sentence-case = YES -->
 
 We added a Grafana dashboard to verify Indico Service Health.
 The dashboard is based on the four golden signals, making it easier to troubleshoot issues and assess system performance.
@@ -36,7 +38,9 @@ Relevant links:
 
 * [PR](https://github.com/canonical/indico-operator/pull/622)
 
+<!-- vale Canonical.007-Headings-sentence-case = NO -->
 ### Updated `nginx-prometheus-exporter` to 1.4.2 in Indico NGINX Rock
+<!-- vale Canonical.007-Headings-sentence-case = YES -->
 
 The `nginx-prometheus-exporter` was updated to 1.4.2 in the Indico NGINX Rock charm,
 and the `xmlsec` library was added to the Indico rock.
@@ -45,7 +49,9 @@ Relevant links:
 
 * [PR](https://github.com/canonical/indico-operator/pull/648)
 
+<!-- vale Canonical.007-Headings-sentence-case = NO -->
 ### Validated SQA CharmQA metadata.yaml based on charm behavior
+<!-- vale Canonical.007-Headings-sentence-case = YES -->
 
 Now the optional `interface` flag is properly set in the `metadata.yaml` file to reflect the actual charm's behavior.
 This is part of an initiative modelling how charms should expose the metadata to Juju and the Charmhub store in order to be eligible for automated testing as part of this initiative.
