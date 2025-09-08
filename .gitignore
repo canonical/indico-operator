@@ -11,3 +11,16 @@ __pycache__/
 .mypy_cache
 *.egg-info/
 */*.rock
+
+# BEGIN VALE WORKFLOW IGNORE
+.vale/styles/*
+!.vale/styles/local
+!.vale/styles/config/
+
+.vale/styles/config/*
+!.vale/styles/config/vocabularies/
+
+.vale/styles/config/vocabularies/*
+!.vale/styles/config/vocabularies/local
+# END VALE WORKFLOW IGNORE
+
