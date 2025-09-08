@@ -8,16 +8,15 @@ This document explains the processes and practices recommended for contributing 
 - Generally, before developing enhancements to this charm, you should consider [opening an issue
   ](https://github.com/canonical/indico-operator/issues) explaining your use case.
 - If you would like to chat with us about your use-cases or proposed implementation, you can reach
-  us at [Canonical Mattermost public channel](https://chat.charmhub.io/charmhub/channels/charm-dev)
+  us at [Canonical Matrix public channel](https://matrix.to/#/#charmhub-charmdev:ubuntu.com)
   or [Discourse](https://discourse.charmhub.io/).
-- Familiarising yourself with the [Charmed Operator Framework](https://juju.is/docs/sdk) library
+- Familiarising yourself with the [Juju documentation](https://documentation.ubuntu.com/juju/3.6/)
   will help you a lot when working on new features or bug fixes.
 - All enhancements require review before being merged. Code review typically examines
   - code quality
   - test coverage
   - user experience for Juju operators of this charm.
 - Please help us out in ensuring easy to review branches by rebasing your pull request branch onto the `main` branch. This also avoids merge commits and creates a linear Git commit history.
-- Please generate src documentation for every commit. See the section below for more details.
 
 ## Developing
 
@@ -36,7 +35,7 @@ source .tox/unit/bin/activate
 
 ### Testing
 
-Note that the [indico](indico_rock/rockcraft.yaml) and [indico nginx](indico_nginx_rock/rockcraft.yaml) images need to be built and pushed to microk8s for the tests to run. They should be tagged as `localhost:32000/indico:latest` and `localhost:32000/indico-nginx:latest` so that Kubernetes knows how to pull them from the microk8s repository. Note that the microk8s registry needs to be enabled using `microk8s enable registry`. More details regarding the OCI images below. The following commands can then be used to run the tests:
+Note that the [indico](https://github.com/canonical/indico-operator/blob/main/indico_rock/rockcraft.yaml) and [indico nginx](https://github.com/canonical/indico-operator/blob/main/nginx_rock/rockcraft.yaml) images need to be built and pushed to MicroK8s for the tests to run. They should be tagged as `localhost:32000/indico:latest` and `localhost:32000/indico-nginx:latest` so that Kubernetes knows how to pull them from the MicroK8s repository. Note that the MicroK8s registry needs to be enabled using `microk8s enable registry`. More details regarding the OCI images below. The following commands can then be used to run the tests:
 
 * `tox`: Runs all of the basic checks (`lint`, `unit`, `static`, and `coverage-report`).
 * `tox -e fmt`: Runs formatting using `black` and `isort`.
@@ -44,15 +43,6 @@ Note that the [indico](indico_rock/rockcraft.yaml) and [indico nginx](indico_ngi
 * `tox -e static`: Runs other checks such as `bandit` for security issues.
 * `tox -e unit`: Runs the unit tests.
 * `tox -e integration`: Runs the integration tests.
-
-### Generating src docs for every commit
-
-Run the following command:
-
-```bash
-echo -e "tox -e src-docs\ngit add src-docs\n" >> .git/hooks/pre-commit
-chmod +x .git/hooks/pre-commit
-```
 
 ## Build charm
 
@@ -90,4 +80,4 @@ juju deploy ./indico_ubuntu-20.04-amd64.charm \
 
 ## Canonical contributor agreement
 
-Canonical welcomes contributions to the Indico Operator. Please check out our [contributor agreement](https://ubuntu.com/legal/contributors) if you're interested in contributing to the solution.
+Canonical welcomes contributions to the Indico Operator. Please check out our [contributor agreement](https://canonical.com/legal/contributors) if you're interested in contributing to the solution.
