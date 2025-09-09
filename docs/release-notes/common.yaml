@@ -1,5 +1,0 @@
-# --- Common information that applies to all releases ----
-
-charm_name: Indico
-release_condition: latest/stable
-show_internal: true
