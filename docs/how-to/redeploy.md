@@ -4,7 +4,7 @@ This guide provides the necessary steps for migrating an existing Indico instanc
 
 ## Migrate the database
 
-Follow the instructions in [the charm migration documentation](https://charmhub.io/postgresql-k8s/docs/h-migrate-cluster-via-restore) to migrate the content of the Indico PostgreSQL database.
+Follow the instructions in [the charm migration documentation](https://canonical-charmed-postgresql-k8s.readthedocs-hosted.com/14/how-to/back-up-and-restore/migrate-a-cluster/) to migrate the content of the Indico PostgreSQL database.
 
 ## Migrate files stored in S3
 
@@ -14,4 +14,4 @@ If your media files are stored in an S3 bucket, you have two options:
 2. Use tools like [rclone](https://rclone.org) to copy files from the old
    storage bucket to a new bucket for the new deployment.
 
-If the files are not stored in S3, they are not expected to persist across unit restarts or to be available in multiple units. However, it is still possible to copy them to the new charm instance using [juju scp](https://juju.is/docs/juju/juju-scp).
+If the files are not stored in S3, they are not expected to persist across unit restarts or to be available in multiple units. However, it is still possible to copy them to the new charm instance using [`juju scp`](https://juju.is/docs/juju/juju-scp).

@@ -12,4 +12,4 @@ juju config [charm_name] external_plugins=git+https://github.com/indico/indico-p
 
 The installed plugins can be upgraded by running the [refresh-external-resources action](https://charmhub.io/indico/actions#refresh-external-resources). Note that the upgrade won't take place if the published version hasn't changed.
 
-For more details on the configuration options and their default values see the [configuration reference](https://charmhub.io/indico/configure).
+For more details on the configuration options and their default values see the [configuration reference](https://charmhub.io/indico/configurations).
