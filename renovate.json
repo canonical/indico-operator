@@ -1,52 +1,17 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "automerge": true,
+  "customDatasources": {
+    "charmhub": {
+      "defaultRegistryUrlTemplate": "https://api.charmhub.io/v2/charms/info/{{packageName}}?fields=channel-map",
+      "format": "json",
+      "transformTemplates": [
+        "{\"releases\": [{\"version\": $string($$.(`channel-map`[channel.risk = 'edge' and channel.track = 'latest' and channel.base.architecture = 'amd64' and channel.base.channel = '20.04'].revision.revision))}]}"
+      ]
+    }
+  },
   "extends": [
     "config:base"
-  ],
-  "customDatasources": {
-        "charmhub": {
-            "defaultRegistryUrlTemplate": "https://api.charmhub.io/v2/charms/info/{{packageName}}?fields=channel-map",
-            "format": "json",
-            "transformTemplates": [
-                "{\"releases\": [{\"version\": $string($$.(`channel-map`[channel.risk = 'edge' and channel.track = 'latest' and channel.base.architecture = 'amd64' and channel.base.channel = '20.04'].revision.revision))}]}"
-            ]
-        }
-    },
-  "regexManagers": [
-    {
-      "fileMatch": ["(^|/)rockcraft.yaml$"],
-      "description": "Update base image references",
-      "matchStringsStrategy": "any",
-      "matchStrings": ["# renovate: build-base:\\s+(?<depName>[^:]*):(?<currentValue>[^\\s@]*)(@(?<currentDigest>sha256:[0-9a-f]*))?",
-      "# renovate: base:\\s+(?<depName>[^:]*):(?<currentValue>[^\\s@]*)(@(?<currentDigest>sha256:[0-9a-f]*))?"],
-      "datasourceTemplate": "docker",
-      "versioningTemplate": "ubuntu"
-    },
-    {
-      "fileMatch": ["(^|/)rockcraft.yaml$"],
-      "description": "Update nginx exporter",
-      "matchStringsStrategy": "any",
-      "matchStrings": ["source:.*nginx-prometheus-exporter.*\n.*source-tag: (?<currentValue>.+)"],
-      "datasourceTemplate": "github-releases",
-      "depNameTemplate": "nginxinc/nginx-prometheus-exporter",
-      "versioningTemplate": "semver-coerced"
-    },
-    {
-      "fileMatch": ["(^|/)rockcraft.yaml$"],
-      "description": "Update indico",
-      "matchStringsStrategy": "any",
-      "matchStrings": [".*- indico==(?<currentValue>.+)"],
-      "datasourceTemplate": "github-releases",
-      "depNameTemplate": "indico/indico",
-      "versioningTemplate": "semver-coerced"
-    },
-    {
-      "fileMatch": ["(^|/)main.tftest.hcl$"],
-      "matchStrings": ["# renovate: depName=\"(?<packageName>[^\"]+)\"\\s*\\n\\s*(?<fieldName>[a-zA-Z0-9_]+)\\s*=\\s*\"(?<currentValue>[^\"]+)\""],
-      "versioningTemplate": "semver-coerced",
-      "datasourceTemplate": "custom.charmhub",
-      "matchStringsStrategy": "recursive"
-    }
   ],
   "packageRules": [
     {
@@ -57,15 +22,71 @@
       "pinDigests": true
     },
     {
+      "enabled": true,
       "matchDatasources": [
-          "custom.charmhub"
-      ],
-      "enabled": true
+        "custom.charmhub"
+      ]
     },
     {
-      "matchDatasources": ["terraform-provider"],
-      "matchPackageNames": ["juju/juju"],
-      "enabled": true
+      "enabled": true,
+      "matchDatasources": [
+        "terraform-provider"
+      ],
+      "matchPackageNames": [
+        "juju/juju"
+      ]
+    }
+  ],
+  "regexManagers": [
+    {
+      "datasourceTemplate": "docker",
+      "description": "Update base image references",
+      "fileMatch": [
+        "(^|/)rockcraft.yaml$"
+      ],
+      "matchStrings": [
+        "# renovate: build-base:\\s+(?<depName>[^:]*):(?<currentValue>[^\\s@]*)(@(?<currentDigest>sha256:[0-9a-f]*))?",
+        "# renovate: base:\\s+(?<depName>[^:]*):(?<currentValue>[^\\s@]*)(@(?<currentDigest>sha256:[0-9a-f]*))?"
+      ],
+      "matchStringsStrategy": "any",
+      "versioningTemplate": "ubuntu"
+    },
+    {
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "nginxinc/nginx-prometheus-exporter",
+      "description": "Update nginx exporter",
+      "fileMatch": [
+        "(^|/)rockcraft.yaml$"
+      ],
+      "matchStrings": [
+        "source:.*nginx-prometheus-exporter.*\n.*source-tag: (?<currentValue>.+)"
+      ],
+      "matchStringsStrategy": "any",
+      "versioningTemplate": "semver-coerced"
+    },
+    {
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "indico/indico",
+      "description": "Update indico",
+      "fileMatch": [
+        "(^|/)rockcraft.yaml$"
+      ],
+      "matchStrings": [
+        ".*- indico==(?<currentValue>.+)"
+      ],
+      "matchStringsStrategy": "any",
+      "versioningTemplate": "semver-coerced"
+    },
+    {
+      "datasourceTemplate": "custom.charmhub",
+      "fileMatch": [
+        "(^|/)main.tftest.hcl$"
+      ],
+      "matchStrings": [
+        "# renovate: depName=\"(?<packageName>[^\"]+)\"\\s*\\n\\s*(?<fieldName>[a-zA-Z0-9_]+)\\s*=\\s*\"(?<currentValue>[^\"]+)\""
+      ],
+      "matchStringsStrategy": "recursive",
+      "versioningTemplate": "semver-coerced"
     }
   ]
 }
