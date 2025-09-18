@@ -24,7 +24,7 @@ parts:
     python-packages:
       - setuptools
       - wheel
-      - indico==3.3.7
+      - indico==3.3.8
       - boto3==1.35.99 # Due to issue https://github.com/boto/boto3/issues/4398
       - indico-plugin-payment-paypal==3.3.2
       - indico-plugin-piwik
