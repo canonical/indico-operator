@@ -114,7 +114,7 @@ The NGINX Ingress Integrator charm can deploy and manage external access to HTTP
 
 If you want to make Indico charm available to external clients, you need to deploy the NGINX Ingress Integrator charm and integrate Indico with it.
 
-See more details in [Adding the Ingress Relation to a Charm](https://charmhub.io/nginx-ingress-integrator/docs/add-the-ingress-relation).
+See more details in [Deploy the Nginx ingress integrator charm for the first time](https://charmhub.io/nginx-ingress-integrator/docs/getting-started).
 
 Enable the ingress on MicroK8s first:
 
