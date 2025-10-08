@@ -1,5 +1,6 @@
 #libc-dev
 CVE-2025-38352
+CVE-2025-40300
 #python-pkg
 CVE-2025-59420
 #gobinary
