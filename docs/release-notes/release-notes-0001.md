@@ -8,7 +8,7 @@ Main features:
 * Bumped Indico version to 3.3.6 and paypal-payment plugin to 3.3.2.
 
 
-See our [Release policy and schedule](docs/release-notes/landing-page.md).
+See our [Release policy and schedule](landing-page.md).
 
 ## Requirements and compatibility
 
