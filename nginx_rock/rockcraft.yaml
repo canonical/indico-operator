@@ -28,7 +28,7 @@ parts:
     build-snaps:
       - go
     source: https://github.com/nginxinc/nginx-prometheus-exporter
-    source-tag: v1.4.2
+    source-tag: v1.5.1
     source-type: git
   nginx:
     stage-packages:
