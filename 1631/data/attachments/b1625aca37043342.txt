@@ -1,0 +1,44 @@
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller                Cloud/Region        Version  SLA          Timestamp
+testing  github-pr-3a084-microk8s  microk8s/localhost  2.9.52   unsupported  15:21:29Z
+
+App                       Version  Status  Scale  Charm                     Channel      Rev  Address         Exposed  Message
+indico                    3.3.8    active      1  indico                                   0  10.152.183.50   no       
+nginx-ingress-integrator  24.2.0   active      1  nginx-ingress-integrator  latest/edge  133  10.152.183.58   no       Ingress IP(s): 127.0.0.1
+postgresql-k8s            14.19    active      1  postgresql-k8s            14/edge      684  10.152.183.183  no       
+redis-broker              7.2.5    active      1  redis-k8s                 latest/edge   42  10.152.183.121  no       
+redis-cache               7.2.5    active      1  redis-k8s                 latest/edge   42  10.152.183.90   no       
+
+Unit                         Workload  Agent  Address       Ports  Message
+indico/0*                    active    idle   10.1.181.143         
+nginx-ingress-integrator/0*  active    idle   10.1.181.141         Ingress IP(s): 127.0.0.1
+postgresql-k8s/0*            active    idle   10.1.181.145         Primary
+redis-broker/0*              active    idle   10.1.181.142         
+redis-cache/0*               active    idle   10.1.181.140         
+
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...
+[31m[1mERROR   [0m websockets.client:protocol.py:1009 data transfer failed
+Traceback (most recent call last):
+  File "/home/runner/work/indico-operator/indico-operator/.tox/integration/lib/python3.10/site-packages/websockets/legacy/protocol.py", line 953, in transfer_data
+    message = await self.read_message()
+  File "/home/runner/work/indico-operator/indico-operator/.tox/integration/lib/python3.10/site-packages/websockets/legacy/protocol.py", line 1023, in read_message
+    frame = await self.read_data_frame(max_size=self.max_size)
+  File "/home/runner/work/indico-operator/indico-operator/.tox/integration/lib/python3.10/site-packages/websockets/legacy/protocol.py", line 1098, in read_data_frame
+    frame = await self.read_frame(max_size)
+  File "/home/runner/work/indico-operator/indico-operator/.tox/integration/lib/python3.10/site-packages/websockets/legacy/protocol.py", line 1155, in read_frame
+    frame = await Frame.read(
+  File "/home/runner/work/indico-operator/indico-operator/.tox/integration/lib/python3.10/site-packages/websockets/legacy/framing.py", line 70, in read
+    data = await reader(2)
+  File "/usr/lib/python3.10/asyncio/streams.py", line 708, in readexactly
+    await self._wait_for_data('readexactly')
+  File "/usr/lib/python3.10/asyncio/streams.py", line 501, in _wait_for_data
+    await self._waiter
+  File "/usr/lib/python3.10/asyncio/selector_events.py", line 924, in write
+    n = self._sock.send(data)
+OSError: [Errno 9] Bad file descriptor
+[33mWARNING [0m juju.client.connection:connection.py:543 Receiver: Connection closed, reconnecting

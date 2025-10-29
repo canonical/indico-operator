@@ -1,0 +1,82 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"
+    arrange: given charm integrated with Loki.
+    act: do nothing.
+    assert: Loki starts to receive log files from indico.
+    ","369","test_loki","tests.integration","2025-10-29","passed","2025-10-29","","test_loki","",""
+"Check that the charm is active.
+
+    Assume that the charm has already been built and is running.
+    ","0","test_active","tests.integration","2025-10-29","passed","2025-10-29","","test_charm","",""
+"
+    arrange: admin user created
+    act: run the anonymize-user action
+    assert: check the output in the action result
+    ","19059","test_anonymize_user_fail","tests.integration","2025-10-29","passed","2025-10-29","","test_actions","",""
+"
+        arrange: an email and a password
+        act: when the _on_add_admin_action method is executed
+        assert: the indico command to add the user is executed with the appropriate parameters.
+        ","33","test_add_admin","tests.unit_harness","2025-10-29","passed","2025-10-29","TestActions","test_actions","",""
+"
+    arrange: given charm integrated with S3.
+    act: do nothing.
+    assert: the pebble plan matches the S3 values as configured by the integrator.
+    ","3271","test_s3","tests.integration","2025-10-29","passed","2025-10-29","","test_s3","",""
+"Check that the bootstrap page is reachable.
+
+    Assume that the charm has already been built and is running.
+    ","238","test_indico_is_up","tests.integration","2025-10-29","passed","2025-10-29","","test_charm","",""
+"Runs health checks for each container.
+
+    Assume that the charm has already been built and is running.
+    ","2681","test_health_checks","tests.integration","2025-10-29","passed","2025-10-29","","test_charm","",""
+"
+        arrange: an list of 5 emails
+        act: when the _on_anonymize_user_action method is executed
+        assert: the indico command to anonymize the user is executed with the appropriate
+            parameters and the event results is set as expected
+        ","9","test_anonymize_user_list","tests.unit_harness","2025-10-29","passed","2025-10-29","TestActions","test_actions","",""
+"
+        arrange: an list of 51 emails
+        act: when the _on_anonymize_user_action method is executed
+        assert: the indico command to anonymize the user is executed with the appropriate
+            parameters and the event results is set as expected
+        ","7","test_anonymize_user_maximum_reached","tests.unit_harness","2025-10-29","passed","2025-10-29","TestActions","test_actions","",""
+"
+        arrange: an email
+        act: when the _on_anonymize_user_action method is executed
+        assert: the indico command to anonymize the user is executed with the appropriate
+            parameters and the event results is set as expected
+        ","8","test_anonymize_user_fail","tests.unit_harness","2025-10-29","passed","2025-10-29","TestActions","test_actions","",""
+"
+        arrange: charm created and relations established
+        act: configure the external resources and trigger the refresh action
+        assert: the customization sources are pulled and the plugins upgraded
+        ","14","test_refresh_external_resources_when_customization_and_plugins_set","tests.unit_harness","2025-10-29","passed","2025-10-29","TestActions","test_actions","",""
+"
+        arrange: an email and a password
+        act: when the _on_add_admin_action method is executed
+        assert: the indico command to add the user is executed with the appropriate parameters.
+        ","55","test_add_admin_fail","tests.unit_harness","2025-10-29","passed","2025-10-29","TestActions","test_actions","",""
+"
+    arrange: admin user created
+    act: run the anonymize-user action
+    assert: check the output in the action result
+    ","11748","test_anonymize_user","tests.integration","2025-10-29","passed","2025-10-29","","test_actions","",""
+"
+    arrange: given charm in its initial state
+    act: when the metrics endpoints are scraped
+    assert: the response is 200 (HTTP OK)
+    ","1578","test_prom_exporters_are_up","tests.integration","2025-10-29","passed","2025-10-29","","test_charm","",""
+"
+    arrange: given charm in its initial state
+    act: configure a SAML target url and fire SAML authentication
+    assert: The SAML authentication process is executed successfully.
+    ","85775","test_saml_auth","tests.integration","2025-10-29","passed","2025-10-29","","test_saml","",""
+"
+        arrange: an email
+        act: when the _on_anonymize_user_action method is executed
+        assert: the indico command to anonymize the user is executed with the appropriate
+            parameters and the event results is set as expected
+        ","8","test_anonymize_user","tests.unit_harness","2025-10-29","passed","2025-10-29","TestActions","test_actions","",""

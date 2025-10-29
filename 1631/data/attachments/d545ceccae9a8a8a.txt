@@ -1,0 +1,2 @@
+[33mWARNING [0m charms.prometheus_k8s.v0.prometheus_scrape:prometheus_scrape.py:1452 2 containers are present in metadata.yaml and refresh_event was not specified. Defaulting to update_status. Metrics IP may not be set in a timely fashion.
+[32mINFO    [0m charms.data_platform_libs.v0.data_interfaces:data_interfaces.py:3861 database created at 2025-10-29 15:22:06.786002
