@@ -19,3 +19,8 @@ jobs:
       zap-target: localhost
       zap-target-port: 80
       zap-rules-file-name: "zap_rules.tsv"
+  allure-report:
+    if: always() && !cancelled()
+    needs:
+      - integration-tests
+    uses: canonical/operator-workflows/.github/workflows/allure_report.yaml@main
