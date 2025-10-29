@@ -1,0 +1,34 @@
+[32mINFO    [0m pytest_operator.plugin:plugin.py:806 Connecting to existing model github-pr-ea99b-microk8s:testing on unspecified cloud
+[32mINFO    [0m juju.model:model.py:1994 Deploying ch:amd64/jammy/redis-k8s-42
+[32mINFO    [0m juju.model:model.py:1994 Deploying ch:amd64/jammy/redis-k8s-42
+[32mINFO    [0m juju.model:model.py:1994 Deploying ch:amd64/focal/nginx-ingress-integrator-133
+[32mINFO    [0m juju.model:model.py:1994 Deploying ch:amd64/jammy/postgresql-k8s-684
+[32mINFO    [0m juju.model:model.py:1994 Deploying local:focal/indico-0
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  indico/0 [allocating] waiting: installing agent
+  postgresql-k8s/0 [allocating] waiting: installing agent
+  redis-broker/0 [allocating] waiting: installing agent
+  redis-cache/0 [allocating] waiting: installing agent
+  nginx-ingress-integrator/0 [allocating] waiting: installing agent
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  indico/0 [executing] maintenance: installing charm software
+  postgresql-k8s/0 [allocating] waiting: installing agent
+  redis-broker/0 [allocating] waiting: agent initializing
+  redis-cache/0 [allocating] waiting: agent initializing
+  nginx-ingress-integrator/0 [executing] maintenance: installing charm software
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  indico/0 [executing] waiting: Waiting for database availability
+  postgresql-k8s/0 [executing] maintenance: installing charm software
+  redis-broker/0 [executing] active: 
+  redis-cache/0 [executing] active: 
+  nginx-ingress-integrator/0 [idle] waiting: Waiting for ingress IP availability
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  indico/0 [idle] waiting: Waiting for database availability
+  postgresql-k8s/0 [executing] waiting: awaiting for cluster to start
+  nginx-ingress-integrator/0 [idle] active: Ingress IP(s): 127.0.0.1
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  indico/0 [idle] waiting: Waiting for database availability
+  postgresql-k8s/0 [executing] active: Primary
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  indico/0 [executing] maintenance: Adding indico layer to pebble
+  postgresql-k8s/0 [idle] active: Primary
