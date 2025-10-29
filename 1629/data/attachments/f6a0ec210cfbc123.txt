@@ -1,0 +1,24 @@
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller                Cloud/Region        Version  SLA          Timestamp
+testing  github-pr-69ea1-microk8s  microk8s/localhost  2.9.52   unsupported  09:42:31Z
+
+App                       Version  Status  Scale  Charm                     Channel      Rev  Address         Exposed  Message
+indico                    3.3.8    active      1  indico                                   0  10.152.183.21   no       
+nginx-ingress-integrator  24.2.0   active      1  nginx-ingress-integrator  latest/edge  133  10.152.183.146  no       Ingress IP(s): 127.0.0.1
+postgresql-k8s            14.19    active      1  postgresql-k8s            14/edge      684  10.152.183.123  no       
+redis-broker              7.2.5    active      1  redis-k8s                 latest/edge   42  10.152.183.223  no       
+redis-cache               7.2.5    active      1  redis-k8s                 latest/edge   42  10.152.183.77   no       
+
+Unit                         Workload  Agent  Address       Ports  Message
+indico/0*                    active    idle   10.1.181.139         
+nginx-ingress-integrator/0*  active    idle   10.1.181.137         Ingress IP(s): 127.0.0.1
+postgresql-k8s/0*            active    idle   10.1.181.145         Primary
+redis-broker/0*              active    idle   10.1.181.143         
+redis-cache/0*               active    idle   10.1.181.140         
+
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...
