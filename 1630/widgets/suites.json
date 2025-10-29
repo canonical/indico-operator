@@ -1,0 +1,1 @@
+{"total":2,"items":[{"uid":"a993e73a38f04e33a4c7d4e432d077a7","name":"tests.integration","statistic":{"failed":0,"broken":0,"skipped":0,"passed":9,"unknown":0,"total":9}},{"uid":"7d599ee987109884a744a77fdf367141","name":"tests.unit_harness","statistic":{"failed":0,"broken":0,"skipped":0,"passed":7,"unknown":0,"total":7}}]}
