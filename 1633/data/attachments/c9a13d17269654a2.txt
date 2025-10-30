@@ -1,0 +1,69 @@
+[32mINFO    [0m pytest_operator.plugin:plugin.py:806 Connecting to existing model github-pr-f3727-microk8s:testing on unspecified cloud
+[32mINFO    [0m juju.model:model.py:1994 Deploying ch:amd64/jammy/redis-k8s-42
+[32mINFO    [0m juju.model:model.py:1994 Deploying ch:amd64/jammy/redis-k8s-42
+[32mINFO    [0m juju.model:model.py:1994 Deploying ch:amd64/focal/nginx-ingress-integrator-133
+[32mINFO    [0m juju.model:model.py:1994 Deploying ch:amd64/jammy/postgresql-k8s-684
+[32mINFO    [0m juju.model:model.py:1994 Deploying local:focal/indico-0
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  indico/0 [allocating] waiting: installing agent
+  postgresql-k8s/0 [allocating] waiting: installing agent
+  redis-broker/0 [allocating] waiting: installing agent
+  redis-cache/0 [allocating] waiting: installing agent
+  nginx-ingress-integrator/0 [allocating] waiting: installing agent
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  indico/0 [executing] maintenance: installing charm software
+  postgresql-k8s/0 [allocating] waiting: installing agent
+  redis-broker/0 [executing] maintenance: installing charm software
+  redis-cache/0 [allocating] waiting: agent initializing
+  nginx-ingress-integrator/0 [executing] maintenance: installing charm software
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  indico/0 [executing] waiting: Waiting for database availability
+  postgresql-k8s/0 [executing] maintenance: installing charm software
+  redis-broker/0 [executing] active: 
+  redis-cache/0 [executing] active: 
+  nginx-ingress-integrator/0 [idle] active: Ingress IP(s): 127.0.0.1
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  indico/0 [idle] waiting: Waiting for database availability
+  postgresql-k8s/0 [executing] waiting: awaiting for cluster to start
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  indico/0 [idle] maintenance: Adding indico layer to pebble
+  postgresql-k8s/0 [idle] active: Primary
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  indico/0 [idle] active: 
+  postgresql-k8s/0 [idle] active: Primary
+[32mINFO    [0m juju.model:model.py:1994 Deploying ch:amd64/focal/loki-k8s-97
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  loki-k8s/0 [allocating] waiting: installing agent
+  indico/0 [executing] active: 
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  loki-k8s/0 [executing] maintenance: installing charm software
+  indico/0 [idle] active: 
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  indico/0 [idle] active:
+[32mINFO    [0m integration.test_loki:test_loki.py:30 loki IP: 10.1.181.151
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller                Cloud/Region        Version  SLA          Timestamp
+testing  github-pr-f3727-microk8s  microk8s/localhost  2.9.52   unsupported  09:28:13Z
+
+App                       Version  Status  Scale  Charm                     Channel      Rev  Address         Exposed  Message
+indico                    3.3.8    active      1  indico                                   0  10.152.183.198  no       
+loki-k8s                  2.9.15   active      1  loki-k8s                  1/edge        97  10.152.183.102  no       
+nginx-ingress-integrator  24.2.0   active      1  nginx-ingress-integrator  latest/edge  133  10.152.183.23   no       Ingress IP(s): 127.0.0.1
+postgresql-k8s            14.19    active      1  postgresql-k8s            14/edge      684  10.152.183.149  no       
+redis-broker              7.2.5    active      1  redis-k8s                 latest/edge   42  10.152.183.112  no       
+redis-cache               7.2.5    active      1  redis-k8s                 latest/edge   42  10.152.183.195  no       
+
+Unit                         Workload  Agent  Address       Ports  Message
+indico/0*                    active    idle   10.1.181.141         
+loki-k8s/0*                  active    idle   10.1.181.151         
+nginx-ingress-integrator/0*  active    idle   10.1.181.138         Ingress IP(s): 127.0.0.1
+postgresql-k8s/0*            active    idle   10.1.181.145         Primary
+redis-broker/0*              active    idle   10.1.181.139         
+redis-cache/0*               active    idle   10.1.181.142         
+
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...
