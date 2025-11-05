@@ -62,8 +62,8 @@ jobs:
         id: detect-scope
         if: steps.check-exempt.outputs.exempt != 'true'
         run: |
-          python3 << 'EOF'
-          import sys
+          # Run detection logic and capture output
+          python3 << 'EOF' >> $GITHUB_OUTPUT
           import re
           from pathlib import Path
           
@@ -100,66 +100,6 @@ jobs:
           
           # Read changed files
           changed_files = Path('changed_files.txt').read_text().strip().split('\n')
-          changed_files = [f for f in changed_files if f]  # Remove empty lines
-          
-          requires_artifact = False
-          in_scope_files = []
-          
-          for file_path in changed_files:
-              # Skip exempt files
-              if matches_pattern(file_path, EXEMPT_PATTERNS):
-                  continue
-              
-              # Check if in scope
-              if matches_pattern(file_path, IN_SCOPE_PATTERNS):
-                  requires_artifact = True
-                  in_scope_files.append(file_path)
-          
-          # Write output
-          if requires_artifact:
-              print("requires_artifact=true", file=sys.stdout)
-              print("in_scope_files=" + ",".join(in_scope_files), file=sys.stdout)
-              sys.exit(0)
-          else:
-              print("requires_artifact=false", file=sys.stdout)
-              sys.exit(0)
-          EOF
-          
-          # Capture output
-          RESULT=$(python3 << 'EOF'
-          import sys
-          import re
-          from pathlib import Path
-          
-          IN_SCOPE_PATTERNS = [
-              r'^src/.*\.py$',
-              r'^lib/charms/.*\.py$',
-              r'^config\.yaml$',
-              r'^actions\.yaml$',
-              r'^metadata\.yaml$',
-              r'^charmcraft\.yaml$',
-              r'.*rockcraft\.yaml$',
-              r'^requirements\.txt$',
-              r'^pyproject\.toml$',
-              r'^\.github/workflows/.*\.yaml$',
-              r'^tox\.ini$',
-              r'^Makefile$'
-          ]
-          
-          EXEMPT_PATTERNS = [
-              r'^docs/.*',
-              r'^tests/.*',
-              r'.*\.md$',
-              r'^\.gitignore$',
-              r'^\.editorconfig$',
-              r'^renovate\.json$',
-              r'^\.github/agents/.*'
-          ]
-          
-          def matches_pattern(file_path, patterns):
-              return any(re.match(pattern, file_path) for pattern in patterns)
-          
-          changed_files = Path('changed_files.txt').read_text().strip().split('\n')
           changed_files = [f for f in changed_files if f]
           
           requires_artifact = False
@@ -172,16 +112,13 @@ jobs:
                   requires_artifact = True
                   in_scope_files.append(file_path)
           
+          # Output to GITHUB_OUTPUT
           if requires_artifact:
               print(f"requires_artifact=true")
               print(f"in_scope_files={','.join(in_scope_files)}")
           else:
               print(f"requires_artifact=false")
           EOF
-          )
-          
-          echo "$RESULT" >> $GITHUB_OUTPUT
-          echo "Detection result: $RESULT"
       
       - name: Check artifact exists
         id: check-artifact
@@ -202,10 +139,9 @@ jobs:
         id: validate-schema
         if: steps.check-artifact.outputs.exists == 'true'
         run: |
-          python3 << 'EOF'
+          # Run validation and write results directly to output and file
+          python3 << 'EOF' | tee validation_output.txt >> $GITHUB_OUTPUT
           import yaml
-          import sys
-          from pathlib import Path
           
           artifact_path = "${{ steps.check-artifact.outputs.path }}"
           
@@ -222,83 +158,6 @@ jobs:
                   errors.append(f"Invalid schema_version: {artifact['schema_version']} (must be 1)")
               
               # Validate changes array
-              if 'changes' not in artifact:
-                  errors.append("Missing required field: changes")
-              elif not isinstance(artifact['changes'], list) or len(artifact['changes']) == 0:
-                  errors.append("Field 'changes' must be a non-empty array")
-              else:
-                  for i, change in enumerate(artifact['changes']):
-                      # Validate required fields
-                      required_fields = ['title', 'author', 'type', 'description', 'urls', 'visibility', 'highlight']
-                      for field in required_fields:
-                          if field not in change:
-                              errors.append(f"changes[{i}]: Missing required field: {field}")
-                      
-                      # Validate field values
-                      if 'title' in change:
-                          if not change['title'] or len(change['title']) < 10:
-                              errors.append(f"changes[{i}].title: Too short (min 10 characters)")
-                      
-                      if 'type' in change:
-                          valid_types = ['minor', 'major', 'breaking', 'security', 'bugfix']
-                          if change['type'] not in valid_types:
-                              errors.append(f"changes[{i}].type: Invalid value '{change['type']}' (must be one of: {', '.join(valid_types)})")
-                      
-                      if 'description' in change:
-                          if not change['description'] or len(change['description']) < 20:
-                              errors.append(f"changes[{i}].description: Too short (min 20 characters)")
-                      
-                      if 'visibility' in change:
-                          if change['visibility'] not in ['public', 'internal']:
-                              errors.append(f"changes[{i}].visibility: Invalid value '{change['visibility']}' (must be 'public' or 'internal')")
-                      
-                      if 'urls' in change:
-                          if 'pr' not in change['urls']:
-                              errors.append(f"changes[{i}].urls: Missing required field: pr")
-              
-              if errors:
-                  print(f"valid=false")
-                  print(f"errors<<EOF")
-                  for error in errors:
-                      print(error)
-                  print("EOF")
-                  sys.exit(0)
-              else:
-                  print(f"valid=true")
-                  sys.exit(0)
-          
-          except yaml.YAMLError as e:
-              print(f"valid=false")
-              print(f"errors<<EOF")
-              print(f"YAML parse error: {e}")
-              print("EOF")
-              sys.exit(0)
-          except Exception as e:
-              print(f"valid=false")
-              print(f"errors<<EOF")
-              print(f"Validation error: {e}")
-              print("EOF")
-              sys.exit(0)
-          EOF
-          
-          # Capture output properly
-          VALIDATION_OUTPUT=$(python3 << 'PYEOF'
-          import yaml
-          import sys
-          
-          artifact_path = "${{ steps.check-artifact.outputs.path }}"
-          
-          try:
-              with open(artifact_path, 'r') as f:
-                  artifact = yaml.safe_load(f)
-              
-              errors = []
-              
-              if 'schema_version' not in artifact:
-                  errors.append("Missing required field: schema_version")
-              elif artifact['schema_version'] != 1:
-                  errors.append(f"Invalid schema_version: {artifact['schema_version']} (must be 1)")
-              
               if 'changes' not in artifact:
                   errors.append("Missing required field: changes")
               elif not isinstance(artifact['changes'], list) or len(artifact['changes']) == 0:
@@ -327,10 +186,11 @@ jobs:
                       if 'urls' in change and 'pr' not in change['urls']:
                           errors.append(f"changes[{i}].urls: Missing required field: pr")
               
+              # Write results
               if errors:
                   print("valid=false")
                   print(f"error_count={len(errors)}")
-                  # Write errors to a file for multi-line output
+                  # Write errors to file for later use
                   with open('validation_errors.txt', 'w') as f:
                       f.write('\n'.join(errors))
               else:
@@ -341,10 +201,7 @@ jobs:
               print("error_count=1")
               with open('validation_errors.txt', 'w') as f:
                   f.write(f"Validation error: {str(e)}")
-          PYEOF
-          )
-          
-          echo "$VALIDATION_OUTPUT" >> $GITHUB_OUTPUT
+          EOF
       
       - name: Create status comment
         if: always()
