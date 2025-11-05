@@ -1,0 +1,37 @@
+# Automation Test Agent Configuration
+# This agent configuration is used to validate automation workflows
+# and repository permissions for the canonical/indico-operator repository.
+
+name: automation-test-agent
+version: 1.0.0
+description: |
+  Test agent for validating automated workflows including issue creation,
+  assignment, branch protection, and PR operations.
+
+capabilities:
+  - issue_creation
+  - issue_assignment
+  - branch_creation
+  - pull_request_creation
+  - repository_write
+
+metadata:
+  created: 2025-11-05
+  purpose: Validate automation flows and repository configuration
+  test_scope:
+    - Direct collaborator access validation
+    - Branch protection rules compliance (gh-pages, main, copilot/**)
+    - Automated issue and PR workflows
+  
+permissions_tested:
+  - read: true
+  - write: true
+  - issues: true
+  - pull_requests: true
+  
+validation_checklist:
+  - Automated issues can be successfully created
+  - Issues can be properly assigned
+  - Branches can be created following protection rules
+  - Changes can be pushed to feature branches
+  - Pull requests can be opened successfully
