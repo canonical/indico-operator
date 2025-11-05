@@ -1,0 +1,440 @@
+name: Drift Detection
+
+on:
+  # Manual trigger via label
+  issues:
+    types: [labeled]
+  pull_request:
+    types: [labeled]
+  
+  # Scheduled weekly scan
+  schedule:
+    - cron: '0 0 * * 0'  # Sunday at midnight UTC
+  
+  # Manual workflow dispatch
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Operation mode'
+        required: true
+        type: choice
+        options:
+          - dry-run
+          - report
+          - auto-fix
+        default: 'dry-run'
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  check-trigger:
+    name: Check Drift Detection Trigger
+    runs-on: ubuntu-latest
+    outputs:
+      should_run: ${{ steps.check.outputs.should_run }}
+      mode: ${{ steps.check.outputs.mode }}
+      issue_number: ${{ steps.check.outputs.issue_number }}
+    steps:
+      - name: Check trigger condition
+        id: check
+        run: |
+          # Default to not running
+          echo "should_run=false" >> $GITHUB_OUTPUT
+          echo "mode=dry-run" >> $GITHUB_OUTPUT
+          
+          # Check if triggered by schedule
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            echo "should_run=true" >> $GITHUB_OUTPUT
+            echo "mode=report" >> $GITHUB_OUTPUT
+            echo "Triggered by schedule"
+          fi
+          
+          # Check if triggered by workflow_dispatch
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "should_run=true" >> $GITHUB_OUTPUT
+            echo "mode=${{ github.event.inputs.mode }}" >> $GITHUB_OUTPUT
+            echo "Triggered by manual dispatch"
+          fi
+          
+          # Check if triggered by label on issue or PR
+          if [ "${{ github.event_name }}" = "issues" ] || [ "${{ github.event_name }}" = "pull_request" ]; then
+            LABEL="${{ github.event.label.name }}"
+            if [ "$LABEL" = "agent:drift" ]; then
+              echo "should_run=true" >> $GITHUB_OUTPUT
+              echo "mode=report" >> $GITHUB_OUTPUT
+              
+              if [ "${{ github.event_name }}" = "issues" ]; then
+                echo "issue_number=${{ github.event.issue.number }}" >> $GITHUB_OUTPUT
+              else
+                echo "issue_number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
+              fi
+              
+              echo "Triggered by label on issue/PR"
+            fi
+          fi
+
+  drift-detection:
+    name: Detect and Report Drift
+    runs-on: ubuntu-latest
+    needs: check-trigger
+    if: needs.check-trigger.outputs.should_run == 'true'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install PyYAML pyyaml-include
+      
+      - name: Parse charm code
+        id: parse-charm
+        run: |
+          python3 << 'EOF'
+          import re
+          import ast
+          from pathlib import Path
+          import json
+          
+          # Parse src/charm.py for event handlers
+          charm_file = Path('src/charm.py')
+          if not charm_file.exists():
+              print("Charm file not found")
+              exit(0)
+          
+          content = charm_file.read_text()
+          
+          # Find event observers
+          # Pattern: self.framework.observe(self.on.EVENT, self._handler)
+          event_pattern = r'self\.framework\.observe\(self\.on\.(\w+),\s*self\.(\w+)\)'
+          events = re.findall(event_pattern, content)
+          
+          # Find relation observers
+          # Pattern: self.framework.observe(self.RELATION.on.EVENT, self._handler)
+          relation_pattern = r'self\.framework\.observe\(self\.(\w+)\.(?:charm\.)?on\.(\w+),\s*self\.(\w+)\)'
+          relations = re.findall(relation_pattern, content)
+          
+          result = {
+              'event_handlers': [{'event': e[0], 'handler': e[1]} for e in events],
+              'relation_handlers': [{'relation': r[0], 'event': r[1], 'handler': r[2]} for r in relations]
+          }
+          
+          with open('charm_handlers.json', 'w') as f:
+              json.dump(result, f, indent=2)
+          
+          print(f"Found {len(events)} event handlers and {len(relations)} relation handlers")
+          EOF
+      
+      - name: Parse configuration files
+        id: parse-config
+        run: |
+          python3 << 'EOF'
+          import yaml
+          import json
+          from pathlib import Path
+          
+          result = {
+              'config_options': [],
+              'actions': [],
+              'relations': []
+          }
+          
+          # Parse config.yaml
+          config_file = Path('config.yaml')
+          if config_file.exists():
+              config = yaml.safe_load(config_file.read_text())
+              if config and 'options' in config:
+                  result['config_options'] = list(config['options'].keys())
+          
+          # Parse actions.yaml
+          actions_file = Path('actions.yaml')
+          if actions_file.exists():
+              actions = yaml.safe_load(actions_file.read_text())
+              if actions:
+                  result['actions'] = list(actions.keys())
+          
+          # Parse metadata.yaml
+          metadata_file = Path('metadata.yaml')
+          if metadata_file.exists():
+              metadata = yaml.safe_load(metadata_file.read_text())
+              if metadata:
+                  if 'requires' in metadata:
+                      result['relations'].extend([{'name': k, 'type': 'requires'} for k in metadata['requires'].keys()])
+                  if 'provides' in metadata:
+                      result['relations'].extend([{'name': k, 'type': 'provides'} for k in metadata['provides'].keys()])
+          
+          with open('config_data.json', 'w') as f:
+              json.dump(result, f, indent=2)
+          
+          print(f"Found {len(result['config_options'])} config options, {len(result['actions'])} actions, {len(result['relations'])} relations")
+          EOF
+      
+      - name: Scan test files
+        id: scan-tests
+        run: |
+          python3 << 'EOF'
+          import re
+          import json
+          from pathlib import Path
+          
+          test_functions = []
+          
+          # Scan tests directory
+          for test_file in Path('tests').rglob('test_*.py'):
+              content = test_file.read_text()
+              # Find test functions
+              test_pattern = r'def (test_\w+)\('
+              tests = re.findall(test_pattern, content)
+              for test in tests:
+                  test_functions.append({
+                      'file': str(test_file),
+                      'function': test
+                  })
+          
+          with open('test_data.json', 'w') as f:
+              json.dump(test_functions, f, indent=2)
+          
+          print(f"Found {len(test_functions)} test functions")
+          EOF
+      
+      - name: Scan documentation
+        id: scan-docs
+        run: |
+          python3 << 'EOF'
+          import json
+          from pathlib import Path
+          
+          doc_files = []
+          doc_content = {}
+          
+          # Scan docs directory
+          for doc_file in Path('docs').rglob('*.md'):
+              content = doc_file.read_text().lower()
+              doc_files.append(str(doc_file))
+              doc_content[str(doc_file)] = content
+          
+          with open('doc_data.json', 'w') as f:
+              json.dump({'files': doc_files, 'content': doc_content}, f, indent=2)
+          
+          print(f"Found {len(doc_files)} documentation files")
+          EOF
+      
+      - name: Detect drift
+        id: detect-drift
+        run: |
+          python3 << 'EOF'
+          import json
+          from pathlib import Path
+          
+          # Load parsed data
+          with open('charm_handlers.json', 'r') as f:
+              charm_data = json.load(f)
+          
+          with open('config_data.json', 'r') as f:
+              config_data = json.load(f)
+          
+          with open('test_data.json', 'r') as f:
+              test_data = json.load(f)
+          
+          with open('doc_data.json', 'r') as f:
+              doc_data = json.load(f)
+          
+          drift_items = []
+          test_names = [t['function'] for t in test_data]
+          doc_content_combined = ' '.join(doc_data['content'].values())
+          
+          # Check event handler coverage
+          for handler in charm_data['event_handlers']:
+              event_name = handler['event']
+              handler_name = handler['handler']
+              
+              # Check if test exists for this handler
+              has_test = any(event_name.replace('_', '') in test.replace('_', '') for test in test_names)
+              
+              if not has_test:
+                  drift_items.append({
+                      'severity': 'high',
+                      'category': 'missing_test',
+                      'item': f"Event handler '{handler_name}' for event '{event_name}'",
+                      'recommendation': f"Add test function 'test_{event_name}' in tests/integration/ or tests/unit/"
+                  })
+          
+          # Check config option documentation
+          for option in config_data['config_options']:
+              # Simple check if option is mentioned in docs
+              if option.lower() not in doc_content_combined:
+                  drift_items.append({
+                      'severity': 'medium',
+                      'category': 'missing_doc',
+                      'item': f"Config option '{option}'",
+                      'recommendation': f"Document '{option}' in docs/reference/ or docs/explanation/"
+                  })
+          
+          # Check action documentation
+          for action in config_data['actions']:
+              # Simple check if action is mentioned in docs
+              if action.lower().replace('-', '') not in doc_content_combined.replace('-', ''):
+                  drift_items.append({
+                      'severity': 'medium',
+                      'category': 'missing_doc',
+                      'item': f"Action '{action}'",
+                      'recommendation': f"Add how-to guide for '{action}' action in docs/how-to/"
+                  })
+          
+          # Check relation test coverage
+          for relation in config_data['relations']:
+              rel_name = relation['name']
+              # Check if relation has tests
+              has_test = any(rel_name.replace('-', '').replace('_', '') in test.replace('_', '') for test in test_names)
+              
+              if not has_test:
+                  drift_items.append({
+                      'severity': 'high',
+                      'category': 'missing_test',
+                      'item': f"Relation '{rel_name}' ({relation['type']})",
+                      'recommendation': f"Add integration test for '{rel_name}' relation in tests/integration/"
+                  })
+          
+          with open('drift_report.json', 'w') as f:
+              json.dump(drift_items, f, indent=2)
+          
+          # Calculate summary
+          critical = sum(1 for item in drift_items if item['severity'] == 'critical')
+          high = sum(1 for item in drift_items if item['severity'] == 'high')
+          medium = sum(1 for item in drift_items if item['severity'] == 'medium')
+          low = sum(1 for item in drift_items if item['severity'] == 'low')
+          
+          print(f"Drift items found: {len(drift_items)} (Critical: {critical}, High: {high}, Medium: {medium}, Low: {low})")
+          EOF
+      
+      - name: Generate drift report
+        id: generate-report
+        run: |
+          python3 << 'EOF'
+          import json
+          from datetime import datetime
+          
+          with open('drift_report.json', 'r') as f:
+              drift_items = json.load(f)
+          
+          # Group by category
+          by_category = {}
+          for item in drift_items:
+              category = item['category']
+              if category not in by_category:
+                  by_category[category] = []
+              by_category[category].append(item)
+          
+          # Generate markdown report
+          report = f"""# Drift Detection Report
+
+**Date**: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC
+**Branch**: {{% raw %}${{ github.ref_name }}{{% endraw %}}
+**Mode**: {{% raw %}${{ needs.check-trigger.outputs.mode }}{{% endraw %}}
+
+## Summary
+
+- **Total drift items**: {len(drift_items)}
+- **Critical**: {sum(1 for i in drift_items if i['severity'] == 'critical')}
+- **High**: {sum(1 for i in drift_items if i['severity'] == 'high')}
+- **Medium**: {sum(1 for i in drift_items if i['severity'] == 'medium')}
+- **Low**: {sum(1 for i in drift_items if i['severity'] == 'low')}
+
+## Findings
+
+"""
+          
+          category_names = {
+              'missing_test': 'Missing Test Coverage',
+              'missing_doc': 'Missing Documentation'
+          }
+          
+          severity_emoji = {
+              'critical': '🔴',
+              'high': '🟠',
+              'medium': '🟡',
+              'low': '🟢'
+          }
+          
+          for category, items in by_category.items():
+              report += f"### {category_names.get(category, category)}\n\n"
+              
+              for item in items:
+                  emoji = severity_emoji.get(item['severity'], '⚪')
+                  report += f"**{emoji} {item['severity'].upper()}**: {item['item']}\n"
+                  report += f"- **Recommendation**: {item['recommendation']}\n\n"
+          
+          report += """## Next Steps
+
+1. Review findings and prioritize by severity
+2. Address critical and high severity items first
+3. Create issues or PRs to resolve drift
+4. Re-run drift detection after fixes
+
+---
+*Generated by Drift Detection Agent v1.0.0*
+*For more information, see `.github/agents/drift-agent.md`*
+"""
+          
+          with open('drift_report.md', 'w') as f:
+              f.write(report)
+          
+          print("Report generated successfully")
+          EOF
+      
+      - name: Post report as issue comment or new issue
+        if: always()
+        uses: actions/github-script@v7
+        env:
+          ISSUE_NUMBER: ${{ needs.check-trigger.outputs.issue_number }}
+          MODE: ${{ needs.check-trigger.outputs.mode }}
+        with:
+          script: |
+            const fs = require('fs');
+            const issueNumber = process.env.ISSUE_NUMBER;
+            const mode = process.env.MODE;
+            
+            // Read drift report
+            let report = '';
+            try {
+              report = fs.readFileSync('drift_report.md', 'utf8');
+            } catch (e) {
+              report = '# Drift Detection Report\n\nNo drift detected or error occurred during analysis.';
+            }
+            
+            // If triggered by label, comment on the issue/PR
+            if (issueNumber) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: parseInt(issueNumber),
+                body: report
+              });
+            } else if (context.eventName === 'schedule' || context.eventName === 'workflow_dispatch') {
+              // Create new issue for scheduled/manual runs
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `Drift Detection Report - ${new Date().toISOString().split('T')[0]}`,
+                body: report,
+                labels: ['automation', 'drift-detection']
+              });
+            }
+      
+      - name: Create auto-fix PR
+        if: needs.check-trigger.outputs.mode == 'auto-fix'
+        run: |
+          echo "Auto-fix mode is not yet fully implemented"
+          echo "This would create a PR with test scaffolds and documentation templates"
+          echo "For now, manual fixes are required based on the drift report"
