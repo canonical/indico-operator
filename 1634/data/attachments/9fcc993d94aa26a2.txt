@@ -1,0 +1,4 @@
+[1m[31mERROR   [0m asyncio:base_events.py:1758 Task was destroyed but it is pending!
+task: <Task pending name='Task-3710' coro=<Connection.reconnect() done, defined at /home/runner/work/indico-operator/indico-operator/.tox/integration/lib/python3.10/site-packages/juju/client/connection.py:742> wait_for=<Future pending cb=[Task.task_wakeup()]>>
+[33mWARNING [0m charms.prometheus_k8s.v0.prometheus_scrape:prometheus_scrape.py:1452 2 containers are present in metadata.yaml and refresh_event was not specified. Defaulting to update_status. Metrics IP may not be set in a timely fashion.
+[32mINFO    [0m charms.data_platform_libs.v0.data_interfaces:data_interfaces.py:3906 database created at 2025-11-05 11:34:27.602559

@@ -1,0 +1,82 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"
+        arrange: an email
+        act: when the _on_anonymize_user_action method is executed
+        assert: the indico command to anonymize the user is executed with the appropriate
+            parameters and the event results is set as expected
+        ","9","test_anonymize_user_fail","tests.unit_harness","2025-11-05","passed","2025-11-05","TestActions","test_actions","",""
+"
+        arrange: an email
+        act: when the _on_anonymize_user_action method is executed
+        assert: the indico command to anonymize the user is executed with the appropriate
+            parameters and the event results is set as expected
+        ","8","test_anonymize_user","tests.unit_harness","2025-11-05","passed","2025-11-05","TestActions","test_actions","",""
+"
+    arrange: given charm in its initial state
+    act: when the metrics endpoints are scraped
+    assert: the response is 200 (HTTP OK)
+    ","1548","test_prom_exporters_are_up","tests.integration","2025-11-05","passed","2025-11-05","","test_charm","",""
+"
+        arrange: an list of 5 emails
+        act: when the _on_anonymize_user_action method is executed
+        assert: the indico command to anonymize the user is executed with the appropriate
+            parameters and the event results is set as expected
+        ","8","test_anonymize_user_list","tests.unit_harness","2025-11-05","passed","2025-11-05","TestActions","test_actions","",""
+"
+    arrange: given charm integrated with S3.
+    act: do nothing.
+    assert: the pebble plan matches the S3 values as configured by the integrator.
+    ","4305","test_s3","tests.integration","2025-11-05","passed","2025-11-05","","test_s3","",""
+"
+        arrange: an email and a password
+        act: when the _on_add_admin_action method is executed
+        assert: the indico command to add the user is executed with the appropriate parameters.
+        ","35","test_add_admin","tests.unit_harness","2025-11-05","passed","2025-11-05","TestActions","test_actions","",""
+"Runs health checks for each container.
+
+    Assume that the charm has already been built and is running.
+    ","2365","test_health_checks","tests.integration","2025-11-05","passed","2025-11-05","","test_charm","",""
+"
+        arrange: an email and a password
+        act: when the _on_add_admin_action method is executed
+        assert: the indico command to add the user is executed with the appropriate parameters.
+        ","36","test_add_admin_fail","tests.unit_harness","2025-11-05","passed","2025-11-05","TestActions","test_actions","",""
+"
+    arrange: given charm integrated with Loki.
+    act: do nothing.
+    assert: Loki starts to receive log files from indico.
+    ","363","test_loki","tests.integration","2025-11-05","passed","2025-11-05","","test_loki","",""
+"
+        arrange: an list of 51 emails
+        act: when the _on_anonymize_user_action method is executed
+        assert: the indico command to anonymize the user is executed with the appropriate
+            parameters and the event results is set as expected
+        ","8","test_anonymize_user_maximum_reached","tests.unit_harness","2025-11-05","passed","2025-11-05","TestActions","test_actions","",""
+"
+    arrange: admin user created
+    act: run the anonymize-user action
+    assert: check the output in the action result
+    ","12741","test_anonymize_user","tests.integration","2025-11-05","passed","2025-11-05","","test_actions","",""
+"
+    arrange: admin user created
+    act: run the anonymize-user action
+    assert: check the output in the action result
+    ","18248","test_anonymize_user_fail","tests.integration","2025-11-05","passed","2025-11-05","","test_actions","",""
+"Check that the charm is active.
+
+    Assume that the charm has already been built and is running.
+    ","0","test_active","tests.integration","2025-11-05","passed","2025-11-05","","test_charm","",""
+"
+        arrange: charm created and relations established
+        act: configure the external resources and trigger the refresh action
+        assert: the customization sources are pulled and the plugins upgraded
+        ","10","test_refresh_external_resources_when_customization_and_plugins_set","tests.unit_harness","2025-11-05","passed","2025-11-05","TestActions","test_actions","",""
+"Check that the bootstrap page is reachable.
+
+    Assume that the charm has already been built and is running.
+    ","270","test_indico_is_up","tests.integration","2025-11-05","passed","2025-11-05","","test_charm","",""
+"
+    arrange: given charm in its initial state
+    act: configure a SAML target url and fire SAML authentication
+    assert: The SAML authentication process is executed successfully.
+    ","102843","test_saml_auth","tests.integration","2025-11-05","passed","2025-11-05","","test_saml","",""
