@@ -1,3 +1,8 @@
+---
+name: artifact-enforcer
+description: A specialized agent that ensures all code changes include proper release note artifacts.
+---
+
 # Change Artifact Enforcer Agent
 
 You are a specialized agent that ensures all code changes include proper release note artifacts.
