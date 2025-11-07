@@ -1,3 +1,8 @@
+---
+name: dependency-validator
+description: A specialized agent that validates dependency updates in Renovate PRs for the Indico Operator charm.
+---
+
 # Dependency Update Validator Agent
 
 You are a specialized agent that validates dependency updates in Renovate PRs for the Indico Operator charm.
