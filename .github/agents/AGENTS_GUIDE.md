@@ -82,9 +82,15 @@ Three specialized agents help maintain release and engineering hygiene:
 
 **Risk levels**:
 - 🟢 **Low**: Patch bump, no issues, CI passed → Safe to merge
-- 🟡 **Medium**: Minor bump, no major issues → Review recommended
-- 🟠 **High**: Major bump or concerns → Careful review required
-- 🔴 **Critical**: Vulnerabilities or failures → Do not merge
+- 🟡 **Medium**: Minor bump, no major issues → Review recommended  
+- 🟠 **High**: Major bump, breaking changes, or concerns → Careful review required
+- 🔴 **Critical**: Vulnerabilities, DB schema changes, or failures → Do not merge
+
+**Breaking changes detection**:
+- Scans upstream release notes for breaking changes
+- Checks for database schema changes (especially with `workload-update` label)
+- Flags migrations, API changes, and incompatible updates
+- Works with Renovate labels like `workload-update` for enhanced checking
 
 ### Change Artifact Enforcer Agent
 
@@ -211,6 +217,31 @@ Common issues:
 - **Agent definitions**: See `.github/agents/*.md` for agent specifications
 - **Issues**: Report agent problems with label `automation`
 - **Questions**: Ask in PR comments or repository discussions
+
+## Agent File Format
+
+All agent definition files in `.github/agents/` follow GitHub Copilot's standard format with YAML frontmatter:
+
+```markdown
+---
+name: agent-name
+description: Brief description of what the agent does
+tools:
+  - read_file
+  - search_code
+  - list_files
+---
+
+# Agent Instructions
+...markdown content with agent directives...
+```
+
+**YAML Frontmatter Fields**:
+- `name`: Unique identifier for the agent (used for @mentions)
+- `description`: Brief summary of agent capabilities
+- `tools`: List of available tools the agent can use (read_file, search_code, run_command, etc.)
+
+**Agent Instructions**: The markdown body contains the agent's directives, constraints, and behavioral instructions.
 
 ## Architecture Notes
 
