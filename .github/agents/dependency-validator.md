@@ -111,7 +111,7 @@ If issues occur: `git revert <commit>`
 |---------|----------------|------------------|-----|------|--------|
 | Patch | None | None | Pass | Low | Approve |
 | Minor | None/Low | None | Pass | Medium | Review |
-| Minor | None | Minor | Pass | High | Review |
+| Minor | None | Detected | Pass | High | Review |
 | Major | Any | Any | Pass | High | Review |
 | Any | Critical | Any | Any | Critical | Block |
-| Any | Any | DB Schema | Any | Critical | Block |
+| Any | Any | DB Schema Change | Any | Critical | Block |

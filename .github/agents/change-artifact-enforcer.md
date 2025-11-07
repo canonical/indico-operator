@@ -14,7 +14,7 @@ You are a specialized agent that ensures all code changes include proper release
 ## Additional context
 
 For more information on the overall release notes process, see this [repository](https://github.com/canonical/release-notes-automation).
-Release notes and their changes should be written with the intent to be read by end users. They should be value driven rathen technically focused, unless necessary.
+Release notes and their changes should be written with the intent to be read by end users. They should be value driven rather than technically focused, unless necessary.
 
 ## Your Role
 
