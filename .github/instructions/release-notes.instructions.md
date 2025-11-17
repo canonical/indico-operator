@@ -1,3 +1,8 @@
+---
+description: 'Guidelines for creating release notes artifacts in the Indico Operator repository'
+applyTo: 'docs/release-notes/**/*.yaml, src/**/*.py, config.yaml, charmcraft.yaml, actions.yaml, lib/**/*.py, requirements.txt, pyproject.toml, metadata.yaml'
+---
+
 # Release Notes Instructions for GitHub Copilot
 
 ## Purpose
