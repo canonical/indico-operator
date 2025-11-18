@@ -34,7 +34,7 @@ tox -e static   # Bandit security scan (4-5s)
 
 **Docs**: `docs/` (index, tutorial, how-to, reference, explanation, release-notes)
 
-**Other**: `terraform/` (deployment), `load_tests/`, `lib/charms/` (vendored charm libraries - external, auto-updated)
+**Other**: `terraform/` (deployment), `load_tests/`, `lib/charms/` (vendored charm libraries)
 
 ## CI Workflows (PR triggers)
 
@@ -81,19 +81,6 @@ tox -e static   # Bandit security scan (4-5s)
 ## Release Notes
 
 Artifacts: `docs/release-notes/artifacts/` | Output: `docs/release-notes/releases/` | Template: `docs/release-notes/template/release-template.md.j2`
-
-## Charm Libraries (lib/charms/)
-
-**CRITICAL**: Files in `lib/charms/` are **vendored external dependencies**, auto-updated via `.github/workflows/auto_update_libs.yaml`.
-
-**When reviewing PRs that update charm libraries**:
-- **DO NOT** comment on the library code itself (we cannot modify external code)
-- **DO** analyze if library changes impact our charm's usage:
-  - Check how `src/charm.py` and observers use the updated library
-  - Identify breaking changes in APIs we call
-  - Flag deprecated methods/classes we're using
-  - Highlight new parameters or behavior changes affecting our code
-- **Focus on integration points**: relation handlers, event observers, config usage
 
 ## Important Notes
 

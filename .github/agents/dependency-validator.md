@@ -78,11 +78,60 @@ Post a comment with:
 If issues occur: `git revert <commit>`
 ```
 
+## Special Case: Charm Library Updates (lib/charms/)
+
+**CRITICAL**: Files in `lib/charms/` are **vendored external dependencies**, auto-updated via `.github/workflows/auto_update_libs.yaml`.
+
+When reviewing PRs that update charm libraries:
+
+### What NOT to Do
+- **DO NOT** comment on the library code itself (we cannot modify external code)
+- **DO NOT** suggest changes to library files
+- **DO NOT** critique coding style in vendored libraries
+
+### What TO Do
+- **DO** analyze if library changes impact our charm's usage:
+  - Check how `src/charm.py` uses the updated library
+  - Check how observer files (`src/*_observer.py`) use the library
+  - Identify breaking changes in APIs we call
+  - Flag deprecated methods/classes we're using
+  - Highlight new parameters or behavior changes affecting our code
+- **Focus on integration points**: relation handlers, event observers, config usage
+- **Provide upgrade guidance**: Suggest code changes needed in our charm to adapt to library updates
+
+### Review Template for Charm Libraries
+
+```markdown
+## 🔗 Charm Library Update Impact Analysis
+
+**Library**: [lib/charms/package/version/module.py]
+**Version Change**: X.Y → A.B
+
+### Our Usage Analysis
+- ✅ No impact - we don't use changed APIs
+- ⚠️ Potential impact - review needed
+- 🚨 Breaking change - our code needs updates
+
+### Integration Points
+- `src/charm.py` line X: uses `library.method()`
+- `src/database_observer.py` line Y: depends on `library.Class`
+
+### Required Actions
+- [ ] Update `src/charm.py` to use new API
+- [ ] Test relation events with updated library
+- [ ] Update integration tests if needed
+
+### Recommendation
+✅ Safe to merge after integration review
+⚠️ Code changes required - see action items
+```
+
 ## Constraints
 
 - Do NOT auto-merge PRs
 - Do NOT approve PRs directly
 - Focus on Python dependencies and charm libraries
+- For charm libraries: analyze integration impact, not library code
 - Provide actionable recommendations
 - Include rollback instructions
 
