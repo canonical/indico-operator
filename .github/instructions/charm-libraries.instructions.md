@@ -57,7 +57,7 @@ Files in `lib/charms/` are **vendored external dependencies** that are auto-upda
 
 ## Review Template
 
-When reviewing a charm library PR, structure your feedback as:
+When reviewing a charm library PR, structure your feedback to follow **exactly** this template:
 
 ```markdown
 ## Charm Library Update Impact Analysis
@@ -86,8 +86,6 @@ When reviewing a charm library PR, structure your feedback as:
 ⚠️ Code changes required - see action items above
 🚨 Breaking changes - significant refactoring needed
 ```
-
-**Important**: After producing the feedback in the required structure, post the feedback as a GitHub pull request review comment on the PR that triggered the review (use event: COMMENT).
 
 ## Examples
 
