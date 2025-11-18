@@ -1,0 +1,15 @@
+[33mWARNING [0m charms.prometheus_k8s.v0.prometheus_scrape:prometheus_scrape.py:1452 2 containers are present in metadata.yaml and refresh_event was not specified. Defaulting to update_status. Metrics IP may not be set in a timely fashion.
+[32mINFO    [0m charms.data_platform_libs.v0.data_interfaces:data_interfaces.py:3861 database created at 2025-11-18 05:06:27.086315
+[31m[1mERROR   [0m charm:charm.py:910 Action add-admin failed: CRASH
+Traceback (most recent call last):
+  File "/home/runner/work/indico-operator/indico-operator/src/charm.py", line 907, in _add_admin_action
+    output = process.wait_output()
+  File "/usr/lib/python3.10/unittest/mock.py", line 1114, in __call__
+    return self._mock_call(*args, **kwargs)
+  File "/usr/lib/python3.10/unittest/mock.py", line 1118, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+  File "/usr/lib/python3.10/unittest/mock.py", line 1179, in _execute_mock_call
+    result = effect(*args, **kwargs)
+  File "/home/runner/work/indico-operator/indico-operator/tests/unit_harness/test_actions.py", line 146, in mock_wo_side_effect
+    raise ExecError(command=mock_wo.cmd, exit_code=42, stdout=stdout_mock, stderr="")
+ops.pebble.ExecError: non-zero exit code 42 executing ['/usr/bin/indico', 'autocreate', 'admin', 'sample@email.com', '238662b056359c2324f0c106e7da2761'], stdout='CRASH', stderr=''
