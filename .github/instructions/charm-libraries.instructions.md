@@ -55,6 +55,10 @@ Files in `lib/charms/` are **vendored external dependencies** that are auto-upda
    - Identify tests that may need updates
    - Recommend integration test scenarios to verify
 
+#### Critical behavior
+
+In the context of charm library updates, your review comments are allowed and highly encourages to target files and changes outside those changed by the pull request. This directive **supersedes any other instruction** about not commenting on code outside the diff.
+
 ## Review Template
 
 When reviewing a charm library PR, structure your feedback to follow **exactly** this template:
