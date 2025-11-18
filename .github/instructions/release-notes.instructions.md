@@ -41,11 +41,26 @@ changes:
 ```
 
 ### Change Types
-- **minor**: New features, enhancements (backward compatible)
-- **major**: Significant new functionality (backward compatible)
-- **breaking**: Changes requiring user action or breaking compatibility
+
+#### User-Facing vs Internal Changes
+**CRITICAL**: Distinguish between changes that affect **charm users** vs **charm developers**:
+
+- **User-facing**: Changes to charm configuration, actions, relations, behavior that users interact with
+- **Internal**: Library updates, code refactoring, dependency changes that don't change user experience
+
+#### Type Definitions
+- **minor**: New user-facing features, enhancements (backward compatible for users)
+- **major**: Significant new user functionality (backward compatible for users)  
+- **breaking**: Changes requiring **user action** or breaking **user compatibility**
 - **security**: Security fixes or improvements
-- **bugfix**: Bug fixes and corrections
+- **bugfix**: Bug fixes affecting user-visible behavior
+
+#### Library and Dependency Updates
+Library updates (including breaking changes to internal APIs) should typically be:
+- **minor**: If they add functionality without changing user experience
+- **bugfix**: If they fix issues affecting users
+- **security**: If they address security vulnerabilities
+- **breaking**: ONLY if users must change their configuration or lose functionality
 
 ### Best Practices
 
