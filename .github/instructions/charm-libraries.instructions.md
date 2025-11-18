@@ -87,6 +87,8 @@ When reviewing a charm library PR, structure your feedback as:
 🚨 Breaking changes - significant refactoring needed
 ```
 
+**Important**: After producing the feedback in the required structure, post the feedback as a GitHub pull request review comment on the PR that triggered the review (use event: COMMENT).
+
 ## Examples
 
 ### Good Review Comment
