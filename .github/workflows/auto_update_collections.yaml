@@ -6,7 +6,7 @@ on:
 
 jobs:
   check-update:
-    uses: canonical/copilot-collections/.github/workflows/auto_update_collections.yaml@v0.1.3
+    uses: canonical/copilot-collections/.github/workflows/auto_update_collections.yaml@main
     with:
       config_file: ".collections-config.yaml"
     secrets: inherit
