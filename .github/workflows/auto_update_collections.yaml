@@ -1,0 +1,10 @@
+name: Auto-Update Copilot Collections
+on:
+  workflow_dispatch: # Manual trigger is best for testing
+
+jobs:
+  check-update:
+    uses: canonical/copilot-collections/.github/workflows/auto_update-collections.yaml@initial-toolkit-and-instructions
+    with:
+      config_file: ".collections-config.yaml"
+    secrets: inherit

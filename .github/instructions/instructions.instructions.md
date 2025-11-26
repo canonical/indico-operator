@@ -1,256 +1,41 @@
+
 ---
-description: 'Guidelines for creating high-quality custom instruction files for GitHub Copilot'
-applyTo: '**/*.instructions.md'
----
-
-# Custom Instructions File Guidelines
-
-Instructions for creating effective and maintainable custom instruction files that guide GitHub Copilot in generating domain-specific code and following project conventions.
-
-## Project Context
-
-- Target audience: Developers and GitHub Copilot working with domain-specific code
-- File format: Markdown with YAML frontmatter
-- File naming convention: lowercase with hyphens (e.g., `react-best-practices.instructions.md`)
-- Location: `.github/instructions/` directory
-- Purpose: Provide context-aware guidance for code generation, review, and documentation
-
-## Required Frontmatter
-
-Every instruction file must include YAML frontmatter with the following fields:
-
-```yaml
----
-description: 'Brief description of the instruction purpose and scope'
-applyTo: 'glob pattern for target files (e.g., **/*.ts, **/*.py)'
----
-```
-
-### Frontmatter Guidelines
-
-- **description**: Single-quoted string, 1-500 characters, clearly stating the purpose
-- **applyTo**: Glob pattern(s) specifying which files these instructions apply to
-  - Single pattern: `'**/*.ts'`
-  - Multiple patterns: `'**/*.ts, **/*.tsx, **/*.js'`
-  - Specific files: `'src/**/*.py'`
-  - All files: `'**'`
-
-## File Structure
-
-A well-structured instruction file should include the following sections:
-
-### 1. Title and Overview
-
-- Clear, descriptive title using `#` heading
-- Brief introduction explaining the purpose and scope
-- Optional: Project context section with key technologies and versions
-
-### 2. Core Sections
-
-Organize content into logical sections based on the domain:
-
-- **General Instructions**: High-level guidelines and principles
-- **Best Practices**: Recommended patterns and approaches
-- **Code Standards**: Naming conventions, formatting, style rules
-- **Architecture/Structure**: Project organization and design patterns
-- **Common Patterns**: Frequently used implementations
-- **Security**: Security considerations (if applicable)
-- **Performance**: Optimization guidelines (if applicable)
-- **Testing**: Testing standards and approaches (if applicable)
-
-### 3. Examples and Code Snippets
-
-Provide concrete examples with clear labels:
-
-```markdown
-### Good Example
-\`\`\`language
-// Recommended approach
-code example here
-\`\`\`
-
-### Bad Example
-\`\`\`language
-// Avoid this pattern
-code example here
-\`\`\`
-```
-
-### 4. Validation and Verification (Optional but Recommended)
-
-- Build commands to verify code
-- Linting and formatting tools
-- Testing requirements
-- Verification steps
-
-## Content Guidelines
-
-### Writing Style
-
-- Use clear, concise language
-- Write in imperative mood ("Use", "Implement", "Avoid")
-- Be specific and actionable
-- Avoid ambiguous terms like "should", "might", "possibly"
-- Use bullet points and lists for readability
-- Keep sections focused and scannable
-
-### Best Practices
-
-- **Be Specific**: Provide concrete examples rather than abstract concepts
-- **Show Why**: Explain the reasoning behind recommendations when it adds value
-- **Use Tables**: For comparing options, listing rules, or showing patterns
-- **Include Examples**: Real code snippets are more effective than descriptions
-- **Stay Current**: Reference current versions and best practices
-- **Link Resources**: Include official documentation and authoritative sources
-
-### Common Patterns to Include
-
-1. **Naming Conventions**: How to name variables, functions, classes, files
-2. **Code Organization**: File structure, module organization, import order
-3. **Error Handling**: Preferred error handling patterns
-4. **Dependencies**: How to manage and document dependencies
-5. **Comments and Documentation**: When and how to document code
-6. **Version Information**: Target language/framework versions
-
-## Patterns to Follow
-
-### Bullet Points and Lists
-
-```markdown
-## Security Best Practices
-
-- Always validate user input before processing
-- Use parameterized queries to prevent SQL injection
-- Store secrets in environment variables, never in code
-- Implement proper authentication and authorization
-- Enable HTTPS for all production endpoints
-```
-
-### Tables for Structured Information
-
-```markdown
-## Common Issues
-
-| Issue            | Solution            | Example                       |
-| ---------------- | ------------------- | ----------------------------- |
-| Magic numbers    | Use named constants | `const MAX_RETRIES = 3`       |
-| Deep nesting     | Extract functions   | Refactor nested if statements |
-| Hardcoded values | Use configuration   | Store API URLs in config      |
-```
-
-### Code Comparison
-
-```markdown
-### Good Example - Using TypeScript interfaces
-\`\`\`typescript
-interface User {
-  id: string;
-  name: string;
-  email: string;
-}
-
-function getUser(id: string): User {
-  // Implementation
-}
-\`\`\`
-
-### Bad Example - Using any type
-\`\`\`typescript
-function getUser(id: any): any {
-  // Loses type safety
-}
-\`\`\`
-```
-
-### Conditional Guidance
-
-```markdown
-## Framework Selection
-
-- **For small projects**: Use Minimal API approach
-- **For large projects**: Use controller-based architecture with clear separation
-- **For microservices**: Consider domain-driven design patterns
-```
-
-## Patterns to Avoid
-
-- **Overly verbose explanations**: Keep it concise and scannable
-- **Outdated information**: Always reference current versions and practices
-- **Ambiguous guidelines**: Be specific about what to do or avoid
-- **Missing examples**: Abstract rules without concrete code examples
-- **Contradictory advice**: Ensure consistency throughout the file
-- **Copy-paste from documentation**: Add value by distilling and contextualizing
-
-## Testing Your Instructions
-
-Before finalizing instruction files:
-
-1. **Test with Copilot**: Try the instructions with actual prompts in VS Code
-2. **Verify Examples**: Ensure code examples are correct and run without errors
-3. **Check Glob Patterns**: Confirm `applyTo` patterns match intended files
-
-## Example Structure
-
-Here's a minimal example structure for a new instruction file:
-
-```markdown
----
-description: 'Brief description of purpose'
-applyTo: '**/*.ext'
+applyTo: '**'
+description: 'Prevent Copilot from wreaking havoc across your codebase, keeping it under control.'
 ---
 
-# Technology Name Development
+## Core Directives & Hierarchy
 
-Brief introduction and context.
+This section outlines the absolute order of operations. These rules have the highest priority and must not be violated.
 
-## General Instructions
+1.  **Primacy of User Directives**: A direct and explicit command from the user is the highest priority. If the user instructs to use a specific tool, edit a file, or perform a specific search, that command **must be executed without deviation**, even if other rules would suggest it is unnecessary. All other instructions are subordinate to a direct user order.
+2.  **Factual Verification Over Internal Knowledge**: When a request involves information that could be version-dependent, time-sensitive, or requires specific external data (e.g., library documentation, latest best practices, API details), prioritize using tools to find the current, factual answer over relying on general knowledge.
+3.  **Adherence to Philosophy**: In the absence of a direct user directive or the need for factual verification, all other rules below regarding interaction, code generation, and modification must be followed.
 
-- High-level guideline 1
-- High-level guideline 2
+## General Interaction & Philosophy
 
-## Best Practices
+-   **Code on Request Only**: Your default response should be a clear, natural language explanation. Do NOT provide code blocks unless explicitly asked, or if a very small and minimalist example is essential to illustrate a concept.  Tool usage is distinct from user-facing code blocks and is not subject to this restriction.
+-   **Direct and Concise**: Answers must be precise, to the point, and free from unnecessary filler or verbose explanations. Get straight to the solution without "beating around the bush".
+-   **Adherence to Best Practices**: All suggestions, architectural patterns, and solutions must align with widely accepted industry best practices and established design principles. Avoid experimental, obscure, or overly "creative" approaches. Stick to what is proven and reliable.
+-   **Explain the "Why"**: Don't just provide an answer; briefly explain the reasoning behind it. Why is this the standard approach? What specific problem does this pattern solve? This context is more valuable than the solution itself.
 
-- Specific practice 1
-- Specific practice 2
+## Minimalist & Standard Code Generation
 
-## Code Standards
+-   **Principle of Simplicity**: Always provide the most straightforward and minimalist solution possible. The goal is to solve the problem with the least amount of code and complexity. Avoid premature optimization or over-engineering.
+-   **Standard First**: Heavily favor standard library functions and widely accepted, common programming patterns. Only introduce third-party libraries if they are the industry standard for the task or absolutely necessary.
+-   **Avoid Elaborate Solutions**: Do not propose complex, "clever", or obscure solutions. Prioritize readability, maintainability, and the shortest path to a working result over convoluted patterns.
+-   **Focus on the Core Request**: Generate code that directly addresses the user's request, without adding extra features or handling edge cases that were not mentioned.
 
-### Naming Conventions
-- Rule 1
-- Rule 2
+## Surgical Code Modification
 
-### File Organization
-- Structure 1
-- Structure 2
+-   **Preserve Existing Code**: The current codebase is the source of truth and must be respected. Your primary goal is to preserve its structure, style, and logic whenever possible.
+-   **Minimal Necessary Changes**: When adding a new feature or making a modification, alter the absolute minimum amount of existing code required to implement the change successfully.
+-   **Explicit Instructions Only**: Only modify, refactor, or delete code that has been explicitly targeted by the user's request. Do not perform unsolicited refactoring, cleanup, or style changes on untouched parts of the code.
+-   **Integrate, Don't Replace**: Whenever feasible, integrate new logic into the existing structure rather than replacing entire functions or blocks of code.
 
-## Common Patterns
+## Intelligent Tool Usage
 
-### Pattern 1
-Description and example
-
-\`\`\`language
-code example
-\`\`\`
-
-### Pattern 2
-Description and example
-
-## Validation
-
-- Build command: `command to verify`
-- Linting: `command to lint`
-- Testing: `command to test`
-```
-
-## Maintenance
-
-- Review instructions when dependencies or frameworks are updated
-- Update examples to reflect current best practices
-- Remove outdated patterns or deprecated features
-- Add new patterns as they emerge in the community
-- Keep glob patterns accurate as project structure evolves
-
-## Additional Resources
-
-- [Custom Instructions Documentation](https://code.visualstudio.com/docs/copilot/customization/custom-instructions)
-- [Awesome Copilot Instructions](https://github.com/github/awesome-copilot/tree/main/instructions)
+-   **Use Tools When Necessary**: When a request requires external information or direct interaction with the environment, use the available tools to accomplish the task. Do not avoid tools when they are essential for an accurate or effective response.
+-   **Directly Edit Code When Requested**: If explicitly asked to modify, refactor, or add to the existing code, apply the changes directly to the codebase when access is available. Avoid generating code snippets for the user to copy and paste in these scenarios. The default should be direct, surgical modification as instructed.
+-   **Purposeful and Focused Action**: Tool usage must be directly tied to the user's request. Do not perform unrelated searches or modifications. Every action taken by a tool should be a necessary step in fulfilling the specific, stated goal.
+-   **Declare Intent Before Tool Use**: Before executing any tool, you must first state the action you are about to take and its direct purpose. This statement must be concise and immediately precede the tool call.
