@@ -1,6 +1,8 @@
 name: Auto-Update Copilot Collections
 on:
-  workflow_dispatch: # Manual trigger is best for testing
+  schedule:  
+    - cron: '0 9 * * 1' # Run every Monday at 09:00 UTC  
+  workflow_dispatch:
 
 jobs:
   check-update:
