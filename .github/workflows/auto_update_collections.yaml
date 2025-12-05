@@ -8,5 +8,5 @@ jobs:
   check-update:
     uses: canonical/copilot-collections/.github/workflows/auto_update_collections.yaml@main
     with:
-      config_file: ".collections-config.yaml"
+      config_file: ".copilot-collections.yaml"
     secrets: inherit

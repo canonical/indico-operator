@@ -1,4 +1,3 @@
-
 ---
 agent: 'agent'
 description: 'Creating repository-wide custom instructions'

@@ -1,4 +1,3 @@
-
 ---
 description: 'Guidelines for GitHub Copilot to write comments to achieve self-explanatory code with fewer comments. Examples are in Python but it should work on any language that has comments.'
 applyTo: '**'

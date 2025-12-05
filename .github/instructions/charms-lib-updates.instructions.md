@@ -1,4 +1,3 @@
-
 ---
 description: 'Guidelines for reviewing charm library updates in lib/charms/ directory'
 applyTo: 'lib/charms/**/*.py'
@@ -23,6 +22,7 @@ Files in `lib/charms/` are **vendored external dependencies** that are auto-upda
 - **DO NOT** critique coding style, formatting, or structure in vendored libraries
 - **DO NOT** request refactoring of library code
 - **DO NOT** flag linting issues in library code
+- **DO NOT** suggest changes to file names
 
 ### What TO Do
 
