@@ -1,0 +1,15 @@
+[33mWARNING [0m charms.prometheus_k8s.v0.prometheus_scrape:prometheus_scrape.py:1452 2 containers are present in metadata.yaml and refresh_event was not specified. Defaulting to update_status. Metrics IP may not be set in a timely fashion.
+[1m[31mERROR   [0m charm:charm.py:955 Action anonymize-user failed: Execution error
+Traceback (most recent call last):
+  File "/home/runner/work/indico-operator/indico-operator/src/charm.py", line 952, in _execute_anonymize_cmd
+    out = process.wait_output()
+          ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/unittest/mock.py", line 1134, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/unittest/mock.py", line 1138, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/unittest/mock.py", line 1193, in _execute_mock_call
+    raise effect
+ops.pebble.ExecError: non-zero exit code 42 executing '/usr/bin/indico anonymize user 53c3e8e1350aa6208dc1e7b7bd969fbe', stdout='Execution error', stderr=''
