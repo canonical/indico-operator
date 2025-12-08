@@ -1,8 +1,7 @@
 # Copyright 2025 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-copilot:  
-  version: "v0.1.4"  
-    
+copilot:
+  version: "v0.2.0"
   collections:
     - pfe-charms
