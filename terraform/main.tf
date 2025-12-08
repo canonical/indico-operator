@@ -3,7 +3,7 @@
 
 resource "juju_application" "indico" {
   name  = var.app_name
-  model = var.model
+  model = var.model_uuid
 
   charm {
     name     = "indico"
@@ -15,5 +15,5 @@ resource "juju_application" "indico" {
   config             = var.config
   constraints        = var.constraints
   units              = var.units
-  storage_directives = var.storage
+  storage_directives = var.storage_directives
 }
