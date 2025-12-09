@@ -3,8 +3,8 @@
 
 """Unit tests."""
 
-import unittest
 from secrets import token_hex
+from unittest.mock import MagicMock
 
 import ops
 import pytest
@@ -21,7 +21,7 @@ def test_proxyconfig_invalid(monkeypatch: pytest.MonkeyPatch):
     assert: CharmConfigInvalidError is raised.
     """
     monkeypatch.setenv("JUJU_CHARM_HTTP_PROXY", "INVALID_URL")
-    mock_charm = unittest.mock.MagicMock(spec=ops.CharmBase)
+    mock_charm = MagicMock(spec=ops.CharmBase)
     mock_charm.config = {}
 
     with pytest.raises(state.CharmConfigInvalidError):
@@ -34,7 +34,7 @@ def test_config_from_charm_env(proxy_config: state.ProxyConfig):
     act: when ProxyConfig.from_charm_config is called.
     assert: valid proxy configuration is returned.
     """
-    mock_charm = unittest.mock.MagicMock(spec=ops.CharmBase)
+    mock_charm = MagicMock(spec=ops.CharmBase)
     mock_charm.config = {}
 
     s3_relation_data = {
