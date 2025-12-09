@@ -31,8 +31,8 @@ variable "constraints" {
   default     = ""
 }
 
-variable "model" {
-  description = "Reference to a `juju_model`."
+variable "model_uuid" {
+  description = "Reference to a `juju_model` uuid."
   type        = string
   default     = ""
 }
@@ -43,7 +43,7 @@ variable "revision" {
   default     = null
 }
 
-variable "storage" {
+variable "storage_directives" {
   description = "Map of storage used by the application."
   type        = map(string)
   default     = {}

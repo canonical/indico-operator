@@ -16,7 +16,7 @@ variable "revision" {
 terraform {
   required_providers {
     juju = {
-      version = "~> 0.21.1"
+      version = ">= 1.1.0"
       source  = "juju/juju"
     }
   }
@@ -24,11 +24,16 @@ terraform {
 
 provider "juju" {}
 
+data "juju_model" "example" {
+  name  = "prod-events-example"
+  owner = "admin"
+}
+
 module "indico" {
   source      = "./.."
   app_name    = "indico"
   channel     = var.channel
-  model       = "prod-events-example"
+  model_uuid  = data.juju_model.example.uuid
   revision    = var.revision
   constraints = "arch=amd64"
 }
