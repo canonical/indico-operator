@@ -3,11 +3,13 @@
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_juju"></a> [juju](#requirement\_juju) | ~> 0.21.1 |
+| <a name="requirement_juju"></a> [juju](#requirement\_juju) | >= 1.1.0 |
 
 ## Providers
 
-No providers.
+| Name | Version |
+|------|---------|
+| <a name="provider_juju"></a> [juju](#provider\_juju) | >= 1.1.0 |
 
 ## Modules
 
@@ -17,7 +19,9 @@ No providers.
 
 ## Resources
 
-No resources.
+| Name | Type |
+|------|------|
+| [juju_model.example](https://registry.terraform.io/providers/juju/juju/latest/docs/data-sources/model) | data source |
 
 ## Inputs
 

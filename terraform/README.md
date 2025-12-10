@@ -1,3 +1,4 @@
+<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
@@ -40,3 +41,4 @@ No modules.
 |------|-------------|
 | <a name="output_app_name"></a> [app\_name](#output\_app\_name) | Name of the deployed application. |
 | <a name="output_endpoints"></a> [endpoints](#output\_endpoints) | n/a |
+<!-- END_TF_DOCS -->
