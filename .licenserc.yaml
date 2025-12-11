@@ -36,4 +36,5 @@ header:
     - 'indico_rock/etc/*'
     - 'tests/unit_harness/pre_run_script.sh'
     - 'docs/release-notes/**/*.yaml'
+    - 'terraform/**'
   comment: on-failure
