@@ -210,7 +210,7 @@ resource "juju_integration" "indico_s3_integrator_media" {
 
   application {
     name     = module.indico.app_name
-    endpoint = module.indico.endpoints.media
+    endpoint = module.indico.endpoints.s3
   }
 
   application {
@@ -225,7 +225,7 @@ resource "juju_integration" "indico_smtp_integrator" {
 
   application {
     name     = module.indico.app_name
-    endpoint = module.indico.endpoints.smtp
+    endpoint = module.indico.endpoints.smtp_legacy
   }
 
   application {
