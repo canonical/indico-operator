@@ -230,7 +230,7 @@ resource "juju_integration" "indico_smtp_integrator" {
 
   application {
     name     = module.smtp_integrator[0].app_name
-    endpoint = module.smtp_integrator[0].endpoints.smtp
+    endpoint = module.smtp_integrator[0].endpoints.smtp_legacy
   }
 }
 
