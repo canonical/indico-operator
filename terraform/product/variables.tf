@@ -159,7 +159,7 @@ variable "enable" {
 variable "hostname" {
   description = "Matrix server URL."
   type        = string
-  default     = "chat-server-live.ubuntu.com"
+  default     = ""
 }
 
 variable "integrate_offers" {
