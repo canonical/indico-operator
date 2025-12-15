@@ -14,5 +14,5 @@ output "applications" {
 }
 
 output "model_uuid" {
-  value = juju_model.synapse.uuid
+  value = juju_model.indico.uuid
 }
