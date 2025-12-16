@@ -87,9 +87,7 @@ locals {
 
   integrate_offers = merge(local.integrate_offers_defaults, var.integrate_offers)
 
-  model_defaults = {
-    constraints = "root-disk-source=volume"
-  }
+  model_defaults = {}
 
   model = merge(local.model_defaults, var.model)
 
