@@ -11,4 +11,5 @@ jobs:
     secrets: inherit
     with:
       vale-files: '["docs/", "README.md"]'
+      linkcheck-clear-cache: true
 
