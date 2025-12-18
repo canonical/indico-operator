@@ -17,7 +17,7 @@ This charm will make operating Indico simple and straightforward for DevOps or S
 | | |
 |--|--|
 |  [Tutorials](https://charmhub.io/indico/docs/tutorial)</br>  Get started - a hands-on introduction to using the Charmed Indico operator for new users </br> |  [How-to guides](https://charmhub.io/indico/docs/how-to-configure-a-proxy) </br> Step-by-step guides covering key operations and common tasks |
-| [Reference](https://charmhub.io/indico/docs/reference-actions) </br> Technical information - specifications, APIs, architecture | [Explanation](https://charmhub.io/indico/docs/explanation-charm-architecture) </br> Concepts - discussion and clarification of key topics  |
+| [Reference](https://charmhub.io/indico/docs/reference-actions) </br> Technical information - specifications, APIs, architecture | [Explanation]() </br> Concepts - discussion and clarification of key topics  |
 
 ## Contributing to this documentation
 
@@ -51,13 +51,12 @@ Thinking about using the Indico Operator for your next project? [Get in touch](h
   1. [Contribute](how-to/contribute.md)
 1. [Reference](reference)
   1. [Actions](reference/actions.md)
+  1. [Charm architecture](reference/charm-architecture.md)
   1. [Configurations](reference/configurations.md)
   1. [External access](reference/external-access.md)
   1. [Integrations](reference/integrations.md)
   1. [Plugins](reference/plugins.md)
   1. [Theme customization](reference/theme-customization.md)
-1. [Explanation](explanation)
-  1. [Charm architecture](explanation/charm-architecture.md)
 1. [Release notes](release-notes)
   1. [Overview](release-notes/landing-page.md)
   1. [Release notes (revisions 234-266)](release-notes/release-notes-0001.md)
