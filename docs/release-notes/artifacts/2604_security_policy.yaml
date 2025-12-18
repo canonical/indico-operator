@@ -1,0 +1,19 @@
+# Version of the artifact schema
+version_schema: 2
+
+# The key holding the change(s)
+changes:
+- title: Added security policy
+  author: seb4stien
+  type: minor
+  description: |
+    Now the repository contains a security policy, outlining what
+    qualifies as a security issue and how to report an issue.
+  urls:
+    pr: 
+      - https://github.com/canonical/indico-operator/pull/671
+    related_doc: https://github.com/canonical/indico-operator/blob/main/SECURITY.md
+    related_issue: 
+  visibility: hidden
+  highlight: false
+

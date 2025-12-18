@@ -1,0 +1,19 @@
+# Version of the artifact schema
+version_schema: 2
+
+# The key holding the change(s)
+changes:
+- title: Fixed unit test failures by updating an incorrect import
+  author: Copilot
+  type: bugfix
+  description: |
+    Fixed `mypy` linting failures by updating an incorrect import for
+    mock tests.
+  urls:
+    pr: 
+      - https://github.com/canonical/indico-operator/pull/694
+    related_doc: 
+    related_issue: 
+  visibility: public
+  highlight: false
+

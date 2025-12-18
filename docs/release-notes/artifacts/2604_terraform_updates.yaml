@@ -1,0 +1,20 @@
+# Version of the artifact schema
+version_schema: 2
+
+# The key holding the change(s)
+changes:
+- title: Updated Terraform documentation and workflows
+  author: weiiwang01
+  type: minor
+  description: |
+    To provide clarity and automated documentation for the Terraform
+    modules in this repository, a new workflow has been added to add or
+    update READMEs in the `terraform` directory.
+  urls:
+    pr: 
+      - https://github.com/canonical/indico-operator/pull/666
+    related_doc: https://github.com/canonical/indico-operator/blob/main/terraform/README.md
+    related_issue: 
+  visibility: hidden
+  highlight: false
+
