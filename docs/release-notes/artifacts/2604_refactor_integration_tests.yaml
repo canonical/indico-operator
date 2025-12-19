@@ -1,0 +1,19 @@
+# Version of the artifact schema
+version_schema: 2
+
+# The key holding the change(s)
+changes:
+- title: Refactored integration tests
+  author: amandahla
+  type: bugfix
+  description: |
+    The integration tests have been updated to remove unused options.
+    This change prevents Trivy from blocking the checks. 
+  urls:
+    pr: 
+      - https://github.com/canonical/indico-operator/pull/693
+    related_doc: 
+    related_issue: 
+  visibility: public
+  highlight: false
+

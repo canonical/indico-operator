@@ -1,0 +1,21 @@
+# Version of the artifact schema
+version_schema: 2
+
+# The key holding the change(s)
+changes:
+- title: Upgrades to the Terraform modules
+  author: amandahla
+  type: major
+  description: |
+    The Terraform module was upgraded according to Juju Terraform provider v1.
+    The Indico product module was added, along with 
+    additional modules for other charms used in the deployment of the Indico product.
+  urls:
+    pr: 
+      - https://github.com/canonical/indico-operator/pull/692
+      - https://github.com/canonical/indico-operator/pull/696
+    related_doc: https://github.com/canonical/indico-operator/blob/6a10f152d8a7618dea5e2e3ffe69964a9f218ea4/terraform/tests/README.md
+    related_issue: 
+  visibility: internal
+  highlight: true
+

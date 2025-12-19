@@ -1,0 +1,20 @@
+# Version of the artifact schema
+version_schema: 2
+
+# The key holding the change(s)
+changes:
+- title: Added Copilot instructions
+  author: srbouffard
+  type: minor
+  description: |
+    The code repository now contains a set of Copilot instructions,
+    so that custom agents receive context that's kept up-to-date with
+    best practices for Python and charms.
+  urls:
+    pr: 
+      - https://github.com/canonical/indico-operator/pull/686
+    related_doc: 
+    related_issue: 
+  visibility: internal
+  highlight: false
+

@@ -1,0 +1,21 @@
+# Version of the artifact schema
+version_schema: 2
+
+# The key holding the change(s)
+changes:
+- title: Updated integration tests
+  author: swetha1654
+  type: minor
+  description: |
+    Now integratation tests use Allure, which provides clear, detailed,
+    and visually engaging test execution reports. These workflows
+    run weekly.
+  urls:
+    pr: 
+      - https://github.com/canonical/indico-operator/pull/674
+      - https://github.com/canonical/indico-operator/pull/688
+    related_doc: 
+    related_issue: 
+  visibility: public
+  highlight: false
+

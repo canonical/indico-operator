@@ -1,0 +1,19 @@
+# Version of the artifact schema
+version_schema: 2
+
+# The key holding the change(s)
+changes:
+- title: Migrated architecture documentation to Reference
+  author: erinecon
+  type: minor
+  description: |
+    The architecture documentation was moved from Explanation to
+    Reference to align with the Diataxis framework.
+  urls:
+    pr: 
+      - https://github.com/canonical/indico-operator/pull/701
+    related_doc: https://github.com/canonical/indico-operator/blob/53b47dd9b83eb7582a0525a7db513b469dbcf020/docs/reference/charm-architecture.md
+    related_issue: 
+  visibility: hidden
+  highlight: false
+
