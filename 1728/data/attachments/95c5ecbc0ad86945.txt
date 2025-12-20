@@ -1,0 +1,2 @@
+[33mWARNING [0m charms.prometheus_k8s.v0.prometheus_scrape:prometheus_scrape.py:1452 2 containers are present in metadata.yaml and refresh_event was not specified. Defaulting to update_status. Metrics IP may not be set in a timely fashion.
+[31m[1mERROR   [0m charm:charm.py:974 Action anonymize-user failed: Failed to anonymize user: List of more than 50 emails are not allowed

@@ -1,0 +1,31 @@
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller                Cloud/Region        Version  SLA          Timestamp
+testing  github-pr-f1368-microk8s  microk8s/localhost  2.9.53   unsupported  15:18:43Z
+
+App                       Version  Status  Scale  Charm                     Channel      Rev  Address         Exposed  Message
+indico                    3.3.9    active      1  indico                                   0  10.152.183.59   no       
+nginx-ingress-integrator  24.2.0   active      1  nginx-ingress-integrator  latest/edge  133  10.152.183.46   no       
+postgresql-k8s            14.20    active      1  postgresql-k8s            14/edge      711  10.152.183.164  no       
+redis-broker              7.2.5    active      1  redis-k8s                 latest/edge   42  10.152.183.78   no       
+redis-cache               7.2.5    active      1  redis-k8s                 latest/edge   42  10.152.183.249  no       
+
+Unit                         Workload  Agent  Address      Ports  Message
+indico/0*                    active    idle   10.1.206.82         
+nginx-ingress-integrator/0*  active    idle   10.1.206.78         
+postgresql-k8s/0*            active    idle   10.1.206.85         Primary
+redis-broker/0*              active    idle   10.1.206.81         
+redis-cache/0*               active    idle   10.1.206.84         
+
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+unit-indico-0: 15:18:35 ERROR unit.indico/0.juju-log Action anonymize-user failed: E-mail should not be empty
+Traceback (most recent call last):
+  File "./src/charm.py", line 952, in _execute_anonymize_cmd
+    out = process.wait_output()
+  File "/var/lib/juju/agents/unit-indico-0/charm/venv/ops/pebble.py", line 1864, in wait_output
+    raise ExecError[AnyStr](self._command, exit_code, out_value, err_value)
+ops.pebble.ExecError: non-zero exit code 1 executing ['/usr/bin/indico', 'anonymize', 'user', ''], stdout='E-mail should not be empty\n', stderr='/lib/python3.12/site-packages/indico/core/config.py:227: UserWarning: Ignoring unknown config key OS\n  config = _sanitize_data(_parse_config(path))\n/lib/python3.12/site-packages/indico/core/config.py:227: UserWarning: Ignoring unknown config key AST\n  config = _sanitize_data(_parse_config(path))\n'
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...
