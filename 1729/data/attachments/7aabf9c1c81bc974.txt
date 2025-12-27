@@ -1,0 +1,87 @@
+[32mINFO    [0m pytest_operator.plugin:plugin.py:806 Connecting to existing model github-pr-f1368-microk8s:testing on unspecified cloud
+[32mINFO    [0m juju.model:model.py:1994 Deploying ch:amd64/jammy/redis-k8s-42
+[32mINFO    [0m juju.model:model.py:1994 Deploying ch:amd64/jammy/redis-k8s-42
+[32mINFO    [0m juju.model:model.py:1994 Deploying ch:amd64/focal/nginx-ingress-integrator-133
+[32mINFO    [0m juju.model:model.py:1994 Deploying ch:amd64/jammy/postgresql-k8s-711
+[32mINFO    [0m juju.model:model.py:1994 Deploying local:focal/indico-0
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  indico/0 [allocating] waiting: installing agent
+  postgresql-k8s/0 [allocating] waiting: installing agent
+  redis-broker/0 [allocating] waiting: installing agent
+  redis-cache/0 [allocating] waiting: installing agent
+  nginx-ingress-integrator/0 [allocating] waiting: installing agent
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  indico/0 [allocating] waiting: agent initializing
+  postgresql-k8s/0 [allocating] waiting: installing agent
+  redis-broker/0 [allocating] waiting: installing agent
+  redis-cache/0 [allocating] waiting: installing agent
+  nginx-ingress-integrator/0 [executing] maintenance: installing charm software
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  indico/0 [executing] waiting: Waiting for database availability
+  postgresql-k8s/0 [executing] maintenance: installing charm software
+  redis-broker/0 [executing] waiting: Waiting for Pebble in sentinel container
+  redis-cache/0 [executing] waiting: Waiting for Pebble in sentinel container
+  nginx-ingress-integrator/0 [idle] waiting: Waiting for ingress IP availability
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  indico/0 [idle] waiting: Waiting for database availability
+  postgresql-k8s/0 [executing] unknown: 
+  nginx-ingress-integrator/0 [idle] waiting: Waiting for ingress IP availability
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  indico/0 [idle] waiting: Waiting for database availability
+  postgresql-k8s/0 [executing] waiting: awaiting for primary endpoint to be ready
+  nginx-ingress-integrator/0 [idle] waiting: Waiting for ingress IP availability
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  indico/0 [executing] maintenance: Adding indico layer to pebble
+  postgresql-k8s/0 [idle] active: Primary
+  nginx-ingress-integrator/0 [idle] active: 
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  indico/0 [executing] maintenance: Adding indico layer to pebble
+  postgresql-k8s/0 [idle] active: Primary
+[32mINFO    [0m juju.model:model.py:1994 Deploying ch:amd64/noble/s3-integrator-188
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  s3-integrator/0 [allocating] waiting: installing agent
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  s3-integrator/0 [executing] blocked: Missing parameters: ['access-key', 'secret-key']
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  s3-integrator/0 [executing] active: 
+  indico/0 [executing] active: 
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  indico/0 [idle] active:
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller                Cloud/Region        Version  SLA          Timestamp
+testing  github-pr-f1368-microk8s  microk8s/localhost  2.9.53   unsupported  15:22:22Z
+
+App                       Version  Status  Scale  Charm                     Channel      Rev  Address         Exposed  Message
+indico                    3.3.9    active      1  indico                                   0  10.152.183.161  no       
+nginx-ingress-integrator  24.2.0   active      1  nginx-ingress-integrator  latest/edge  133  10.152.183.182  no       
+postgresql-k8s            14.20    active      1  postgresql-k8s            14/edge      711  10.152.183.79   no       
+redis-broker              7.2.5    active      1  redis-k8s                 latest/edge   42  10.152.183.100  no       
+redis-cache               7.2.5    active      1  redis-k8s                 latest/edge   42  10.152.183.114  no       
+s3-integrator                      active      1  s3-integrator             latest/edge  188  10.152.183.171  no       
+
+Unit                         Workload  Agent  Address      Ports  Message
+indico/0*                    active    idle   10.1.206.81         
+nginx-ingress-integrator/0*  active    idle   10.1.206.76         
+postgresql-k8s/0*            active    idle   10.1.206.84         Primary
+redis-broker/0*              active    idle   10.1.206.80         
+redis-cache/0*               active    idle   10.1.206.83         
+s3-integrator/0*             active    idle   10.1.206.85         
+
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+unit-redis-broker-0: 15:18:18 ERROR unit.redis-broker/0.juju-log redis-peers:1: Error when connecting to sentinel: Error 111 connecting to 0.0.0.0:26379. Connection refused.
+unit-redis-broker-0: 15:18:18 ERROR unit.redis-broker/0.juju-log redis-peers:1: Unit redis-broker/0 doesn't agree on tracked master
+unit-redis-broker-0: 15:18:18 ERROR unit.redis-broker/0.juju-log redis-peers:1: Error when connecting to sentinel: Error 111 connecting to localhost:26379. Connection refused.
+unit-redis-broker-0: 15:18:20 ERROR unit.redis-broker/0.juju-log redis:8: Error when connecting to sentinel: Error 111 connecting to 0.0.0.0:26379. Connection refused.
+unit-redis-broker-0: 15:18:20 ERROR unit.redis-broker/0.juju-log redis:8: Unit redis-broker/0 doesn't agree on tracked master
+unit-redis-broker-0: 15:18:20 ERROR unit.redis-broker/0.juju-log redis:8: Error when connecting to sentinel: Error 111 connecting to localhost:26379. Connection refused.
+unit-redis-cache-0: 15:18:21 ERROR unit.redis-cache/0.juju-log redis-peers:0: Error when connecting to sentinel: Error 111 connecting to 0.0.0.0:26379. Connection refused.
+unit-redis-cache-0: 15:18:21 ERROR unit.redis-cache/0.juju-log redis-peers:0: Unit redis-cache/0 doesn't agree on tracked master
+unit-redis-cache-0: 15:18:21 ERROR unit.redis-cache/0.juju-log redis-peers:0: Error when connecting to sentinel: Error 111 connecting to localhost:26379. Connection refused.
+unit-redis-broker-0: 15:18:22 ERROR unit.redis-broker/0.juju-log redis:8: Error when connecting to sentinel: Error 111 connecting to 0.0.0.0:26379. Connection refused.
+unit-redis-broker-0: 15:18:22 ERROR unit.redis-broker/0.juju-log redis:8: Unit redis-broker/0 doesn't agree on tracked master
+unit-redis-broker-0: 15:18:22 ERROR unit.redis-broker/0.juju-log redis:8: Error when connecting to sentinel: Error 111 connecting to localhost:26379. Connection refused.
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...
