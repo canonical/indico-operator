@@ -1,0 +1,27 @@
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller                Cloud/Region        Version  SLA          Timestamp
+testing  github-pr-f1368-microk8s  microk8s/localhost  2.9.53   unsupported  15:18:31Z
+
+App                       Version  Status  Scale  Charm                     Channel      Rev  Address         Exposed  Message
+indico                    3.3.9    active      1  indico                                   0  10.152.183.92   no       
+nginx-ingress-integrator  24.2.0   active      1  nginx-ingress-integrator  latest/edge  133  10.152.183.112  no       
+postgresql-k8s            14.20    active      1  postgresql-k8s            14/edge      711  10.152.183.227  no       
+redis-broker              7.2.5    active      1  redis-k8s                 latest/edge   42  10.152.183.175  no       
+redis-cache               7.2.5    active      1  redis-k8s                 latest/edge   42  10.152.183.117  no       
+
+Unit                         Workload  Agent  Address      Ports  Message
+indico/0*                    active    idle   10.1.206.83         
+nginx-ingress-integrator/0*  active    idle   10.1.206.78         
+postgresql-k8s/0*            active    idle   10.1.206.85         Primary
+redis-broker/0*              active    idle   10.1.206.82         
+redis-cache/0*               active    idle   10.1.206.79         
+
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+unit-redis-cache-0: 15:14:33 ERROR unit.redis-cache/0.juju-log redis-peers:0: Error when connecting to sentinel: Error 111 connecting to 0.0.0.0:26379. Connection refused.
+unit-redis-cache-0: 15:14:33 ERROR unit.redis-cache/0.juju-log redis-peers:0: Unit redis-cache/0 doesn't agree on tracked master
+unit-redis-cache-0: 15:14:33 ERROR unit.redis-cache/0.juju-log redis-peers:0: Error when connecting to sentinel: Error 111 connecting to localhost:26379. Connection refused.
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...
