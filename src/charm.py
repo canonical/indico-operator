@@ -6,6 +6,7 @@
 """Charm for Indico on kubernetes."""
 import logging
 import os
+import secrets
 import typing
 from re import findall
 from typing import Any, Dict, Iterator, List, Optional, Tuple
@@ -721,7 +722,7 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
         if not plugins:
             return
         # Fetch currently installed packages and push to a temp constraints file
-        constraints_file = "/tmp/constraints.txt"
+        constraints_file = f"/tmp/constraints-{secrets.token_hex(8)}.txt"  # nosec B108
         current_packages, _ = container.exec(["pip", "freeze"]).wait_output()
         container.push(constraints_file, current_packages, make_dirs=True)
 
@@ -734,8 +735,6 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
             )
             output, _ = process.wait_output()
             logger.info("Output was: %s", output)
-        except Exception:  # Re-raise to ensure charm enters error if installation fails
-            raise
         finally:  # Clean up constraints file
             container.remove_path(constraints_file)
 

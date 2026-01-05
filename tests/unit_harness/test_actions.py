@@ -21,13 +21,17 @@ class TestActions(TestBase):
     """Indico charm unit tests."""
 
     @patch.object(Container, "exec")
-    def test_refresh_external_resources_when_customization_and_plugins_set(self, mock_exec):
+    @patch("charm.secrets")
+    def test_refresh_external_resources_when_customization_and_plugins_set(
+        self, mock_secrets, mock_exec
+    ):
         """
         arrange: charm created and relations established
         act: configure the external resources and trigger the refresh action
         assert: the customization sources are pulled and the plugins upgraded
         """
         mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=("", None)))
+        mock_secrets.token_hex.return_value = "123456"
         self.harness.disable_hooks()
         self.set_relations_and_leader()
         self.harness.update_config(
@@ -52,12 +56,15 @@ class TestActions(TestBase):
                     "pip",
                     "install",
                     "--upgrade",
+                    "-c",
+                    "/tmp/constraints-123456.txt",  # nosec B108
                     "git+https://example.git/#subdirectory=themes_cern",
                 ],
                 environment={},
             )
             expected_logs = [
                 "INFO:charm:About to run: pip install --upgrade "
+                "-c /tmp/constraints-123456.txt "
                 "git+https://example.git/#subdirectory=themes_cern",
                 "INFO:charm:Output was: ",
             ]
