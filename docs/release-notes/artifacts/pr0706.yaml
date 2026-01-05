@@ -1,0 +1,15 @@
+# --- Release notes artifact ----
+
+schema_version: 1
+changes:
+  - title: Change plugin installation to respect constraints
+    author: DeeKay3
+    type: minor
+    description: |
+      Change the plugin installation so that it respects the packages already installed. This prevents downgrades/upgrades of packages when installing plugins.
+    urls: 
+      pr: https://github.com/canonical/indico-operator/pull/706
+      related_doc: 
+      related_issue: 
+    visibility: public
+    highlight: false
