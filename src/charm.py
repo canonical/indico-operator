@@ -719,7 +719,14 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
             plugins: List of plugins to be installed.
         """
         if plugins:
-            install_command = ["pip", "install", "--upgrade"] + plugins
+            # Fetch currently installed packages
+            constraints_file = "/tmp/constraints.txt"
+            freeze_process = container.exec(["pip", "freeze"])
+            current_packages, _ = freeze_process.wait_output()
+            # Push them to a temp constraints file
+            container.push(constraints_file, current_packages, make_dirs=True)
+
+            install_command = ["pip", "install", "--upgrade", "-c", constraints_file] + plugins
             logger.info("About to run: %s", " ".join(install_command))
             process = container.exec(
                 install_command,
