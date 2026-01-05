@@ -718,14 +718,14 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
             container: Container where the plugins will be installed.
             plugins: List of plugins to be installed.
         """
-        if plugins:
-            # Fetch currently installed packages
-            constraints_file = "/tmp/constraints.txt"
-            freeze_process = container.exec(["pip", "freeze"])
-            current_packages, _ = freeze_process.wait_output()
-            # Push them to a temp constraints file
-            container.push(constraints_file, current_packages, make_dirs=True)
+        if not plugins:
+            return
+        # Fetch currently installed packages and push to a temp constraints file
+        constraints_file = "/tmp/constraints.txt"
+        current_packages, _ = container.exec(["pip", "freeze"]).wait_output()
+        container.push(constraints_file, current_packages, make_dirs=True)
 
+        try:
             install_command = ["pip", "install", "--upgrade", "-c", constraints_file] + plugins
             logger.info("About to run: %s", " ".join(install_command))
             process = container.exec(
@@ -734,6 +734,10 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
             )
             output, _ = process.wait_output()
             logger.info("Output was: %s", output)
+        except Exception:  # Re-raise to ensure charm enters error if installation fails
+            raise
+        finally:  # Clean up constraints file
+            container.remove_path(constraints_file)
 
     def _get_indico_version(self) -> str:
         """Retrieve the current version of Indico.
