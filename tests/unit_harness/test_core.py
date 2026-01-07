@@ -289,13 +289,15 @@ class TestCore(TestBase):  # pylint: disable=too-many-public-methods
         self.assertEqual(self.harness.model.unit.status, ops.WaitingStatus("Waiting for pebble"))
 
     @patch.object(ops.Container, "exec")
-    def test_config_changed(self, mock_exec):  # pylint: disable=R0915
+    @patch("charm.secrets")
+    def test_config_changed(self, mock_secrets, mock_exec):  # pylint: disable=R0915
         """
         arrange: charm created and relations established
         act: trigger a valid configuration change for the charm
         assert: the container and the service are running and properly configured
         """
         mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=("", None)))
+        mock_secrets.token_hex.return_value = "123456"
 
         self.set_relations_and_leader()
         saml_endpoints = (
@@ -402,7 +404,14 @@ class TestCore(TestBase):  # pylint: disable=too-many-public-methods
             environment={},
         )
         mock_exec.assert_any_call(
-            ["pip", "install", "--upgrade", "git+https://example.git/#subdirectory=themes_cern"],
+            [
+                "pip",
+                "install",
+                "--upgrade",
+                "-c",
+                "/tmp/constraints-123456.txt",  # nosec B108
+                "git+https://example.git/#subdirectory=themes_cern",
+            ],
             environment={},
         )
 
@@ -432,13 +441,15 @@ class TestCore(TestBase):  # pylint: disable=too-many-public-methods
         )
 
     @patch.object(ops.Container, "exec")
-    def test_config_changed_with_external_resources(self, mock_exec):
+    @patch("charm.secrets")
+    def test_config_changed_with_external_resources(self, mock_secrets, mock_exec):
         """
         arrange: charm created and relations established
         act: configure the customization resources and external plugins
         assert: the sources are downloaded and the plugins installed
         """
         mock_exec.return_value = MagicMock(wait_output=MagicMock(return_value=("", None)))
+        mock_secrets.token_hex.return_value = "123456"
 
         self.set_relations_and_leader()
         self.harness.update_config(
@@ -454,7 +465,14 @@ class TestCore(TestBase):  # pylint: disable=too-many-public-methods
             environment={},
         )
         mock_exec.assert_any_call(
-            ["pip", "install", "--upgrade", "git+https://example.git/#subdirectory=themes_cern"],
+            [
+                "pip",
+                "install",
+                "--upgrade",
+                "-c",
+                "/tmp/constraints-123456.txt",  # nosec B108
+                "git+https://example.git/#subdirectory=themes_cern",
+            ],
             environment={},
         )
 
