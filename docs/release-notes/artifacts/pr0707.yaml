@@ -1,0 +1,15 @@
+# --- Release notes artifact ----
+
+schema_version: 1
+changes:
+  - title: Change plugin installation to respect only Indico version
+    author: DeeKay3
+    type: minor
+    description: |
+      Modify the plugin installation by only using Indico version as constraint rather than all python packages.
+    urls: 
+      pr: https://github.com/canonical/indico-operator/pull/707
+      related_doc: 
+      related_issue: 
+    visibility: public
+    highlight: false

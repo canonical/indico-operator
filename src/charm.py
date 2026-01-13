@@ -721,10 +721,13 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
         """
         if not plugins:
             return
-        # Fetch currently installed packages and push to a temp constraints file
+        # Fetch Indico to a temp constraints file to ensure Indico version stays the same
         constraints_file = f"/tmp/constraints-{secrets.token_hex(8)}.txt"  # nosec B108
-        current_packages, _ = container.exec(["pip", "freeze"]).wait_output()
-        container.push(constraints_file, current_packages, make_dirs=True)
+        output, _ = container.exec(["pip", "freeze"]).wait_output()
+        constraint = next(
+            (line for line in output.splitlines() if line.startswith("indico==")), ""
+        )
+        container.push(constraints_file, constraint, make_dirs=True)
 
         try:
             install_command = ["pip", "install", "--upgrade", "-c", constraints_file] + plugins
