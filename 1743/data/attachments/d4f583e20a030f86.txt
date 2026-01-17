@@ -1,0 +1,97 @@
+[32mINFO    [0m pytest_operator.plugin:plugin.py:806 Connecting to existing model github-pr-3dfb1-microk8s:testing on unspecified cloud
+[32mINFO    [0m juju.model:model.py:1994 Deploying ch:amd64/jammy/redis-k8s-42
+[32mINFO    [0m juju.model:model.py:1994 Deploying ch:amd64/focal/nginx-ingress-integrator-133
+[32mINFO    [0m juju.model:model.py:1994 Deploying ch:amd64/jammy/redis-k8s-42
+[32mINFO    [0m juju.model:model.py:1994 Deploying ch:amd64/jammy/postgresql-k8s-717
+[32mINFO    [0m juju.model:model.py:1994 Deploying local:focal/indico-0
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  indico/0 [allocating] waiting: installing agent
+  postgresql-k8s/0 [allocating] waiting: installing agent
+  redis-broker/0 [allocating] waiting: installing agent
+  redis-cache/0 [allocating] waiting: installing agent
+  nginx-ingress-integrator/0 [allocating] waiting: installing agent
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  indico/0 [executing] maintenance: installing charm software
+  postgresql-k8s/0 [allocating] waiting: installing agent
+  redis-broker/0 [allocating] waiting: installing agent
+  redis-cache/0 [allocating] waiting: installing agent
+  nginx-ingress-integrator/0 [executing] waiting: waiting for relation
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  indico/0 [executing] waiting: Waiting for database availability
+  postgresql-k8s/0 [executing] maintenance: installing charm software
+  redis-broker/0 [executing] active: 
+  redis-cache/0 [executing] active: 
+  nginx-ingress-integrator/0 [idle] waiting: Waiting for ingress IP availability
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  indico/0 [idle] waiting: Waiting for database availability
+  postgresql-k8s/0 [executing] waiting: awaiting for cluster to start
+  nginx-ingress-integrator/0 [idle] waiting: Waiting for ingress IP availability
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  indico/0 [idle] waiting: Waiting for database availability
+  postgresql-k8s/0 [executing] waiting: awaiting for primary endpoint to be ready
+  nginx-ingress-integrator/0 [idle] waiting: Waiting for ingress IP availability
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  indico/0 [executing] maintenance: Adding indico layer to pebble
+  nginx-ingress-integrator/0 [executing] waiting: Waiting for ingress IP availability
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  indico/0 [idle] active: 
+  nginx-ingress-integrator/0 [executing] waiting: Waiting for ingress IP availability
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  nginx-ingress-integrator/0 [executing] waiting: Waiting for ingress IP availability
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  nginx-ingress-integrator/0 [executing] waiting: Waiting for ingress IP availability
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  nginx-ingress-integrator/0 [executing] waiting: Waiting for ingress IP availability
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  nginx-ingress-integrator/0 [executing] waiting: Waiting for ingress IP availability
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  nginx-ingress-integrator/0 [executing] waiting: Waiting for ingress IP availability
+[32mINFO    [0m juju.model:model.py:1994 Deploying ch:amd64/jammy/saml-integrator-66
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  saml-integrator/0 [allocating] waiting: installing agent
+  indico/0 [idle] active: 
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  saml-integrator/0 [idle] active: 
+  indico/0 [idle] active:
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  redis-broker/0 [idle] active: 
+  nginx-ingress-integrator/0 [idle] active: 
+  redis-cache/0 [idle] active: 
+  postgresql-k8s/0 [idle] active: Primary
+  indico/0 [idle] active: 
+  saml-integrator/0 [idle] active: 
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  nginx-ingress-integrator/0 [executing] waiting: Waiting for ingress IP availability
+  indico/0 [idle] active: 
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  nginx-ingress-integrator/0 [executing] waiting: Waiting for ingress IP availability
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  nginx-ingress-integrator/0 [executing] waiting: Waiting for ingress IP availability
+[32mINFO    [0m juju.model:model.py:2631 Waiting for model:
+  nginx-ingress-integrator/0 [executing] waiting: Waiting for ingress IP availability
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller                Cloud/Region        Version  SLA          Timestamp
+testing  github-pr-3dfb1-microk8s  microk8s/localhost  2.9.53   unsupported  15:22:51Z
+
+App                       Version  Status  Scale  Charm                     Channel        Rev  Address         Exposed  Message
+indico                    3.3.9    active      1  indico                                     0  10.152.183.132  no       
+nginx-ingress-integrator  24.2.0   active      1  nginx-ingress-integrator  latest/edge    133  10.152.183.32   no       
+postgresql-k8s            14.20    active      1  postgresql-k8s            14/edge        717  10.152.183.247  no       
+redis-broker              7.2.5    active      1  redis-k8s                 latest/edge     42  10.152.183.221  no       
+redis-cache               7.2.5    active      1  redis-k8s                 latest/edge     42  10.152.183.21   no       
+saml-integrator                    active      1  saml-integrator           latest/stable   66  10.152.183.67   no       
+
+Unit                         Workload  Agent      Address     Ports  Message
+indico/0*                    active    executing  10.1.60.15         (config-changed) 
+nginx-ingress-integrator/0*  active    idle       10.1.60.13         
+postgresql-k8s/0*            active    idle       10.1.60.20         Primary
+redis-broker/0*              active    idle       10.1.60.16         
+redis-cache/0*               active    idle       10.1.60.19         
+saml-integrator/0*           active    idle       10.1.60.21         
+
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...
