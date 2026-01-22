@@ -19,7 +19,7 @@ jobs:
       WORKING_DIR: 'terraform'
     steps:
       - name: Check out code
-        uses: actions/checkout@v6.0.1
+        uses: actions/checkout@v6.0.2
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3.1.2
