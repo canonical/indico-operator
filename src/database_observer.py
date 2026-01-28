@@ -2,6 +2,7 @@
 # See LICENSE file for licensing details.
 
 """The Database agent relation observer."""
+
 import logging
 import typing
 

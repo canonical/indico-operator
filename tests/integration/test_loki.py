@@ -3,6 +3,7 @@
 # See LICENSE file for licensing details.
 
 """Indico Loki integration tests."""
+
 import asyncio
 import json
 import logging

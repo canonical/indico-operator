@@ -4,6 +4,7 @@
 # See LICENSE file for licensing details.
 
 """Charm for Indico on kubernetes."""
+
 import logging
 import os
 import secrets

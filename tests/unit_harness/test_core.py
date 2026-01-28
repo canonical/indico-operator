@@ -503,9 +503,7 @@ class TestCore(TestBase):  # pylint: disable=too-many-public-methods
         | saml_groups | SAML Groups Plugin. |
         | storage_s3  | S3 Storage |
         +-------------+---------+
-        """.lstrip(
-            "\n"
-        )
+        """.lstrip("\n")
         mock_exec.return_value = MagicMock(
             wait_output=MagicMock(return_value=(plugins_table, None))
         )
