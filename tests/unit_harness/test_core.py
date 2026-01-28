@@ -202,7 +202,7 @@ class TestCore(TestBase):  # pylint: disable=too-many-public-methods
         updated_plan = self.harness.get_container_pebble_plan("indico").to_dict()
         updated_plan_env = updated_plan["services"]["indico"]["environment"]
         self.assertEqual(
-            "postgresql://user1:somepass@postgresql-k8s-primary.local:5432/indico",
+            "postgresql://user1:somepass@postgresql-k8s-primary.local:5432/indico",  # nosec
             updated_plan_env["INDICO_DB_URI"],
         )
         self.assertEqual("redis://broker-host:1010", updated_plan_env["CELERY_BROKER"])
@@ -254,7 +254,7 @@ class TestCore(TestBase):  # pylint: disable=too-many-public-methods
         updated_plan = self.harness.get_container_pebble_plan("indico").to_dict()
         updated_plan_env = updated_plan["services"]["indico"]["environment"]
         self.assertEqual(
-            "postgresql://user1:somepass@postgresql-k8s-primary.local:5432/indico",
+            "postgresql://user1:somepass@postgresql-k8s-primary.local:5432/indico",  # nosec
             updated_plan_env["INDICO_DB_URI"],
         )
         self.assertEqual("redis://broker-host:1010", updated_plan_env["CELERY_BROKER"])
@@ -503,9 +503,7 @@ class TestCore(TestBase):  # pylint: disable=too-many-public-methods
         | saml_groups | SAML Groups Plugin. |
         | storage_s3  | S3 Storage |
         +-------------+---------+
-        """.lstrip(
-            "\n"
-        )
+        """.lstrip("\n")
         mock_exec.return_value = MagicMock(
             wait_output=MagicMock(return_value=(plugins_table, None))
         )

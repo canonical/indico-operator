@@ -2,6 +2,7 @@
 # See LICENSE file for licensing details.
 
 """The SAML relation observer."""
+
 import logging
 
 from charms.saml_integrator.v0.saml import SamlRequires

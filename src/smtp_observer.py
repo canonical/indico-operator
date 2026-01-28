@@ -2,6 +2,7 @@
 # See LICENSE file for licensing details.
 
 """The SMTP relation observer."""
+
 import logging
 
 from charms.smtp_integrator.v0.smtp import SmtpRequires

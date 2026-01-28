@@ -85,13 +85,13 @@ def test_uri():
         app_data={
             "database": "indico",
             "endpoints": "postgresql-k8s-primary.local:5432",
-            "password": "somepass",
+            "password": "somepass",  # nosec
             "username": "user1",
         },
     )
 
     assert harness.charm.database.uri == (
-        "postgresql://user1:somepass@postgresql-k8s-primary.local:5432/indico"
+        "postgresql://user1:somepass@postgresql-k8s-primary.local:5432/indico"  # nosec
     )
 
 

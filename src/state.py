@@ -2,6 +2,7 @@
 # See LICENSE file for licensing details.
 
 """Indico states."""
+
 import dataclasses
 import logging
 import os

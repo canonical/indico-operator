@@ -2,6 +2,7 @@
 # See LICENSE file for licensing details.
 
 """The S3 agent relation observer."""
+
 import logging
 
 from charms.data_platform_libs.v0.s3 import S3Requirer
