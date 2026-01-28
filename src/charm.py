@@ -5,6 +5,8 @@
 
 """Charm for Indico on kubernetes."""
 
+# pylint: disable=too-many-lines
+
 import logging
 import os
 import secrets
