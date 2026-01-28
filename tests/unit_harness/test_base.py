@@ -31,7 +31,7 @@ class TestBase(unittest.TestCase):
             app_data={
                 "database": "indico",
                 "endpoints": "postgresql-k8s-primary.local:5432",
-                "password": "somepass",
+                "password": "somepass",  # nosec
                 "username": "user1",
             },
         )
