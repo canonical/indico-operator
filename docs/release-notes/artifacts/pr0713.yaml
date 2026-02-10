@@ -1,0 +1,15 @@
+# --- Release notes artifact ----
+
+schema_version: 1
+changes:
+  - title: Updated issue and enhancement templates
+    author: swetha1654
+    type: minor
+    description: |
+      Updated issue and enhancement templates to include impact of the issue / feature.
+    urls: 
+      pr: https://github.com/canonical/indico-operator/pull/713
+      related_doc: 
+      related_issue: 
+    visibility: public
+    highlight: false
