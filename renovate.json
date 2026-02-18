@@ -10,39 +10,13 @@
       ]
     }
   },
-  "extends": [
-    "config:base"
-  ],
-  "packageRules": [
+  "customManagers": [
     {
-      "enabled": true,
-      "matchDatasources": [
-        "docker"
-      ],
-      "pinDigests": true
-    },
-    {
-      "enabled": true,
-      "matchDatasources": [
-        "custom.charmhub"
-      ]
-    },
-    {
-      "enabled": true,
-      "matchDatasources": [
-        "terraform-provider"
-      ],
-      "matchPackageNames": [
-        "juju/juju"
-      ]
-    }
-  ],
-  "regexManagers": [
-    {
+      "customType": "regex",
       "datasourceTemplate": "docker",
       "description": "Update base image references",
-      "fileMatch": [
-        "(^|/)rockcraft.yaml$"
+      "managerFilePatterns": [
+        "/(^|/)rockcraft.yaml$/"
       ],
       "matchStrings": [
         "# renovate: build-base:\\s+(?<depName>[^:]*):(?<currentValue>[^\\s@]*)(@(?<currentDigest>sha256:[0-9a-f]*))?",
@@ -52,11 +26,12 @@
       "versioningTemplate": "ubuntu"
     },
     {
+      "customType": "regex",
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "nginxinc/nginx-prometheus-exporter",
       "description": "Update nginx exporter",
-      "fileMatch": [
-        "(^|/)rockcraft.yaml$"
+      "managerFilePatterns": [
+        "/(^|/)rockcraft.yaml$/"
       ],
       "matchStrings": [
         "source:.*nginx-prometheus-exporter.*\n.*source-tag: (?<currentValue>.+)"
@@ -65,11 +40,12 @@
       "versioningTemplate": "semver-coerced"
     },
     {
+      "customType": "regex",
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "indico/indico",
       "description": "Update indico",
-      "fileMatch": [
-        "(^|/)rockcraft.yaml$"
+      "managerFilePatterns": [
+        "/(^|/)rockcraft.yaml$/"
       ],
       "matchStrings": [
         ".*- indico==(?<currentValue>.+)"
@@ -78,15 +54,41 @@
       "versioningTemplate": "semver-coerced"
     },
     {
-      "datasourceTemplate": "custom.charmhub",
-      "fileMatch": [
-        "(^|/)main.tftest.hcl$"
+      "customType": "regex",
+      "fileMatch": ["\\.tftest\\.hcl$", "\\.tf$"],
+      "matchStrings": ["# renovate: depName=\"(?<packageName>[^\"]+)\"\\s*\\n\\s*(?<fieldName>[a-zA-Z0-9_]+)\\s*=\\s*(?<currentValue>\\d+)"],
+      "versioningTemplate": "semver-coerced",
+      "datasourceTemplate": "custom.charmhub"
+    }
+  ],
+  "extends": [
+    "config:recommended",
+    "group:allNonMajor"
+  ],
+  "ignorePaths": [],
+  "packageRules": [
+    {
+      "enabled": true,
+      "matchDatasources": [
+        "docker"
       ],
-      "matchStrings": [
-        "# renovate: depName=\"(?<packageName>[^\"]+)\"\\s*\\n\\s*(?<fieldName>[a-zA-Z0-9_]+)\\s*=\\s*\"(?<currentValue>[^\"]+)\""
+      "pinDigests": true
+    },
+    {
+      "matchDatasources": [
+          "custom.charmhub"
       ],
-      "matchStringsStrategy": "recursive",
-      "versioningTemplate": "semver-coerced"
+      "automerge": true,
+      "enabled": true
+    },
+    {
+      "enabled": true,
+      "matchDatasources": [
+        "terraform-provider"
+      ],
+      "matchPackageNames": [
+        "juju/juju"
+      ]
     }
   ]
 }

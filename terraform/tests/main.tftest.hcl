@@ -1,15 +1,22 @@
 # Copyright 2025 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-variables {
-  channel = "latest/edge"
-  # renovate: depName="indico"
-  revision = 263
+run "setup_tests" {
+  module {
+    source = "./tests/setup"
+  }
 }
 
 run "basic_deploy" {
+  variables {
+    model_uuid = run.setup_tests.model_uuid
+    channel    = "latest/edge"
+    # renovate: depName="indico"
+    revision = 263
+  }
+
   assert {
-    condition     = module.indico.app_name == "indico"
+    condition     = output.app_name == "indico"
     error_message = "Indico app_name did not match expected"
   }
 }
