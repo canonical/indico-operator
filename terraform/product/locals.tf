@@ -97,7 +97,7 @@ locals {
   revisions_defaults = {
     lego = 61
     # renovate: depName="nginx-ingress-integrator"
-    nginx_ingress_integrator = 81
+    nginx_ingress_integrator = 145
     # renovate: depName="redis-k8s"
     redis_cache = 25
     # renovate: depName="redis-k8s"
