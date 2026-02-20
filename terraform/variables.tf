@@ -4,7 +4,7 @@
 variable "app_name" {
   description = "Name of the application in the Juju model."
   type        = string
-  default     = "synapse"
+  default     = "indico"
 }
 
 variable "base" {
