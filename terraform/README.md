@@ -25,7 +25,7 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_app_name"></a> [app\_name](#input\_app\_name) | Name of the application in the Juju model. | `string` | `"synapse"` | no |
+| <a name="input_app_name"></a> [app\_name](#input\_app\_name) | Name of the application in the Juju model. | `string` | `"indico"` | no |
 | <a name="input_base"></a> [base](#input\_base) | The operating system on which to deploy | `string` | `"ubuntu@20.04"` | no |
 | <a name="input_channel"></a> [channel](#input\_channel) | The channel to use when deploying a charm. | `string` | `"latest/stable"` | no |
 | <a name="input_config"></a> [config](#input\_config) | Application config. | `map(string)` | `{}` | no |
