@@ -20,9 +20,6 @@ def pytest_addoption(parser):
     Args:
         parser: The pytest argument parser.
     """
-    parser.addoption(
-        "--charm-file", action="store", default=None, help="Pre-built charm file path"
-    )
     parser.addoption("--indico-image", action="store", default=None, help="Indico OCI image")
     parser.addoption(
         "--indico-nginx-image", action="store", default=None, help="Indico nginx OCI image"
