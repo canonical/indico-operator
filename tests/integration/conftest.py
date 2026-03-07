@@ -14,19 +14,6 @@ import yaml
 from pytest import Config, fixture
 
 
-def pytest_addoption(parser):
-    """Add Indico-specific command-line options.
-
-    Args:
-        parser: The pytest argument parser.
-    """
-    parser.addoption("--indico-image", action="store", default=None, help="Indico OCI image")
-    parser.addoption(
-        "--indico-nginx-image", action="store", default=None, help="Indico nginx OCI image"
-    )
-    parser.addoption("--saml-email", action="store", default=None, help="SAML test email address")
-    parser.addoption("--saml-password", action="store", default=None, help="SAML test password")
-
 
 @fixture(scope="module", name="external_url")
 def external_url_fixture():
