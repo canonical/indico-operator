@@ -12,6 +12,7 @@ jobs:
     secrets: inherit
     with:
       modules: '["test_actions.py", "test_charm.py", "test_s3.py", "test_saml.py", "test_loki.py"]'
+      juju-channel: 3.6/stable
       trivy-exit-code: 0
   allure-report:
     if: ${{ !cancelled() && github.event_name == 'schedule' }}
