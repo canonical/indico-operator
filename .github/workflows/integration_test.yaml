@@ -12,6 +12,7 @@ jobs:
     secrets: inherit
     with:
       modules: '["test_actions.py", "test_charm.py", "test_s3.py", "test_saml.py", "test_loki.py"]'
+      channel: 1.34-strict/stable
       juju-channel: 3.6/stable
       trivy-exit-code: 0
   allure-report:
