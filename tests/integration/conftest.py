@@ -14,7 +14,6 @@ import yaml
 from pytest import Config, fixture
 
 
-
 @fixture(scope="module", name="external_url")
 def external_url_fixture():
     """Provides the external URL for Indico."""
