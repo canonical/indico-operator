@@ -59,7 +59,9 @@ def test_anonymize_user_fail(juju: jubilant.Juju, app: str):
     act: run the anonymize-user action
     assert: check the output in the action result
     """
-    task = juju.run(f"{app}/0", "anonymize-user", params={"email": f",{ADMIN_USER_EMAIL_FAIL}"})
+    with pytest.raises(jubilant.TaskError) as exc_info:
+        juju.run(f"{app}/0", "anonymize-user", params={"email": f",{ADMIN_USER_EMAIL_FAIL}"})
+    task = exc_info.value.task
     assert task.status == "failed"
     assert task.results["user"] == f",{ADMIN_USER_EMAIL_FAIL}"
     expected_words = [ADMIN_USER_EMAIL_FAIL, "correctly anonymized", "Failed to anonymize user"]
