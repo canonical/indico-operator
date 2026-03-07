@@ -3,15 +3,32 @@
 
 """Fixtures for Indico charm integration tests."""
 
-import asyncio
 from pathlib import Path
 from secrets import token_hex
+from typing import Dict, Union
 
-import pytest_asyncio
+import jubilant
+import pytest
+import pytest_jubilant
 import yaml
-from ops import Application
 from pytest import Config, fixture
-from pytest_operator.plugin import OpsTest
+
+
+def pytest_addoption(parser):
+    """Add Indico-specific command-line options.
+
+    Args:
+        parser: The pytest argument parser.
+    """
+    parser.addoption(
+        "--charm-file", action="store", default=None, help="Pre-built charm file path"
+    )
+    parser.addoption("--indico-image", action="store", default=None, help="Indico OCI image")
+    parser.addoption(
+        "--indico-nginx-image", action="store", default=None, help="Indico nginx OCI image"
+    )
+    parser.addoption("--saml-email", action="store", default=None, help="SAML test email address")
+    parser.addoption("--saml-password", action="store", default=None, help="SAML test password")
 
 
 @fixture(scope="module", name="external_url")
@@ -22,7 +39,7 @@ def external_url_fixture():
 
 @fixture(scope="module")
 def saml_email(pytestconfig: Config):
-    """SAML login email address test argument for SAML integration tests"""
+    """SAML login email address test argument for SAML integration tests."""
     email = pytestconfig.getoption("--saml-email")
     if not email:
         raise ValueError("--saml-email argument is required for selected test cases")
@@ -31,7 +48,7 @@ def saml_email(pytestconfig: Config):
 
 @fixture(scope="module")
 def saml_password(pytestconfig: Config):
-    """SAML login password test argument for SAML integration tests"""
+    """SAML login password test argument for SAML integration tests."""
     password = pytestconfig.getoption("--saml-password")
     if not password:
         raise ValueError("--saml-password argument is required for selected test cases")
@@ -52,13 +69,13 @@ def app_name_fixture(metadata):
 
 @fixture(scope="module")
 def requests_timeout():
-    """Provides a global default timeout for HTTP requests"""
+    """Provides a global default timeout for HTTP requests."""
     yield 15
 
 
-@pytest_asyncio.fixture(scope="module", name="app")
-async def app_fixture(
-    ops_test: OpsTest,
+@pytest.fixture(scope="module", name="app")
+def app_fixture(
+    juju: jubilant.Juju,
     app_name: str,
     pytestconfig: Config,
 ):
@@ -66,126 +83,103 @@ async def app_fixture(
 
     Builds the charm and deploys it and the relations it depends on.
     """
-    assert ops_test.model
-    # Deploy relations to speed up overall execution
-    postgresql_config = {
-        "plugin_pg_trgm_enable": str(True),
-        "plugin_unaccent_enable": str(True),
+    postgresql_config: Dict[str, Union[bool, str]] = {
+        "plugin_pg_trgm_enable": True,
+        "plugin_unaccent_enable": True,
         "profile": "testing",
     }
-    await asyncio.gather(
-        ops_test.model.deploy(
-            "postgresql-k8s", channel="14/edge", config=postgresql_config, trust=True
-        ),
-        ops_test.model.deploy("redis-k8s", "redis-broker", channel="latest/edge"),
-        ops_test.model.deploy("redis-k8s", "redis-cache", channel="latest/edge"),
-        ops_test.model.deploy(
-            "nginx-ingress-integrator",
-            channel="latest/edge",
-            revision=133,
-            trust=True,
-            series="focal",
-        ),
+    juju.deploy("postgresql-k8s", channel="14/edge", config=postgresql_config, trust=True)
+    juju.deploy("redis-k8s", "redis-broker", channel="latest/edge")
+    juju.deploy("redis-k8s", "redis-cache", channel="latest/edge")
+    juju.deploy(
+        "nginx-ingress-integrator",
+        channel="latest/edge",
+        revision=133,
+        trust=True,
     )
+
     resources = {
         "indico-image": pytestconfig.getoption("--indico-image"),
         "indico-nginx-image": pytestconfig.getoption("--indico-nginx-image"),
     }
 
     if charm := pytestconfig.getoption("--charm-file"):
-        application = await ops_test.model.deploy(
-            f"./{charm}",
-            resources=resources,
-            application_name=app_name,
-            series="focal",
-        )
+        juju.deploy(f"./{charm}", app_name, resources=resources)
     else:
-        charm = await ops_test.build_charm(".")
-        application = await ops_test.model.deploy(
+        charm = pytest_jubilant.pack()
+        juju.deploy(
             charm,
+            app_name,
             resources=resources,
-            application_name=app_name,
             config={
                 "external_plugins": "https://github.com/canonical/flask-multipass-saml-groups/releases/download/1.2.2/flask_multipass_saml_groups-1.2.2-py3-none-any.whl"  # noqa: E501 pylint: disable=line-too-long
             },
-            series="focal",
         )
 
-    await asyncio.gather(
-        ops_test.model.add_relation(app_name, "postgresql-k8s"),
-        ops_test.model.add_relation(f"{app_name}:redis-broker", "redis-broker"),
-        ops_test.model.add_relation(f"{app_name}:redis-cache", "redis-cache"),
-        ops_test.model.add_relation(app_name, "nginx-ingress-integrator"),
-    )
-    await ops_test.model.wait_for_idle(
-        apps=[
-            application.name,
+    juju.integrate(app_name, "postgresql-k8s")
+    juju.integrate(f"{app_name}:redis-broker", "redis-broker")
+    juju.integrate(f"{app_name}:redis-cache", "redis-cache")
+    juju.integrate(app_name, "nginx-ingress-integrator")
+    juju.wait(
+        lambda status: jubilant.all_active(
+            status,
+            app_name,
             "postgresql-k8s",
             "redis-broker",
             "redis-cache",
             "nginx-ingress-integrator",
-        ],
-        status="active",
-        raise_on_error=True,
+        ),
+        error=jubilant.any_error,
     )
-    yield application
+    yield app_name
 
 
-@pytest_asyncio.fixture(scope="module", name="saml_integrator")
-async def saml_integrator_fixture(ops_test: OpsTest, app: Application):
+@pytest.fixture(scope="module", name="saml_integrator")
+def saml_integrator_fixture(juju: jubilant.Juju, app: str):
     """SAML integrator charm used for integration testing."""
-    assert ops_test.model
     saml_config = {
         "entity_id": "https://login.staging.ubuntu.com",
         "metadata_url": "https://login.staging.ubuntu.com/saml/metadata",
     }
-    saml_integrator = await ops_test.model.deploy(
-        "saml-integrator", channel="latest/stable", config=saml_config, trust=True
+    juju.deploy("saml-integrator", channel="latest/stable", config=saml_config, trust=True)
+    juju.integrate(app, "saml-integrator")
+    juju.wait(
+        lambda status: jubilant.all_active(status, "saml-integrator", app),
+        error=jubilant.any_error,
     )
-    await ops_test.model.add_relation(app.name, saml_integrator.name)
-    await ops_test.model.wait_for_idle(
-        apps=[saml_integrator.name, app.name], status="active", raise_on_error=True
-    )
-    yield saml_integrator
+    yield "saml-integrator"
 
 
-@pytest_asyncio.fixture(scope="module", name="s3_integrator")
-async def s3_integrator_fixture(ops_test: OpsTest, app: Application):
-    """SAML integrator charm used for integration testing."""
-    assert ops_test.model
+@pytest.fixture(scope="module", name="s3_integrator")
+def s3_integrator_fixture(juju: jubilant.Juju, app: str):
+    """S3 integrator charm used for integration testing."""
     s3_config = {
         "bucket": "some-bucket",
         "endpoint": "s3.example.com",
     }
-    s3_integrator = await ops_test.model.deploy(
-        "s3-integrator", channel="latest/edge", config=s3_config
-    )
-    await ops_test.model.wait_for_idle(apps=[s3_integrator.name], idle_period=5, status="blocked")
+    juju.deploy("s3-integrator", channel="latest/edge", config=s3_config)
+    juju.wait(lambda status: jubilant.all_blocked(status, "s3-integrator"))
     params = {"access-key": token_hex(16), "secret-key": token_hex(16)}
-    # Application actually does have units
-    action_sync_s3_credentials = await s3_integrator.units[0].run_action(  # type: ignore
-        "sync-s3-credentials", **params
+    juju.run("s3-integrator/0", "sync-s3-credentials", params=params)
+    juju.wait(
+        lambda status: jubilant.all_active(status, "s3-integrator"),
+        error=jubilant.any_error,
     )
-    await action_sync_s3_credentials.wait()
-    await ops_test.model.wait_for_idle(
-        apps=[s3_integrator.name], status="active", raise_on_error=True
+    juju.integrate(app, "s3-integrator")
+    juju.wait(
+        lambda status: jubilant.all_active(status, "s3-integrator", app),
+        error=jubilant.any_error,
     )
-    await ops_test.model.add_relation(app.name, s3_integrator.name)
-    await ops_test.model.wait_for_idle(
-        apps=[s3_integrator.name, app.name], status="active", raise_on_error=True
-    )
-    yield s3_integrator
+    yield "s3-integrator"
 
 
-@pytest_asyncio.fixture(scope="module", name="loki")
-async def loki_fixture(ops_test: OpsTest, app: Application):
+@pytest.fixture(scope="module", name="loki")
+def loki_fixture(juju: jubilant.Juju, app: str):
     """Loki charm used for integration testing."""
-    assert ops_test.model
-    loki = await ops_test.model.deploy(
-        "loki-k8s", channel="1/edge", trust=True, revision=97, series="focal"
+    juju.deploy("loki-k8s", channel="1/edge", trust=True, revision=97)
+    juju.integrate(app, "loki-k8s")
+    juju.wait(
+        lambda status: jubilant.all_active(status, "loki-k8s", app),
+        error=jubilant.any_error,
     )
-    await ops_test.model.add_relation(app.name, loki.name)
-    await ops_test.model.wait_for_idle(
-        apps=[loki.name, app.name], status="active", raise_on_error=True
-    )
-    yield loki
+    yield "loki-k8s"
