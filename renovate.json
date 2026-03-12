@@ -80,15 +80,6 @@
       ],
       "automerge": true,
       "enabled": true
-    },
-    {
-      "enabled": true,
-      "matchDatasources": [
-        "terraform-provider"
-      ],
-      "matchPackageNames": [
-        "juju/juju"
-      ]
     }
   ]
 }

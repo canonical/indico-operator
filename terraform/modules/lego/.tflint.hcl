@@ -2,5 +2,5 @@
 # See LICENSE file for licensing details.
 
 rule "terraform_required_version" {
-  enabled = false
+  enabled = true
 }
