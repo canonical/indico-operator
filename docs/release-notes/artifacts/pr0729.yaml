@@ -1,0 +1,21 @@
+# Version of the artifact schema
+version_schema: 2
+
+# The key holding the change(s)
+changes:
+- title: Align Terraform modules with current standards
+  author: seb4stien
+  type: minor
+  description: |
+    Updated all Terraform modules to align with current standards:
+    fixed Juju provider version to ~> 1.0, added required_version ~> 1.12,
+    enabled terraform_required_version tflint rule, removed stale
+    package rules from renovate.json, updated test revision, and
+    added missing README files in sub-modules.
+  urls:
+    pr:
+      - https://github.com/canonical/indico-operator/pull/729
+    related_doc:
+    related_issue:
+  visibility: hidden
+  highlight: false

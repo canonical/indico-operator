@@ -199,7 +199,12 @@ variable "lego_secret" {
 }
 
 variable "model" {
-  description = "Partial overrides for the model configuration."
+  # NOTE: This variable intentionally deviates from the standard `model_uuid` convention.
+  # The product module creates the Juju model itself (via `juju_model.indico`) rather than
+  # deploying into an existing model. This `model` variable accepts a map of string overrides
+  # for model configuration properties (name, cloud_name, cloud_region, constraints), which are
+  # merged with defaults in locals.tf. It is not a UUID reference to an existing model.
+  description = "Partial overrides for the model configuration (name, cloud_name, cloud_region, constraints)."
   type        = map(string)
   default     = {}
 }

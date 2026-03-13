@@ -2,7 +2,7 @@
 # See LICENSE file for licensing details.
 
 terraform {
-  required_version = ">= 1.6.6"
+  required_version = "~> 1.12"
   required_providers {
     vault = {
       source  = "hashicorp/vault"
@@ -10,7 +10,7 @@ terraform {
     }
     juju = {
       source  = "juju/juju"
-      version = "~> 1.2.0"
+      version = "~> 1.0"
     }
   }
 }
