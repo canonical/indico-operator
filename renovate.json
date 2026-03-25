@@ -55,10 +55,15 @@
     },
     {
       "customType": "regex",
-      "fileMatch": ["\\.tftest\\.hcl$", "\\.tf$"],
-      "matchStrings": ["# renovate: depName=\"(?<packageName>[^\"]+)\"\\s*\\n\\s*(?<fieldName>[a-zA-Z0-9_]+)\\s*=\\s*(?<currentValue>\\d+)"],
-      "versioningTemplate": "semver-coerced",
-      "datasourceTemplate": "custom.charmhub"
+      "datasourceTemplate": "custom.charmhub",
+      "fileMatch": [
+        "\\.tftest\\.hcl$",
+        "\\.tf$"
+      ],
+      "matchStrings": [
+        "# renovate: depName=\"(?<packageName>[^\"]+)\"\\s*\\n\\s*(?<fieldName>[a-zA-Z0-9_]+)\\s*=\\s*(?<currentValue>\\d+)"
+      ],
+      "versioningTemplate": "semver-coerced"
     }
   ],
   "extends": [
@@ -75,11 +80,11 @@
       "pinDigests": true
     },
     {
-      "matchDatasources": [
-          "custom.charmhub"
-      ],
       "automerge": true,
-      "enabled": true
+      "enabled": true,
+      "matchDatasources": [
+        "custom.charmhub"
+      ]
     },
     {
       "enabled": true,
@@ -90,5 +95,11 @@
         "juju/juju"
       ]
     }
-  ]
+  ],
+  "schedule": [
+    "* * * * 0,6"
+  ],
+  "vulnerabilityAlerts": {
+    "enabled": true
+  }
 }
