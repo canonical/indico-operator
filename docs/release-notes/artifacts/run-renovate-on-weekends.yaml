@@ -1,0 +1,15 @@
+# --- Release notes artifact ----
+
+schema_version: 1
+changes:
+  - title: Run renovate on weekends and enable frequent vulnerability alerts
+    author: javierdelapuente
+    type: chore
+    description: |
+      Configure Renovate to also run on weekends and enable more frequent vulnerability alerts.
+    urls:
+      pr: https://github.com/canonical/indico-operator/pull/742
+      related_doc:
+      related_issue:
+    visibility: internal
+    highlight: false
