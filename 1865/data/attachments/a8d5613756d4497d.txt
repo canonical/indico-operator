@@ -1,0 +1,36 @@
+[32mINFO    [0m pytest_operator.plugin:plugin.py:951 Model status:
+
+Model    Controller                Cloud/Region        Version  SLA          Timestamp
+testing  github-pr-75ef3-microk8s  microk8s/localhost  2.9.56   unsupported  15:23:54Z
+
+App                       Version  Status  Scale  Charm                     Channel      Rev  Address         Exposed  Message
+indico                    3.3.12   active      1  indico                                   0  10.152.183.82   no       
+nginx-ingress-integrator  24.2.0   active      1  nginx-ingress-integrator  latest/edge  133  10.152.183.35   no       
+postgresql-k8s            14.22    active      1  postgresql-k8s            14/edge      824  10.152.183.253  no       
+redis-broker              7.2.5    active      1  redis-k8s                 latest/edge   42  10.152.183.22   no       
+redis-cache               7.2.5    active      1  redis-k8s                 latest/edge   42  10.152.183.31   no       
+
+Unit                         Workload  Agent  Address      Ports  Message
+indico/0*                    active    idle   10.1.233.15         
+nginx-ingress-integrator/0*  active    idle   10.1.233.11         
+postgresql-k8s/0*            active    idle   10.1.233.18         Primary
+redis-broker/0*              active    idle   10.1.233.17         
+redis-cache/0*               active    idle   10.1.233.14         
+
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:957 Juju error logs:
+
+unit-redis-cache-0: 15:20:09 ERROR unit.redis-cache/0.juju-log redis-peers:0: Error when connecting to sentinel: Error 111 connecting to 0.0.0.0:26379. Connection refused.
+unit-redis-cache-0: 15:20:09 ERROR unit.redis-cache/0.juju-log redis-peers:0: Unit redis-cache/0 doesn't agree on tracked master
+unit-redis-cache-0: 15:20:09 ERROR unit.redis-cache/0.juju-log redis-peers:0: Error when connecting to sentinel: Error 111 connecting to localhost:26379. Connection refused.
+unit-redis-cache-0: 15:20:11 ERROR unit.redis-cache/0.juju-log redis:8: Error when connecting to sentinel: Error 111 connecting to 0.0.0.0:26379. Connection refused.
+unit-redis-cache-0: 15:20:11 ERROR unit.redis-cache/0.juju-log redis:8: Unit redis-cache/0 doesn't agree on tracked master
+unit-redis-cache-0: 15:20:11 ERROR unit.redis-cache/0.juju-log redis:8: Error when connecting to sentinel: Error 111 connecting to localhost:26379. Connection refused.
+unit-redis-cache-0: 15:20:13 ERROR unit.redis-cache/0.juju-log redis:8: Error when connecting to sentinel: Error 111 connecting to 0.0.0.0:26379. Connection refused.
+unit-redis-cache-0: 15:20:13 ERROR unit.redis-cache/0.juju-log redis:8: Unit redis-cache/0 doesn't agree on tracked master
+unit-redis-cache-0: 15:20:13 ERROR unit.redis-cache/0.juju-log redis:8: Error when connecting to sentinel: Error 111 connecting to localhost:26379. Connection refused.
+unit-redis-broker-0: 15:20:19 ERROR unit.redis-broker/0.juju-log redis-peers:1: Error when connecting to sentinel: Error 111 connecting to 0.0.0.0:26379. Connection refused.
+unit-redis-broker-0: 15:20:19 ERROR unit.redis-broker/0.juju-log redis-peers:1: Unit redis-broker/0 doesn't agree on tracked master
+unit-redis-broker-0: 15:20:19 ERROR unit.redis-broker/0.juju-log redis-peers:1: Error when connecting to sentinel: Error 111 connecting to localhost:26379. Connection refused.
+
+[32mINFO    [0m pytest_operator.plugin:plugin.py:1039 Forgetting model main...
