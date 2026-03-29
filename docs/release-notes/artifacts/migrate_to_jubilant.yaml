@@ -1,0 +1,16 @@
+version_schema: 2
+
+changes:
+- title: Migrated integration tests from pytest-operator to jubilant
+  author: tonyandrewmeyer
+  type: minor
+  description: |
+    Migrated integration tests to use the jubilant library and
+    pytest-jubilant plugin instead of pytest-operator.
+  urls:
+    pr:
+      - https://github.com/tonyandrewmeyer/indico-operator/pull/3
+    related_doc:
+    related_issue:
+  visibility: internal
+  highlight: false
