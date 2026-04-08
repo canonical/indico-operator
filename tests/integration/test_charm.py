@@ -75,6 +75,6 @@ def test_prom_exporters_are_up(juju: jubilant.Juju, app: str):
         f"localhost:{CELERY_PROMEXP_PORT}",
     ]
     for target in prometheus_targets:
-        cmd = f"curl -m 10 http://{target}/metrics"
+        cmd = f"curl -f -m 10 http://{target}/metrics"
         # CLIError is raised if the command fails, so a successful return means status 200.
         juju.cli("exec", "--unit", f"{app}/0", "--", "bash", "-c", cmd)
