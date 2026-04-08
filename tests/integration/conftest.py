@@ -79,6 +79,7 @@ def app_fixture(
         channel="latest/edge",
         revision=133,
         trust=True,
+        base="ubuntu@20.04",
     )
 
     resources = {
@@ -87,7 +88,7 @@ def app_fixture(
     }
 
     if charm := pytestconfig.getoption("--charm-file"):
-        juju.deploy(f"./{charm}", app_name, resources=resources)
+        juju.deploy(f"./{charm}", app_name, resources=resources, base="ubuntu@20.04")
     else:
         charm = pytest_jubilant.pack()
         juju.deploy(
@@ -97,6 +98,7 @@ def app_fixture(
             config={
                 "external_plugins": "https://github.com/canonical/flask-multipass-saml-groups/releases/download/1.2.2/flask_multipass_saml_groups-1.2.2-py3-none-any.whl"  # noqa: E501 pylint: disable=line-too-long
             },
+            base="ubuntu@20.04",
         )
 
     juju.integrate(app_name, "postgresql-k8s")
@@ -159,7 +161,7 @@ def s3_integrator_fixture(juju: jubilant.Juju, app: str):
 @pytest.fixture(scope="module", name="loki")
 def loki_fixture(juju: jubilant.Juju, app: str):
     """Loki charm used for integration testing."""
-    juju.deploy("loki-k8s", channel="1/edge", trust=True, revision=97)
+    juju.deploy("loki-k8s", channel="1/edge", trust=True, revision=97, base="ubuntu@20.04")
     juju.integrate(app, "loki-k8s")
     juju.wait(
         lambda status: jubilant.all_active(status, "loki-k8s", app),
