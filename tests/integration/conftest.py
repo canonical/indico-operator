@@ -4,7 +4,7 @@
 """Fixtures for Indico charm integration tests."""
 
 import shlex
-import subprocess
+import subprocess  # nosec B404
 from pathlib import Path
 from secrets import token_hex
 from typing import Dict, Union
@@ -105,7 +105,7 @@ def app_fixture(
     if charm := pytestconfig.getoption("--charm-file"):
         juju.deploy(f"./{charm}", app_name, resources=resources, base="ubuntu@20.04")
     else:
-        proc = subprocess.run(
+        proc = subprocess.run(  # nosec B603
             shlex.split("charmcraft pack -p ./"),
             check=True,
             capture_output=True,
