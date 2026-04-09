@@ -18,13 +18,13 @@ from pytest import Config, fixture
 # Shim: the CI action passes --keep-models (pytest-jubilant 1.x flag) but
 # pytest-jubilant 2.x renamed it to --no-juju-teardown.
 # Remove this once the action is updated to use --no-juju-teardown.
-def pytest_addoption(parser: pytest.Parser):
-    """Register the legacy --keep-models flag."""
+def pytest_addoption(parser):
+    """Register the legacy --keep-models flag."""  # noqa: DCO020
     parser.addoption("--keep-models", action="store_true", default=False)
 
 
-def pytest_configure(config: pytest.Config):
-    """Translate --keep-models into --no-juju-teardown."""
+def pytest_configure(config):
+    """Translate --keep-models into --no-juju-teardown."""  # noqa: DCO020
     if config.getoption("--keep-models", default=False):
         config.option.no_juju_teardown = True
 
@@ -111,13 +111,14 @@ def app_fixture(
             capture_output=True,
             text=True,
         )
-        charm = Path(
-            next(
-                line.split()[1]
-                for line in proc.stderr.strip().splitlines()
-                if line.startswith("Packed")
-            )
-        ).resolve()
+        packed = [
+            line.split()[1]
+            for line in proc.stderr.strip().splitlines()
+            if line.startswith("Packed")
+        ]
+        if not packed:
+            raise RuntimeError(f"No packed charm found in charmcraft output: {proc.stderr}")
+        charm = Path(packed[0]).resolve()
         juju.deploy(
             charm,
             app_name,
