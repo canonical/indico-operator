@@ -3,15 +3,30 @@
 
 """Fixtures for Indico charm integration tests."""
 
+import shlex
+import subprocess
 from pathlib import Path
 from secrets import token_hex
 from typing import Dict, Union
 
 import jubilant
 import pytest
-import pytest_jubilant
 import yaml
 from pytest import Config, fixture
+
+
+# Shim: the CI action passes --keep-models (pytest-jubilant 1.x flag) but
+# pytest-jubilant 2.x renamed it to --no-juju-teardown.
+# Remove this once the action is updated to use --no-juju-teardown.
+def pytest_addoption(parser: pytest.Parser):
+    """Register the legacy --keep-models flag."""
+    parser.addoption("--keep-models", action="store_true", default=False)
+
+
+def pytest_configure(config: pytest.Config):
+    """Translate --keep-models into --no-juju-teardown."""
+    if config.getoption("--keep-models", default=False):
+        config.option.no_juju_teardown = True
 
 
 @fixture(scope="module", name="external_url")
@@ -90,7 +105,19 @@ def app_fixture(
     if charm := pytestconfig.getoption("--charm-file"):
         juju.deploy(f"./{charm}", app_name, resources=resources, base="ubuntu@20.04")
     else:
-        charm = pytest_jubilant.pack()
+        proc = subprocess.run(
+            shlex.split("charmcraft pack -p ./"),
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        charm = Path(
+            next(
+                line.split()[1]
+                for line in proc.stderr.strip().splitlines()
+                if line.startswith("Packed")
+            )
+        ).resolve()
         juju.deploy(
             charm,
             app_name,
