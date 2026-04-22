@@ -1,6 +1,11 @@
 # Copyright 2025 Canonical Ltd.
 # See LICENSE file for licensing details.
 
+variable "juju_model_uuid" {
+  description = "Juju model UUID "
+  type        = string
+}
+
 variable "app_names" {
   description = "Partial overrides for application names."
   type        = map(string)
@@ -28,35 +33,6 @@ variable "channels" {
   default     = {}
 }
 
-variable "config_lego" {
-  description = "Configuration for the Lego charm."
-  type        = map(string)
-
-  default = {
-    "email" : "is-admin@canonical.com",
-    "plugin" : "httpreq",
-  }
-}
-
-variable "config_model" {
-  description = "Configuration for the juju model."
-  type        = map(string)
-  default = {
-    juju-http-proxy  = "" # override or set via locals
-    juju-https-proxy = "" # override or set via locals
-    juju-no-proxy    = "127.0.0.1,localhost,::1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,.canonical.com,.launchpad.net,.internal,.jujucharms.com,.ubuntu.com"
-  }
-}
-
-variable "config_nginx_ingress_integrator" {
-  description = "Configuration for the nginx ingress integrator charm."
-  type        = map(string)
-  default = {
-    max-body-size    = "21"
-    service-hostname = "" # override or set via locals
-  }
-}
-
 variable "config_s3_integrator_media" {
   description = "Configuration for the s3 integrator media charm."
   type        = map(string)
@@ -71,12 +47,6 @@ variable "config_s3_integrator_media" {
 
 variable "config_local_saml_integrator" {
   description = "Configuration for the local saml integrator charm."
-  type        = map(string)
-  default     = {}
-}
-
-variable "config_local_postgresql" {
-  description = "Configuration for the local postgresql charm."
   type        = map(string)
   default     = {}
 }
@@ -134,93 +104,10 @@ variable "credentials" {
   }
 }
 
-variable "enable" {
-  description = "A map to enable or disable various components."
-  type        = map(bool)
-  default     = {}
-  validation {
-    condition = length(
-      setsubtract(keys(var.enable), [
-        "lego",
-        "nginx_ingress_integrator",
-        "local_postgresql",
-        "local_saml_integrator",
-        "redis_cache",
-        "redis_broker",
-        "s3_integrator_media",
-        "smtp_integrator"
-      ])
-    ) == 0
-
-    error_message = "The keys in var.enable must be one or more of: lego, nginx_ingress_integrator, local_postgresql, local_saml_integrator, maubot, redis_k8s, s3_integrator_backup, s3_integrator_media, smtp_integrator."
-  }
-}
-
 variable "hostname" {
   description = "Matrix server URL."
   type        = string
   default     = ""
-}
-
-variable "integrate_offers" {
-  description = "Partial overrides for integrating specific offers."
-  type        = map(bool)
-  default     = {}
-  validation {
-    condition = length(
-      setsubtract(keys(var.integrate_offers), [
-        "postgresql",
-        "prometheus",
-        "grafana",
-        "saml_integrator"
-      ])
-    ) == 0
-
-    error_message = "The keys in var.integrate_offers must be one or more of: postgresql, prometheus, grafana, saml_integrator."
-  }
-}
-
-variable "lego_secret" {
-  description = "Lego secret config."
-  type = object({
-    name  = string
-    value = map(any)
-  })
-
-  default = {
-    name = "indico-lego-credentials"
-    value = {
-      httpreq-endpoint            = "https://lego-certs.canonical.com"
-      httpreq-username            = ""
-      httpreq-password            = ""
-      httpreq-propagation-timeout = 600
-    }
-  }
-}
-
-variable "model" {
-  description = "Partial overrides for the model configuration."
-  type        = map(string)
-  default     = {}
-}
-
-variable "offer_urls" {
-  description = "Partial overrides for external offer URLs."
-  type        = map(string)
-  default     = {}
-  validation {
-    condition = length(
-      setsubtract(keys(var.offer_urls), [
-        "postgresql",
-        "prometheus",
-        "grafana",
-        "saml_integrator"
-      ])
-    ) == 0
-
-    error_message = "The keys in var.offer_urls must be one or more of: postgresql, prometheus, grafana, saml_integrator."
-  }
-
 }
 
 variable "revisions" {
