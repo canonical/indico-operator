@@ -17,7 +17,7 @@ This charm will make operating Indico simple and straightforward for DevOps or S
 | | |
 |--|--|
 |  [Tutorials](https://charmhub.io/indico/docs/tutorial)</br>  Get started - a hands-on introduction to using the Charmed Indico operator for new users </br> |  [How-to guides](https://charmhub.io/indico/docs/how-to-configure-a-proxy) </br> Step-by-step guides covering key operations and common tasks |
-| [Reference](https://charmhub.io/indico/docs/reference-actions) </br> Technical information - specifications, APIs, architecture | [Explanation]() </br> Concepts - discussion and clarification of key topics  |
+| [Reference](https://charmhub.io/indico/docs/reference-actions) </br> Technical information - specifications, APIs, architecture | |
 
 ## Contributing to this documentation
 
@@ -39,7 +39,7 @@ Thinking about using the Indico Operator for your next project? [Get in touch](h
 # Contents
 
 1. [Tutorial](tutorial.md)
-1. [How to](how-to)
+1. [How to](how-to/index.md)
   1. [Configure a proxy](how-to/configure-a-proxy.md)
   1. [Configure S3](how-to/configure-s3.md)
   1. [Configure SAML](how-to/configure-saml.md)
@@ -49,7 +49,7 @@ Thinking about using the Indico Operator for your next project? [Get in touch](h
   1. [Customize theme](how-to/customize-theme.md)
   1. [Redeploy](how-to/redeploy.md)
   1. [Contribute](how-to/contribute.md)
-1. [Reference](reference)
+1. [Reference](reference/index.md)
   1. [Actions](reference/actions.md)
   1. [Charm architecture](reference/charm-architecture.md)
   1. [Configurations](reference/configurations.md)
