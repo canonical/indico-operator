@@ -1,0 +1,20 @@
+# Version of the artifact schema
+version_schema: 2
+
+# The key holding the change(s)
+changes:
+- title: Updated landing pages
+  author: erinecon
+  type: minor
+  description: |
+    Now the landing pages serve as useful navigational tools
+    for users, categorizing content by related themes or domains,
+    and providing explanations for each section.
+  urls:
+    pr: 
+      - 
+    related_doc: docs/how-to/index.md, docs/reference/index.md
+    related_issue: 
+  visibility: hidden
+  highlight: false
+
