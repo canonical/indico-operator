@@ -5,35 +5,27 @@ integration interfaces, extensibility mechanisms, and runtime behavior within a
 Juju-managed Kubernetes environment.
 
 ## Charm configuration and operations
-<!--
-Themes: charm lifecycle, configuration options, operational actions
-Justification: core charm machinery — configuration, actions, and architectural internals
-User journey context: all stages (lookup-driven)
-Juju ecosystem scope: charm-specific (configuration, actions), cross-charm (relation events)
--->
+
+Your operational decisions depend on the charm’s configuration options,
+its available actions, and the underlying design decisions behind the
+charm's architecture.
 
 - [Actions](actions.md)
 - [Configurations](configurations.md)
 - [Charm architecture](charm-architecture.md)
 
 ## Extensibility
-<!--
-Themes: plugin architecture, theme customization, external resources
-Justification: shared concern — extending Indico functionality beyond defaults
-User journey context: configuration, post-deployment customization
-Juju ecosystem scope: charm-specific (configuration options)
--->
+
+Your Indico deployment can be customized with plugins and
+themes to match your specific needs and use case.
 
 - [Plugins](plugins.md)
 - [Theme customization](theme-customization.md)
 
 ## Networking and integrations
-<!--
-Themes: relation interfaces, external network access, ingress
-Justification: shared concern — connectivity between charm and external systems
-User journey context: integration, scaling, troubleshooting
-Juju ecosystem scope: cross-charm (relation endpoints), model-level (ingress/networking)
--->
+
+Expanding Indico's reach in Juju depends on the charm’s relation interfaces,
+and your deployment’s reach to the outside world depends on the mechanisms for external access.
 
 - [Integrations](integrations.md)
 - [External access](external-access.md)
