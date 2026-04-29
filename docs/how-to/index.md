@@ -31,7 +31,7 @@ deployment to the outside world safely and according to your needs.
 
 ## Maintenance and development
 
-Now that your deployment is fully configured and customized, now you can
+Now that your deployment is fully configured and customized, you can
 focus on sustaining and evolving the Indico charm beyond your initial
 deployment, including contributing missing features or bug fixes.
 
