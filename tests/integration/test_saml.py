@@ -19,7 +19,7 @@ from pytest_operator.plugin import OpsTest
 @pytest.mark.asyncio
 @pytest.mark.abort_on_fail
 @pytest.mark.usefixtures("saml_integrator")
-async def test_saml_auth(  # pylint: disable=too-many-arguments,too-many-positional-arguments
+async def test_saml_auth(  # pylint: disable=too-many-arguments, too-many-positional-arguments
     ops_test: OpsTest,
     app: Application,
     simplesamlphp_ip: str,
@@ -71,7 +71,7 @@ async def test_saml_auth(  # pylint: disable=too-many-arguments,too-many-positio
         assert auth_state_matches, saml_login_page.text
         # Authenticate with the local simplesamlphp IDP using its built-in test credentials
         saml_response_page = session.post(
-            f"http://{simplesamlphp_ip}:{8080}/simplesaml/module.php/core/loginuserpass.php",
+            f"http://{simplesamlphp_ip}:8080/simplesaml/module.php/core/loginuserpass.php",
             data={
                 "username": "user1",
                 "password": "user1pass",

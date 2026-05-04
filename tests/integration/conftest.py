@@ -199,8 +199,8 @@ async def simplesamlphp_ip_fixture(
                 logger.info("simplesamlphp running at %s", pod.status.pod_ip)
                 pod_ip = pod.status.pod_ip
                 break
-        except kubernetes.client.ApiException:
-            pass
+        except kubernetes.client.ApiException as exc:
+            logger.debug("error reading simplesamlphp pod status: %s", exc)
         logger.info("waiting for simplesamlphp pod")
         time.sleep(1)
     return pod_ip
@@ -212,10 +212,10 @@ async def saml_integrator_fixture(ops_test: OpsTest, app: Application, simplesam
     assert ops_test.model
     saml_config = {
         "entity_id": (
-            f"http://{simplesamlphp_ip}:{SIMPLESAMLPHP_PORT}" "/simplesaml/saml2/idp/metadata.php"
+            f"http://{simplesamlphp_ip}:{SIMPLESAMLPHP_PORT}/simplesaml/saml2/idp/metadata.php"
         ),
         "metadata_url": (
-            f"http://{simplesamlphp_ip}:{SIMPLESAMLPHP_PORT}" "/simplesaml/saml2/idp/metadata.php"
+            f"http://{simplesamlphp_ip}:{SIMPLESAMLPHP_PORT}/simplesaml/saml2/idp/metadata.php"
         ),
     }
     saml_integrator = await ops_test.model.deploy(
