@@ -60,7 +60,7 @@ async def test_saml_auth(  # pylint: disable=too-many-arguments, too-many-positi
         session.get(f"https://{host}", verify=False)
         # Initiate SAML SP login flow; Indico redirects to the simplesamlphp IDP
         saml_login_page = session.get(
-            f"https://{host}/multipass/saml/ubuntu/sso",
+            f"https://{host}/login/ubuntu",
             verify=False,
             timeout=requests_timeout,
         )
