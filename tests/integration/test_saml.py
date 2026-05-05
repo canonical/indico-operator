@@ -74,7 +74,7 @@ async def test_saml_auth(  # pylint: disable=too-many-arguments, too-many-positi
             f"http://{simplesamlphp_ip}:8080/simplesaml/module.php/core/loginuserpass.php",
             data={
                 "username": "user1",
-                "password": "user1pass",
+                "password": "password",
                 "AuthState": auth_state_matches[0],
             },
             timeout=requests_timeout,
