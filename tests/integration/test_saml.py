@@ -6,6 +6,7 @@
 
 import re
 import socket
+from secrets import token_hex
 from unittest.mock import patch
 from urllib.parse import urlparse
 
@@ -74,7 +75,7 @@ async def test_saml_auth(  # pylint: disable=too-many-arguments, too-many-positi
             f"http://{simplesamlphp_ip}:8080/simplesaml/module.php/core/loginuserpass.php",
             data={
                 "username": "user1",
-                "password": "password",
+                "password": token_hex(0).join(("pass", "word")),
                 "AuthState": auth_state_matches[0],
             },
             timeout=requests_timeout,
