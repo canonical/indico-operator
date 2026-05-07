@@ -4,38 +4,29 @@
 """Fixtures for Indico charm integration tests."""
 
 import asyncio
+import logging
+import time
 from pathlib import Path
 from secrets import token_hex
 
+import kubernetes
 import pytest_asyncio
 import yaml
 from ops import Application
 from pytest import Config, fixture
 from pytest_operator.plugin import OpsTest
 
+logger = logging.getLogger(__name__)
+
+SIMPLESAMLPHP_PORT = 8080
+SIMPLESAMLPHP_POD_NAME = "simplesamlphp"
+SIMPLESAMLPHP_SERVICE_NAME = "simplesamlphp-service"
+
 
 @fixture(scope="module", name="external_url")
 def external_url_fixture():
     """Provides the external URL for Indico."""
     return "https://events.staging.canonical.com"
-
-
-@fixture(scope="module")
-def saml_email(pytestconfig: Config):
-    """SAML login email address test argument for SAML integration tests"""
-    email = pytestconfig.getoption("--saml-email")
-    if not email:
-        raise ValueError("--saml-email argument is required for selected test cases")
-    return email
-
-
-@fixture(scope="module")
-def saml_password(pytestconfig: Config):
-    """SAML login password test argument for SAML integration tests"""
-    password = pytestconfig.getoption("--saml-password")
-    if not password:
-        raise ValueError("--saml-password argument is required for selected test cases")
-    return password
 
 
 @fixture(scope="module", name="metadata")
@@ -131,13 +122,101 @@ async def app_fixture(
     yield application
 
 
+@pytest_asyncio.fixture(scope="module", name="simplesamlphp_ip")
+async def simplesamlphp_ip_fixture(
+    pytestconfig: Config,
+    ops_test: OpsTest,
+    app: Application,  # pylint: disable=unused-argument
+    external_url: str,
+) -> str:
+    """Deploy test SimpleSAML IDP service.
+
+    Returns the pod IP of the deployed application.
+    """
+    kube_config = pytestconfig.getoption("--kube-config")
+    kubernetes.config.load_kube_config(config_file=kube_config)
+    assert ops_test.model
+    namespace = ops_test.model.name
+    v1 = kubernetes.client.CoreV1Api()
+    pod = kubernetes.client.V1Pod(
+        api_version="v1",
+        kind="Pod",
+        metadata=kubernetes.client.V1ObjectMeta(
+            name=SIMPLESAMLPHP_POD_NAME,
+            namespace=namespace,
+            labels={"app.kubernetes.io/name": SIMPLESAMLPHP_POD_NAME},
+        ),
+        spec=kubernetes.client.V1PodSpec(
+            containers=[
+                kubernetes.client.V1Container(
+                    name="saml",
+                    image="kenchan0130/simplesamlphp",
+                    ports=[
+                        kubernetes.client.V1ContainerPort(container_port=SIMPLESAMLPHP_PORT),
+                    ],
+                    env=[
+                        kubernetes.client.V1EnvVar(
+                            name="SIMPLESAMLPHP_SP_ENTITY_ID",
+                            value=external_url,
+                        ),
+                        kubernetes.client.V1EnvVar(
+                            name="SIMPLESAMLPHP_SP_ASSERTION_CONSUMER_SERVICE",
+                            value=f"{external_url}/multipass/saml/ubuntu/acs",
+                        ),
+                    ],
+                )
+            ],
+        ),
+    )
+    v1.create_namespaced_pod(namespace=namespace, body=pod)
+    service = kubernetes.client.V1Service(
+        api_version="v1",
+        kind="Service",
+        metadata=kubernetes.client.V1ObjectMeta(
+            name=SIMPLESAMLPHP_SERVICE_NAME, namespace=namespace
+        ),
+        spec=kubernetes.client.V1ServiceSpec(
+            type="ClusterIP",
+            ports=[
+                kubernetes.client.V1ServicePort(
+                    port=SIMPLESAMLPHP_PORT,
+                    target_port=SIMPLESAMLPHP_PORT,
+                    name=f"tcp-{SIMPLESAMLPHP_PORT}",
+                ),
+            ],
+            selector={"app.kubernetes.io/name": SIMPLESAMLPHP_POD_NAME},
+        ),
+    )
+    v1.create_namespaced_service(namespace=namespace, body=service)
+    deadline = time.time() + 300
+    pod_ip = None
+    while True:
+        if time.time() > deadline:
+            raise TimeoutError("timeout while waiting for simplesamlphp pod")
+        try:
+            pod = v1.read_namespaced_pod(name=SIMPLESAMLPHP_POD_NAME, namespace=namespace)
+            if pod.status.phase == "Running":
+                logger.info("simplesamlphp running at %s", pod.status.pod_ip)
+                pod_ip = pod.status.pod_ip
+                break
+        except kubernetes.client.ApiException as exc:
+            logger.debug("error reading simplesamlphp pod status: %s", exc)
+        logger.info("waiting for simplesamlphp pod")
+        time.sleep(1)
+    return pod_ip
+
+
 @pytest_asyncio.fixture(scope="module", name="saml_integrator")
-async def saml_integrator_fixture(ops_test: OpsTest, app: Application):
+async def saml_integrator_fixture(ops_test: OpsTest, app: Application, simplesamlphp_ip: str):
     """SAML integrator charm used for integration testing."""
     assert ops_test.model
     saml_config = {
-        "entity_id": "https://login.staging.ubuntu.com",
-        "metadata_url": "https://login.staging.ubuntu.com/saml/metadata",
+        "entity_id": (
+            f"http://{simplesamlphp_ip}:{SIMPLESAMLPHP_PORT}/simplesaml/saml2/idp/metadata.php"
+        ),
+        "metadata_url": (
+            f"http://{simplesamlphp_ip}:{SIMPLESAMLPHP_PORT}/simplesaml/saml2/idp/metadata.php"
+        ),
     }
     saml_integrator = await ops_test.model.deploy(
         "saml-integrator", channel="latest/stable", config=saml_config, trust=True
