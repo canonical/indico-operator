@@ -6,6 +6,7 @@
 
 import re
 import socket
+from secrets import token_hex
 from unittest.mock import patch
 from urllib.parse import urlparse
 
@@ -22,8 +23,7 @@ from pytest_operator.plugin import OpsTest
 async def test_saml_auth(  # pylint: disable=too-many-arguments, too-many-positional-arguments
     ops_test: OpsTest,
     app: Application,
-    saml_email: str,
-    saml_password: str,
+    simplesamlphp_ip: str,
     requests_timeout: float,
     external_url: str,
 ):
@@ -59,47 +59,40 @@ async def test_saml_auth(  # pylint: disable=too-many-arguments, too-many-positi
 
     with patch.multiple(socket, getaddrinfo=patched_getaddrinfo), requests.session() as session:
         session.get(f"https://{host}", verify=False)
-        login_page = session.get(
-            f"https://{host}/login",
+        # Initiate SAML SP login flow; Indico redirects to the simplesamlphp IDP
+        saml_login_page = session.get(
+            f"https://{host}/login/ubuntu",
             verify=False,
             timeout=requests_timeout,
         )
-        csrf_token_matches = re.findall(
-            "<input type='hidden' name='csrfmiddlewaretoken' value='([^']+)' />", login_page.text
+        # Extract the AuthState token from the simplesamlphp login page
+        auth_state_matches = re.findall(
+            r'<input[^>]+name="AuthState"[^>]+value="([^"]+)"', saml_login_page.text
         )
-        assert csrf_token_matches, login_page.text
-        saml_callback = session.post(
-            "https://login.staging.ubuntu.com/+login",
+        assert auth_state_matches, saml_login_page.text
+        # Authenticate with the local simplesamlphp IDP using its built-in test credentials
+        saml_response_page = session.post(
+            f"http://{simplesamlphp_ip}:8080/simplesaml/module.php/core/loginuserpass.php",
             data={
-                "csrfmiddlewaretoken": csrf_token_matches[0],
-                "email": saml_email,
-                "user-intentions": "login",
-                "password": saml_password,
-                "next": "/saml/process",
-                "continue": "",
-                "openid.usernamesecret": "",
-                "RelayState": "indico.local",
+                "username": "user1",
+                "password": token_hex(0).join(("pass", "word")),
+                "AuthState": auth_state_matches[0],
             },
-            headers={"Referer": login_page.url},
             timeout=requests_timeout,
         )
         saml_response_matches = re.findall(
-            '<input type="hidden" name="SAMLResponse" value="([^"]+)" />', saml_callback.text
+            r'<input[^>]*name="SAMLResponse"[^>]*value="([^"]+)"', saml_response_page.text
         )
-        assert len(saml_response_matches), saml_callback.text
+        assert saml_response_matches, saml_response_page.text
+        relay_state_matches = re.findall(
+            r'<input[^>]*name="RelayState"[^>]*value="([^"]+)"', saml_response_page.text
+        )
         session.post(
             f"https://{host}/multipass/saml/ubuntu/acs",
             data={
-                "RelayState": "None",
                 "SAMLResponse": saml_response_matches[0],
-                "openid.usernamesecret": "",
+                "RelayState": relay_state_matches[0] if relay_state_matches else "",
             },
-            verify=False,
-            timeout=requests_timeout,
-        )
-        session.post(
-            f"https://{host}/multipass/saml/ubuntu/acs",
-            data={"SAMLResponse": saml_response_matches[0], "SameSite": "1"},
             verify=False,
             timeout=requests_timeout,
         )
