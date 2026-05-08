@@ -11,8 +11,8 @@ jobs:
     uses: canonical/operator-workflows/.github/workflows/test.yaml@main
     secrets: inherit
     with:
-      self-hosted-runner: true
-      self-hosted-runner-label: "edge"
+      self-hosted-runner: false
+      runs-on-base: ubuntu-24.04
   plugins-test:
     name: Specific test for the plugin
     runs-on: ubuntu-22.04

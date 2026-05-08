@@ -13,5 +13,4 @@ def pytest_addoption(parser):
     parser.addoption("--charm-file", action="store")
     parser.addoption("--indico-image", action="store")
     parser.addoption("--indico-nginx-image", action="store")
-    parser.addoption("--saml-email", action="store")
-    parser.addoption("--saml-password", action="store")
+    parser.addoption("--kube-config", action="store")
