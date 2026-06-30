@@ -6,7 +6,7 @@
 # pylint:disable=duplicate-code,protected-access
 from ast import literal_eval
 from secrets import token_hex
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, PropertyMock, patch
 
 import ops
 import pytest
@@ -184,7 +184,7 @@ class TestCore(TestBase):  # pylint: disable=too-many-public-methods
         self.harness.container_pebble_ready("indico-nginx")
         self.assertEqual(self.harness.model.unit.status, ops.ActiveStatus())
 
-    @patch.object(ops.JujuVersion, "from_environ")
+    @patch.object(ops.model.Model, "juju_version", new_callable=PropertyMock)
     @patch.object(ops.Container, "exec")
     def test_indico_pebble_ready_when_secrets_not_enabled(self, mock_exec, mock_juju_env):
         """
@@ -229,7 +229,7 @@ class TestCore(TestBase):  # pylint: disable=too-many-public-methods
         self.assertTrue(service.is_running())
         self.assertEqual(self.harness.model.unit.status, ops.WaitingStatus("Waiting for pebble"))
 
-    @patch.object(ops.JujuVersion, "from_environ")
+    @patch.object(ops.model.Model, "juju_version", new_callable=PropertyMock)
     @patch.object(ops.Container, "exec")
     def test_indico_pebble_ready_when_secrets_enabled(self, mock_exec, mock_juju_env):
         """
@@ -542,7 +542,7 @@ class TestCore(TestBase):  # pylint: disable=too-many-public-methods
         identity_providers = literal_eval(updated_plan_env["INDICO_IDENTITY_PROVIDERS"])
         self.assertEqual("saml_groups", identity_providers["ubuntu"]["type"])
 
-    @patch.object(ops.JujuVersion, "from_environ")
+    @patch.object(ops.model.Model, "juju_version", new_callable=PropertyMock)
     def test_on_leader_elected_when_secrets_not_supported(self, mock_juju_env):
         """
         arrange: charm created and secrets not supported
@@ -563,7 +563,7 @@ class TestCore(TestBase):  # pylint: disable=too-many-public-methods
             self.harness.get_relation_data(rel_id, self.harness.charm.app.name).get("secret-key"),
         )
 
-    @patch.object(ops.JujuVersion, "from_environ")
+    @patch.object(ops.model.Model, "juju_version", new_callable=PropertyMock)
     def test_on_leader_elected_when_secrets_supported(self, mock_juju_env):
         """
         arrange: charm created and secrets supported
@@ -583,7 +583,7 @@ class TestCore(TestBase):  # pylint: disable=too-many-public-methods
             self.harness.get_relation_data(rel_id, self.harness.charm.app.name).get("secret-id"),
         )
 
-    @patch.object(ops.JujuVersion, "from_environ")
+    @patch.object(ops.model.Model, "juju_version", new_callable=PropertyMock)
     def test_on_leader_elected_sets_celery_unit(self, mock_juju_env):
         """
         arrange: given a charm with an empty peer relation
@@ -598,7 +598,7 @@ class TestCore(TestBase):  # pylint: disable=too-many-public-methods
         )
         self.assertEqual(celery_unit, self.harness.charm.unit.name)
 
-    @patch.object(ops.JujuVersion, "from_environ")
+    @patch.object(ops.model.Model, "juju_version", new_callable=PropertyMock)
     def test_on_leader_elected_not_sets_celery_unit_when_existing(self, mock_juju_env):
         """
         arrange: given a charm with a peer relation with celery-unit in the databag
@@ -615,7 +615,7 @@ class TestCore(TestBase):  # pylint: disable=too-many-public-methods
         )
         self.assertEqual(celery_unit, "example")
 
-    @patch.object(ops.JujuVersion, "from_environ")
+    @patch.object(ops.model.Model, "juju_version", new_callable=PropertyMock)
     def test_on_peer_relation_departed_no_celery_unit_relation_data_unchanged(self, mock_juju_env):
         """
         arrange: given a charm with two units and a peer relation with celery-unit in the databag
@@ -635,7 +635,7 @@ class TestCore(TestBase):  # pylint: disable=too-many-public-methods
         self.harness.remove_relation_unit(rel_id, "indico/1")
         self.assertEqual(celery_unit, "example")
 
-    @patch.object(ops.JujuVersion, "from_environ")
+    @patch.object(ops.model.Model, "juju_version", new_callable=PropertyMock)
     def test_on_peer_relation_departed_celery_unit_relation_data_changed(self, mock_juju_env):
         """
         arrange: given a charm with two units and a peer relation with celery-unit in the databag
@@ -656,7 +656,7 @@ class TestCore(TestBase):  # pylint: disable=too-many-public-methods
         )
         self.assertEqual(celery_unit, "indico/0")
 
-    @patch.object(ops.JujuVersion, "from_environ")
+    @patch.object(ops.model.Model, "juju_version", new_callable=PropertyMock)
     def test_on_peer_relation_departed_celery_leder_unit_relation_data_changed(
         self, mock_juju_env
     ):
@@ -679,7 +679,7 @@ class TestCore(TestBase):  # pylint: disable=too-many-public-methods
         )
         self.assertIsNone(celery_unit)
 
-    @patch.object(ops.JujuVersion, "from_environ")
+    @patch.object(ops.model.Model, "juju_version", new_callable=PropertyMock)
     @patch.object(ops.Container, "exec")
     def test_indico_pebble_ready_when_leader_includes_celery(self, mock_exec, mock_juju_env):
         """
@@ -698,7 +698,7 @@ class TestCore(TestBase):  # pylint: disable=too-many-public-methods
         assert "indico" in updated_plan["services"]
         assert "celery" in updated_plan["services"]
 
-    @patch.object(ops.JujuVersion, "from_environ")
+    @patch.object(ops.model.Model, "juju_version", new_callable=PropertyMock)
     @patch.object(ops.Container, "exec")
     def test_indico_pebble_ready_when_not_leader_doesnt_include_celery(
         self, mock_exec, mock_juju_env
