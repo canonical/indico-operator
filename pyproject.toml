@@ -54,3 +54,20 @@ pythonpath = [
   "lib",
   "src"
 ]
+filterwarnings = [
+  "error",
+  # Harness is intentional here: the unit_harness/ suite stays on Harness.
+  "ignore:Harness is deprecated:PendingDeprecationWarning",
+  # JujuVersion.from_environ deprecation from vendored data_platform_libs;
+  # upstream canonical/data-platform-libs.
+  "ignore:JujuVersion.from_environ\\(\\) is deprecated:DeprecationWarning:charms.data_platform_libs.v0.data_interfaces",
+  # TEMPORARY: Harness tempdir leak (operator#2506/#2507). Drop on the next
+  # ops 2.23 release that backports the fix, or when this charm moves to
+  # ops >= 3.8 (where the fix already shipped).
+  "ignore:Implicitly cleaning up:ResourceWarning",
+  # TEMPORARY: scenario.Context leaks file handles for the charm metadata
+  # files (metadata.yaml, charmcraft.yaml, actions.yaml, config.yaml) on
+  # teardown (operator#2506/#2507). Drop on the next ops 2.23 release that
+  # backports the fix, or when this charm moves to ops >= 3.8.
+  "ignore:unclosed file.*\\.yaml:ResourceWarning",
+]
