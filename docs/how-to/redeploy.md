@@ -4,7 +4,7 @@ This guide provides the necessary steps for migrating an existing Indico instanc
 
 ## Migrate the database
 
-Follow the instructions in [the charm migration documentation](https://documentation.ubuntu.com/postgresql-k8s-operator/latest/howto/back-up-and-restore/migrate-a-cluster/) to migrate the content of the Indico PostgreSQL database.
+Follow the instructions in [the charm migration documentation](https://documentation.ubuntu.com/charmed-postgresql-k8s/14/how-to/back-up-and-restore/) to migrate the content of the Indico PostgreSQL database.
 
 ## Migrate files stored in S3
 

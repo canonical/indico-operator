@@ -134,7 +134,7 @@ Grafana is an open-source visualization tool that allows to query, visualize, al
 
 The Indico charm also supports being integrated with [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/#what-is-ingress) by using [NGINX Ingress Integrator](https://charmhub.io/nginx-ingress-integrator/).
 
-In this case, an existing Ingress controller is required. For more information, see [Deploy the Nginx ingress integrator charm for the first time](https://documentation.ubuntu.com/nginx-ingress-integrator-charm/latest/howto/deploy-nginx-ingress-integrator/).
+In this case, an existing Ingress controller is required. For more information, see [Deploy the Nginx ingress integrator charm for the first time](https://documentation.ubuntu.com/nginx-ingress-integrator-charm/latest/tutorial/tutorial/).
 
 ### PostgreSQL
 
