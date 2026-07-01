@@ -10,9 +10,9 @@ jobs:
   unit-tests:
     uses: canonical/operator-workflows/.github/workflows/test.yaml@main
     secrets: inherit
-    with:
-      self-hosted-runner: false
-      runs-on-base: ubuntu-24.04
+    permissions:
+      contents: read
+      pull-requests: write
   plugins-test:
     name: Specific test for the plugin
     runs-on: ubuntu-22.04
