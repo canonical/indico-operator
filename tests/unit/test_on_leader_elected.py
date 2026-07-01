@@ -3,7 +3,7 @@
 
 """Indico charm unit tests."""
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, PropertyMock, patch
 
 import ops
 from ops import testing
@@ -11,7 +11,7 @@ from ops import testing
 from charm import IndicoOperatorCharm
 
 
-@patch.object(ops.JujuVersion, "from_environ")
+@patch.object(ops.model.Model, "juju_version", new_callable=PropertyMock)
 def test_on_leader_elected_when_secrets_supported(mock_juju_env, base_state: dict):
     """
     arrange: charm created, leader selected and secrets supported

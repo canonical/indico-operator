@@ -23,7 +23,6 @@ from charms.nginx_ingress_integrator.v0.nginx_route import require_nginx_route
 from charms.prometheus_k8s.v0.prometheus_scrape import MetricsEndpointProvider
 from charms.redis_k8s.v0.redis import RedisRelationCharmEvents, RedisRequires
 from ops.charm import ActionEvent, CharmBase, HookEvent, PebbleReadyEvent, RelationDepartedEvent
-from ops.jujuversion import JujuVersion
 from ops.main import main
 from ops.model import ActiveStatus, BlockedStatus, Container, MaintenanceStatus, WaitingStatus
 from ops.pebble import ExecError
@@ -890,10 +889,9 @@ class IndicoOperatorCharm(CharmBase):  # pylint: disable=too-many-instance-attri
         Returns:
             If secrets are supported or not.
         """
-        juju_version = JujuVersion.from_environ()
         # Because we're only using secrets in a peer relation we don't need to
         # check if the other end of a relation also supports secrets...
-        return juju_version.has_secrets
+        return self.model.juju_version.has_secrets
 
     def _add_admin_action(self, event: ActionEvent) -> None:
         """Add a new user to Indico.
