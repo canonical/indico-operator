@@ -11,6 +11,26 @@ def pytest_addoption(parser):
         parser: Pytest parser.
     """
     parser.addoption("--charm-file", action="store")
-    parser.addoption("--indico-image", action="store")
-    parser.addoption("--indico-nginx-image", action="store")
-    parser.addoption("--kube-config", action="store")
+    parser.addoption(
+        "--keep-models",
+        action="store_true",
+        default=False,
+        help="keep temporarily-created models",
+    )
+    parser.addoption(
+        "--use-existing",
+        action="store_true",
+        default=False,
+        help="use existing models and not created models",
+    )
+    parser.addoption(
+        "--model",
+        action="store",
+        help="temporarily-created model name",
+    )
+    parser.addoption(
+        "--indico-image",
+        action="store",
+        help="indico OCI rock image URI",
+    )
+    parser.addoption("--s3-address", action="store")
