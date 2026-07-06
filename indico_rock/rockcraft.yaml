@@ -1,11 +1,11 @@
+# Copyright 2026 Canonical Ltd.
+# See LICENSE file for licensing details.
+
 # Indico 12-factor rock built with the flask-framework Rockcraft extension.
 #
 # The application itself is consumed as a pinned PyPI release (`indico==X.Y.Z`)
 # plus a small set of baked-in default plugins (payment-paypal, piwik,
-# storage-s3), matching the upstream indico-operator rock. All other plugins
-# (e.g. themes, event-countdown, saml-groups, personal-agenda,
-# custom-profile-fields) are installed at deploy time via the companion
-# charm's `external_plugins` config.
+# storage-s3), matching the upstream indico-operator rock.
 
 name: indico
 summary: Indico event management server (12-factor rock)

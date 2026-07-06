@@ -9,6 +9,9 @@ jobs:
   integration-tests:
     uses: 
       canonical/operator-workflows/.github/workflows/integration_test.yaml@main
+    permissions:
+      contents: write
+      packages: write
     secrets: inherit
     with:
       modules: '["test_actions.py", "test_charm.py", "test_s3.py", "test_saml.py", "test_loki.py"]'
