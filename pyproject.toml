@@ -36,14 +36,14 @@ lint.ignore = [
     "D409",
     "D413",
 ]
-extend-exclude = ["__pycache__", "*.egg_info", "indico_rock/plugins", "tests/zap"]
+extend-exclude = ["__pycache__", "*.egg_info", "tests/zap"]
 lint.per-file-ignores = {"tests/*" = ["D100","D101","D102","D103","D104","D205","D212","D400","D401","D415"]}
 
 [tool.ruff.lint.mccabe]
 max-complexity = 10
 
 [tool.codespell]
-skip = "build,lib,venv,icon.svg,.tox,.git,.mypy_cache,.ruff_cache,.coverage,indico_rock/plugins,./docs"
+skip = "build,lib,venv,icon.svg,.tox,.git,.mypy_cache,.ruff_cache,.coverage,./docs"
 
 [tool.pyright]
 include = ["src/**.py"]
