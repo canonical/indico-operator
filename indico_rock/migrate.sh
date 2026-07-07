@@ -22,7 +22,7 @@ prepare_out=$(indico db prepare 2>&1) && prepare_status=0 || prepare_status=$?
 echo "$prepare_out"
 if [ "$prepare_status" -eq 0 ]; then
     echo "Fresh database prepared."
-elif echo "$prepare_out" | grep -q "Database is not empty"; then
+elif echo "$prepare_out" | grep -qi "database is not empty"; then
     echo "Database already initialised; running upgrade."
 else
     echo "indico db prepare failed; aborting migration." >&2
