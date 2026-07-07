@@ -1,0 +1,20 @@
+# --- Release notes artifact ----
+
+schema_version: 1
+changes:
+  - title: Refactor Indico with 12-factor to modernize the rock and the charm
+    author: DeeKay3
+    type: minor
+    description: |
+      Refactor the Indico rock and the Indico charm to follow the 12-factor principles, 
+      modernizing the rockcraft.yaml and the charmcraft.yaml files. 
+      The rock now uses the flask-framework extension to run Indico behind Gunicorn. 
+      The rock also includes a migrate.sh entrypoint that prepares and upgrades 
+      the database schema, and the charm now installs the default plugin set at 
+      build time, matching the upstream indico-operator rock. 
+    urls: 
+      pr: https://github.com/canonical/indico-operator/pull/772
+      related_doc: 
+      related_issue: 
+    visibility: public
+    highlight: true

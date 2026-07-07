@@ -14,13 +14,19 @@ set -eu
 
 # `indico db prepare` initialises the schema but aborts with a non-zero exit
 # code when the database is not empty (e.g. on charm upgrades / restarts).
-# Run it only for a fresh database; otherwise fall through to `db upgrade`
-# which is always safe to run repeatedly.
+# Distinguish that expected case from real failures (e.g. missing Postgres
+# extensions) so we do not silently fall through into a broken `db upgrade`
+# and stall paas-charm's migration retry loop.
 exec /srv/indico/start-indico.sh sh -ec '
-if indico db prepare; then
+prepare_out=$(indico db prepare 2>&1) && prepare_status=0 || prepare_status=$?
+echo "$prepare_out"
+if [ "$prepare_status" -eq 0 ]; then
     echo "Fresh database prepared."
-else
+elif echo "$prepare_out" | grep -q "Database is not empty"; then
     echo "Database already initialised; running upgrade."
+else
+    echo "indico db prepare failed; aborting migration." >&2
+    exit "$prepare_status"
 fi
 indico db upgrade
 # Enabled plugins ship their own SQLAlchemy models in dedicated schemas

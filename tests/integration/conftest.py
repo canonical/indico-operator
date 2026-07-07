@@ -106,7 +106,11 @@ def app_fixture(
         channel=pg_channel,
         base=pg_base,
         trust=True,
-        config={"profile": "testing"},
+        config={
+            "profile": "testing",
+            "plugin_pg_trgm_enable": "true",
+            "plugin_unaccent_enable": "true",
+        },
         force=is_force,
     )
 
