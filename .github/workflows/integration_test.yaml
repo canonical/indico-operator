@@ -15,6 +15,7 @@ jobs:
     secrets: inherit
     with:
       juju-channel: 3.6/stable
+      channel: 1.32-strict/stable
       modules: '["test_charm.py", "test_s3.py", "test_saml.py", "test_smtp.py"]'
       trivy-exit-code: 0
   allure-report:
