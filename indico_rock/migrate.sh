@@ -17,6 +17,7 @@ set -eu
 # Distinguish that expected case from real failures (e.g. missing Postgres
 # extensions) so we do not silently fall through into a broken `db upgrade`
 # and stall paas-charm's migration retry loop.
+# shellcheck disable=SC2016  # $vars must be expanded by the inner `sh -c`.
 exec /srv/indico/start-indico.sh sh -ec '
 prepare_out=$(indico db prepare 2>&1) && prepare_status=0 || prepare_status=$?
 echo "$prepare_out"
