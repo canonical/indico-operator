@@ -140,9 +140,14 @@ def app_fixture(
 
 @pytest.fixture(scope="session")
 def indico_address(app: str, juju: jubilant.Juju) -> str:
-    """Get the Indico address."""
+    """Get the Indico address.
+
+    Prefers the unit (pod) IP over the application ClusterIP: on strict
+    microk8s the ClusterIP range is not routable from the GitHub runner
+    host, whereas Calico pod IPs are.
+    """
     status = juju.status()
-    address = status.apps[app].address or status.apps[app].units[app + "/0"].address
+    address = status.apps[app].units[app + "/0"].address or status.apps[app].address
     return f"http://{address}:8080"
 
 
