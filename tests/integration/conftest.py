@@ -18,6 +18,11 @@ JUJU_WAIT_TIMEOUT = 1200
 
 APP_NAME = "indico"
 
+# The flask-framework workload (gunicorn) and its Kubernetes service both
+# listen on port 8000; paas-charm uses this fixed port regardless of the
+# extension's documented default.
+WORKLOAD_PORT = 8000
+
 
 @pytest.fixture(scope="session", name="charm")
 def charm_fixture(pytestconfig: pytest.Config):
@@ -135,6 +140,17 @@ def app_fixture(
     juju.integrate(APP_NAME, "redis-k8s")
     juju.wait(jubilant.all_active, timeout=JUJU_WAIT_TIMEOUT)
 
+    # Indico builds its URL map from BASE_URL and returns HTTP 404 for every
+    # route whose request host does not match it. When neither `site_url` nor
+    # an ingress relation is set, BASE_URL falls back to `http://localhost`,
+    # so tests reaching the workload by pod IP would get 404s. Point
+    # `site_url` at the address the tests actually use (pod IP + workload
+    # port) so Indico serves normally over direct HTTP.
+    status = juju.status()
+    unit_address = status.apps[APP_NAME].units[f"{APP_NAME}/0"].address
+    juju.config(APP_NAME, {"site_url": f"http://{unit_address}:{WORKLOAD_PORT}"})
+    juju.wait(jubilant.all_active, timeout=JUJU_WAIT_TIMEOUT)
+
     yield APP_NAME
 
 
@@ -142,13 +158,15 @@ def app_fixture(
 def indico_address(app: str, juju: jubilant.Juju) -> str:
     """Get the Indico address.
 
-    Prefers the unit (pod) IP over the application ClusterIP: on strict
-    microk8s the ClusterIP range is not routable from the GitHub runner
-    host, whereas Calico pod IPs are.
+    Uses the unit (pod) IP and the workload port. The application ClusterIP
+    is deliberately avoided: on microk8s the ClusterIP range is not routable
+    from the test host, whereas Calico pod IPs are. The port must be the
+    workload port (8000) that gunicorn binds, not the extension's documented
+    default.
     """
     status = juju.status()
     address = status.apps[app].units[app + "/0"].address or status.apps[app].address
-    return f"http://{address}:8080"
+    return f"http://{address}:{WORKLOAD_PORT}"
 
 
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)

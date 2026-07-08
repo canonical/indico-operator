@@ -74,6 +74,12 @@ def test_ingress(app: str, juju: jubilant.Juju):
     act: Deploy traefik-k8s with subdomain routing, integrate with indico.
     assert: The ingress URL from the relation data is reachable and serves Indico.
     """
+    # The base/s3/saml tests pin `site_url` to the pod address so Indico serves
+    # over direct HTTP. Indico's BASE_URL prefers `site_url` over the ingress
+    # URL, so it must be cleared here for requests routed through traefik
+    # (Host: <model>-<app>.testing.local) to match.
+    juju.config(app, reset="site_url")
+
     juju.deploy(
         "traefik-k8s",
         channel="latest/stable",
