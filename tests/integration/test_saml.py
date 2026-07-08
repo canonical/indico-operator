@@ -6,6 +6,7 @@
 """SAML integration tests for the Indico charm."""
 
 import logging
+from urllib.parse import urlparse
 
 import jubilant
 import pytest
@@ -50,10 +51,12 @@ def test_saml_integration(app: str, juju: jubilant.Juju, indico_address: str):
     juju.wait(jubilant.all_active, timeout=JUJU_WAIT_TIMEOUT)
     logger.info("Indico is active after SAML integration")
 
-    # The flask-multipass SAML provider is exposed on /login/ubuntu; Indico
-    # redirects unauthenticated users there to start the SSO flow.
+    # The flask-multipass SAML provider is exposed on /login/ubuntu/; Indico
+    # redirects unauthenticated users there to start the SSO flow. The route is
+    # registered with a trailing slash, so the canonical URL must be requested
+    # directly: /login/ubuntu (no slash) only yields a 308 to /login/ubuntu/.
     response = requests.get(
-        f"{indico_address}/login/ubuntu",
+        f"{indico_address}/login/ubuntu/",
         allow_redirects=False,
         timeout=30,
     )
@@ -61,3 +64,6 @@ def test_saml_integration(app: str, juju: jubilant.Juju, indico_address: str):
         302,
         303,
     ), f"Expected a redirect to the IdP, got {response.status_code}"
+    location = response.headers.get("Location", "")
+    idp_host = urlparse(_SAML_ENTITY_ID).netloc
+    assert idp_host in location, f"Expected a redirect to the IdP, got {location}"
