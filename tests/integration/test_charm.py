@@ -102,7 +102,9 @@ def test_ingress(app: str, juju: jubilant.Juju):
 
     model = juju.model
     ingress_host = f"{model}-{app}.testing.local"
-    logger.info("Ingress host: %s, traefik address: %s", ingress_host, traefik_unit_address)
+    logger.info(
+        "Ingress host: %s, traefik address: %s", ingress_host, traefik_unit_address
+    )
 
     def ingress_reachable(status):
         if not jubilant.all_active(status):
