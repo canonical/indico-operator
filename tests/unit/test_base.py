@@ -1,4 +1,4 @@
-# Copyright 2025 Canonical Ltd.
+# Copyright 2026 Canonical Ltd.
 # See LICENSE file for licensing details.
 
 # Learn more about testing at: https://ops.readthedocs.io/en/latest/explanation/testing.html
@@ -34,7 +34,9 @@ def test_container_not_ready():
 
     state_out = context.run(context.on.config_changed(), state_in)
 
-    assert state_out.unit_status == ops.testing.WaitingStatus("Waiting for pebble ready")
+    assert state_out.unit_status == ops.testing.WaitingStatus(
+        "Waiting for pebble ready"
+    )
 
 
 def test_missing_peer_relation():
@@ -48,7 +50,9 @@ def test_missing_peer_relation():
 
     state_out = context.run(context.on.pebble_ready(container), state_in)
 
-    assert state_out.unit_status == ops.testing.WaitingStatus("Waiting for peer integration")
+    assert state_out.unit_status == ops.testing.WaitingStatus(
+        "Waiting for peer integration"
+    )
 
 
 def test_missing_database_integration():

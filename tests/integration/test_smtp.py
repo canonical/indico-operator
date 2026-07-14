@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2025 Canonical Ltd.
+# Copyright 2026 Canonical Ltd.
 # See LICENSE file for licensing details.
 
 """SMTP integration tests for the Indico charm."""
@@ -62,7 +62,9 @@ def test_smtp_integration(app: str, juju: jubilant.Juju):
     plan = task.stdout
     logger.info("Pebble plan:\n%s", plan)
 
-    assert f"SMTP_HOST: {_SMTP_HOST}" in plan, (
-        f"Expected SMTP_HOST: {_SMTP_HOST} in pebble plan, got:\n{plan}"
-    )
-    assert str(_SMTP_PORT) in plan, f"Expected SMTP_PORT {_SMTP_PORT} in pebble plan, got:\n{plan}"
+    assert (
+        f"SMTP_HOST: {_SMTP_HOST}" in plan
+    ), f"Expected SMTP_HOST: {_SMTP_HOST} in pebble plan, got:\n{plan}"
+    assert (
+        str(_SMTP_PORT) in plan
+    ), f"Expected SMTP_PORT {_SMTP_PORT} in pebble plan, got:\n{plan}"

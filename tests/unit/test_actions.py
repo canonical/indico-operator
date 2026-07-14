@@ -1,4 +1,4 @@
-# Copyright 2025 Canonical Ltd.
+# Copyright 2026 Canonical Ltd.
 # See LICENSE file for licensing details.
 
 # Learn more about testing at: https://ops.readthedocs.io/en/latest/explanation/testing.html
@@ -52,7 +52,9 @@ def test_add_admin_success(
         return_code=0,
         stdout="Created admin",
     )
-    container = ops.testing.Container(name="flask-app", can_connect=True, execs={mock_exec})
+    container = ops.testing.Container(
+        name="flask-app", can_connect=True, execs={mock_exec}
+    )
     state_in = ops.testing.State(leader=True, containers={container}, relations={peer})
 
     context.run(
@@ -79,7 +81,9 @@ def test_add_admin_exec_error(
         return_code=1,
         stdout="boom",
     )
-    container = ops.testing.Container(name="flask-app", can_connect=True, execs={mock_exec})
+    container = ops.testing.Container(
+        name="flask-app", can_connect=True, execs={mock_exec}
+    )
     state_in = ops.testing.State(leader=True, containers={container}, relations={peer})
 
     with pytest.raises(ops.testing.ActionFailed) as exc:
@@ -103,7 +107,9 @@ def test_add_admin_container_not_ready(
 
     with pytest.raises(ops.testing.ActionFailed) as exc:
         context.run(
-            context.on.action("add-admin", params={"email": "a@example.com", "password": "pw"}),
+            context.on.action(
+                "add-admin", params={"email": "a@example.com", "password": "pw"}
+            ),
             state_in,
         )
 
@@ -124,7 +130,9 @@ def test_anonymize_user_success(
         return_code=0,
         stdout="anonymized",
     )
-    container = ops.testing.Container(name="flask-app", can_connect=True, execs={mock_exec})
+    container = ops.testing.Container(
+        name="flask-app", can_connect=True, execs={mock_exec}
+    )
     state_in = ops.testing.State(leader=True, containers={container}, relations={peer})
 
     context.run(
@@ -134,6 +142,53 @@ def test_anonymize_user_success(
 
     assert context.action_results is not None
     assert context.action_results["user"] == emails
+
+
+@patch.object(IndicoCharm, "_gen_environment", return_value={})
+def test_anonymize_user_exec_error(
+    _mock_env, context: ops.testing.Context, peer: ops.testing.PeerRelation
+) -> None:
+    """arrange: A container whose anonymize execution fails.
+    act: Run the anonymize-user action.
+    assert: The action fails and the per-email failure is reported in the output.
+    """
+    email = "a@example.com"
+    mock_exec = ops.testing.Exec(
+        command_prefix=[INDICO_WRAPPER, "indico", "anonymize", "user"],
+        return_code=1,
+        stdout="boom",
+    )
+    container = ops.testing.Container(
+        name="flask-app", can_connect=True, execs={mock_exec}
+    )
+    state_in = ops.testing.State(leader=True, containers={container}, relations={peer})
+
+    with pytest.raises(ops.testing.ActionFailed) as exc:
+        context.run(
+            context.on.action("anonymize-user", params={"email": email}),
+            state_in,
+        )
+
+    assert "Failed to anonymize one or more users" in exc.value.message
+
+
+def test_anonymize_user_container_not_ready(
+    context: ops.testing.Context, peer: ops.testing.PeerRelation
+) -> None:
+    """arrange: A container that cannot connect.
+    act: Run the anonymize-user action.
+    assert: The action fails because the workload container is unavailable.
+    """
+    container = ops.testing.Container(name="flask-app", can_connect=False)
+    state_in = ops.testing.State(leader=True, containers={container}, relations={peer})
+
+    with pytest.raises(ops.testing.ActionFailed) as exc:
+        context.run(
+            context.on.action("anonymize-user", params={"email": "a@example.com"}),
+            state_in,
+        )
+
+    assert "Cannot connect to the Indico workload container" in exc.value.message
 
 
 @patch.object(IndicoCharm, "_gen_environment", return_value={})
@@ -168,7 +223,9 @@ def test_refresh_external_resources(
         command_prefix=["rm", "-f", "/srv/indico/plugins/.installed"],
         return_code=0,
     )
-    container = ops.testing.Container(name="flask-app", can_connect=True, execs={mock_exec})
+    container = ops.testing.Container(
+        name="flask-app", can_connect=True, execs={mock_exec}
+    )
     state_in = ops.testing.State(leader=True, containers={container}, relations={peer})
 
     with patch.object(IndicoCharm, "restart"):
@@ -179,3 +236,22 @@ def test_refresh_external_resources(
 
     assert context.action_results is not None
     assert context.action_results["result"] == "external plugins refresh triggered"
+
+
+def test_refresh_external_resources_container_not_ready(
+    context: ops.testing.Context, peer: ops.testing.PeerRelation
+) -> None:
+    """arrange: A container that cannot connect.
+    act: Run the refresh-external-resources action.
+    assert: The action fails because the workload container is unavailable.
+    """
+    container = ops.testing.Container(name="flask-app", can_connect=False)
+    state_in = ops.testing.State(leader=True, containers={container}, relations={peer})
+
+    with pytest.raises(ops.testing.ActionFailed) as exc:
+        context.run(
+            context.on.action("refresh-external-resources"),
+            state_in,
+        )
+
+    assert "Cannot connect to the Indico workload container" in exc.value.message

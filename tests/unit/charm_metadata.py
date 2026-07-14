@@ -1,4 +1,4 @@
-# Copyright 2025 Canonical Ltd.
+# Copyright 2026 Canonical Ltd.
 # See LICENSE file for licensing details.
 
 # Learn more about testing at: https://ops.readthedocs.io/en/latest/explanation/testing.html
@@ -30,7 +30,10 @@ CHARM_META = {
         "ingress": {"interface": "ingress", "limit": 1},
     },
     "resources": {
-        "flask-app-image": {"type": "oci-image", "description": "flask application image."}
+        "flask-app-image": {
+            "type": "oci-image",
+            "description": "flask application image.",
+        }
     },
 }
 
@@ -210,7 +213,10 @@ CHARM_CONFIG = {
             "to receive this "
             "configuration.",
         },
-        "flask-debug": {"type": "boolean", "description": "Whether Flask debug mode is enabled."},
+        "flask-debug": {
+            "type": "boolean",
+            "description": "Whether Flask debug mode is enabled.",
+        },
         "flask-env": {
             "type": "string",
             "description": "What environment the Flask app is "
