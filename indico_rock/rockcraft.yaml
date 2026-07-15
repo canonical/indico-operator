@@ -1,98 +1,180 @@
-# Copyright 2025 Canonical Ltd.
+# Copyright 2026 Canonical Ltd.
 # See LICENSE file for licensing details.
 
+# Indico 12-factor rock built with the flask-framework Rockcraft extension.
+#
+# The application itself is consumed as a pinned PyPI release (`indico==X.Y.Z`)
+# plus a small set of baked-in default plugins (payment-paypal, piwik,
+# storage-s3), matching the upstream indico-operator rock.
+
 name: indico
-summary: Indico rock
-description: Indico OCI image for the Indico charm
-version: "1.0"
+summary: Indico event management server (12-factor rock)
+description: |
+  Indico is a full-featured conference lifecycle management and
+  meeting/lecture scheduling tool. This rock packages the upstream
+  `indico` PyPI release behind Gunicorn using the `flask-framework`
+  Rockcraft extension, together with the matching Celery worker and
+  scheduler services and a `migrate.sh` entrypoint that prepares and
+  upgrades the database schema. The default plugin set
+  (`indico-plugin-payment-paypal`, `indico-plugin-piwik`,
+  `indico-plugin-storage-s3`) is installed at build time, matching the
+  upstream indico-operator rock; all other plugins are installed at deploy
+  time via the charm's `external_plugins` config.
+version: "3.3.12"
+
 base: ubuntu@24.04
-build-base: ubuntu@24.04
-license: Apache-2.0
+
 platforms:
   amd64:
+
+extensions:
+  - flask-framework
+
 parts:
-  add-user:
-    plugin: nil
-    overlay-script: |
-      chmod 755 $CRAFT_OVERLAY/etc
-      groupadd -R $CRAFT_OVERLAY --gid 2000 indico
-      useradd -R $CRAFT_OVERLAY --system --gid 2000 --uid 2000 --home /srv/indico indico
-  indico:
-    plugin: python
-    build-environment:
-      - UWSGI_EMBED_PLUGINS: stats_pusher_statsd
-    python-packages:
-      - setuptools
-      - wheel
-      - indico==3.3.12
-      - boto3==1.35.99 # Due to issue https://github.com/boto/boto3/issues/4398
-      - indico-plugin-payment-paypal==3.3.2
-      - indico-plugin-piwik
-      - indico-plugin-storage-s3
-      - xmlsec==1.3.15
-      - python3-saml
-      - uwsgi
-      - ./anonymize
-      - ./autocreate
-    source: plugins
+  flask-framework/dependencies:
     build-packages:
+      # Build deps for any plugin sdists or wheels that compile from source
+      # (lxml, psycopg, python-ldap, python-magic, xmlsec).
       - build-essential
-      - libpq-dev
-      - libsasl2-dev
-      - libxmlsec1-dev
       - pkg-config
-      - wget
-    stage-packages:
-      - python3-venv
       - python3-dev
-      - build-essential
-      - ca-certificates
-      - git-core
-      - libglib2.0-data
       - libpq-dev
+      - libxml2-dev
+      - libxslt1-dev
+      - libffi-dev
+      - libssl-dev
+      - libldap2-dev
       - libsasl2-dev
-      - locales
-      - logrotate
-      - pkg-config
-      - postgresql-client
-      - shared-mime-info
-      - texlive-fonts-recommended
-      - texlive-plain-generic
-      - texlive-xetex
-      - libpangocairo-1.0-0 # required for python3.12
-    overlay-packages:
       - libxmlsec1-dev
-    stage-snaps:
-      - celery-prometheus-exporter/latest/edge
-      - gtrkiller-statsd-prometheus-exporter/latest/edge
+      - libxmlsec1-openssl
     override-build: |
+      # Install the app's pinned dependencies (indico + plugins) as usual.
       craftctl default
-      cd $CRAFT_PART_INSTALL/lib/python3.12/site-packages/
-      rm -rf lxml* lxml-*.dist-info
-      pip install --target=$CRAFT_PART_INSTALL/lib/python3.12/site-packages --no-cache-dir --no-binary=lxml lxml==5.3.0
-    override-stage: |
-      mkdir -p --mode=775 $CRAFT_PART_INSTALL/srv/indico/{archive,cache,custom,etc,log,tmp}
-      cp $CRAFT_PART_INSTALL/lib/python3.12/site-packages/indico/web/indico.wsgi $CRAFT_PART_INSTALL/srv/indico/indico.wsgi
-      cp -R $CRAFT_PART_INSTALL/lib/python3.12/site-packages/indico/web/static $CRAFT_PART_INSTALL/srv/indico/
-      chown -R 2000:2000 $CRAFT_PART_INSTALL/srv/indico
-      cp /etc/ssl/certs/ca-certificates.crt  $CRAFT_PART_INSTALL/etc/ssl/certs/ca-certificates.crt
-      craftctl default
-    prime:
-      - -usr/lib/python3.12/EXTERNALLY-MANAGED
-  copy-config:
+      # SAML fix: indico hard-pins lxml==6.0.2, whose PyPI wheel bundles its
+      # own libxml2 (2.14.x). The xmlsec wheel links the SYSTEM libxml2
+      # (2.9.x), so python3-saml aborts at import with
+      #   "lxml & xmlsec libxml2 library version mismatch".
+      # Rebuild BOTH from source with --no-binary so they link the same
+      # system libxml2, making SAML auth importable.
+      PKGS="$(dirname "$(find "$CRAFT_PART_INSTALL" -maxdepth 7 -type d -name lxml | head -n1)")"
+      echo "Rebuilding lxml/xmlsec from source into: ${PKGS}"
+      rm -rf "${PKGS}"/lxml "${PKGS}"/lxml-*.dist-info "${PKGS}"/lxml.libs
+      rm -rf "${PKGS}"/xmlsec "${PKGS}"/xmlsec-*.dist-info "${PKGS}"/xmlsec.libs
+      rm -f "${PKGS}"/xmlsec*.so
+      pip install --target="${PKGS}" --no-cache-dir --no-deps --force-reinstall \
+        --no-binary=lxml --no-binary=xmlsec lxml==6.0.2 xmlsec==1.3.15
+
+  # Static Indico runtime config + startup wrapper that supports
+  # deploy-time plugin installation via the charm's `external_plugins` option.
+  indico-runtime:
     plugin: dump
     source: .
     organize:
+      indico.conf: srv/indico/indico.conf
       start-indico.sh: srv/indico/start-indico.sh
-      etc/logrotate.conf: srv/indico/logrotate.conf
-    permissions:
-      - owner: 2000
-        group: 2000
-      - path: srv/indico/start-indico.sh
-        mode: "544"
-      - path: etc/
-        mode: "755"
-    prime:
-      - etc/*
+    stage:
+      - srv/indico/indico.conf
       - srv/indico/start-indico.sh
-      - srv/indico/logrotate.conf
+    permissions:
+      - path: srv/indico/start-indico.sh
+        mode: "755"
+
+  # Writable runtime directories owned by the `_daemon_` user (UID/GID 584792)
+  # that the flask-framework extension runs services as.
+  indico-state-dirs:
+    plugin: nil
+    override-build: |
+      mkdir -p $CRAFT_PART_INSTALL/srv/indico/archive
+      mkdir -p $CRAFT_PART_INSTALL/srv/indico/cache
+      mkdir -p $CRAFT_PART_INSTALL/srv/indico/custom
+      mkdir -p $CRAFT_PART_INSTALL/srv/indico/log
+      mkdir -p $CRAFT_PART_INSTALL/srv/indico/tmp
+      mkdir -p $CRAFT_PART_INSTALL/srv/indico/assets
+      mkdir -p $CRAFT_PART_INSTALL/srv/indico/plugins
+    permissions:
+      - path: srv/indico
+        owner: 584792
+        group: 584792
+        mode: "755"
+      - path: srv/indico/archive
+        owner: 584792
+        group: 584792
+        mode: "775"
+      - path: srv/indico/cache
+        owner: 584792
+        group: 584792
+        mode: "775"
+      - path: srv/indico/custom
+        owner: 584792
+        group: 584792
+        mode: "775"
+      - path: srv/indico/log
+        owner: 584792
+        group: 584792
+        mode: "775"
+      - path: srv/indico/tmp
+        owner: 584792
+        group: 584792
+        mode: "775"
+      - path: srv/indico/assets
+        owner: 584792
+        group: 584792
+        mode: "775"
+      - path: srv/indico/plugins
+        owner: 584792
+        group: 584792
+        mode: "775"
+
+  runtime-debs:
+    plugin: nil
+    stage-packages:
+      # Runtime shared libraries required by the indico stack and its plugins.
+      - libpq5
+      - libxml2
+      - libxslt1.1
+      - libmagic1
+      - libldap2
+      - libsasl2-2
+      - libxmlsec1
+      - libxmlsec1-openssl
+      - libfreetype6
+      - libjpeg-turbo8
+      # PDF / image rendering (WeasyPrint, cairo)
+      - libpangocairo-1.0-0
+      # MIME detection database used by python-magic
+      - shared-mime-info
+      # Locale support for UTF-8 handling at runtime
+      - locales
+      # `pg_dump` / `psql` for operator debugging and any future migration tooling
+      - postgresql-client
+      # Required to install `git+https://` external plugins at deploy time.
+      - git
+
+services:
+  # Override the extension-provided Gunicorn service so each start runs the
+  # `start-indico.sh` wrapper first (extra-plugin install + INDICO_CONFIG).
+  flask:
+    override: replace
+    summary: Indico web service (Gunicorn under start-indico.sh wrapper)
+    startup: enabled
+    command: /srv/indico/start-indico.sh /bin/python3 -m gunicorn -c /flask/gunicorn.conf.py app:app
+    after:
+      - statsd-exporter
+    user: _daemon_
+    working-dir: /flask/app
+
+  indico-worker:
+    override: replace
+    summary: Indico Celery worker (background jobs)
+    startup: enabled
+    command: /srv/indico/start-indico.sh indico celery worker
+    user: _daemon_
+    working-dir: /flask/app
+
+  indico-scheduler:
+    override: replace
+    summary: Indico Celery beat scheduler (periodic jobs)
+    startup: enabled
+    command: /srv/indico/start-indico.sh indico celery beat --schedule /srv/indico/tmp/celerybeat-schedule
+    user: _daemon_
+    working-dir: /flask/app

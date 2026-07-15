@@ -9,9 +9,15 @@ jobs:
   integration-tests:
     uses: 
       canonical/operator-workflows/.github/workflows/integration_test.yaml@main
+    permissions:
+      contents: write
+      packages: write
     secrets: inherit
     with:
-      modules: '["test_actions.py", "test_charm.py", "test_s3.py", "test_saml.py", "test_loki.py"]'
+      juju-channel: 3.6/stable
+      channel: 1.35-strict/stable
+      charmcraft-channel: latest/edge
+      modules: '["test_charm.py", "test_s3.py", "test_saml.py", "test_smtp.py"]'
       trivy-exit-code: 0
   allure-report:
     if: ${{ !cancelled() && github.event_name == 'schedule' }}

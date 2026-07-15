@@ -4,9 +4,10 @@
 
 """Connect our CLI plugin to the existing Indico's CLI."""
 
-from anonymize.cli import cli
 from indico.core import signals
 from indico.core.plugins import IndicoPlugin
+
+from anonymize.cli import cli
 
 
 class AnonymizePlugin(IndicoPlugin):

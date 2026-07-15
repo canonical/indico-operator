@@ -1,13 +1,145 @@
-# Copyright 2025 Canonical Ltd.
+# Copyright 2026 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-# Learn more about charmcraft.yaml configuration at:
-# https://juju.is/docs/sdk/charmcraft-config
-type: "charm"
-bases:
-  - build-on:
-    - name: "ubuntu"
-      channel: "20.04"
-    run-on:
-    - name: "ubuntu"
-      channel: "20.04"
+# This file configures Charmcraft.
+# See https://juju.is/docs/sdk/charmcraft-config for guidance.
+# For questions or help, visit https://matrix.to/#/#12-factor-charms:ubuntu.com
+
+name: indico
+
+type: charm
+
+base: ubuntu@24.04
+
+platforms:
+  amd64:
+
+summary: Indico event management server (12-factor charm).
+
+description: |
+  Operates the Indico conference and meeting management web application as a
+  Kubernetes-backed 12-factor charm. Wires the workload to PostgreSQL, Redis,
+  optional S3 object storage, and optional SMTP. Supports installing
+  additional Indico plugins at deploy time via the `external_plugins`
+  configuration option.
+
+extensions:
+  - flask-framework
+
+requires:
+  postgresql:
+    interface: postgresql_client
+    optional: false
+    limit: 1
+  redis:
+    interface: redis
+    optional: false
+    limit: 1
+  s3:
+    interface: s3
+    optional: true
+    limit: 1
+  smtp:
+    interface: smtp
+    optional: true
+    limit: 1
+  saml:
+    interface: saml
+    optional: true
+    limit: 1
+  oauth:
+    interface: oauth
+    optional: true
+    limit: 1
+
+config:
+  options:
+    # NOTE: option names, types and formats below intentionally mirror the
+    # indico-operator charm so existing deployments upgrade seamlessly.
+    site_url:
+      type: string
+      default: ""
+      description: |
+        URL through which Indico is accessed by users. Parsed for scheme,
+        hostname and optional port; surfaced to the workload as
+        FLASK_SITE_URL and turned into `BASE_URL` in indico.conf. Empty
+        value defaults to `http://<app-name>.local`.
+    external_plugins:
+      type: string
+      default: ""
+      description: |
+        Comma separated list of external plugins to be installed, e.g.
+        git+https://github.com/indico/indico-plugins-cern.git/#subdirectory=themes_cern.
+        The format of each item must be supported by pip. Installed at
+        workload startup on top of the default plugins baked into the rock.
+    indico_no_reply_email:
+      type: string
+      default: "noreply@mydomain.local"
+      description: |
+        Email address used when sending emails to users to which they
+        should not reply.
+    indico_public_support_email:
+      type: string
+      default: "support@mydomain.local"
+      description: Email address that is shown to users on the "Contact" page.
+    indico_support_email:
+      type: string
+      default: "support-tech@mydomain.local"
+      description: Email address of the technical manager of the Indico instance.
+    secret-key:
+      type: secret
+      description: |
+        Juju user secret containing the Flask `SECRET_KEY`. Expected as a
+        hex-encoded byte string; the workload falls back to treating the
+        value as a plain UTF-8 string if hex decoding fails.
+    enabled-plugins:
+      type: string
+      default: ""
+      description: |
+        Space-separated list of Indico plugin names to enable at runtime
+        (for example, `payment_paypal piwik storage_s3`). The corresponding
+        plugin packages must already be installed in the rock or via the
+        `external_plugins` option above.
+    pip-index-url:
+      type: string
+      default: ""
+      description: |
+        Optional PyPI index URL used when installing `external_plugins`. Set
+        this for air-gapped environments that mirror PyPI on an internal
+        registry. Empty value means the public PyPI index is used.
+    # --- OIDC single sign-on ------------------------------------------------
+    # OIDC/OAuth2 login is wired entirely through the `oauth` relation (e.g.
+    # provided by oauth-external-idp-integrator). No OIDC-specific charm config
+    # is needed: the flask-framework extension automatically exposes
+    # `oauth-scopes` and `oauth-redirect-path`, and all provider endpoints
+    # (issuer, authorize, token, userinfo, jwks) and client credentials come
+    # from the relation. See indico.conf (FLASK_OAUTH_*).
+    local-identities:
+      type: boolean
+      default: true
+      description: |
+        Whether the built-in local username/password login stays enabled. Keep
+        `true` so the bootstrap admin can log in alongside SSO providers; set
+        `false` to force authentication exclusively through SSO.
+
+actions:
+  add-admin:
+    description: Add an admin to Indico.
+    params:
+      email:
+        type: string
+        description: User email.
+      password:
+        type: string
+        description: User password.
+    required: [email, password]
+  anonymize-user:
+    description: Anonymize stored personal data to facilitate GDPR compliance.
+    params:
+      email:
+        type: string
+        description: User email (or a list of emails separated by comma). Maximum of 50 emails.
+    required: [email]
+  refresh-external-resources:
+    description: Reinstall/upgrade the external plugins listed in `external_plugins`.
+
