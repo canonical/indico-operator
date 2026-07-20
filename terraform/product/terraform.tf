@@ -10,7 +10,7 @@ terraform {
     }
     juju = {
       source  = "juju/juju"
-      version = "~> 1.5.0"
+      version = "~> 2.1.0"
     }
   }
 }
