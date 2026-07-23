@@ -6,7 +6,7 @@ terraform {
   required_providers {
     vault = {
       source  = "hashicorp/vault"
-      version = "~> 5.9.0"
+      version = "~> 5.10.0"
     }
     juju = {
       source  = "juju/juju"
