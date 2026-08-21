@@ -35,7 +35,7 @@ source .tox/unit/bin/activate
 
 ### Testing
 
-Note that the [indico](https://github.com/canonical/indico-operator/blob/main/indico_rock/rockcraft.yaml) and [indico nginx](https://github.com/canonical/indico-operator/blob/main/nginx_rock/rockcraft.yaml) images need to be built and pushed to MicroK8s for the tests to run. They should be tagged as `localhost:32000/indico:latest` and `localhost:32000/indico-nginx:latest` so that Kubernetes knows how to pull them from the MicroK8s repository. Note that the MicroK8s registry needs to be enabled using `microk8s enable registry`. More details regarding the OCI images below. The following commands can then be used to run the tests:
+Note that the [indico](https://github.com/canonical/indico-operator/blob/main/indico_rock/rockcraft.yaml) image needs to be built and pushed to MicroK8s for the tests to run. It should be tagged as `localhost:32000/indico:latest` so that Kubernetes knows how to pull it from the MicroK8s repository. Note that the MicroK8s registry needs to be enabled using `microk8s enable registry`. More details regarding the OCI images below. The following commands can then be used to run the tests:
 
 * `tox`: Runs all of the basic checks (`lint`, `unit`, `static`, and `coverage-report`).
 * `tox -e fmt`: Runs formatting using `black` and `isort`.
@@ -61,9 +61,6 @@ The following commands import the images in the Docker daemon and push them into
     cd [project_dir]/indico_rock && rockcraft pack rockcraft.yaml
     skopeo --insecure-policy copy oci-archive:indico_1.0_amd64.rock docker-daemon:localhost:32000/indico:latest
     docker push localhost:32000/indico:latest
-    cd [project_dir]/nginx_rock && rockcraft pack rockcraft.yaml
-    skopeo --insecure-policy copy oci-archive:indico_nginx_1.0_amd64.rock docker-daemon:localhost:32000/indico-nginx:latest
-    docker push localhost:32000/indico-nginx:latest
 
 ### Deploy
 
