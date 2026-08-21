@@ -58,8 +58,9 @@ And if you run `kubectl describe pod indico-0`, all the containers will have as 
 
 ## OCI images
 
-We use [Rockcraft](https://documentation.ubuntu.com/rockcraft/latest/) to build OCI Images for Indico and NGINX. 
-The images are defined in [NGINX ROCK](https://github.com/canonical/indico-operator/tree/main/nginx_rock/) and [Indico ROCK](https://github.com/canonical/indico-operator/tree/main/indico_rock).
+We use [Rockcraft](https://documentation.ubuntu.com/rockcraft/latest/) to build OCI Images for Indico. 
+The Indico image is defined in [Indico ROCK](https://github.com/canonical/indico-operator/tree/main/indico_rock).
+The NGINX image is provided by the [flask-framework](https://documentation.ubuntu.com/charmcraft/stable/reference/extensions/flask-framework/) extension.
 They are published to [Charmhub](https://charmhub.io/), the official repository of charms.
 This is done by publishing a resource to Charmhub as described in the [Charmcraft How-to guides](https://documentation.ubuntu.com/charmcraft/stable/howto/manage-charms/#publish-a-charm-on-charmhub).
 
@@ -73,7 +74,7 @@ This container is the entry point for all web traffic to the pod (on port `8080`
 
 The reason for that is since NGINX provides cache static content, reverse proxy, and load balance among multiple application servers, as well as other features it can be used in front of uWSGI server to significantly reduce server and network load.
 
-The workload that this container is running is defined in the [NGINX ROCK](https://github.com/canonical/indico-operator/tree/main/nginx_rock/).
+The workload that this container is running is provided by the [flask-framework](https://documentation.ubuntu.com/charmcraft/stable/reference/extensions/flask-framework/) extension.
 
 ### Indico
 
