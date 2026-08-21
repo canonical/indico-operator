@@ -4,18 +4,18 @@
 
 - Deploy the [Indico charm](https://charmhub.io/indico).
 - Integrate with [the Redis K8s charm](https://charmhub.io/redis-k8s) and [the PostgreSQL K8s charm](https://charmhub.io/postgresql-k8s).
-- Integrate with [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/#what-is-ingress) by using [NGINX Ingress Integrator](https://charmhub.io/nginx-ingress-integrator/).
+- Integrate with [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/#what-is-ingress) by using [NGINX Ingress Integrator](https://charmhub.io/nginx-ingress-integrator).
 
 Through the process, you'll inspect the Kubernetes resources created, verify the workload state, and log in to your Indico instance.
 
 ## Requirements
 - A working station, e.g., a laptop, with AMD64 architecture.
 <!-- vale off -->
-- Juju 3 installed and bootstrapped to a MicroK8s controller. You can accomplish this process by using a Multipass VM as outlined in this guide: [Set up your test environment](https://documentation.ubuntu.com/juju/3.6/howto/manage-your-juju-deployment/set-up-your-juju-deployment-local-testing-and-development/)
+- Juju 3 installed and bootstrapped to a MicroK8s controller. You can accomplish this process by using a Multipass VM as outlined in this guide: [Set up your test environment](https://canonical.com/juju/docs/juju-cli/3.6/howto/manage-your-juju-deployment/set-up-your-juju-deployment-local-testing-and-development/)
 <!-- vale on -->
-- NGINX Ingress Controller. If you're using [MicroK8s](https://microk8s.io/), this can be done by running the command `microk8s enable ingress`. For more details, see [Addon: Ingress](https://microk8s.io/docs/addon-ingress).
+- NGINX Ingress Controller. If you're using [MicroK8s](https://canonical.com/microk8s), this can be done by running the command `microk8s enable ingress`. For more details, see [Addon: Ingress](https://canonical.com/microk8s/docs/addon-ingress).
 
-For more information about how to install Juju, see [Get started with Juju](https://documentation.ubuntu.com/juju/3.6/tutorial/).
+For more information about how to install Juju, see [Get started with Juju](https://canonical.com/juju/docs/juju-cli/3.6/tutorial/).
 
 :warning: When using a Multipass VM, make sure to replace `127.0.0.1` IP addresses with the
 VM IP in steps that assume you're running locally. To get the IP address of the
@@ -41,7 +41,7 @@ juju add-model indico-tutorial
 
 Since Indico requires connections to PostgreSQL and Redis, you'll deploy them too. For more information, see [Charm Architecture](https://charmhub.io/indico/docs/explanation-charm-architecture).
 
-Redis is deployed twice because one is for the broker and the other for the cache. To do this, the `juju deploy` command accepts an extra argument with the custom application name. See more details in [`juju deploy`](https://documentation.ubuntu.com/juju/3.6/reference/juju-cli/list-of-juju-cli-commands/deploy/).
+Redis is deployed twice because one is for the broker and the other for the cache. To do this, the `juju deploy` command accepts an extra argument with the custom application name. See more details in [`juju deploy`](https://canonical.com/juju/docs/juju-cli/3.6/reference/juju-cli/list-of-juju-cli-commands/deploy/).
 
 Deploy the charms:
 
@@ -59,7 +59,7 @@ NAME                             READY   STATUS    RESTARTS   AGE
 indico-0                         3/3     Running   0         6h4m
 ```
 
-Run [`juju status`](https://documentation.ubuntu.com/juju/3.6/reference/juju-cli/list-of-juju-cli-commands/status/) to see the current status of the deployment. In the Unit list, you can see that Indico is waiting:
+Run [`juju status`](https://canonical.com/juju/docs/juju-cli/3.6/reference/juju-cli/list-of-juju-cli-commands/status/) to see the current status of the deployment. In the Unit list, you can see that Indico is waiting:
 
 ```
 indico/0*                 waiting   idle   10.1.74.70             Waiting for redis-broker availability
@@ -69,7 +69,7 @@ This means that Indico charm isn't integrated with Redis yet.
 
 ### Integrate with the Redis k8s charm the PostgreSQL k8s charm
 
-Provide integration between Indico and Redis by running the following [`juju integrate`](https://documentation.ubuntu.com/juju/3.6/reference/juju-cli/list-of-juju-cli-commands/integrate/) commands:
+Provide integration between Indico and Redis by running the following [`juju integrate`](https://canonical.com/juju/docs/juju-cli/3.6/reference/juju-cli/list-of-juju-cli-commands/integrate/) commands:
 
 ```
 juju integrate indico:redis-broker redis-broker
@@ -114,7 +114,7 @@ The NGINX Ingress Integrator charm can deploy and manage external access to HTTP
 
 If you want to make Indico charm available to external clients, you need to deploy the NGINX Ingress Integrator charm and integrate Indico with it.
 
-See more details in [Deploy the Nginx ingress integrator charm for the first time](https://documentation.ubuntu.com/nginx-ingress-integrator-charm/latest/tutorial/tutorial/).
+See more details in [Deploy the Nginx ingress integrator charm for the first time](https://canonical.com/juju/docs/nginx-ingress-integrator-charm/latest/tutorial/tutorial/).
 
 Enable the ingress on MicroK8s first:
 
@@ -167,7 +167,7 @@ The browser uses entries in the /etc/hosts file to override what is returned by 
 
 Usually a charm default hostname is the application name but since Indico requires a "." in the hostname for the app to respond, so the charm configures the default to `indico.local`.
 
-If you are deploying to a local machine you need to add the `127.0.0.1` to the `/etc/hosts` file. The default hostname for the Indico application is `indico.local`. To resolve it to your Ingress IP, edit [`/etc/hosts`](https://manpages.ubuntu.com/manpages/questing/en/man5/hosts.5.html) file and add the following line accordingly:
+If you are deploying to a local machine you need to add the `127.0.0.1` to the `/etc/hosts` file. The default hostname for the Indico application is `indico.local`. To resolve it to your Ingress IP, edit [`/etc/hosts`](https://manpages.ubuntu.com/manpages/questing/man5/hosts.5.html) file and add the following line accordingly:
 
 ```
 127.0.0.1 indico.local
