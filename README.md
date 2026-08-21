@@ -7,7 +7,7 @@
 
 A Juju charm deploying and managing Indico on Kubernetes. Indico is an
 open-source tool for event organisation, archival and collaboration. It allows for deployment on
-many different Kubernetes platforms, from [MicroK8s](https://microk8s.io) to
+many different Kubernetes platforms, from [MicroK8s](https://canonical.com/microk8s) to
 [Charmed Kubernetes](https://ubuntu.com/kubernetes) to public cloud Kubernetes
 offerings.
 
@@ -16,12 +16,12 @@ Like any Juju charm, this charm supports one-line deployment, configuration, int
   - Integration with SSO
   - Integration with S3 for redundant file storage
 
-For information about how to deploy, integrate, and manage this charm, see the Official [Indico Operator Documentation](https://charmhub.io/indico/docs).
+For information about how to deploy, integrate, and manage this charm, see the Official [Indico Operator Documentation](https://charmhub.io/indico).
 
 
 ## Get started
 
-You can follow the tutorial [here](https://charmhub.io/indico/docs/tutorial).
+You can follow the tutorial [here](https://charmhub.io/indico/tutorial).
 
 ### Basic operations
 
@@ -49,5 +49,5 @@ This charm can be integrated with other Juju charms and services:
 * [Troubleshooting](https://matrix.to/#/#charmhub-charmdev:ubuntu.com) <!--(Optional) Link to a page or section about troubleshooting/FAQ-->
 ## Project and community
 * [Issues](https://github.com/canonical/indico-operator/issues) <!--Link to GitHub issues (if applicable)-->
-* [Contributing](https://charmhub.io/indico/docs/how-to-contribute) <!--Link to any contribution guides-->
+* [Contributing](https://charmhub.io/indico/how-to-contribute) <!--Link to any contribution guides-->
 * [Matrix](https://matrix.to/#/#charmhub-charmdev:ubuntu.com) <!--Link to contact info (if applicable), e.g. Matrix channel-->

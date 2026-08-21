@@ -1,6 +1,6 @@
 # Indico operator
 
-A [Juju](https://juju.is/) [charm](https://documentation.ubuntu.com/juju/3.6/reference/charm/) deploying and managing [Indico](https://getindico.io/) on Kubernetes. Indico is an open-source tool for event organisation, archival, and collaboration.
+A [Juju](https://canonical.com/juju) [charm](https://canonical.com/juju/docs/juju-cli/3.6/reference/charm/) deploying and managing [Indico](https://getindico.io/) on Kubernetes. Indico is an open-source tool for event organisation, archival, and collaboration.
 
 Like any Juju charm, this charm supports one-line deployment, configuration, integration, scaling, and more. For Indico, this includes:
 - Integrations with SSO
@@ -16,8 +16,8 @@ This charm will make operating Indico simple and straightforward for DevOps or S
 
 | | |
 |--|--|
-|  [Tutorials](https://charmhub.io/indico/docs/tutorial)</br>  Get started - a hands-on introduction to using the Charmed Indico operator for new users </br> |  [How-to guides](https://charmhub.io/indico/docs/how-to-configure-a-proxy) </br> Step-by-step guides covering key operations and common tasks |
-| [Reference](https://charmhub.io/indico/docs/reference-actions) </br> Technical information - specifications, APIs, architecture | |
+|  [Tutorials](https://charmhub.io/indico/tutorial)</br>  Get started - a hands-on introduction to using the Charmed Indico operator for new users </br> |  [How-to guides](https://charmhub.io/indico/how-to-configure-a-proxy) </br> Step-by-step guides covering key operations and common tasks |
+| [Reference](https://charmhub.io/indico/reference-actions) </br> Technical information - specifications, APIs, architecture | |
 
 ## Contributing to this documentation
 
@@ -29,10 +29,10 @@ If there's a particular area of documentation that you'd like to see that's miss
 
 The Indico Operator is a member of the Ubuntu family. It's an open-source project that warmly welcomes community projects, contributions, suggestions, fixes, and constructive feedback.
 
-- [Code of conduct](https://ubuntu.com/community/code-of-conduct)
+- [Code of conduct](https://ubuntu.com/community/docs/ethos/code-of-conduct)
 - [Get support](https://discourse.charmhub.io/)
 - [Join our online chat](https://matrix.to/#/#charmhub-charmdev:ubuntu.com)
-- [Contribute](https://charmhub.io/indico/docs/how-to-contribute)
+- [Contribute](https://charmhub.io/indico/how-to-contribute)
 
 Thinking about using the Indico Operator for your next project? [Get in touch](https://matrix.to/#/#charmhub-charmdev:ubuntu.com)!
 
