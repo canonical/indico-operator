@@ -83,4 +83,4 @@ Grafana-dashboard integrate command:
 juju integrate indico grafana-dashboard
 ```
 
-See more information in [Charm Architecture](https://charmhub.io/indico/explanation-charm-architecture).
+See more information in [Charm Architecture](https://charmhub.io/indico/docs/explanation-charm-architecture).

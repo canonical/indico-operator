@@ -16,8 +16,8 @@ This charm will make operating Indico simple and straightforward for DevOps or S
 
 | | |
 |--|--|
-|  [Tutorials](https://charmhub.io/indico/tutorial)</br>  Get started - a hands-on introduction to using the Charmed Indico operator for new users </br> |  [How-to guides](https://charmhub.io/indico/how-to-configure-a-proxy) </br> Step-by-step guides covering key operations and common tasks |
-| [Reference](https://charmhub.io/indico/reference-actions) </br> Technical information - specifications, APIs, architecture | |
+|  [Tutorials](https://charmhub.io/indico/docs/tutorial)</br>  Get started - a hands-on introduction to using the Charmed Indico operator for new users </br> |  [How-to guides](https://charmhub.io/indico/docs/how-to-configure-a-proxy) </br> Step-by-step guides covering key operations and common tasks |
+| [Reference](https://charmhub.io/indico/docs/reference-actions) </br> Technical information - specifications, APIs, architecture | |
 
 ## Contributing to this documentation
 
@@ -32,7 +32,7 @@ The Indico Operator is a member of the Ubuntu family. It's an open-source projec
 - [Code of conduct](https://ubuntu.com/community/docs/ethos/code-of-conduct)
 - [Get support](https://discourse.charmhub.io/)
 - [Join our online chat](https://matrix.to/#/#charmhub-charmdev:ubuntu.com)
-- [Contribute](https://charmhub.io/indico/how-to-contribute)
+- [Contribute](https://charmhub.io/indico/docs/how-to-contribute)
 
 Thinking about using the Indico Operator for your next project? [Get in touch](https://matrix.to/#/#charmhub-charmdev:ubuntu.com)!
 
