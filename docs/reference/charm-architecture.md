@@ -1,6 +1,6 @@
 # Charm architecture
 
-At its core, [Indico](https://getindico.io/) is a [Flask](https://flask.palletsprojects.com/) application that integrates with [PostgreSQL](https://www.postgresql.org/), [Redis](https://redis.io/), and [Celery](https://docs.celeryq.dev/en/stable/).
+At its core, [Indico](https://getindico.io/) is a [Flask](https://flask.palletsprojects.com/en/stable/) application that integrates with [PostgreSQL](https://www.postgresql.org/), [Redis](https://redis.io/), and [Celery](https://docs.celeryq.dev/en/stable/).
 
 ## Charm architecture diagram
 
@@ -35,13 +35,13 @@ UpdateRelStyle(charm_logic, indico_core, $offsetX="-120")
 
 ```
 
-The charm design leverages the [sidecar](https://kubernetes.io/blog/2015/06/the-distributed-system-toolkit-patterns/#example-1-sidecar-containers) pattern to allow multiple containers in each pod with [Pebble](https://documentation.ubuntu.com/pebble/) running as the workload container’s entrypoint.
+The charm design leverages the [sidecar](https://kubernetes.io/blog/2015/06/the-distributed-system-toolkit-patterns/#example-1-sidecar-containers) pattern to allow multiple containers in each pod with [Pebble](https://ubuntu.com/docs/pebble/) running as the workload container’s entrypoint.
 
 Pebble is a lightweight, API-driven process supervisor that is responsible for configuring processes to run in a container and controlling those processes throughout the workload lifecycle.
 
 Pebble `services` are configured through [layers](https://github.com/canonical/pebble#layer-specification), and the following containers represent each one a layer forming the effective Pebble configuration, or `plan`:
 
-1. An [NGINX](https://www.nginx.com/) container, which can be used to efficiently serve static resources, as well as be the incoming point for all web traffic to the pod.
+1. An [NGINX](https://www.f5.com/products/nginx) container, which can be used to efficiently serve static resources, as well as be the incoming point for all web traffic to the pod.
 2. The [Indico](https://getindico.io/) container itself, which has a [uWSGI](https://uwsgi-docs.readthedocs.io/en/latest/) server configured in HTTP mode.
 
 
@@ -58,8 +58,9 @@ And if you run `kubectl describe pod indico-0`, all the containers will have as 
 
 ## OCI images
 
-We use [Rockcraft](https://documentation.ubuntu.com/rockcraft/latest/) to build OCI Images for Indico and NGINX. 
-The images are defined in [NGINX ROCK](https://github.com/canonical/indico-operator/tree/main/nginx_rock/) and [Indico ROCK](https://github.com/canonical/indico-operator/tree/main/indico_rock).
+We use [Rockcraft](https://ubuntu.com/containers/rockcraft/docs/latest/) to build OCI Images for Indico. 
+The Indico image is defined in [Indico ROCK](https://github.com/canonical/indico-operator/tree/main/indico_rock).
+The NGINX image is provided by the [flask-framework](https://canonical.com/juju/docs/charmcraft/4/tutorial/kubernetes-charm-flask/) extension.
 They are published to [Charmhub](https://charmhub.io/), the official repository of charms.
 This is done by publishing a resource to Charmhub as described in the [Charmcraft How-to guides](https://documentation.ubuntu.com/charmcraft/stable/howto/manage-charms/#publish-a-charm-on-charmhub).
 
@@ -73,7 +74,7 @@ This container is the entry point for all web traffic to the pod (on port `8080`
 
 The reason for that is since NGINX provides cache static content, reverse proxy, and load balance among multiple application servers, as well as other features it can be used in front of uWSGI server to significantly reduce server and network load.
 
-The workload that this container is running is defined in the [NGINX ROCK](https://github.com/canonical/indico-operator/tree/main/nginx_rock/).
+The workload that this container is running is provided by the [flask-framework](https://canonical.com/juju/docs/charmcraft/4/tutorial/kubernetes-charm-flask/) extension.
 
 ### Indico
 
@@ -94,7 +95,7 @@ Inside the above mentioned containers, additional Pebble layers are defined in o
 
 ### Nginx Prometheus exporter
 
-Inside the NGINX container, the  [NGINX Prometheus Exporter](https://github.com/nginxinc/nginx-prometheus-exporter) runs to provide statistics on web traffic.
+Inside the NGINX container, the  [NGINX Prometheus Exporter](https://github.com/nginx/nginx-prometheus-exporter) runs to provide statistics on web traffic.
 
 It is started with `-nginx.scrape-uri=http://localhost:9080/stub_status` , which has been configured in the NGINX container to return NGINX's [stub_status](http://nginx.org/en/docs/http/ngx_http_stub_status_module.html). 
 The exporter listens on port `9113` and metrics about web traffic to the pod can be scraped by Prometheus there.
@@ -132,9 +133,9 @@ Grafana is an open-source visualization tool that allows to query, visualize, al
 
 ### Ingress
 
-The Indico charm also supports being integrated with [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/#what-is-ingress) by using [NGINX Ingress Integrator](https://charmhub.io/nginx-ingress-integrator/).
+The Indico charm also supports being integrated with [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/#what-is-ingress) by using [NGINX Ingress Integrator](https://charmhub.io/nginx-ingress-integrator).
 
-In this case, an existing Ingress controller is required. For more information, see [Deploy the Nginx ingress integrator charm for the first time](https://documentation.ubuntu.com/nginx-ingress-integrator-charm/latest/tutorial/tutorial/).
+In this case, an existing Ingress controller is required. For more information, see [Deploy the Nginx ingress integrator charm for the first time](https://canonical.com/juju/docs/nginx-ingress-integrator-charm/latest/tutorial/tutorial/).
 
 ### PostgreSQL
 
@@ -179,7 +180,7 @@ Action: Same as `config_changed`.
 
 The `src/charm.py` is the default entry point for a charm and has the IndicoOperatorCharm Python class which inherits from CharmBase.
 
-CharmBase is the base class from which all Charms are formed, defined by [Ops](https://documentation.ubuntu.com/ops/latest/) (Python framework for developing charms).
+CharmBase is the base class from which all Charms are formed, defined by [Ops](https://canonical.com/juju/docs/ops/latest/) (Python framework for developing charms).
 
 See more information in [Charm](https://canonical.com/juju/docs/juju-cli/3.6/reference/charm/).
 

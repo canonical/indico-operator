@@ -16,7 +16,7 @@ Like any Juju charm, this charm supports one-line deployment, configuration, int
   - Integration with SSO
   - Integration with S3 for redundant file storage
 
-For information about how to deploy, integrate, and manage this charm, see the Official [Indico Operator Documentation](https://charmhub.io/indico/docs).
+For information about how to deploy, integrate, and manage this charm, see the Official [Indico Operator Documentation](https://charmhub.io/indico).
 
 
 ## Get started
