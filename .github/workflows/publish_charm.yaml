@@ -13,3 +13,5 @@ jobs:
       actions: read
       contents: write
     secrets: inherit
+    with:
+      resource-mapping: '{"indico": "flask-app-image"}'
