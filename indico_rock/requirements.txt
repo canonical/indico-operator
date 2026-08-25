@@ -1,4 +1,4 @@
-indico==3.3.12
+indico==3.3.13
 
 # Flask is a transitive dependency of indico itself, but the flask-framework
 # Rockcraft extension requires it to appear explicitly in requirements.txt.
@@ -17,7 +17,7 @@ python3-saml
 
 # Pinned to dodge https://github.com/boto/boto3/issues/4398 which breaks
 # indico-plugin-storage-s3.
-boto3==1.43.77
+boto3==1.43.79
 
 # Local CLI plugins (carried over from indico-operator) that back the
 # add-admin and anonymize-user charm actions: `indico autocreate admin` and
