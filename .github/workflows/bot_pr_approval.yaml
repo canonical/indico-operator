@@ -9,5 +9,7 @@ jobs:
     # github-actions[bot]. GitHub rejects approving your own pull request, so
     # skip PRs authored by that same identity.
     if: github.event.pull_request.user.login != 'github-actions[bot]'
+    permissions:
+      pull-requests: write
     uses: canonical/operator-workflows/.github/workflows/bot_pr_approval.yaml@main
     secrets: inherit
