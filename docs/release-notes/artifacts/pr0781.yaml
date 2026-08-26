@@ -1,0 +1,15 @@
+# --- Release notes artifact ----
+
+schema_version: 1
+changes:
+  - title: Grant contents and packages write permissions to the publish edge workflow
+    author: DeeKay3
+    type: bugfix
+    description: "Grant contents and packages write permissions to the publish-to-edge job so the reusable publish workflow can create the git tag and release after uploading the charm. Without these permissions the tag and release step failed with 'Resource not accessible by integration' even though the charm revision was published successfully."
+    urls:
+      pr:
+        - https://github.com/canonical/indico-operator/pull/781
+      related_doc:
+      related_issue:
+    visibility: internal
+    highlight: false

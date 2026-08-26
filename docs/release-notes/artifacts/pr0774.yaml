@@ -1,0 +1,15 @@
+# --- Release notes artifact ----
+
+schema_version: 1
+changes:
+  - title: Add a fix to publish edge workflow to include the flask-app-image resource mapping
+    author: DeeKay3
+    type: minor
+    description: "Add a fix to the publish edge workflow to include the flask-app-image resource mapping, ensuring that the indico charm is correctly published with its associated resources."
+    urls:
+      pr:
+        - https://github.com/canonical/indico-operator/pull/774
+      related_doc:
+      related_issue:
+    visibility: internal
+    highlight: false
