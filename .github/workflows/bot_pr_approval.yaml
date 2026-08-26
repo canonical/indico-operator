@@ -5,5 +5,7 @@ on:
 
 jobs:
   bot_pr_approval:
+    permissions:
+      pull-requests: write
     uses: canonical/operator-workflows/.github/workflows/bot_pr_approval.yaml@main
     secrets: inherit
