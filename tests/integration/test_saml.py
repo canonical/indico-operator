@@ -48,22 +48,31 @@ def test_saml_integration(app: str, juju: jubilant.Juju, indico_address: str):
     )
 
     juju.integrate(f"{app}:saml", "saml-integrator:saml")
-    juju.wait(jubilant.all_active, timeout=JUJU_WAIT_TIMEOUT)
-    logger.info("Indico is active after SAML integration")
+    idp_host = urlparse(_SAML_ENTITY_ID).netloc
 
-    # The flask-multipass SAML provider is exposed on /login/ubuntu/; Indico
-    # redirects unauthenticated users there to start the SSO flow. The route is
-    # registered with a trailing slash, so the canonical URL must be requested
-    # directly: /login/ubuntu (no slash) only yields a 308 to /login/ubuntu/.
-    response = requests.get(
-        f"{indico_address}/login/ubuntu/",
-        allow_redirects=False,
-        timeout=30,
-    )
+    def saml_login_ready(status):
+        """Return True once Indico has applied the SAML provider configuration."""
+        if not jubilant.all_active(status):
+            return False
+        try:
+            response = requests.get(
+                f"{indico_address}/login/ubuntu/",
+                allow_redirects=False,
+                timeout=10,
+            )
+        except (requests.ConnectionError, requests.Timeout):
+            return False
+        return response.status_code in (302, 303) and idp_host in response.headers.get(
+            "Location", ""
+        )
+
+    juju.wait(saml_login_ready, timeout=JUJU_WAIT_TIMEOUT)
+    logger.info("Indico is active with SAML integration")
+
+    response = requests.get(f"{indico_address}/login/ubuntu/", allow_redirects=False, timeout=30)
     assert response.status_code in (
         302,
         303,
     ), f"Expected a redirect to the IdP, got {response.status_code}"
     location = response.headers.get("Location", "")
-    idp_host = urlparse(_SAML_ENTITY_ID).netloc
     assert idp_host in location, f"Expected a redirect to the IdP, got {location}"

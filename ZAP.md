@@ -23,7 +23,7 @@ The Ajax Spider scan is not a good fit for the integration test.
 ## 90033    IGNORE  (Loosely Scoped Cookie)
 
 Specifying Domain is less restrictive than omitting it.
-Read more about it in [Cookies](https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies).
+Read more about it in [Cookies](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Cookies).
 
 ## 10049-1 IGNORE  (Non-Storable Content)
 
@@ -38,7 +38,7 @@ The comments do not contain sensitive information.
 
 We are not setting this one because "The cookie-sending behavior if SameSite is not specified is SameSite=Lax.
 Previously the default was that cookies were sent for all requests."
-Read more about it in [SameSite](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite).
+Read more about it in [SameSite](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie).
 
 ## 10110   IGNORE  (Dangerous JS Functions)
 
@@ -50,7 +50,7 @@ More information in [eval](https://developer.mozilla.org/en-US/docs/Web/JavaScri
 
 Permissions are features offered by the browser through an API. You have to specify every permission separately, so setting a value for this header could negatively impact the user experience.
 
-More information in [Permissions Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Permissions-Policy).
+More information in [Permissions Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Permissions-Policy).
 
 ## 10038   IGNORE   (Content Security Policy (CSP) Header Not Set)
 

@@ -40,7 +40,7 @@ Ingress manages external HTTP/HTTPS access to services in a Kubernetes cluster.
 Ingress relation through [nginx-ingress-integrator](https://charmhub.io/nginx-ingress-integrator)
 charm enables additional `blog_hostname` and `use_nginx_ingress_modesec` configurations. Note that the
 Kubernetes cluster must already have an nginx ingress controller already deployed. Documentation to
-enable ingress in MicroK8s can be found [here](https://microk8s.io/docs/addon-ingress).
+enable ingress in MicroK8s can be found [here](https://canonical.com/microk8s/docs/addon-ingress).
 
 Example `ingress` integrate command: 
 ```
@@ -49,7 +49,7 @@ juju integrate indico nginx-ingress-integrator
 
 ### `metrics-endpoint`
 
-_Interface_: [prometheus_scrape](https://charmhub.io/interfaces/prometheus_scrape)  
+_Interface_: [prometheus_scrape](https://charmhub.io/integrations/prometheus_scrape)  
 _Supported charms_: [prometheus-k8s](https://charmhub.io/prometheus-k8s)
 
 Metrics-endpoint relation allows scraping the `/metrics` endpoint provided by apache-exporter sidecar
