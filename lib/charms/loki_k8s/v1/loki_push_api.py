@@ -544,7 +544,7 @@ LIBAPI = 1
 
 # Increment this PATCH version before using `charmcraft publish-lib` or reset
 # to 0 if you are raising the major API version
-LIBPATCH = 26
+LIBPATCH = 33
 
 PYDEPS = ["cosl"]
 
@@ -1188,7 +1188,10 @@ class LokiPushApiProvider(Object):
                 )
                 continue
 
-            alerts[identifier] = self._tool.apply_label_matchers(alert_rules)  # type: ignore
+            # Topology labels are already injected by _inject_alert_expr_labels using
+            # alert_expression_dict, which intentionally excludes juju_charm and juju_unit.
+            # Don't call apply_label_matchers here as it would re-inject juju_charm.
+            alerts[identifier] = alert_rules
 
             _, errmsg = self._tool.validate_alert_rules(cast(OfficialRuleFileFormat, alert_rules))
             if errmsg:
@@ -1198,10 +1201,50 @@ class LokiPushApiProvider(Object):
                 if self._charm.unit.is_leader():
                     relation.data[self._charm.app]["event"] = json.dumps({"errors": errmsg})
                 continue
+            if self._charm.unit.is_leader():
+                event_data = json.loads(relation.data[self._charm.app].get("event", "{}"))
+                event_data.pop("errors", None)
+                relation.data[self._charm.app]["event"] = json.dumps(event_data)
 
             alerts[identifier] = alert_rules
 
         return alerts
+
+    def has_invalid_alert_rules(self) -> bool:
+        """Check whether any relation reported invalid alert rules.
+
+        Validation errors, written to relation app data by the :attr:`alerts`
+        property, are read back to determine whether the relation currently
+        carries invalid alert rules. Non-leader units never write the app data
+        that holds these errors, so they always report no errors.
+
+        Returns:
+            True if any related consumer reported alert rule validation
+            errors, False otherwise.
+        """
+        if not self._charm.unit.is_leader():
+            return False
+
+        for relation in self._charm.model.relations.get(self._relation_name, []):
+            app_data = relation.data.get(self._charm.app)
+            if not app_data:
+                continue
+
+            event_raw = app_data.get("event", "{}")
+            try:
+                event_data = json.loads(event_raw)
+            except (json.JSONDecodeError, TypeError):
+                continue
+
+            if error_msg := event_data.get("errors"):
+                logger.error(
+                    "Alert rule validation error on relation %s: %s",
+                    relation.id,
+                    error_msg,
+                )
+                return True
+
+        return False
 
     def _get_identifier_by_alert_rules(
         self, rules: dict
@@ -1279,10 +1322,13 @@ class LokiPushApiProvider(Object):
                             charm_name=labels.get("juju_charm", ""),
                         )
 
-                        # Inject topology and put it back in the list
+                        # Inject topology and put it back in the list.
+                        # Use alert_expression_dict (excludes juju_charm) instead of
+                        # label_matcher_dict because subordinate charms (e.g. otelcol)
+                        # label logs with their own charm name, not the principal's.
                         rule["expr"] = self._tool.inject_label_matchers(
                             re.sub(r"%%juju_topology%%,?", "", rule["expr"]),
-                            topology.label_matcher_dict,
+                            topology.alert_expression_dict,
                         )
                     except KeyError:
                         # Some required JujuTopology key is missing. Just move on.
@@ -1378,7 +1424,9 @@ class ConsumerBase(Object):
         seen_urls = set()
 
         for relation in self._charm.model.relations[self._relation_name]:
-            for unit in relation.units:
+            # Sort the units so the endpoints list order is stable across runs,
+            # otherwise the generated promtail config flaps.
+            for unit in sorted(relation.units, key=lambda u: u.name):
                 if unit.app == self._charm.app:
                     continue
 
@@ -1405,7 +1453,6 @@ class ConsumerBase(Object):
                 endpoints.append(deserialized_endpoint)
 
         return endpoints
-
 
 
 class LokiPushApiConsumer(ConsumerBase):
@@ -1700,7 +1747,7 @@ class LogProxyConsumer(ConsumerBase):
         self._promtails_ports = self._generate_promtails_ports(logs_scheme)
 
         # architecture used for promtail binary
-        arch = platform.processor()
+        arch = platform.machine()
         if arch in ["x86_64", "amd64"]:
             self._arch = "amd64"
         elif arch in ["aarch64", "arm64", "armv8b", "armv8l"]:
@@ -1742,22 +1789,13 @@ class LogProxyConsumer(ConsumerBase):
         self._handle_alert_rules(event.relation)
 
         if self._charm.unit.is_leader():
-            ev = json.loads(event.relation.data[event.app].get("event", "{}"))
-
-            if ev:
-                valid = bool(ev.get("valid", True))
-                errors = ev.get("errors", "")
-
-                if valid and not errors:
-                    self.on.alert_rule_status_changed.emit(valid=valid)
-                else:
-                    self.on.alert_rule_status_changed.emit(valid=valid, errors=errors)
+            self._handle_alert_rule_status_changed(event)
 
         for container in self._containers.values():
             if not container.can_connect():
                 continue
             if self.model.relations[self._relation_name]:
-                if "promtail" not in container.get_plan().services:
+                if not self._is_promtail_set_up(container):
                     self._setup_promtail(container)
                     continue
 
@@ -1770,10 +1808,23 @@ class LogProxyConsumer(ConsumerBase):
                 # Loki may send endpoints late. Don't necessarily start, there may be
                 # no clients
                 if new_config["clients"]:
-                    container.restart(WORKLOAD_SERVICE_NAME)
-                    self.on.log_proxy_endpoint_joined.emit()
+                    if self._restart_promtail(container):
+                        self.on.log_proxy_endpoint_joined.emit()
                 else:
                     self.on.promtail_digest_error.emit("No promtail client endpoints available!")
+
+    def _handle_alert_rule_status_changed(self, event: RelationEvent) -> None:
+        """Relay the alert rule validation status reported by the Loki provider."""
+        ev = json.loads(event.relation.data[event.app].get("event", "{}"))
+
+        if ev:
+            valid = bool(ev.get("valid", True))
+            errors = ev.get("errors", "")
+
+            if valid and not errors:
+                self.on.alert_rule_status_changed.emit(valid=valid)
+            else:
+                self.on.alert_rule_status_changed.emit(valid=valid, errors=errors)
 
     def _on_relation_departed(self, _: RelationEvent) -> None:
         """Event handler for `relation_departed`.
@@ -1793,10 +1844,27 @@ class LogProxyConsumer(ConsumerBase):
                 container.push(WORKLOAD_CONFIG_PATH, yaml.safe_dump(new_config), make_dirs=True)
 
             if new_config["clients"]:
-                container.restart(WORKLOAD_SERVICE_NAME)
+                self._restart_promtail(container)
             else:
                 container.stop(WORKLOAD_SERVICE_NAME)
             self.on.log_proxy_endpoint_departed.emit()
+
+    def _restart_promtail(self, container: Container) -> bool:
+        """Restart promtail, surfacing a Pebble failure as a digest error.
+
+        Args:
+            container: the workload container running the promtail service.
+
+        Returns:
+            True on success, False if the restart failed.
+        """
+        try:
+            container.restart(WORKLOAD_SERVICE_NAME)
+        except ChangeError as e:
+            logger.warning("Failed to restart promtail: %s", e)
+            self.on.promtail_digest_error.emit(str(e))
+            return False
+        return True
 
     def _add_pebble_layer(self, workload_binary_path: str, container: Container) -> None:
         """Adds Pebble layer that manages Promtail service in Workload container.
@@ -2157,6 +2225,35 @@ class LogProxyConsumer(ConsumerBase):
 
         return static_configs
 
+    def _promtail_binary_spec(self) -> dict:
+        """The promtail binary metadata advertised on the log-proxy relation."""
+        relations = self._charm.model.relations[self._relation_name]
+        if not relations:
+            return {}
+        relation = relations[0]
+        return json.loads(relation.data[relation.app].get("promtail_binary_zip_url", "{}"))
+
+    def _is_promtail_set_up(self, container: Container) -> bool:
+        """Whether promtail is fully usable in this container.
+
+        Unlike ``_is_promtail_installed`` (binary only), this also requires the
+        pebble service to be registered.
+
+        The pebble plan alone is not proof: if the workload container lost its
+        ephemeral filesystem (e.g. after pod churn) the layer may still be in
+        the plan while the runtime-pushed binary is gone. Trusting the plan and
+        restarting unconditionally wedges the unit
+        (https://github.com/canonical/loki-k8s-operator/issues/659).
+        """
+        if "promtail" not in container.get_plan().services:
+            return False
+        promtail_info = self._promtail_binary_spec().get(self._arch)
+        if not promtail_info:
+            # No promtail binary advertised for this architecture (or nothing
+            # published on the relation yet), so promtail cannot be running here.
+            return False
+        return self._is_promtail_installed(promtail_info, container)
+
     def _setup_promtail(self, container: Container) -> None:
         # Use the first
         relations = self._charm.model.relations[self._relation_name]
@@ -2171,10 +2268,22 @@ class LogProxyConsumer(ConsumerBase):
             relation.data[relation.app].get("promtail_binary_zip_url", "{}")
         )
         if not promtail_binaries:
+            # The Loki charm hasn't published the binary metadata yet; a later
+            # relation-changed will bring us back here.
+            return
+
+        if self._arch not in promtail_binaries:
+            msg = f"No promtail binary available for architecture {self._arch}"
+            logger.warning(msg)
+            self.on.promtail_digest_error.emit(msg)
             return
 
         self._create_directories(container)
-        self._ensure_promtail_binary(promtail_binaries, container)
+        if not self._ensure_promtail_binary(promtail_binaries, container):
+            # Do not add the pebble layer: a service whose command points to a
+            # missing binary would wedge the unit on every restart attempt
+            # (https://github.com/canonical/loki-k8s-operator/issues/659).
+            return
 
         container.push(
             WORKLOAD_CONFIG_PATH,
@@ -2197,9 +2306,18 @@ class LogProxyConsumer(ConsumerBase):
         else:
             self.on.promtail_digest_error.emit("No promtail client endpoints available!")
 
-    def _ensure_promtail_binary(self, promtail_binaries: dict, container: Container):
+    def _ensure_promtail_binary(self, promtail_binaries: dict, container: Container) -> bool:
+        """Ensure the promtail binary is present in the workload container.
+
+        Args:
+            promtail_binaries: dictionary of promtail binaries per architecture.
+            container: container in which promtail must be installed.
+
+        Returns:
+            True if the binary is available, False if it could not be obtained.
+        """
         if self._is_promtail_installed(promtail_binaries[self._arch], container):
-            return
+            return True
 
         try:
             self._obtain_promtail(promtail_binaries[self._arch], container)
@@ -2207,6 +2325,8 @@ class LogProxyConsumer(ConsumerBase):
             msg = f"Promtail binary couldn't be downloaded - {str(e)}"
             logger.warning(msg)
             self.on.promtail_digest_error.emit(msg)
+            return False
+        return True
 
     def _is_promtail_installed(self, promtail_info: dict, container: Container) -> bool:
         """Determine if promtail has already been installed to the container.
@@ -2294,6 +2414,7 @@ class _PebbleLogClient:
                         "juju_model_uuid": topology._model_uuid,
                         "juju_application": topology._application,
                         "juju_unit": topology._unit,
+                        "job": f"juju_{topology.identifier}",
                     },
                 }
             )
