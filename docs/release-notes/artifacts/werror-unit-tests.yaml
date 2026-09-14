@@ -1,0 +1,15 @@
+# --- Release notes artifact ----
+
+schema_version: 1
+changes:
+  - title: Run the unit tests with warnings promoted to errors
+    author: tonyandrewmeyer
+    type: chore
+    description: |
+      The unit tests now run with `filterwarnings = ["error", ...]`, so a deprecation or resource leak fails the suite instead of scrolling past in the log. Three third-party warnings are ignored by message; the charm's own code raises none. Integration tests are unaffected.
+    urls:
+      pr: https://github.com/canonical/indico-operator/pull/776
+      related_doc:
+      related_issue:
+    visibility: internal
+    highlight: false
