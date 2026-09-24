@@ -85,20 +85,18 @@ Contributing to this documentation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Documentation is an important part of this project, and we take the same open-source approach
-to the documentation as the code. As such, we welcome community contributions, suggestions, and
+to the documentation as the code. We welcome community contributions, suggestions, and
 constructive feedback on our documentation.
-See :ref:`How to contribute <how_to_contribute>` for more information.
+See `How to contribute <how-to/contribute.md>`_ for more information.
 
 If there's a particular area of documentation that you'd like to see that's missing, please
-file a bug.
-
-.. TODO: Add link to GitHub issues page for "file a bug"
+`file a bug <https://github.com/canonical/indico-operator/issues>`_.
 
 Project and community
 ---------------------
 
-The __charm_name__ Operator is a member of the Ubuntu family. It's an open-source project that warmly welcomes community
-projects, contributions, suggestions, fixes, and constructive feedback.
+The Indico Operator is a member of the Ubuntu family. It's an open-source project that warmly welcomes
+community contributions, suggestions, fixes, and constructive feedback.
 
 Governance and policies
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -110,14 +108,14 @@ Get involved
 
 - `Get support <https://discourse.charmhub.io/>`_
 - `Join our online chat <https://matrix.to/#/#charmhub-charmdev:ubuntu.com>`_
-- :ref:`Contribute <how_to_contribute>`
+- `Contribute <how-to/contribute.md>`_
 
 Releases
 ^^^^^^^^
 
-- :ref:`Release notes <release_notes_index>`
+- `Release notes <release-notes/landing-page.md>`_
 
-Thinking about using the __charm_name__ Operator for your next project?
+Thinking about using the Indico Operator for your next project?
 `Get in touch <https://matrix.to/#/#charmhub-charmdev:ubuntu.com>`_!
 
 .. vale Canonical.013-Spell-out-numbers-below-10 = NO
@@ -127,8 +125,7 @@ Thinking about using the __charm_name__ Operator for your next project?
     :hidden:
     :maxdepth: 1
 
-    Tutorial <tutorial/index>
-    How-to guides <how-to/index>
-    Reference <reference/index>
-    Explanation <explanation/index>
-    Release notes <release-notes/index>
+    Tutorial <tutorial.md>
+    How-to guides <how-to/index.md>
+    Reference <reference/index.md>
+    Release notes <release-notes/landing-page.md>
