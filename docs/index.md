@@ -3,14 +3,15 @@
 A [Juju](https://canonical.com/juju) [charm](https://canonical.com/juju/docs/juju-cli/3.6/reference/charm/) deploying and managing [Indico](https://getindico.io/) on Kubernetes. Indico is an open-source tool for event organisation, archival, and collaboration.
 
 Like any Juju charm, this charm supports one-line deployment, configuration, integration, scaling, and more. For Indico, this includes:
-- Integrations with SSO
-- Access to S3
 
-The Indico charm allows for deployment on many different Kubernetes platforms, from [MicroK8s](https://microk8s.io) to [Charmed Kubernetes](https://ubuntu.com/kubernetes) and public cloud Kubernetes offerings.
+- Integration with SAML-based SSO
+- Integration with S3 for uploaded files and static content
+- Integration with PostgreSQL, Redis, and ingress
+- Customization through plugins and themes
 
-As such, the charm makes it easy for those looking to take control of their own events management system whilst keeping operations simple and gives them the freedom to deploy on the Kubernetes platform of their choice.
+The Indico charm can be deployed on many Kubernetes platforms, from [MicroK8s](https://microk8s.io) to [Charmed Kubernetes](https://ubuntu.com/kubernetes) and public cloud Kubernetes offerings. It provides a repeatable way to run an event management platform while keeping operations simple.
 
-This charm will make operating Indico simple and straightforward for DevOps or SRE teams through Juju's clean interface. It will allow easy deployment into multiple environments to test changes and support scaling out for enterprise deployments.
+The charm helps DevOps and SRE teams operate their own Indico deployment through Juju's clean interface. It supports testing changes in separate environments and scaling deployments as needs grow.
 
 ## In this documentation
 
