@@ -1,38 +1,33 @@
 .. meta::
-   :description: Discover the __charm_name__ charm, a Juju operator that deploys and manages __charm_name__.
+   :description: Discover the Indico charm, a Juju operator that deploys and manages Indico on Kubernetes.
 
 .. vale Canonical.007-Headings-sentence-case = NO
 
 .. _index:
 
-__charm_name__ operator
-========================
+Indico operator
+===============
 
 .. vale Canonical.007-Headings-sentence-case = YES
 
-.. TODO: A single sentence that says what the product is, succinctly and memorably.
-   Add a 1-2 sentence description of what the charm software does.
+A `Juju <https://canonical.com/juju>`_ `charm <https://canonical.com/juju/docs/juju-cli/3.6/reference/charm/>`_
+deploying and managing `Indico <https://getindico.io/>`_ on Kubernetes. Indico is an open-source tool
+for event organisation, archival, and collaboration.
 
-A `Juju <https://juju.is/>`_ `charm <https://documentation.ubuntu.com/juju/3.6/reference/charm/>`_
-deploying and managing <Charm software> on <Kubernetes, VMs, or both>. 
+Like any Juju charm, this charm supports one-line deployment, configuration, integration, scaling, and more.
+For Indico, this includes:
 
-.. TODO: A paragraph of 2-5 short sentences, that describes what the product does
-   and what need the product meets.
+* Integration with SAML-based SSO
+* Integration with S3 for uploaded files and static content
+* Integration with PostgreSQL, Redis, and ingress
+* Customization through plugins and themes
 
-Like any Juju charm, this charm supports one-line deployment, configuration, integration,
-scaling, and more. 
-For __charm_name__, this includes:
+The Indico charm can be deployed on many Kubernetes platforms, from `MicroK8s <https://microk8s.io>`_ to
+`Charmed Kubernetes <https://ubuntu.com/kubernetes>`_ and public cloud Kubernetes offerings. It provides a
+repeatable way to run an event management platform while keeping operations simple.
 
-* list or summary of app-specific features
-
-The __charm_name__ charm allows for deployment on many different Kubernetes platforms,
-from `MicroK8s <https://microk8s.io/>`_ to 
-`Charmed Kubernetes <https://ubuntu.com/kubernetes>`_ to public cloud Kubernetes offerings.
-
-.. TODO: Finally, a paragraph that describes whom the product is useful for.
-
-This charm will make operating <Charm software> straightforward for DevOps or
-SRE teams through Juju's clean interface. 
+The charm helps DevOps and SRE teams operate their own Indico deployment through Juju's clean interface.
+It supports testing changes in separate environments and scaling deployments as needs grow.
 
 In this documentation
 ---------------------
