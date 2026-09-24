@@ -35,7 +35,7 @@ In this documentation
 .. TODO: Use the table below as a starting place.
    You don't need to include all of the rows if they're not relevant to the charm
    or if the docs don't exist. Use the vertical line symbol | to separate pages.
-   
+
    When linking a how-to guide, use a verb to indicate an action/task. When
    linking reference or explanation material, use gerunds or nouns.
 
@@ -46,13 +46,13 @@ In this documentation
    If there are no meaningful Day 0/1 operations, drop "Deployment" from the table.
    If there are no meaningful Day 2 operations, drop "Operations" from the table.
    These rows touch on the domain of "lifecycle".
-   
-   Use the "Product-specific feature" row to highlight any 
+
+   Use the "Product-specific feature" row to highlight any
    major selling points of the charm -- what's the value proposition of this charm?
 
    Use the "Design" row to showcase architecture and design-related documentation
    for this charm. This row touches on the domain of "conceptual or stack layers".
-   
+
    If possible, include a row that touches on the "quality" domain (security, performance).
 
    Another charm-specific row to consider is "Integrations", especially if the
@@ -62,10 +62,10 @@ In this documentation
 .. list-table::
     :header-rows: 1
 
-    * - 
-      - 
+    * -
+      -
     * - Get started
-      - :ref:`Guided tutorial <tutorial_index>` | :ref:`High-level deployment <reference_high_level_deployment>` 
+      - :ref:`Guided tutorial <tutorial_index>` | :ref:`High-level deployment <reference_high_level_deployment>`
     * - Deployment
       - Relevant how-to guides and reference pages (related to initial setup, configurations, and customization)
     * - Operations
@@ -96,7 +96,7 @@ to the documentation as the code. As such, we welcome community contributions, s
 constructive feedback on our documentation.
 See :ref:`How to contribute <how_to_contribute>` for more information.
 
-If there's a particular area of documentation that you'd like to see that's missing, please 
+If there's a particular area of documentation that you'd like to see that's missing, please
 file a bug.
 
 .. TODO: Add link to GitHub issues page for "file a bug"
@@ -104,7 +104,7 @@ file a bug.
 Project and community
 ---------------------
 
-The __charm_name__ Operator is a member of the Ubuntu family. It's an open-source project that warmly welcomes community 
+The __charm_name__ Operator is a member of the Ubuntu family. It's an open-source project that warmly welcomes community
 projects, contributions, suggestions, fixes, and constructive feedback.
 
 Governance and policies
@@ -124,7 +124,7 @@ Releases
 
 - :ref:`Release notes <release_notes_index>`
 
-Thinking about using the __charm_name__ Operator for your next project? 
+Thinking about using the __charm_name__ Operator for your next project?
 `Get in touch <https://matrix.to/#/#charmhub-charmdev:ubuntu.com>`_!
 
 .. vale Canonical.013-Spell-out-numbers-below-10 = NO
@@ -139,4 +139,3 @@ Thinking about using the __charm_name__ Operator for your next project?
     Reference <reference/index>
     Explanation <explanation/index>
     Release notes <release-notes/index>
-
