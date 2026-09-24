@@ -74,11 +74,12 @@ How this documentation is organized
 
 This documentation uses the `Diátaxis documentation structure <https://diataxis.fr/>`_.
 
-- The :ref:`Tutorial <tutorial_index>` takes you step-by-step through a basic deployment of the <Charm software> charm.
-- :ref:`How-to guides <how_to_index>` assume you have basic familiarity with the <Charm software> charm. Learn more about setting up, using, maintaining, and contributing to this charm.
-- :ref:`Reference <reference_index>` provides a guide to actions, configurations, relations, and other technical details.
-- :ref:`Explanation <explanation_index>` includes topic overviews, background and context and detailed discussion.
-- :ref:`Release notes <release_notes_index>` holds all the release notes for the charm, including any system or upgrade requirements.
+- The `Tutorial <tutorial.md>`_ takes you step-by-step through a basic deployment of the Indico charm.
+- `How-to guides <how-to/index.md>`_ assume you have basic familiarity with the Indico charm. They cover setup, configuration, customization, maintenance, and development tasks.
+- `Reference <reference/index.md>`_ provides information about actions, configurations, integrations, architecture, and other technical details.
+- `Release notes <release-notes/landing-page.md>`_ hold the release history of the charm, including new features, fixes, and compatibility information.
+
+The table above maps this content by domain of concern. It provides a thematic view of the documentation without changing its Diátaxis classification.
 
 Contributing to this documentation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
