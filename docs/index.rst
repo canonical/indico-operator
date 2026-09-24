@@ -32,50 +32,29 @@ It supports testing changes in separate environments and scaling deployments as 
 In this documentation
 ---------------------
 
-.. TODO: Use the table below as a starting place.
-   You don't need to include all of the rows if they're not relevant to the charm
-   or if the docs don't exist. Use the vertical line symbol | to separate pages.
-
-   When linking a how-to guide, use a verb to indicate an action/task. When
-   linking reference or explanation material, use gerunds or nouns.
-
-   Use "Get started" to highlight one or more tutorials. This row touches
-   on the "point of entry" domain.
-
-   For Deployment and Operations, place the most important/common use cases first.
-   If there are no meaningful Day 0/1 operations, drop "Deployment" from the table.
-   If there are no meaningful Day 2 operations, drop "Operations" from the table.
-   These rows touch on the domain of "lifecycle".
-
-   Use the "Product-specific feature" row to highlight any
-   major selling points of the charm -- what's the value proposition of this charm?
-
-   Use the "Design" row to showcase architecture and design-related documentation
-   for this charm. This row touches on the domain of "conceptual or stack layers".
-
-   If possible, include a row that touches on the "quality" domain (security, performance).
-
-   Another charm-specific row to consider is "Integrations", especially if the
-   charm is meant to work in the context of a larger deployment. The "Integrations"
-   row touches on the domain of "interfaces".
-
 .. list-table::
     :header-rows: 1
 
-    * -
-      -
+    * - Domain
+      - Documentation
     * - Get started
-      - :ref:`Guided tutorial <tutorial_index>` | :ref:`High-level deployment <reference_high_level_deployment>`
+      - `Deploy the Indico charm for the first time <tutorial.md>`_
     * - Deployment
-      - Relevant how-to guides and reference pages (related to initial setup, configurations, and customization)
+      - `How-to guides <how-to/index.md>`_ | `Configure a proxy <how-to/configure-a-proxy.md>`_ | `Configure the external hostname <how-to/configure-the-external-hostname.md>`_ | `Configure S3 <how-to/configure-s3.md>`_ | `Configure SAML <how-to/configure-saml.md>`_ | `Configure SMTP <how-to/configure-smtp.md>`_
     * - Operations
-      - Relevant how-to guides and reference pages (examples: integrate with COS, backup/restore, redeploy, upgrade)
-    * - Product-specific feature
-      - Relevant guides and pages
+      - `Redeploy Indico <how-to/redeploy.md>`_
+    * - Product-specific features
+      - `Install plugins <how-to/install-plugins.md>`_ | `Customise the theme <how-to/customize-theme.md>`_ | `Plugins <reference/plugins.md>`_ | `Theme customization <reference/theme-customization.md>`_
     * - Design
-      - :ref:`Architecture <reference_charm_architecture>` | :ref:`Design <explanation_charm_design>`
-    * - Security
-      - :ref:`Overview <explanation_security>` | Relevant how-to guides | Relevant reference pages
+      - `Reference <reference/index.md>`_ | `Charm architecture <reference/charm-architecture.md>`_
+    * - Integrations and external access
+      - `Integrations <reference/integrations.md>`_ | `External access <reference/external-access.md>`_
+    * - Configuration and actions
+      - `Configurations <reference/configurations.md>`_ | `Actions <reference/actions.md>`_
+    * - Development
+      - `Contribute to the charm <how-to/contribute.md>`_
+    * - Releases
+      - `Release notes <release-notes/landing-page.md>`_ | `Release notes (revisions 234-266) <release-notes/release-notes-0001.md>`_ | `Changelog <changelog.md>`_
 
 How this documentation is organized
 ------------------------------------
