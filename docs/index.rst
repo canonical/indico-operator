@@ -1,3 +1,6 @@
+.. Copyright 2026 Canonical Ltd.
+.. See LICENSE file for licensing details.
+
 .. meta::
    :description: Discover the Indico charm, a Juju operator that deploys and manages Indico on Kubernetes.
 
@@ -40,64 +43,50 @@ In this documentation
     * - Get started
       - `Deploy the Indico charm for the first time <tutorial.md>`_
     * - Deployment
-      - `How-to guides <how-to/index.md>`_
-      - `Configure a proxy <how-to/configure-a-proxy.md>`_
-      - `Configure the external hostname <how-to/configure-the-external-hostname.md>`_
-      - `Configure S3 <how-to/configure-s3.md>`_
-      - `Configure SAML <how-to/configure-saml.md>`_
-      - `Configure SMTP <how-to/configure-smtp.md>`_
+      - `How-to guides <how-to/index.md>`_ | `Configure a proxy <how-to/configure-a-proxy.md>`_ | `Configure the external hostname <how-to/configure-the-external-hostname.md>`_ | `Configure S3 <how-to/configure-s3.md>`_ | `Configure SAML <how-to/configure-saml.md>`_ | `Configure SMTP <how-to/configure-smtp.md>`_
     * - Operations
       - `Redeploy Indico <how-to/redeploy.md>`_
     * - Product-specific features
-      - `Install plugins <how-to/install-plugins.md>`_
-      - `Customise the theme <how-to/customize-theme.md>`_
-      - `Plugins <reference/plugins.md>`_
-      - `Theme customization <reference/theme-customization.md>`_
+      - `Install plugins <how-to/install-plugins.md>`_ | `Customise the theme <how-to/customize-theme.md>`_ | `Plugins <reference/plugins.md>`_ | `Theme customization <reference/theme-customization.md>`_
     * - Design
-      - `Reference <reference/index.md>`_
-      - `Charm architecture <reference/charm-architecture.md>`_
+      - `Reference <reference/index.md>`_ | `Charm architecture <reference/charm-architecture.md>`_
     * - Integrations and external access
-      - `Integrations <reference/integrations.md>`_
-      - `External access <reference/external-access.md>`_
+      - `Integrations <reference/integrations.md>`_ | `External access <reference/external-access.md>`_
     * - Configuration and actions
-      - `Configurations <reference/configurations.md>`_
-      - `Actions <reference/actions.md>`_
+      - `Configurations <reference/configurations.md>`_ | `Actions <reference/actions.md>`_
     * - Development
       - `Contribute to the charm <how-to/contribute.md>`_
     * - Releases
-      - `Release notes <release-notes/landing-page.md>`_
-      - Release notes <release-notes/release-notes-0001.md>`_
-      - `Changelog <changelog.md>`_
+      - `Release notes <release-notes/landing-page.md>`_ | `Release notes (revisions 234-266) <release-notes/release-notes-0001.md>`_ | `Changelog <changelog.md>`_
 
 How this documentation is organized
 ------------------------------------
 
 This documentation uses the `Diátaxis documentation structure <https://diataxis.fr/>`_.
 
-- The :ref:`Tutorial <tutorial_index>` takes you step-by-step through a basic deployment of the <Charm software> charm.
-- :ref:`How-to guides <how_to_index>` assume you have basic familiarity with the <Charm software> charm. Learn more about setting up, using, maintaining, and contributing to this charm.
-- :ref:`Reference <reference_index>` provides a guide to actions, configurations, relations, and other technical details.
-- :ref:`Explanation <explanation_index>` includes topic overviews, background and context and detailed discussion.
-- :ref:`Release notes <release_notes_index>` holds all the release notes for the charm, including any system or upgrade requirements.
+- The `Tutorial <tutorial.md>`_ takes you step-by-step through a basic deployment of the Indico charm.
+- `How-to guides <how-to/index.md>`_ assume you have basic familiarity with the Indico charm. They cover setup, configuration, customization, maintenance, and development tasks.
+- `Reference <reference/index.md>`_ provides information about actions, configurations, integrations, architecture, and other technical details.
+- `Release notes <release-notes/landing-page.md>`_ hold the release history of the charm, including new features, fixes, and compatibility information.
+
+The table above maps this content by domain of concern. It provides a thematic view of the documentation without changing its Diátaxis classification.
 
 Contributing to this documentation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Documentation is an important part of this project, and we take the same open-source approach
-to the documentation as the code. As such, we welcome community contributions, suggestions, and
+to the documentation as the code. We welcome community contributions, suggestions, and
 constructive feedback on our documentation.
-See :ref:`How to contribute <how_to_contribute>` for more information.
+See `How to contribute <how-to/contribute.md>`_ for more information.
 
 If there's a particular area of documentation that you'd like to see that's missing, please
-file a bug.
-
-.. TODO: Add link to GitHub issues page for "file a bug"
+`file a bug <https://github.com/canonical/indico-operator/issues>`_.
 
 Project and community
 ---------------------
 
-The __charm_name__ Operator is a member of the Ubuntu family. It's an open-source project that warmly welcomes community
-projects, contributions, suggestions, fixes, and constructive feedback.
+The Indico Operator is a member of the Ubuntu family. It's an open-source project that warmly welcomes
+community contributions, suggestions, fixes, and constructive feedback.
 
 Governance and policies
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -109,14 +98,14 @@ Get involved
 
 - `Get support <https://discourse.charmhub.io/>`_
 - `Join our online chat <https://matrix.to/#/#charmhub-charmdev:ubuntu.com>`_
-- :ref:`Contribute <how_to_contribute>`
+- `Contribute <how-to/contribute.md>`_
 
 Releases
 ^^^^^^^^
 
-- :ref:`Release notes <release_notes_index>`
+- `Release notes <release-notes/landing-page.md>`_
 
-Thinking about using the __charm_name__ Operator for your next project?
+Thinking about using the Indico Operator for your next project?
 `Get in touch <https://matrix.to/#/#charmhub-charmdev:ubuntu.com>`_!
 
 .. vale Canonical.013-Spell-out-numbers-below-10 = NO
@@ -126,8 +115,7 @@ Thinking about using the __charm_name__ Operator for your next project?
     :hidden:
     :maxdepth: 1
 
-    Tutorial <tutorial/index>
-    How-to guides <how-to/index>
-    Reference <reference/index>
-    Explanation <explanation/index>
-    Release notes <release-notes/index>
+    Tutorial <tutorial.md>
+    How-to guides <how-to/index.md>
+    Reference <reference/index.md>
+    Release notes <release-notes/landing-page.md>

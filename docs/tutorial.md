@@ -167,7 +167,7 @@ The browser uses entries in the /etc/hosts file to override what is returned by 
 
 Usually a charm default hostname is the application name but since Indico requires a "." in the hostname for the app to respond, so the charm configures the default to `indico.local`.
 
-If you are deploying to a local machine you need to add the `127.0.0.1` to the `/etc/hosts` file. The default hostname for the Indico application is `indico.local`. To resolve it to your Ingress IP, edit [`/etc/hosts`](https://manpages.ubuntu.com/manpages/questing/man5/hosts.5.html) file and add the following line accordingly:
+If you are deploying to a local machine you need to add the `127.0.0.1` to the `/etc/hosts` file. The default hostname for the Indico application is `indico.local`. To resolve it to your Ingress IP, edit [`/etc/hosts`](https://manpages.ubuntu.com/manpages/noble/man5/hosts.5.html) file and add the following line accordingly:
 
 ```
 127.0.0.1 indico.local
