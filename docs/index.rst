@@ -1,6 +1,3 @@
-.. Copyright 2026 Canonical Ltd.
-.. See LICENSE file for licensing details.
-
 .. meta::
    :description: Discover the Indico charm, a Juju operator that deploys and manages Indico on Kubernetes.
 
