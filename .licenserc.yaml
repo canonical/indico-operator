@@ -36,6 +36,6 @@ header:
     - 'trivy.yaml'
     - 'zap_rules.tsv'
     - 'lib/**'
-    - 'docs/release-notes/**/*.yaml'
+    - 'docs/**'
     - 'terraform/**'
   comment: on-failure
