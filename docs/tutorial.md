@@ -39,16 +39,13 @@ juju add-model indico-tutorial
 
 ### Deploy the Indico charm
 
-Since Indico requires connections to PostgreSQL and Redis, you'll deploy them too. For more information, see [Charm Architecture](https://charmhub.io/indico/docs/explanation-charm-architecture).
-
-Redis is deployed twice because one is for the broker and the other for the cache. To do this, the `juju deploy` command accepts an extra argument with the custom application name. See more details in [`juju deploy`](https://canonical.com/juju/docs/juju-cli/3.6/reference/juju-cli/list-of-juju-cli-commands/deploy/).
+Since Indico requires connections to PostgreSQL and Redis, you'll deploy them too. A single Redis application provides both caching and the Celery message broker. For more information, see [Charm Architecture](https://charmhub.io/indico/docs/explanation-charm-architecture).
 
 Deploy the charms:
 
 ```
 juju deploy postgresql-k8s --trust
-juju deploy redis-k8s redis-broker --channel=latest/edge
-juju deploy redis-k8s redis-cache --channel=latest/edge
+juju deploy redis-k8s --channel=latest/edge
 juju deploy indico
 ```
 
@@ -62,18 +59,17 @@ indico-0                         3/3     Running   0         6h4m
 Run [`juju status`](https://canonical.com/juju/docs/juju-cli/3.6/reference/juju-cli/list-of-juju-cli-commands/status/) to see the current status of the deployment. In the Unit list, you can see that Indico is waiting:
 
 ```
-indico/0*                 waiting   idle   10.1.74.70             Waiting for redis-broker availability
+indico/0*                 waiting   idle   10.1.74.70             Waiting for redis availability
 ```
 
 This means that Indico charm isn't integrated with Redis yet.
 
-### Integrate with the Redis k8s charm the PostgreSQL k8s charm
+### Integrate with the Redis K8s charm and PostgreSQL K8s charm
 
-Provide integration between Indico and Redis by running the following [`juju integrate`](https://canonical.com/juju/docs/juju-cli/3.6/reference/juju-cli/list-of-juju-cli-commands/integrate/) commands:
+Provide integration between Indico and Redis by running the following [`juju integrate`](https://canonical.com/juju/docs/juju-cli/3.6/reference/juju-cli/list-of-juju-cli-commands/integrate/) command:
 
 ```
-juju integrate indico:redis-broker redis-broker
-juju integrate indico:redis-cache redis-cache
+juju integrate indico redis-k8s
 ```
 
 Run `juju status` to see that the message has changed:
