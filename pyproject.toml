@@ -17,6 +17,20 @@ pythonpath = [
     "lib",
     "src",
 ]
+# Turn warnings into errors so deprecations and resource leaks fail the unit
+# suite rather than accumulating unnoticed. Each ignore below is anchored to a
+# specific message and is for third-party code; the charm's own code raises
+# none. The integration env opts out (see tox.ini) because the warnings there
+# come from juju/websockets and are not ours to fix.
+filterwarnings = [
+    "error",
+    # Raised by the vendored loki_k8s charm lib and by paas_charm; the fixes
+    # belong upstream in canonical/loki-k8s-operator and canonical/paas-charm.
+    "ignore:JujuVersion.from_environ\\(\\) is deprecated:DeprecationWarning",
+    # paas_charm.charm_state calls pydantic's deprecated BaseModel.dict();
+    # the fix belongs upstream in canonical/paas-charm.
+    "ignore:The `dict` method is deprecated; use `model_dump` instead:DeprecationWarning",
+]
 
 # Linting tools configuration
 [tool.ruff]
