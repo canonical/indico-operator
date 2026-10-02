@@ -5,3 +5,4 @@ copilot:
   version: "v0.19.0"
   collections:
     - pfe-charms
+    - pfe-docs
