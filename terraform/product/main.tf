@@ -2,9 +2,16 @@
 # See LICENSE file for licensing details.
 
 # Juju model
+#
+# By default (`create_model = true`) this module creates and manages the Juju
+# model, matching the historical single-deployment usage. Set
+# `create_model = false` and pass `model_uuid` to deploy into a model that is
+# provisioned externally (e.g. by the platform team's environment request /
+# gitops). In that mode every resource below targets `var.model_uuid`.
 
 resource "juju_model" "indico" {
-  name = local.model.name
+  count = var.create_model ? 1 : 0
+  name  = local.model.name
 
   cloud {
     name   = local.model.cloud_name
@@ -27,14 +34,14 @@ module "indico" {
   channel     = local.channels.indico
   config      = local.config_indico
   constraints = var.constraints.indico
-  model_uuid  = juju_model.indico.uuid
+  model_uuid  = local.model_uuid
   revision    = local.revisions.indico
   units       = local.units.indico
 }
 
 module "lego" {
   count      = local.enable.nginx_ingress_integrator && local.enable.lego ? 1 : 0
-  model_uuid = juju_model.indico.uuid
+  model_uuid = local.model_uuid
   source     = "../modules/lego"
   channel    = local.channels.lego
   revision   = local.revisions.lego
@@ -43,14 +50,14 @@ module "lego" {
 
 resource "juju_secret" "lego_credentials" {
   count      = local.enable.nginx_ingress_integrator && local.enable.lego ? 1 : 0
-  model_uuid = juju_model.indico.uuid
+  model_uuid = local.model_uuid
   name       = local.lego_secret.name
   value      = local.lego_secret.value
 }
 
 resource "juju_access_secret" "lego_credentials_access" {
   count      = local.enable.nginx_ingress_integrator && local.enable.lego ? 1 : 0
-  model_uuid = juju_model.indico.uuid
+  model_uuid = local.model_uuid
   applications = [
     module.lego[0].app_name
   ]
@@ -59,7 +66,7 @@ resource "juju_access_secret" "lego_credentials_access" {
 
 module "nginx_ingress_integrator" {
   count      = local.enable.nginx_ingress_integrator ? 1 : 0
-  model_uuid = juju_model.indico.uuid
+  model_uuid = local.model_uuid
   source     = "../modules/nginx-ingress-integrator"
   app_name   = local.app_names.nginx_ingress_integrator
   channel    = local.channels.nginx_ingress_integrator
@@ -67,28 +74,19 @@ module "nginx_ingress_integrator" {
   config     = local.config_nginx_ingress_integrator
 }
 
-module "redis_cache" {
-  count      = local.enable.redis_cache ? 1 : 0
-  model_uuid = juju_model.indico.uuid
+module "redis" {
+  count      = local.enable.redis ? 1 : 0
+  model_uuid = local.model_uuid
   source     = "../modules/redis-k8s"
-  app_name   = local.app_names.redis_cache
-  channel    = local.channels.redis_cache
-  revision   = local.revisions.redis_cache
-}
-
-module "redis_broker" {
-  count      = local.enable.redis_broker ? 1 : 0
-  model_uuid = juju_model.indico.uuid
-  source     = "../modules/redis-k8s"
-  app_name   = local.app_names.redis_broker
-  channel    = local.channels.redis_broker
-  revision   = local.revisions.redis_broker
+  app_name   = local.app_names.redis
+  channel    = local.channels.redis
+  revision   = local.revisions.redis
 }
 
 
 module "s3_integrator_media" {
   count         = local.enable.s3_integrator_media ? 1 : 0
-  model_uuid    = juju_model.indico.uuid
+  model_uuid    = local.model_uuid
   source        = "../modules/s3-integrator"
   app_name      = local.app_names.s3_integrator_media
   channel       = local.channels.s3_integrator_media
@@ -100,7 +98,7 @@ module "s3_integrator_media" {
 
 module "smtp_integrator" {
   count      = local.enable.smtp_integrator ? 1 : 0
-  model_uuid = juju_model.indico.uuid
+  model_uuid = local.model_uuid
   source     = "../modules/smtp-integrator"
   channel    = local.channels.smtp_integrator
   revision   = local.revisions.smtp_integrator
@@ -109,16 +107,26 @@ module "smtp_integrator" {
 
 module "local_saml_integrator" {
   count      = local.enable.local_saml_integrator ? 1 : 0
-  model_uuid = juju_model.indico.uuid
+  model_uuid = local.model_uuid
   source     = "../modules/saml-integrator"
   channel    = local.channels.local_saml_integrator
   revision   = local.revisions.local_saml_integrator
   config     = local.config_local_saml_integrator
 }
 
+module "oauth_external_idp_integrator" {
+  count      = local.enable.oauth_external_idp_integrator ? 1 : 0
+  model_uuid = local.model_uuid
+  source     = "../modules/oauth-external-idp-integrator"
+  app_name   = local.app_names.oauth_external_idp_integrator
+  channel    = local.channels.oauth_external_idp_integrator
+  revision   = local.revisions.oauth_external_idp_integrator
+  config     = local.config_oauth_external_idp_integrator
+}
+
 module "local_postgresql" {
   count        = local.enable.local_postgresql ? 1 : 0
-  model_uuid   = juju_model.indico.uuid
+  model_uuid   = local.model_uuid
   source       = "../modules/postgresql-k8s"
   base         = "ubuntu@22.04"
   app_name     = local.app_names.local_postgresql
@@ -132,11 +140,11 @@ module "local_postgresql" {
 
 resource "juju_integration" "indico_postgresql" {
   count      = local.integrate_offers.postgresql ? 1 : 0
-  model_uuid = juju_model.indico.uuid
+  model_uuid = local.model_uuid
 
   application {
     name     = module.indico.app_name
-    endpoint = module.indico.endpoints.database
+    endpoint = module.indico.endpoints.postgresql
   }
 
   application {
@@ -146,7 +154,7 @@ resource "juju_integration" "indico_postgresql" {
 
 resource "juju_integration" "indico_prometheus" {
   count      = local.integrate_offers.prometheus ? 1 : 0
-  model_uuid = juju_model.indico.uuid
+  model_uuid = local.model_uuid
 
   application {
     name     = module.indico.app_name
@@ -160,7 +168,7 @@ resource "juju_integration" "indico_prometheus" {
 
 resource "juju_integration" "indico_grafana" {
   count      = local.integrate_offers.grafana ? 1 : 0
-  model_uuid = juju_model.indico.uuid
+  model_uuid = local.model_uuid
 
   application {
     name     = module.indico.app_name
@@ -174,7 +182,7 @@ resource "juju_integration" "indico_grafana" {
 
 resource "juju_integration" "indico_saml" {
   count      = local.integrate_offers.saml_integrator ? 1 : 0
-  model_uuid = juju_model.indico.uuid
+  model_uuid = local.model_uuid
 
   application {
     name     = module.indico.app_name
@@ -191,22 +199,22 @@ resource "juju_integration" "indico_saml" {
 
 resource "juju_integration" "indico_nginx_ingress_integrator" {
   count      = local.enable.nginx_ingress_integrator ? 1 : 0
-  model_uuid = juju_model.indico.uuid
+  model_uuid = local.model_uuid
 
   application {
     name     = module.indico.app_name
-    endpoint = module.indico.endpoints.nginx_route
+    endpoint = module.indico.endpoints.ingress
   }
 
   application {
     name     = module.nginx_ingress_integrator[0].app_name
-    endpoint = module.nginx_ingress_integrator[0].endpoints.nginx_route
+    endpoint = module.nginx_ingress_integrator[0].endpoints.ingress
   }
 }
 
 resource "juju_integration" "indico_s3_integrator_media" {
   count      = local.enable.s3_integrator_media ? 1 : 0
-  model_uuid = juju_model.indico.uuid
+  model_uuid = local.model_uuid
 
   application {
     name     = module.indico.app_name
@@ -221,22 +229,22 @@ resource "juju_integration" "indico_s3_integrator_media" {
 
 resource "juju_integration" "indico_smtp_integrator" {
   count      = local.enable.smtp_integrator ? 1 : 0
-  model_uuid = juju_model.indico.uuid
+  model_uuid = local.model_uuid
 
   application {
     name     = module.indico.app_name
-    endpoint = module.indico.endpoints.smtp_legacy
+    endpoint = module.indico.endpoints.smtp
   }
 
   application {
     name     = module.smtp_integrator[0].app_name
-    endpoint = module.smtp_integrator[0].endpoints.smtp_legacy
+    endpoint = module.smtp_integrator[0].endpoints.smtp
   }
 }
 
 resource "juju_integration" "indico_local_saml_integrator" {
   count      = local.enable.local_saml_integrator ? 1 : 0
-  model_uuid = juju_model.indico.uuid
+  model_uuid = local.model_uuid
 
   application {
     name     = module.indico.app_name
@@ -249,39 +257,39 @@ resource "juju_integration" "indico_local_saml_integrator" {
   }
 }
 
-resource "juju_integration" "indico_redis_cache" {
-  count      = local.enable.redis_cache ? 1 : 0
-  model_uuid = juju_model.indico.uuid
+resource "juju_integration" "indico_oauth_external_idp_integrator" {
+  count      = local.enable.oauth_external_idp_integrator ? 1 : 0
+  model_uuid = local.model_uuid
 
   application {
     name     = module.indico.app_name
-    endpoint = module.indico.endpoints.redis_cache
+    endpoint = module.indico.endpoints.oauth
   }
 
   application {
-    name     = module.redis_cache[0].app_name
-    endpoint = module.redis_cache[0].endpoints.redis
+    name     = module.oauth_external_idp_integrator[0].app_name
+    endpoint = module.oauth_external_idp_integrator[0].provides.oauth
   }
 }
 
-resource "juju_integration" "indico_redis_broker" {
-  count      = local.enable.redis_broker ? 1 : 0
-  model_uuid = juju_model.indico.uuid
+resource "juju_integration" "indico_redis" {
+  count      = local.enable.redis ? 1 : 0
+  model_uuid = local.model_uuid
 
   application {
     name     = module.indico.app_name
-    endpoint = module.indico.endpoints.redis_broker
+    endpoint = module.indico.endpoints.redis
   }
 
   application {
-    name     = module.redis_broker[0].app_name
-    endpoint = module.redis_broker[0].endpoints.redis
+    name     = module.redis[0].app_name
+    endpoint = module.redis[0].endpoints.redis
   }
 }
 
 resource "juju_integration" "nginx_lego" {
   count      = local.enable.lego && local.enable.nginx_ingress_integrator ? 1 : 0
-  model_uuid = juju_model.indico.uuid
+  model_uuid = local.model_uuid
 
   application {
     name     = module.nginx_ingress_integrator[0].app_name
@@ -296,11 +304,11 @@ resource "juju_integration" "nginx_lego" {
 
 resource "juju_integration" "indico_local_postgresql" {
   count      = local.enable.local_postgresql ? 1 : 0
-  model_uuid = juju_model.indico.uuid
+  model_uuid = local.model_uuid
 
   application {
     name     = module.indico.app_name
-    endpoint = module.indico.endpoints.database
+    endpoint = module.indico.endpoints.postgresql
   }
 
   application {

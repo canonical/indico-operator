@@ -13,12 +13,12 @@ variable "app_names" {
         "s3_integrator_media",
         "nginx_ingress_integrator",
         "local_postgresql",
-        "redis_cache",
-        "redis_broker"
+        "oauth_external_idp_integrator",
+        "redis"
       ])
     ) == 0
 
-    error_message = "The keys in var.app_names must be one or more of: indico, s3_integrator_backup, s3_integrator_media, local_postgresql, nginx_ingress_integrator and redis_k8s."
+    error_message = "The keys in var.app_names must be one or more of: indico, s3_integrator_media, local_postgresql, nginx_ingress_integrator, oauth_external_idp_integrator and redis."
   }
 }
 
@@ -75,6 +75,12 @@ variable "config_local_saml_integrator" {
   default     = {}
 }
 
+variable "config_oauth_external_idp_integrator" {
+  description = "Configuration for the oauth-external-idp-integrator charm (client_id, client_secret, issuer_url, etc.)."
+  type        = map(string)
+  default     = {}
+}
+
 variable "config_local_postgresql" {
   description = "Configuration for the local postgresql charm."
   type        = map(string)
@@ -99,7 +105,7 @@ variable "config_indico" {
   type        = map(string)
 
   default = {
-    indico_external_plugins = "git+https://github.com/canonical/canonical-indico-themes.git@854e1d814db1ccb350d8d7413dd4156154802d3f,git+https://github.com/canonical/indico-plugin-event-countdown.git@5303299107db010ccdf6fdc42ca8aa930dfa433b,https://github.com/canonical/flask-multipass-saml-groups/releases/download/1.2.2/flask_multipass_saml_groups-1.2.2-py3-none-any.whl,https://github.com/canonical/canonical-indico-personal-agenda/releases/download/v2.0.0/indico_plugin_personal_agenda-2.0.0-py3-none-any.whl"
+    external_plugins = "git+https://github.com/canonical/canonical-indico-themes.git@854e1d814db1ccb350d8d7413dd4156154802d3f,git+https://github.com/canonical/indico-plugin-event-countdown.git@5303299107db010ccdf6fdc42ca8aa930dfa433b,https://github.com/canonical/canonical-indico-personal-agenda/releases/download/v2.0.0/indico_plugin_personal_agenda-2.0.0-py3-none-any.whl"
   }
 }
 
@@ -145,14 +151,14 @@ variable "enable" {
         "nginx_ingress_integrator",
         "local_postgresql",
         "local_saml_integrator",
-        "redis_cache",
-        "redis_broker",
+        "oauth_external_idp_integrator",
+        "redis",
         "s3_integrator_media",
         "smtp_integrator"
       ])
     ) == 0
 
-    error_message = "The keys in var.enable must be one or more of: lego, nginx_ingress_integrator, local_postgresql, local_saml_integrator, maubot, redis_k8s, s3_integrator_backup, s3_integrator_media, smtp_integrator."
+    error_message = "The keys in var.enable must be one or more of: lego, nginx_ingress_integrator, local_postgresql, local_saml_integrator, oauth_external_idp_integrator, redis, s3_integrator_media, smtp_integrator."
   }
 }
 
@@ -198,8 +204,20 @@ variable "lego_secret" {
   }
 }
 
+variable "create_model" {
+  description = "Whether this module should create and manage the Juju model. Set to false to deploy into an externally provisioned model referenced by model_uuid."
+  type        = bool
+  default     = true
+}
+
+variable "model_uuid" {
+  description = "UUID of an externally provisioned Juju model. Used only when create_model is false."
+  type        = string
+  default     = ""
+}
+
 variable "model" {
-  description = "Partial overrides for the model configuration."
+  description = "Partial overrides for the model configuration (used only when create_model is true)."
   type        = map(string)
   default     = {}
 }

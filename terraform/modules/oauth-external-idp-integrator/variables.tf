@@ -4,35 +4,29 @@
 variable "app_name" {
   description = "Name of the application in the Juju model."
   type        = string
-  default     = "indico"
+  default     = "oauth-external-idp-integrator"
 }
 
 variable "base" {
   description = "The operating system on which to deploy"
   type        = string
-  default     = "ubuntu@24.04"
+  default     = "ubuntu@22.04"
 }
 
 variable "channel" {
   description = "The channel to use when deploying a charm."
   type        = string
-  default     = "latest/stable"
+  default     = "latest/edge"
 }
 
 variable "config" {
-  description = "Application config."
+  description = "Application config. Details at https://charmhub.io/oauth-external-idp-integrator/configurations."
   type        = map(string)
   default     = {}
 }
 
-variable "constraints" {
-  description = "Juju constraints to apply for this application."
-  type        = string
-  default     = ""
-}
-
 variable "model_uuid" {
-  description = "Reference to a `juju_model` uuid."
+  description = "Reference to a `juju_model`."
   type        = string
   default     = ""
 }
@@ -41,12 +35,6 @@ variable "revision" {
   description = "Revision number of the charm."
   type        = number
   default     = null
-}
-
-variable "storage_directives" {
-  description = "Map of storage used by the application."
-  type        = map(string)
-  default     = {}
 }
 
 variable "units" {
