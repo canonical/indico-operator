@@ -16,7 +16,7 @@ permissions:
 
 engine: copilot
 
-runs-on: [self-hosted, linux, edge]
+runs-on: [ubuntu-latest]
 timeout-minutes: 15
 
 tools:
