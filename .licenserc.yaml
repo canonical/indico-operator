@@ -26,6 +26,7 @@ header:
     - '.flake8'
     - '.jujuignore'
     - '.gitignore'
+    - '.gitattributes'
     - '.licenserc.yaml'
     - '.trivyignore'
     - '.woke.yaml'
