@@ -2,7 +2,7 @@
 # See LICENSE file for licensing details.
 
 copilot:
-  version: "v0.20.0"
+  version: "v0.18.0"
   collections:
     - pfe-charms
     - pfe-docs
