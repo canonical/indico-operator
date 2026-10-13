@@ -16,7 +16,7 @@ permissions:
 
 engine: copilot
 
-runs-on: ubuntu-latest
+runs-on: [ubuntu-latest]
 timeout-minutes: 15
 
 tools:
