@@ -22,7 +22,7 @@ For Indico, this includes:
 * Integration with PostgreSQL, Redis, and ingress
 * Customization through plugins and themes
 
-The Indico charm can be deployed on many Kubernetes platforms, from `MicroK8s <https://microk8s.io>`_ to
+The Indico charm can be deployed on many Kubernetes platforms, from `MicroK8s <https://canonical.com/microk8s>`_ to
 `Charmed Kubernetes <https://ubuntu.com/kubernetes>`_ and public cloud Kubernetes offerings. It provides a
 repeatable way to run an event management platform while keeping operations simple.
 
@@ -84,7 +84,7 @@ community contributions, suggestions, fixes, and constructive feedback.
 Governance and policies
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-- `Code of conduct <https://ubuntu.com/community/code-of-conduct>`_
+- `Code of conduct <https://ubuntu.com/community/docs/ethos/code-of-conduct>`_
 
 Get involved
 ^^^^^^^^^^^^
