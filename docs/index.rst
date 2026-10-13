@@ -84,7 +84,7 @@ community contributions, suggestions, fixes, and constructive feedback.
 Governance and policies
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-- `Code of conduct <https://ubuntu.com/community/code-of-conduct>`_
+- `Code of conduct <https://ubuntu.com/community/docs/ethos/code-of-conduct>`_
 
 Get involved
 ^^^^^^^^^^^^
