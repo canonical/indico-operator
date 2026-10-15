@@ -28,7 +28,7 @@ sudo snap install --classic concierge
 sudo concierge prepare -p k8s
 ```
 
-For this tutorial, juju must be bootstraped to a Kubernetes controller. Concierge should complete this step for you, 
+For this tutorial, Juju must be bootstrapped to a Kubernetes controller. Concierge should complete this step for you, 
 and you can verify by checking for `msg="Bootstrapped Juju" provider=k8s` in the terminal output and by running `juju controllers`.
 
 Configure the Kubernetes load balancer to use the VM IP address:
