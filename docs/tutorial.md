@@ -28,6 +28,9 @@ sudo snap install --classic concierge
 sudo concierge prepare -p k8s
 ```
 
+For this tutorial, juju must be bootstraped to a Kubernetes controller. Concierge should complete this step for you, 
+and you can verify by checking for `msg="Bootstrapped Juju" provider=k8s` in the terminal output and by running `juju controllers`.
+
 Configure the Kubernetes load balancer to use the VM IP address:
 
 ```
@@ -133,6 +136,15 @@ juju deploy self-signed-certificates --channel=1/stable
 juju integrate gateway-api-integrator self-signed-certificates
 ```
 
+> **Warning**
+>
+> Self-signed certificates aren't trusted by clients and aren't suitable for production. 
+> In production, use a certificate provider backed by a trusted certificate authority.
+
+Gateway API Integrator provides the `ingress` interface and could be integrated directly with the Indico charm. 
+However, it's recommended to use the Ingress Configurator charm through the `gateway-route` interface, because it allows 
+for more advanced routing features and configuration options.
+
 Deploy Ingress Configurator and set the hostname. Indico requires a "." in the hostname for the app to respond, so use `indico.local`:
 
 ```
@@ -147,19 +159,51 @@ juju integrate gateway-api-integrator ingress-configurator
 juju integrate indico ingress-configurator
 ```
 
-Run `juju status` and wait until all applications are `active`. Then verify that Indico responds:
+Run `juju status` and wait until all applications are `active`:
 
 ```
-curl -k --resolve indico.local:443:$PREFSRC https://indico.local
+Model            Controller     Cloud/Region  Version  SLA          Timestamp
+indico-tutorial  concierge-k8s  k8s           3.6.29   unsupported  11:25:01-05:00
+
+App                       Version  Status  Scale  Charm                     Channel        Rev  Address         Exposed  Message
+gateway-api-integrator             active      1  gateway-api-integrator    1/stable       165  10.152.183.241  no       Gateway addresses: 10.218.86.231
+indico                             active      1  indico                    latest/edge    348  10.152.183.206  no       
+ingress-configurator               active      1  ingress-configurator      latest/stable  111  10.152.183.224  no       Ready
+postgresql-k8s            14.24    active      1  postgresql-k8s            14/stable      960  10.152.183.146  no       
+redis-k8s                 7.2.5    active      1  redis-k8s                 latest/edge     42  10.152.183.55   no       
+self-signed-certificates           active      1  self-signed-certificates  1/stable       586  10.152.183.35   no       
+
+Unit                         Workload  Agent  Address     Ports  Message
+gateway-api-integrator/0*    active    idle   10.1.0.24          Gateway addresses: 10.218.86.231
+indico/0*                    active    idle   10.1.0.139         
+ingress-configurator/0*      active    idle   10.1.0.160         Ready
+postgresql-k8s/0*            active    idle   10.1.0.60          Primary
+redis-k8s/0*                 active    idle   10.1.0.111         
+self-signed-certificates/0*  active    idle   10.1.0.74
 ```
 
-Optional: to access Indico from a browser on your host machine, get the Multipass VM IP by running `multipass info indico-tutorial`. Then, on the host machine, edit `/etc/hosts` and add the following line, replacing `<multipass vm ip>` with the VM IP:
+## Verify the deployment
+
+From inside the Multipass VM, send a request to Indico through the gateway:
+
+```
+ubuntu@indico-tutorial:~$ curl -k --resolve indico.local:443:$PREFSRC https://indico.local
+<!doctype html>
+<html lang=en>
+<title>Redirecting...</title>
+<h1>Redirecting...</h1>
+<p>You should be redirected automatically to the target URL: <a href="/bootstrap">/bootstrap</a>. If not, click the link.
+```
+
+Optional: to access Indico from a browser on your host machine, get the Multipass VM IP by running `multipass info indico-tutorial`. 
+Then, on the host machine, edit `/etc/hosts` and add the following line, replacing `<multipass vm ip>` with the VM IP:
 
 ```
 <multipass vm ip> indico.local
 ```
 
-After that, visit `https://indico.local` in a browser, accept the self-signed certificate, and you'll be presented with a screen to create an initial admin account.
+After that, visit `https://indico.local` in a browser. Your browser may display a warning about the connection's security 
+because we used a self-signed certificate. You can safely ignore this warning. You will be presented with a screen to create an initial admin account.
 
 
 ## Clean up the environment
@@ -177,3 +221,11 @@ To remove the Multipass instance you created for this tutorial, run the followin
 multipass delete --purge indico-tutorial
 ```
 If you edited the host `/etc/hosts` file, remove the `<multipass vm ip> indico.local` line.
+
+## Next steps
+
+You achieved a basic deployment of the Indico charm. If you want to go farther in your deployment or learn more about the charm, check out these pages:
+
+- Perform basic operations with your deployment like [installing plugins](how-to/install-plugins.md) or [customizing the theme](how-to/customize-theme.md).
+- Connect your deployment to external services by configuring [S3](how-to/configure-s3.md), [SAML](how-to/configure-saml.md) or [SMTP](how-to/configure-smtp.md).
+- Learn more about the available [relation endpoints](reference/integrations.md) for the Indico charm.
