@@ -153,7 +153,7 @@ Run `juju status` and wait until all applications are `active`. Then verify that
 curl -k --resolve indico.local:443:$PREFSRC https://indico.local
 ```
 
-Optional: to access Indico from a browser on your host machine, get the Multipass VM IP by running `multipass info indico-tutorial`. Then, on the host machine, edit [`/etc/hosts`](https://manpages.ubuntu.com/manpages/noble/man5/hosts.5.html) and add the following line, replacing `<multipass vm ip>` with the VM IP:
+Optional: to access Indico from a browser on your host machine, get the Multipass VM IP by running `multipass info indico-tutorial`. Then, on the host machine, edit `/etc/hosts` and add the following line, replacing `<multipass vm ip>` with the VM IP:
 
 ```
 <multipass vm ip> indico.local
