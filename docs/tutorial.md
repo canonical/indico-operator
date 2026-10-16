@@ -4,34 +4,44 @@
 
 - Deploy the [Indico charm](https://charmhub.io/indico).
 - Integrate with [the Redis K8s charm](https://charmhub.io/redis-k8s) and [the PostgreSQL K8s charm](https://charmhub.io/postgresql-k8s).
-- Integrate with [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/#what-is-ingress) by using [NGINX Ingress Integrator](https://charmhub.io/nginx-ingress-integrator).
+- Expose Indico by using [Gateway API Integrator](https://charmhub.io/gateway-api-integrator) and [Ingress Configurator](https://charmhub.io/ingress-configurator).
 
 Through the process, you'll inspect the Kubernetes resources created, verify the workload state, and log in to your Indico instance.
 
 ## Requirements
 - A working station, e.g., a laptop, with AMD64 architecture.
-<!-- vale off -->
-- Juju 3 installed and bootstrapped to a MicroK8s controller. You can accomplish this process by using a Multipass VM as outlined in this guide: [Set up your test environment](https://canonical.com/juju/docs/juju-cli/3.6/howto/manage-your-juju-deployment/set-up-your-juju-deployment-local-testing-and-development/)
-<!-- vale on -->
-- NGINX Ingress Controller. If you're using [MicroK8s](https://canonical.com/microk8s), this can be done by running the command `microk8s enable ingress`. For more details, see [Addon: Ingress](https://canonical.com/microk8s/docs/addon-ingress).
+- [Multipass](https://canonical.com/multipass) installed.
 
-For more information about how to install Juju, see [Get started with Juju](https://canonical.com/juju/docs/juju-cli/3.6/tutorial/).
+### Set up the environment
 
-:warning: When using a Multipass VM, make sure to replace `127.0.0.1` IP addresses with the
-VM IP in steps that assume you're running locally. To get the IP address of the
-Multipass instance run ```multipass info my-juju-vm```.
-### Shell into the Multipass VM
-> NOTE: If you're working locally, you don't need to do this step.
+Launch a Multipass VM and log into it:
 
-To be able to work inside the Multipass VM first you need to log in with the following command:
-```bash
-multipass shell my-juju-vm
+```
+multipass launch 24.04 --name indico-tutorial --cpus 4 --memory 8G --disk 50G
+multipass shell indico-tutorial
+```
+
+Inside the VM, use [Concierge](https://github.com/canonical/concierge) to install Juju and [Canonical Kubernetes](https://ubuntu.com/kubernetes), and bootstrap a controller:
+
+```
+sudo snap install --classic concierge
+sudo concierge prepare -p k8s
+```
+
+For this tutorial, Juju must be bootstrapped to a Kubernetes controller. Concierge should complete this step for you, 
+and you can verify by checking for `msg="Bootstrapped Juju" provider=k8s` in the terminal output and by running `juju controllers`.
+
+Configure the Kubernetes load balancer to use the VM IP address:
+
+```
+PREFSRC=$(ip -4 -j route get 2.2.2.2 | jq -r '.[] | .prefsrc')
+sudo k8s set load-balancer.cidrs=$PREFSRC/32
 ```
 
 ### Add a Juju model for the tutorial
 
 To manage resources effectively and to separate this tutorial's workload from
-your usual work, create a new model in the MicroK8s controller using the following command:
+your usual work, create a new model in the Kubernetes controller using the following command:
 
 ```
 juju add-model indico-tutorial
@@ -46,7 +56,7 @@ Redis is deployed twice because one is for the broker and the other for the cach
 Deploy the charms:
 
 ```
-juju deploy postgresql-k8s --trust
+juju deploy postgresql-k8s --channel=14/stable --trust
 juju deploy redis-k8s redis-broker --channel=latest/edge
 juju deploy redis-k8s redis-cache --channel=latest/edge
 juju deploy indico
@@ -108,75 +118,101 @@ indico                 3.3                           active      1  indico      
 
 The deployment finishes when the status shows "Active" for all charms.
 
-### Integrate with Ingress by using Nginx ingress integrator charm
+<!-- vale Canonical.007-Headings-sentence-case = NO -->
 
-The NGINX Ingress Integrator charm can deploy and manage external access to HTTP/HTTPS services in a Kubernetes cluster.
+### Expose Indico by using Gateway API Integrator and Ingress Configurator
 
-If you want to make Indico charm available to external clients, you need to deploy the NGINX Ingress Integrator charm and integrate Indico with it.
+<!-- vale Canonical.007-Headings-sentence-case = YES -->
 
-See more details in [Deploy the Nginx ingress integrator charm for the first time](https://canonical.com/juju/docs/nginx-ingress-integrator-charm/latest/tutorial/tutorial/).
+The Gateway API Integrator charm manages external access to HTTP/HTTPS services in a Kubernetes cluster through the [Gateway API](https://gateway-api.sigs.k8s.io/). The Ingress Configurator charm passes the ingress configuration, such as the hostname, to it.
 
-Enable the ingress on MicroK8s first:
-
-```
-sudo microk8s enable ingress
-```
-
-Deploy the charm NGINX Ingress Integrator:
+Deploy Gateway API Integrator and configure it to use the Cilium gateway class provided by Canonical Kubernetes:
 
 ```
-juju deploy nginx-ingress-integrator
-```
-To check if RBAC is enabled run the following command:
-```
-microk8s status | grep rbac
-```
-If it is enabled, then the output should be like the following:
-```
-rbac
-```
-If the output is empty then RBAC is not enabled.
-
-If your cluster has RBAC enabled, you'll be prompted to run the following:
-```
-juju trust nginx-ingress-integrator --scope cluster
+juju deploy gateway-api-integrator --trust --channel=1/stable
+juju config gateway-api-integrator gateway-class=cilium
 ```
 
-Run `juju status` to verify the deployment.
-
-Provide integration between Indico and NGINX Ingress Integrator:
+Gateway API Integrator requires a TLS certificate provider. Deploy the Self Signed Certificates charm and integrate it:
 
 ```
-juju integrate indico nginx-ingress-integrator
+juju deploy self-signed-certificates --channel=1/stable
+juju integrate gateway-api-integrator self-signed-certificates
 ```
 
-To see the Ingress resource created, run `kubectl get ingress` on a namespace named for the Juju model you've deployed the Indico charm into. The output is similar to the following:
+> **Warning**
+>
+> Self-signed certificates aren't trusted by clients and aren't suitable for production. 
+> In production, use a certificate provider backed by a trusted certificate authority.
+
+Gateway API Integrator provides the `ingress` interface and could be integrated directly with the Indico charm. 
+However, it's recommended to use the Ingress Configurator charm through the `gateway-route` interface, because it allows 
+for more advanced routing features and configuration options.
+
+Deploy Ingress Configurator and set the hostname. Indico requires a "." in the hostname for the app to respond, so use `indico.local`:
 
 ```
-NAME                      CLASS    HOSTS             ADDRESS     PORTS   AGE
-indico-local-ingress      public   indico.local   127.0.0.1   80      2d
+juju deploy ingress-configurator --trust
+juju config ingress-configurator hostname=indico.local paths=/
 ```
 
-Run `juju status` to see the same Ingress IP in the `nginx-ingress-integrator` message:
+Provide integration between Indico, Ingress Configurator and Gateway API Integrator:
 
 ```
-nginx-ingress-integrator                                active      1  nginx-ingress-integrator  stable    45  10.152.183.233  no       Ingress IP(s): 127.0.0.1
+juju integrate gateway-api-integrator ingress-configurator
+juju integrate indico ingress-configurator
 ```
 
-The browser uses entries in the /etc/hosts file to override what is returned by a DNS server.
-
-Usually a charm default hostname is the application name but since Indico requires a "." in the hostname for the app to respond, so the charm configures the default to `indico.local`.
-
-If you are deploying to a local machine you need to add the `127.0.0.1` to the `/etc/hosts` file. The default hostname for the Indico application is `indico.local`. To resolve it to your Ingress IP, edit [`/etc/hosts`](https://manpages.ubuntu.com/manpages/noble/man5/hosts.5.html) file and add the following line accordingly:
+Run `juju status` and wait until all applications are `active`:
 
 ```
-127.0.0.1 indico.local
+Model            Controller     Cloud/Region  Version  SLA          Timestamp
+indico-tutorial  concierge-k8s  k8s           3.6.29   unsupported  11:25:01-05:00
+
+App                       Version  Status  Scale  Charm                     Channel        Rev  Address         Exposed  Message
+gateway-api-integrator             active      1  gateway-api-integrator    1/stable       165  10.152.183.241  no       Gateway addresses: 10.218.86.231
+indico                             active      1  indico                    latest/edge    348  10.152.183.206  no       
+ingress-configurator               active      1  ingress-configurator      latest/stable  111  10.152.183.224  no       Ready
+postgresql-k8s            14.24    active      1  postgresql-k8s            14/stable      960  10.152.183.146  no       
+redis-k8s                 7.2.5    active      1  redis-k8s                 latest/edge     42  10.152.183.55   no       
+self-signed-certificates           active      1  self-signed-certificates  1/stable       586  10.152.183.35   no       
+
+Unit                         Workload  Agent  Address     Ports  Message
+gateway-api-integrator/0*    active    idle   10.1.0.24          Gateway addresses: 10.218.86.231
+indico/0*                    active    idle   10.1.0.139         
+ingress-configurator/0*      active    idle   10.1.0.160         Ready
+postgresql-k8s/0*            active    idle   10.1.0.60          Primary
+redis-k8s/0*                 active    idle   10.1.0.111         
+self-signed-certificates/0*  active    idle   10.1.0.74
 ```
 
-Optional: run `echo "127.0.0.1 indico.local" >> /etc/hosts` to redirect the output of the command `echo` to the end of the file `/etc/hosts`.
+## Verify the deployment
 
+From inside the Multipass VM, send a request to Indico through the gateway:
 
-After that, visit `http://indico.local` in a browser and you'll be presented with a screen to create an initial admin account.
+```
+curl -k --resolve indico.local:443:$PREFSRC https://indico.local
+```
+
+If the deployment is successful, the output should show:
+
+```
+<!doctype html>
+<html lang=en>
+<title>Redirecting...</title>
+<h1>Redirecting...</h1>
+<p>You should be redirected automatically to the target URL: <a href="/bootstrap">/bootstrap</a>. If not, click the link.
+```
+
+Optional: to access Indico from a browser on your host machine, get the Multipass VM IP by running `multipass info indico-tutorial`. 
+Then, on the host machine, edit `/etc/hosts` and add the following line, replacing `<multipass vm ip>` with the VM IP:
+
+```
+<multipass vm ip> indico.local
+```
+
+After that, visit `https://indico.local` in a browser. Your browser may display a warning about the connection's security 
+because we used a self-signed certificate. You can safely ignore this warning. You will be presented with a screen to create an initial admin account.
 
 
 ## Clean up the environment
@@ -188,9 +224,17 @@ model environment you created during this tutorial, use the following command.
 juju destroy-model indico-tutorial --no-prompt --destroy-storage=true
 ```
 
-If you used Multipass, to remove the Multipass instance you created for this tutorial, use the following command.
+To remove the Multipass instance you created for this tutorial, run the following command on the host machine.
 
 ```
-multipass delete --purge my-juju-vm
+multipass delete --purge indico-tutorial
 ```
-Finally, remove the `127.0.0.1 indico.local` line from the `/etc/hosts` file.
+If you edited the host `/etc/hosts` file, remove the `<multipass vm ip> indico.local` line.
+
+## Next steps
+
+You achieved a basic deployment of the Indico charm. If you want to go farther in your deployment or learn more about the charm, check out these pages:
+
+- Perform basic operations with your deployment like [installing plugins](how-to/install-plugins.md) or [customizing the theme](how-to/customize-theme.md).
+- Connect your deployment to external services by configuring [S3](how-to/configure-s3.md), [SAML](how-to/configure-saml.md) or [SMTP](how-to/configure-smtp.md).
+- Learn more about the available [relation endpoints](reference/integrations.md) for the Indico charm.
