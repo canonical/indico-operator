@@ -118,7 +118,11 @@ indico                 3.3                           active      1  indico      
 
 The deployment finishes when the status shows "Active" for all charms.
 
+<!-- vale Canonical.007-Headings-sentence-case = NO -->
+
 ### Expose Indico by using Gateway API Integrator and Ingress Configurator
+
+<!-- vale Canonical.007-Headings-sentence-case = YES -->
 
 The Gateway API Integrator charm manages external access to HTTP/HTTPS services in a Kubernetes cluster through the [Gateway API](https://gateway-api.sigs.k8s.io/). The Ingress Configurator charm passes the ingress configuration, such as the hostname, to it.
 
@@ -187,7 +191,12 @@ self-signed-certificates/0*  active    idle   10.1.0.74
 From inside the Multipass VM, send a request to Indico through the gateway:
 
 ```
-ubuntu@indico-tutorial:~$ curl -k --resolve indico.local:443:$PREFSRC https://indico.local
+curl -k --resolve indico.local:443:$PREFSRC https://indico.local
+```
+
+If the deployment is successful, the output should show:
+
+```
 <!doctype html>
 <html lang=en>
 <title>Redirecting...</title>
