@@ -49,14 +49,14 @@ juju add-model indico-tutorial
 
 ### Deploy the Indico charm
 
-Since Indico requires connections to PostgreSQL and Redis, you'll deploy them too. A single Redis application provides both caching and the Celery message broker. For more information, see [Charm Architecture](https://charmhub.io/indico/docs/explanation-charm-architecture).
+Indico requires connections to PostgreSQL and Redis. A single Redis application provides both caching and the Celery message broker. For more information, see [Charm Architecture](https://charmhub.io/indico/docs/explanation-charm-architecture).
 
 Deploy the charms:
 
 ```
 juju deploy postgresql-k8s --channel=14/stable --trust
 juju deploy redis-k8s --channel=latest/edge
-juju deploy indico
+juju deploy indico --channel=latest/edge
 ```
 
 To see the pod created by the Indico charm, run `kubectl get pods -n indico-tutorial`, where the namespace is the name of the Juju model. The output is similar to the following:
