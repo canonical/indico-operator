@@ -2,26 +2,30 @@
 # See LICENSE file for licensing details.
 
 locals {
+  # Resolve the model UUID: use the module-managed model when create_model is
+  # true, otherwise the externally provisioned model passed via model_uuid.
+  model_uuid = var.create_model ? juju_model.indico[0].uuid : var.model_uuid
+
   app_names_defaults = {
-    s3_integrator_media      = "media-s3-integrator"
-    indico                   = "indico"
-    redis_cache              = "redis-cache"
-    redis_broker             = "redis-broker"
-    nginx_ingress_integrator = "nginx-ingress-integrator"
-    local_postgresql         = "postgresql-k8s"
+    s3_integrator_media           = "media-s3-integrator"
+    indico                        = "indico"
+    redis                         = "redis"
+    nginx_ingress_integrator      = "nginx-ingress-integrator"
+    local_postgresql              = "postgresql-k8s"
+    oauth_external_idp_integrator = "oauth-external-idp-integrator"
   }
   app_names = merge(local.app_names_defaults, var.app_names)
 
   channels_defaults = {
-    lego                     = "4/stable"
-    nginx_ingress_integrator = "latest/edge"
-    redis_cache              = "latest/edge"
-    redis_broker             = "latest/edge"
-    s3_integrator_media      = "latest/edge"
-    smtp_integrator          = "latest/edge"
-    indico                   = "latest/edge"
-    local_postgresql         = "14/edge"
-    local_saml_integrator    = "latest/edge"
+    lego                          = "4/stable"
+    nginx_ingress_integrator      = "latest/edge"
+    redis                         = "latest/edge"
+    s3_integrator_media           = "latest/edge"
+    smtp_integrator               = "latest/edge"
+    indico                        = "latest/edge"
+    local_postgresql              = "14/edge"
+    local_saml_integrator         = "latest/edge"
+    oauth_external_idp_integrator = "latest/edge"
   }
 
   channels = merge(local.channels_defaults, var.channels)
@@ -54,6 +58,11 @@ locals {
     {}
   )
 
+  config_oauth_external_idp_integrator = merge(
+    var.config_oauth_external_idp_integrator,
+    {}
+  )
+
   config_local_postgresql = merge(
     var.config_local_postgresql,
     {}
@@ -66,14 +75,14 @@ locals {
   )
 
   enable_defaults = {
-    lego                     = false
-    local_saml_integrator    = false
-    local_postgresql         = false
-    nginx_ingress_integrator = false
-    redis_cache              = false
-    redis_broker             = false
-    s3_integrator_media      = false
-    smtp_integrator          = false
+    lego                          = false
+    local_saml_integrator         = false
+    local_postgresql              = false
+    nginx_ingress_integrator      = false
+    oauth_external_idp_integrator = false
+    redis                         = true
+    s3_integrator_media           = false
+    smtp_integrator               = false
   }
 
   enable = merge(local.enable_defaults, var.enable)
@@ -99,9 +108,7 @@ locals {
     # renovate: depName="nginx-ingress-integrator"
     nginx_ingress_integrator = 145
     # renovate: depName="redis-k8s"
-    redis_cache = 25
-    # renovate: depName="redis-k8s"
-    redis_broker = 25
+    redis = 25
     # renovate: depName="s3-integrator"
     s3_integrator_media = 13
     # renovate: depName="smtp-integrator"
@@ -112,6 +119,8 @@ locals {
     local_saml_integrator = 102
     # renovate: depName="postgresql-k8s"
     local_postgresql = 665
+    # renovate: depName="oauth-external-idp-integrator"
+    oauth_external_idp_integrator = 6
   }
 
   revisions = merge(local.revisions_defaults, var.revisions)

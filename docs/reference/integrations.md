@@ -22,13 +22,11 @@ _Interface_: redis
 _Supported charms_: [redis-k8s](https://charmhub.io/redis-k8s)
 
 Redis integration is a required relation for the Indico charm to supply caching capabilities and
-a message broker to interface with Celery. As such, two instances are needed, `redis-cache` and 
-`redis-broker`.
+a message broker to interface with Celery. A single Redis application provides both functions.
 
-Example `redis` integrate commands: 
+Example `redis` integrate command:
 ```
-juju integrate redis-cache indico 
-juju integrate redis-broker indico
+juju integrate redis-k8s indico
 ```
 
 ### `ingress`

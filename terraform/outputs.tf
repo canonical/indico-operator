@@ -7,16 +7,19 @@ output "app_name" {
 }
 
 output "endpoints" {
+  # Relation endpoint names as declared by the 12-factor (flask-framework)
+  # indico charm (see the charm's metadata.yaml). Kept in sync with the built
+  # charm: postgresql/redis/s3/smtp/saml/oauth/ingress + observability.
   value = {
     grafana_dashboard = "grafana-dashboard"
     metrics_endpoint  = "metrics-endpoint"
-    database          = "database"
-    nginx_route       = "nginx-route"
-    redis_broker      = "redis-broker"
-    redis_cache       = "redis-cache"
-    s3                = "s3"
-    saml              = "saml"
-    smtp_legacy       = "smtp-legacy"
     logging           = "logging"
+    postgresql        = "postgresql"
+    redis             = "redis"
+    s3                = "s3"
+    smtp              = "smtp"
+    saml              = "saml"
+    oauth             = "oauth"
+    ingress           = "ingress"
   }
 }

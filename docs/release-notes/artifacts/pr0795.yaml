@@ -1,0 +1,15 @@
+# --- Release notes artifact ----
+
+schema_version: 1
+changes:
+  - title: New indico terraform module for the 12-factored charm
+    author: DeeKay3
+    type: minor
+    description: "Updated terraform and product modules for the 12-factored charm, to be used in PS7"
+    urls:
+      pr:
+        - https://github.com/canonical/indico-operator/pull/795
+      related_doc:
+      related_issue:
+    visibility: public
+    highlight: false
