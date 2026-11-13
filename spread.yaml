@@ -35,9 +35,7 @@ integration-suites:
     backends:
       - integration-test
       - integration-test-juju4
-    pytest-arguments-template: '-x -v --tb=native --log-cli-level=INFO --no-juju-teardown'
-    pytest-environment-template: |
-      INGRESS_CLASS=cilium
+    pytest-arguments-template: '--no-juju-teardown'
     prepare: |
       if [ "$MODULE" = "tests/integration/test_s3.py" ]; then
         bash "${SPREAD_PATH}/tests/integration/prepare-s3.sh"
