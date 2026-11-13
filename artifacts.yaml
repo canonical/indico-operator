@@ -6,7 +6,7 @@ rocks:
 - name: indico
   rockcraft-yaml: indico_rock/rockcraft.yaml
 charms:
-- name: indico-k8s
+- name: indico
   charmcraft-yaml: charmcraft.yaml
   resources:
     indico-image:
