@@ -20,5 +20,6 @@ curl --silent --show-error --output /dev/null \
 umask 077
 mkdir -p build
 sudo microceph.radosgw-admin user create \
-    --uid indico-test --display-name "Indico integration tests" > build/s3-user.json
+    --uid indico-test --display-name "Indico integration tests" \
+    | tee build/s3-user.json > /dev/null
 sudo chown "${SUDO_USER:-$(id -un)}" build/s3-user.json
