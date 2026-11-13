@@ -23,27 +23,6 @@ APP_NAME = "indico"
 # extension's documented default.
 WORKLOAD_PORT = 8000
 
-
-@pytest.fixture(scope="session", name="charm")
-def charm_fixture(pytestconfig: pytest.Config):
-    """Get value from parameter charm-file."""
-    charm = pytestconfig.getoption("--charm-file")
-    use_existing = pytestconfig.getoption("--use-existing", default=False)
-    if not use_existing:
-        assert charm, "--charm-file must be set"
-    return charm
-
-
-@pytest.fixture(scope="session")
-def charm_resources(pytestconfig: pytest.Config) -> dict[str, str]:
-    """The OCI resources for the charm."""
-    rock_image_uri = pytestconfig.getoption("--indico-image")
-    if not rock_image_uri:
-        pytest.fail("--indico-image must be set")
-
-    return {"flask-app-image": rock_image_uri}
-
-
 @pytest.fixture(scope="session", name="juju")
 def juju_fixture(
     request: pytest.FixtureRequest,
@@ -85,8 +64,8 @@ def juju_fixture(
 @pytest.fixture(scope="session", name="app")
 def app_fixture(
     juju: jubilant.Juju,
-    charm: str,
-    charm_resources: dict[str, str],
+    charm_path: str,
+    resource_images: dict[str, str],
 ):
     """Deploy the Indico charm and its mandatory relations.
 
@@ -129,9 +108,9 @@ def app_fixture(
 
     # Deploy the Indico charm
     juju.deploy(
-        charm=charm,
+        charm_path,
         app=APP_NAME,
-        resources=charm_resources,
+        resources=resource_images,
     )
     juju.wait(lambda status: jubilant.all_waiting(status, APP_NAME))
 
