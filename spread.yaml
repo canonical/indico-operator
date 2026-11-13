@@ -35,7 +35,6 @@ integration-suites:
     backends:
       - integration-test
       - integration-test-juju4
-    pytest-arguments-template: |
-      --no-juju-teardown
+    pytest-arguments-template: '-x -v --tb=native --log-cli-level=INFO --keep-models --model testing'
     pytest-environment-template: |
       INGRESS_CLASS=cilium
