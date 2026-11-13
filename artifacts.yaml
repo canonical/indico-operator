@@ -1,0 +1,14 @@
+# Copyright 2026 Canonical Ltd.
+# See LICENSE file for licensing details.
+
+version: 1
+rocks:
+- name: indico
+  rockcraft-yaml: indico_rock/rockcraft.yaml
+charms:
+- name: indico
+  charmcraft-yaml: charmcraft.yaml
+  resources:
+    flask-app-image:
+      type: oci-image
+      rock: indico

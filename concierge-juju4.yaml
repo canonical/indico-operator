@@ -1,0 +1,41 @@
+# Copyright 2026 Canonical Ltd.
+# See LICENSE file for licensing details.
+#
+# Concierge provisioning config for the integration tests on Juju 4.
+# Same as concierge-lxd.yaml apart from the Juju channel; keep the two in step.
+
+juju:
+  channel: 4.0/stable
+  model-defaults:
+    test-mode: "true"
+    automatically-retry-hooks: "false"
+
+providers:
+  lxd:
+    enable: true
+    bootstrap: false
+  # Canonical Kubernetes, configured like charm-ci's examples/concierge-k8s.yaml.
+  # Ingress is Cilium's controller behind a load balancer from the L2 pool;
+  # local-storage backs the COS charms' volumes.
+  k8s:
+    enable: true
+    bootstrap: true
+    bootstrap-constraints:
+      root-disk: "2G"
+    features:
+      load-balancer:
+        l2-mode: "true"
+        cidrs: "10.43.45.0/28"
+      local-storage: {}
+      network: {}
+      ingress: {}
+
+host:
+  # skopeo loads the rock into a local registry when CI cannot push it to
+  # GHCR, such as for pull requests from forks.
+  packages:
+    - skopeo
+  snaps:
+    charmcraft:
+      channel: latest/stable
+      classic: true

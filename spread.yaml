@@ -1,0 +1,42 @@
+# Copyright 2026 Canonical Ltd.
+# See LICENSE file for licensing details.
+project: indico-operator
+path: /home/ubuntu/proj
+version: 1
+kill-timeout: 60m
+
+backends:
+  integration-test:
+    type: integration-test
+    systems:
+      - ubuntu-24.04
+  integration-test-juju4:
+    type: integration-test
+    systems:
+      - ubuntu-24.04
+    environment:
+      CONCIERGE: concierge-juju4.yaml
+
+environment:
+  CONCIERGE: concierge-lxd.yaml
+  OPCLI_GIT_REF: '$(HOST: echo "${OPCLI_GIT_REF:-main}")'
+
+exclude:
+  - .git
+  - .tox
+  - .venv
+  - .*_cache
+
+integration-suites:
+  tests/integration/:
+    summary: integration tests
+    working-dir: ./
+    auto-discover: true
+    backends:
+      - integration-test
+      - integration-test-juju4
+    pytest-arguments-template: '--no-juju-teardown'
+    prepare: |
+      if [ "$MODULE" = "tests/integration/test_s3.py" ]; then
+        bash "${SPREAD_PATH}/tests/integration/prepare-s3.sh"
+      fi

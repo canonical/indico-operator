@@ -3,13 +3,15 @@
 
 """Fixtures for Indico charm integration tests."""
 
+import json
 import logging
 import socket
-import typing
-from collections.abc import Generator
+from pathlib import Path
 
+import boto3
 import jubilant
 import pytest
+from botocore.config import Config
 
 logger = logging.getLogger(__name__)
 
@@ -23,76 +25,23 @@ APP_NAME = "indico"
 # extension's documented default.
 WORKLOAD_PORT = 8000
 
-
-@pytest.fixture(scope="session", name="charm")
-def charm_fixture(pytestconfig: pytest.Config):
-    """Get value from parameter charm-file."""
-    charm = pytestconfig.getoption("--charm-file")
-    use_existing = pytestconfig.getoption("--use-existing", default=False)
-    if not use_existing:
-        assert charm, "--charm-file must be set"
-    return charm
+def pytest_addoption(parser: pytest.Parser) -> None:
+    """Register project-specific integration test options."""
+    parser.addoption("--s3-address", action="store", help="S3 service host address")
 
 
-@pytest.fixture(scope="session")
-def charm_resources(pytestconfig: pytest.Config) -> dict[str, str]:
-    """The OCI resources for the charm."""
-    rock_image_uri = pytestconfig.getoption("--indico-image")
-    if not rock_image_uri:
-        pytest.fail("--indico-image must be set")
-
-    return {"flask-app-image": rock_image_uri}
-
-
-@pytest.fixture(scope="session", name="juju")
-def juju_fixture(
-    request: pytest.FixtureRequest,
-) -> Generator[jubilant.Juju, None, None]:
-    """Pytest fixture that wraps :meth:`jubilant.with_model`."""
-
-    def show_debug_log(juju: jubilant.Juju):
-        """Show debug log.
-
-        Args:
-            juju: the Juju object.
-        """
-        if request.session.testsfailed:
-            log = juju.debug_log(limit=1000)
-            print(log, end="")
-
-    use_existing = request.config.getoption("--use-existing", default=False)
-    if use_existing:
-        juju = jubilant.Juju()
-        yield juju
-        show_debug_log(juju)
-        return
-
-    model = request.config.getoption("--model")
-    if model:
-        juju = jubilant.Juju(model=model)
-        yield juju
-        show_debug_log(juju)
-        return
-
-    keep_models = typing.cast(bool, request.config.getoption("--keep-models"))
-    with jubilant.temp_model(keep=keep_models) as juju:
-        juju.wait_timeout = JUJU_WAIT_TIMEOUT
-        yield juju
-        show_debug_log(juju)
-        return
-
-
-@pytest.fixture(scope="session", name="app")
+@pytest.fixture(scope="module", name="app")
 def app_fixture(
     juju: jubilant.Juju,
-    charm: str,
-    charm_resources: dict[str, str],
+    charm_path: str,
+    resource_images: dict[str, str],
 ):
     """Deploy the Indico charm and its mandatory relations.
 
     Deploys postgresql-k8s and redis-k8s, the indico charm, integrates them,
     and waits for all units to become active.
     """
+    juju.wait_timeout = JUJU_WAIT_TIMEOUT
     # Detect Juju major version to choose the right PostgreSQL channel
     juju_major = juju.version().major
 
@@ -100,10 +49,18 @@ def app_fixture(
         pg_channel = "16/edge"
         pg_base = "ubuntu@24.04"
         is_force = True
+        pg_plugins = {
+            "plugin-pg-trgm-enable": True,
+            "plugin-unaccent-enable": True,
+        }
     else:
         pg_channel = "14/stable"
         pg_base = "ubuntu@22.04"
         is_force = False
+        pg_plugins = {
+            "plugin_pg_trgm_enable": True,
+            "plugin_unaccent_enable": True,
+        }
 
     # Deploy PostgreSQL
     juju.deploy(
@@ -113,8 +70,7 @@ def app_fixture(
         trust=True,
         config={
             "profile": "testing",
-            "plugin_pg_trgm_enable": "true",
-            "plugin_unaccent_enable": "true",
+            **pg_plugins,
         },
         force=is_force,
     )
@@ -129,9 +85,9 @@ def app_fixture(
 
     # Deploy the Indico charm
     juju.deploy(
-        charm=charm,
+        charm_path,
         app=APP_NAME,
-        resources=charm_resources,
+        resources=resource_images,
     )
     juju.wait(lambda status: jubilant.all_waiting(status, APP_NAME))
 
@@ -154,7 +110,7 @@ def app_fixture(
     yield APP_NAME
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def indico_address(app: str, juju: jubilant.Juju) -> str:
     """Get the Indico address.
 
@@ -202,18 +158,43 @@ def _host_ip() -> str | None:
 
 
 @pytest.fixture(scope="session")
-def s3_address(pytestconfig: pytest.Config) -> str | None:
+def s3_address(pytestconfig: pytest.Config) -> str:
     """Provide the S3 service IP address for integration tests."""
-    return pytestconfig.getoption("--s3-address") or _host_ip()
+    address = pytestconfig.getoption("--s3-address") or _host_ip()
+    if not address:
+        pytest.fail("Cannot determine the S3 service address; pass --s3-address.")
+    return address
 
 
-def generate_s3_config(s3_address: str) -> dict:
-    """Generate S3 config for the integration tests."""
-    return {
-        "access-key": "my-lovely-key",
-        "secret-key": "this-is-very-secret",
+@pytest.fixture(scope="session")
+def s3_config(s3_address: str, pytestconfig: pytest.Config) -> dict[str, str]:
+    """Create and verify the S3 bucket using the provisioned test identity."""
+    user_path = Path(pytestconfig.rootpath) / "build" / "s3-user.json"
+    if not user_path.is_file():
+        pytest.fail("S3 test identity is missing; run bash tests/integration/prepare-s3.sh.")
+    user = json.loads(user_path.read_text())
+    credentials = user["keys"][0]
+    config = {
+        "access-key": credentials["access_key"],
+        "secret-key": credentials["secret_key"],
         "bucket": "indico-test",
         "region": "us-east-1",
         "path": "indico",
         "endpoint": f"http://{s3_address}:7480",
     }
+    client = boto3.client(
+        "s3",
+        endpoint_url=config["endpoint"],
+        region_name=config["region"],
+        aws_access_key_id=config["access-key"],
+        aws_secret_access_key=config["secret-key"],
+        config=Config(
+            s3={"addressing_style": "path"},
+            connect_timeout=10,
+            read_timeout=10,
+            retries={"max_attempts": 3},
+        ),
+    )
+    client.create_bucket(Bucket=config["bucket"])
+    client.head_bucket(Bucket=config["bucket"])
+    return config
