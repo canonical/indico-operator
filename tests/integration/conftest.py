@@ -49,10 +49,18 @@ def app_fixture(
         pg_channel = "16/edge"
         pg_base = "ubuntu@24.04"
         is_force = True
+        pg_plugins = {
+            "plugin-pg-trgm-enable": True,
+            "plugin-unaccent-enable": True,
+        }
     else:
         pg_channel = "14/stable"
         pg_base = "ubuntu@22.04"
         is_force = False
+        pg_plugins = {
+            "plugin_pg_trgm_enable": True,
+            "plugin_unaccent_enable": True,
+        }
 
     # Deploy PostgreSQL
     juju.deploy(
@@ -62,8 +70,7 @@ def app_fixture(
         trust=True,
         config={
             "profile": "testing",
-            "plugin_pg_trgm_enable": "true",
-            "plugin_unaccent_enable": "true",
+            **pg_plugins,
         },
         force=is_force,
     )
