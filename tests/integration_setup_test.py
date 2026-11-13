@@ -46,6 +46,47 @@ def test_module_fixture_scopes(pytester: pytest.Pytester):
     result.stdout.fnmatch_lines(["*SETUP*M app*", "*SETUP*M indico_address*"])
 
 
+@pytest.mark.parametrize(
+    ("juju_major", "channel", "base", "plugin_options", "force"),
+    [
+        (
+            3,
+            "14/stable",
+            "ubuntu@22.04",
+            {"plugin_pg_trgm_enable": True, "plugin_unaccent_enable": True},
+            False,
+        ),
+        (
+            4,
+            "16/edge",
+            "ubuntu@24.04",
+            {"plugin-pg-trgm-enable": True, "plugin-unaccent-enable": True},
+            True,
+        ),
+    ],
+)
+def test_postgresql_config(juju_major, channel, base, plugin_options, force):
+    juju = Mock()
+    juju.version.return_value.major = juju_major
+    juju.status.return_value.apps = {
+        "indico": Mock(units={"indico/0": Mock(address="192.0.2.10")})
+    }
+
+    fixture = conftest.app_fixture.__wrapped__(
+        juju, "indico.charm", {"flask-app-image": "example.test/indico:latest"}
+    )
+    assert next(fixture) == "indico"
+
+    assert juju.deploy.call_args_list[0].args == ("postgresql-k8s",)
+    assert juju.deploy.call_args_list[0].kwargs == {
+        "channel": channel,
+        "base": base,
+        "trust": True,
+        "config": {"profile": "testing", **plugin_options},
+        "force": force,
+    }
+
+
 def test_s3_address_override():
     config = Mock()
     config.getoption.return_value = "192.0.2.10"

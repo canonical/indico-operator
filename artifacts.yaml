@@ -9,6 +9,6 @@ charms:
 - name: indico
   charmcraft-yaml: charmcraft.yaml
   resources:
-    indico-image:
+    flask-app-image:
       type: oci-image
       rock: indico
