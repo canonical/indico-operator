@@ -148,22 +148,32 @@ image (see below); they also run in CI on every pull request.
 ### Build the rock and charm
 
 Use [Rockcraft](https://documentation.ubuntu.com/rockcraft/stable/) to create the
-OCI image for Indico, and then upload the image to a MicroK8s registry,
+OCI image for Indico, and then upload the image to a local registry,
 which stores OCI archives so they can be downloaded and deployed.
 
-Enable the MicroK8s registry:
+Set up [Canonical Kubernetes](https://documentation.ubuntu.com/canonical-kubernetes/latest/)
+and Juju with [Concierge](https://github.com/canonical/concierge), using
+its `k8s` preset:
 
 ```bash
-microk8s enable registry
+sudo snap install concierge --classic
+sudo concierge prepare --preset k8s
+```
+
+Canonical Kubernetes has no built-in registry, so start a local one. The
+cluster pulls from `localhost` over plain HTTP:
+
+```bash
+docker run -d --restart always -p 5000:5000 --name registry registry:2
 ```
 
 The following commands pack the OCI image and push it into
-the MicroK8s registry:
+the local registry:
 
 ```bash
 cd indico_rock
 rockcraft pack
-skopeo --insecure-policy copy oci-archive:indico_3.3.12_amd64.rock docker://localhost:32000/indico:latest --dest-tls-verify=false
+rockcraft.skopeo --insecure-policy copy --dest-tls-verify=false oci-archive:indico_3.3.12_amd64.rock docker://localhost:5000/indico:latest
 ```
 
 Build the charm in this git repository using:
@@ -180,5 +190,5 @@ juju add-model indico-dev
 # Enable DEBUG logging
 juju model-config logging-config="<root>=INFO;unit=DEBUG"
 # Deploy the charm
-juju deploy ./indico_amd64.charm --resource flask-app-image=localhost:32000/indico:latest
+juju deploy ./indico_amd64.charm --resource flask-app-image=localhost:5000/indico:latest
 ```
