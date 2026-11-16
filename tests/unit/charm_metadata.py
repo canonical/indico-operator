@@ -21,7 +21,8 @@ CHARM_META = {
     },
     "requires": {
         "postgresql": {"interface": "postgresql_client", "optional": False, "limit": 1},
-        "redis": {"interface": "redis", "optional": False, "limit": 1},
+        "valkey": {"interface": "valkey_client", "optional": False, "limit": 1},
+        "redis": {"interface": "redis", "optional": True, "limit": 1},
         "s3": {"interface": "s3", "optional": True, "limit": 1},
         "smtp": {"interface": "smtp", "optional": True, "limit": 1},
         "saml": {"interface": "saml", "optional": True, "limit": 1},
