@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 Each revision is versioned by the date of the revision.
 
+## 2026-11-16
+
+- Added the `valkey` integration for caching and the Celery message broker. The `redis` integration is kept for existing deployments; exactly one of them must be integrated.
+
 ## 2026-01-12
 
 - Plugin installations now only fixes Indico version, any other packages may change as long as they don't break Indico requirements.

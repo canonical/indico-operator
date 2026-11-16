@@ -1,6 +1,6 @@
 # Charm architecture
 
-At its core, [Indico](https://getindico.io/) is a [Flask](https://flask.palletsprojects.com/en/stable/) application that integrates with [PostgreSQL](https://www.postgresql.org/), [Redis](https://redis.io/), and [Celery](https://docs.celeryq.dev/en/stable/).
+At its core, [Indico](https://getindico.io/) is a [Flask](https://flask.palletsprojects.com/en/stable/) application that integrates with [PostgreSQL](https://www.postgresql.org/), [Valkey](https://valkey.io/), and [Celery](https://docs.celeryq.dev/en/stable/).
 
 ## Charm architecture diagram
 
@@ -115,7 +115,7 @@ Inside the Indico container, the  [Celery Exporter](https://github.com/danihodov
 
 The `Celery Exporter` is started with:
 
-- `--broker-url=`: scrape metrics from the Redis (broker) container.
+- `--broker-url=`: scrape metrics from the Valkey (or Redis) broker.
 - `--retry-interval=5`: retry after five seconds in case of errors communicating with the broker.
 
 Since Indico Celery serializers are set to work with [Pickle](https://docs.python.org/3/library/pickle.html) instead of [JSON](https://www.json.org/), the environment variable `CE_ACCEPT_CONTENT` is set to `"json,pickle"` so the exporter will be able to read the data.
@@ -145,16 +145,18 @@ PostgreSQL is an open-source object-relational database used by Indico as a sour
 
 Prometheus is an open-source system monitoring and alerting toolkit with a dimensional data model, flexible query language, efficient time series database, and modern alerting approach. This charm is shipped with a Prometheus exporter, alerts, and support for integrating with the [Prometheus Operator](https://charmhub.io/prometheus-k8s) to automatically scrape the targets.
 
-### Redis
+### Valkey
 
-Redis is an open-source in-memory data structure store used here as two independent containers:
+Valkey is an open-source in-memory data structure store, compatible with Redis, used here for two purposes:
 
 1. Cache backend: Copies of frequently accessed data are stored and used if satisfy the request. Otherwise, the application will handle it. This configuration helps to reduce the number of queries and improve response latency.
 2. Message broker: Used for communication between Indico and the Celery background workers.
 
+Existing deployments can keep using [Redis](https://redis.io/) through the legacy `redis` integration, which serves the same purposes. The charm requires exactly one of the `valkey` or `redis` integrations.
+
 > **Warning**
-> If you redeploy Indico with a fresh database, you must also remove the Redis cache from the previous deployment. 
-> The Redis cache holds the session data, and if you don't remove it, [session hijacking](https://github.com/indico/indico/issues/5901) 
+> If you redeploy Indico with a fresh database, you must also remove the Valkey (or Redis) cache from the previous deployment. 
+> The cache holds the session data, and if you don't remove it, [session hijacking](https://github.com/indico/indico/issues/5901) 
 > may be possible if the user id of the old deployment matches the user id of the new deployment.
  
 ## Juju events
@@ -171,7 +173,7 @@ Action: if the unit is the leader, add the extensions [`pg_trgm:public`](https:/
 Action: guarantee that all Indico workers have the same [secret key](https://docs.getindico.io/en/latest/config/settings/?highlight=secret_key#SECRET_KEY) that is used to sign tokens in URLs and select a unit to run Celery.
 5. [`master_changed`](https://github.com/canonical/ops-lib-pgsql): PostgreSQLClient custom event for when the connection details to the main database on this relation change.
 Action: Update the database connection string configuration and emit `config_changed` event.
-6. [`redis_relation_changed`](https://github.com/canonical/redis-k8s-operator): Fired when Redis is changed (host, for example).
+6. [`valkey_relation_changed`](https://charmhub.io/valkey) or [`redis_relation_changed`](https://github.com/canonical/redis-k8s-operator): Fired when Valkey or Redis is changed (host, for example).
 Action: Same as `config_changed`.
 7. [`refresh_external_resources_action`](https://charmhub.io/indico/actions): fired when refresh-external-resources action is executed.
 8. [`indico_peers_relation_departed`](https://canonical.com/juju/docs/juju-cli/3.6/reference/hook/#endpoint-relation-departed): fired when a Indico unit departs. Action: elect a new unit to run Celery on if the departed unit was running Celery and re-plans the services accordingly.

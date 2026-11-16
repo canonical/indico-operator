@@ -3,7 +3,7 @@
 ## What you’ll do
 
 - Deploy the [Indico charm](https://charmhub.io/indico).
-- Integrate with [the Redis K8s charm](https://charmhub.io/redis-k8s) and [the PostgreSQL K8s charm](https://charmhub.io/postgresql-k8s).
+- Integrate with [the Valkey charm](https://charmhub.io/valkey) and [the PostgreSQL K8s charm](https://charmhub.io/postgresql-k8s).
 - Expose Indico by using [Gateway API Integrator](https://charmhub.io/gateway-api-integrator) and [Ingress Configurator](https://charmhub.io/ingress-configurator).
 
 Through the process, you'll inspect the Kubernetes resources created, verify the workload state, and log in to your Indico instance.
@@ -49,13 +49,13 @@ juju add-model indico-tutorial
 
 ### Deploy the Indico charm
 
-Indico requires connections to PostgreSQL and Redis. A single Redis application provides both caching and the Celery message broker. For more information, see [Charm Architecture](https://charmhub.io/indico/docs/explanation-charm-architecture).
+Indico requires connections to PostgreSQL and Valkey. A single Valkey application provides both caching and the Celery message broker. For more information, see [Charm Architecture](https://charmhub.io/indico/docs/explanation-charm-architecture).
 
 Deploy the charms:
 
 ```
 juju deploy postgresql-k8s --channel=14/stable --trust
-juju deploy redis-k8s --channel=latest/edge
+juju deploy valkey --channel=9/stable --trust
 juju deploy indico --channel=latest/edge
 ```
 
@@ -66,26 +66,26 @@ NAME                             READY   STATUS    RESTARTS   AGE
 indico-0                         3/3     Running   0         6h4m
 ```
 
-Run [`juju status`](https://canonical.com/juju/docs/juju-cli/3.6/reference/juju-cli/list-of-juju-cli-commands/status/) to see the current status of the deployment. In the Unit list, you can see that Indico is waiting:
+Run [`juju status`](https://canonical.com/juju/docs/juju-cli/3.6/reference/juju-cli/list-of-juju-cli-commands/status/) to see the current status of the deployment. In the Unit list, you can see that Indico is blocked:
 
 ```
-indico/0*                 waiting   idle   10.1.74.70             Waiting for redis availability
+indico/0*                 blocked   idle   10.1.74.70             missing integrations: postgresql, valkey or redis
 ```
 
-This means that Indico charm isn't integrated with Redis yet.
+This means that Indico charm isn't integrated with PostgreSQL and Valkey yet.
 
-### Integrate with the Redis K8s charm and PostgreSQL K8s charm
+### Integrate with the Valkey charm and PostgreSQL K8s charm
 
-Provide integration between Indico and Redis by running the following [`juju integrate`](https://canonical.com/juju/docs/juju-cli/3.6/reference/juju-cli/list-of-juju-cli-commands/integrate/) command:
+Provide integration between Indico and Valkey by running the following [`juju integrate`](https://canonical.com/juju/docs/juju-cli/3.6/reference/juju-cli/list-of-juju-cli-commands/integrate/) command:
 
 ```
-juju integrate indico redis-k8s
+juju integrate indico:valkey valkey:valkey-client
 ```
 
 Run `juju status` to see that the message has changed:
 
 ```
-indico/0*                 waiting   idle   10.1.74.70             Waiting for database availability
+indico/0*                 blocked   idle   10.1.74.70             missing integrations: postgresql
 ```
 
 Provide integration between Indico and PostgreSQL:
@@ -170,16 +170,16 @@ gateway-api-integrator             active      1  gateway-api-integrator    1/st
 indico                             active      1  indico                    latest/edge    348  10.152.183.206  no       
 ingress-configurator               active      1  ingress-configurator      latest/stable  111  10.152.183.224  no       Ready
 postgresql-k8s            14.24    active      1  postgresql-k8s            14/stable      960  10.152.183.146  no       
-redis-k8s                 7.2.5    active      1  redis-k8s                 latest/edge     42  10.152.183.55   no       
 self-signed-certificates           active      1  self-signed-certificates  1/stable       586  10.152.183.35   no       
+valkey                    9.0.4    active      1  valkey                    9/stable       147  10.152.183.172  no       
 
 Unit                         Workload  Agent  Address     Ports  Message
 gateway-api-integrator/0*    active    idle   10.1.0.24          Gateway addresses: 10.218.86.231
 indico/0*                    active    idle   10.1.0.139         
 ingress-configurator/0*      active    idle   10.1.0.160         Ready
 postgresql-k8s/0*            active    idle   10.1.0.60          Primary
-redis-k8s/0*                 active    idle   10.1.0.111         
-self-signed-certificates/0*  active    idle   10.1.0.74
+self-signed-certificates/0*  active    idle   10.1.0.74          
+valkey/0*                    active    idle   10.1.0.111
 ```
 
 ## Verify the deployment
