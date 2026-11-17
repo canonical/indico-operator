@@ -9,7 +9,7 @@ This document explains the processes and practices recommended for contributing 
 - If you would like to chat with us about your use-cases or proposed implementation, you can reach
   us at [Canonical Matrix public channel](https://matrix.to/#/#charmhub-charmdev:ubuntu.com)
   or [Discourse](https://discourse.charmhub.io/).
-- Familiarizing yourself with the [Juju documentation](https://documentation.ubuntu.com/juju/3.6/howto/manage-charms/)
+- Familiarizing yourself with the [Juju documentation](https://canonical.com/juju/docs/juju-cli/3.6/howto/manage-charms/)
   will help you a lot when working on new features or bug fixes.
 - All enhancements require review before being merged. Code review typically examines
   - code quality
