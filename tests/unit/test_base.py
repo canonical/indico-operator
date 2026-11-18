@@ -5,6 +5,7 @@
 
 """Unit tests for the Indico charm base behaviour."""
 
+import logging
 from unittest.mock import MagicMock
 
 import ops
@@ -138,20 +139,19 @@ def test_missing_valkey_and_redis_integrations(monkeypatch):
     )
 
 
-def test_both_valkey_and_redis_integrations(monkeypatch):
+def test_both_valkey_and_redis_integrations(monkeypatch, caplog):
     """arrange: State with postgresql, valkey and redis integrated.
-    act: Run pebble_ready hook.
-    assert: The unit is blocked because only one cache backend is supported.
+    act: Check whether the charm is ready.
+    assert: The charm stays ready, using valkey, and warns to remove the redis integration.
     """
     _patch_cache_backends(monkeypatch, valkey=True, redis=True)
     context = _context()
-    state_in = _ready_state()
 
-    state_out = context.run(context.on.pebble_ready(state_in.get_container("flask-app")), state_in)
+    with caplog.at_level(logging.WARNING):
+        with context(context.on.update_status(), _ready_state()) as manager:
+            assert manager.charm.is_ready()
 
-    assert state_out.unit_status == ops.testing.BlockedStatus(
-        "Only one of valkey or redis integrations is supported"
-    )
+    assert "remove the redis integration" in caplog.text
 
 
 @pytest.mark.parametrize(

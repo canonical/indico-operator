@@ -5,7 +5,7 @@ changes:
   - title: Added the Valkey integration
     author: DeeKay3
     type: minor
-    description: "Added the `valkey` integration, which provides caching and the Celery message broker for Indico. The `redis` integration is kept so that existing deployments can be refreshed without changes; exactly one of `valkey` or `redis` must be integrated, otherwise the charm is blocked."
+    description: "Added the `valkey` integration, which provides caching and the Celery message broker for Indico. The `redis` integration is kept so that existing deployments can be refreshed without changes; one of `valkey` or `redis` must be integrated. If both are integrated, the charm uses Valkey, so operators can migrate by adding `valkey` and then removing `redis`."
     urls:
       pr:
         - https://github.com/canonical/indico-operator/pull/816
