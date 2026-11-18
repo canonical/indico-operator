@@ -61,11 +61,12 @@ class IndicoCharm(paas_charm.flask.Charm):
             return False
         integrations = self._create_charm_state().integrations
         if integrations.valkey and integrations.redis:
-            self._create_app().stop_all_services()
-            self._database_migration.set_status_to_pending()
-            logger.info(msg := "Only one of valkey or redis integrations is supported")
-            self.update_app_and_unit_status(ops.BlockedStatus(msg))
-            return False
+            # indico.conf prefers VALKEY_DB_* over REDIS_DB_*, so keep the workload
+            # running on Valkey instead of stopping it. This lets operators add
+            # valkey and then remove redis without downtime.
+            logger.warning(
+                "Both valkey and redis are integrated, using valkey; remove the redis integration"
+            )
         return True
 
     def _add_admin_action(self, event: ops.ActionEvent) -> None:
