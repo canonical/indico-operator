@@ -18,7 +18,7 @@ jobs:
       # Both integration backends (Juju 3 and Juju 4)
       spread-jobs-include: "integration-test*-ci:*"
   required_status_checks:
-    name: Required Integration Test Status Checks
+    name: integration-tests / Required Integration Test Status Checks
     runs-on: ubuntu-latest
     needs:
     - integration-test
