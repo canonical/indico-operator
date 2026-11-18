@@ -8,7 +8,7 @@ Each revision is versioned by the date of the revision.
 
 ## 2026-11-16
 
-- Added the `valkey` integration for caching and the Celery message broker. The `redis` integration is kept for existing deployments; exactly one of them must be integrated.
+- Added the `valkey` integration for caching and the Celery message broker. The `redis` integration is kept for existing deployments; if both are integrated, the charm uses Valkey.
 
 ## 2026-01-12
 

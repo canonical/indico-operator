@@ -22,8 +22,8 @@ _Interface_: valkey_client
 _Supported charms_: [valkey](https://charmhub.io/valkey)
 
 Valkey integration supplies caching capabilities and a message broker to interface with Celery.
-A single Valkey application provides both functions. The Indico charm requires exactly one of
-the `valkey` or `redis` integrations.
+A single Valkey application provides both functions. The Indico charm requires either the `valkey`
+or the `redis` integration. If both are integrated, the charm uses Valkey.
 
 Example `valkey` integrate command:
 ```

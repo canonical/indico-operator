@@ -152,7 +152,7 @@ Valkey is an open-source in-memory data structure store, compatible with Redis, 
 1. Cache backend: Copies of frequently accessed data are stored and used if satisfy the request. Otherwise, the application will handle it. This configuration helps to reduce the number of queries and improve response latency.
 2. Message broker: Used for communication between Indico and the Celery background workers.
 
-Existing deployments can keep using [Redis](https://redis.io/) through the legacy `redis` integration, which serves the same purposes. The charm requires exactly one of the `valkey` or `redis` integrations.
+Existing deployments can keep using [Redis](https://redis.io/) through the legacy `redis` integration, which serves the same purposes. The charm requires either the `valkey` or the `redis` integration. If both are integrated, the charm uses Valkey, so you can migrate by integrating `valkey` and then removing the `redis` integration.
 
 > **Warning**
 > If you redeploy Indico with a fresh database, you must also remove the Valkey (or Redis) cache from the previous deployment. 
