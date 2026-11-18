@@ -2,7 +2,7 @@
 
 This charm supports installing both official and custom plugins for Indico, from pypi and from a git repositories.
 
-The `piwik` and `storage-s3` plugins are already packed as part of the charm. The list of available official plugins can be found [in the official Indico repository](https://github.com/indico/indico-plugins).
+Some plugins are already packed as part of the charm. See [Plugins](../reference/plugins.md) for the full list. The list of available official plugins can be found [in the official Indico repository](https://github.com/indico/indico-plugins).
 
 To install additional plugins, provide the configuration `external_plugins` as a comma separated list with the desired packages to be installed. Each element should be compatible with pip:  
 

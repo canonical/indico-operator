@@ -1,3 +1,5 @@
 Addon
 Configurator
 rclone
+Matomo
+Piwik

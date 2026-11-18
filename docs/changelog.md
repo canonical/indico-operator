@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 Each revision is versioned by the date of the revision.
 
+## 2026-11-17
+
+- Added the list of plugins shipped with the charm to the Plugins reference page.
+
 ## 2026-01-12
 
 - Plugin installations now only fixes Indico version, any other packages may change as long as they don't break Indico requirements.
