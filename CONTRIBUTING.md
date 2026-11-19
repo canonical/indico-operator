@@ -85,6 +85,32 @@ also, reference the issue or bug number when you submit the changes.
 
 Your changes will be reviewed in due time; if approved, they will be eventually merged.
 
+### AI
+
+You are free to use any tools you want while preparing your contribution, including
+AI, provided that you do so lawfully and ethically.
+
+Avoid using AI to complete issues tagged with the "good first issues" label. The
+purpose of these issues is to provide newcomers with opportunities to contribute
+to our projects and gain coding skills. Using AI to complete these tasks
+undermines their purpose.
+
+We have created instructions and tools that you can provide AI while preparing your contribution: [`copilot-collections`](https://github.com/canonical/copilot-collections)
+
+While it isn't necessary to use `copilot-collections` while preparing your
+contribution, these files contain details about our quality standards and
+practices that will help the AI avoid common pitfalls when interacting with
+our projects. By using these tools, you can avoid longer review times and nitpicks.
+
+If you choose to use AI, please disclose this information to us by indicating
+AI usage in the PR description (for instance, marking the checklist item about
+AI usage). You don't need to go into explicit details about how and where you used AI.
+
+Avoid submitting contributions that you don't fully understand.
+You are responsible for the entire contribution, including the AI-assisted portions.
+You must be willing to engage in discussion and respond to any questions, comments,
+or suggestions we may have.
+
 ### Signing commits
 
 To improve contribution tracking,
@@ -173,7 +199,8 @@ the local registry:
 ```bash
 cd indico_rock
 rockcraft pack
-rockcraft.skopeo --insecure-policy copy --dest-tls-verify=false oci-archive:indico_3.3.12_amd64.rock docker://localhost:5000/indico:latest
+rockcraft.skopeo --insecure-policy copy --dest-tls-verify=false \
+  oci-archive:$(ls indico_*_amd64.rock) docker://localhost:5000/indico:latest
 ```
 
 Build the charm in this git repository using:
