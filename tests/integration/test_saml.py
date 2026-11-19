@@ -27,7 +27,7 @@ _SAML_METADATA_URL = "https://login.staging.ubuntu.com/saml/metadata"
 def test_saml_integration(app: str, juju: jubilant.Juju, indico_address: str):
     """Check that integrating saml-integrator wires a SAML auth provider.
 
-    arrange: The charm is deployed and active with postgresql and redis.
+    arrange: The charm is deployed and active with postgresql and valkey.
     act: Deploy saml-integrator pointed at an IdP metadata URL and integrate
         it with indico.
     assert: All applications become active and the Indico login page exposes

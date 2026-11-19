@@ -19,14 +19,14 @@ logger = logging.getLogger(__name__)
 def test_active(app: str, juju: jubilant.Juju):
     """Check that the charm is active after deployment.
 
-    arrange: The charm has been built and deployed with postgresql and redis.
+    arrange: The charm has been built and deployed with postgresql and valkey.
     act: Get the Juju status.
-    assert: The indico, postgresql-k8s and redis-k8s units are active.
+    assert: The indico, postgresql-k8s and valkey units are active.
     """
     status = juju.status()
     assert status.apps[app].units[app + "/0"].is_active
     assert status.apps["postgresql-k8s"].units["postgresql-k8s/0"].is_active
-    assert status.apps["redis-k8s"].units["redis-k8s/0"].is_active
+    assert status.apps["valkey"].units["valkey/0"].is_active
 
 
 @pytest.mark.abort_on_fail
@@ -70,7 +70,7 @@ def test_add_admin_action(app: str, juju: jubilant.Juju) -> None:
 def test_ingress(app: str, juju: jubilant.Juju):
     """Check that integrating traefik-k8s provides a reachable ingress URL.
 
-    arrange: The charm is deployed and active with postgresql and redis.
+    arrange: The charm is deployed and active with postgresql and valkey.
     act: Deploy traefik-k8s with subdomain routing, integrate with indico.
     assert: The ingress URL from the relation data is reachable and serves Indico.
     """

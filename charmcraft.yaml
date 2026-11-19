@@ -18,7 +18,7 @@ summary: Indico event management server (12-factor charm).
 
 description: |
   Operates the Indico conference and meeting management web application as a
-  Kubernetes-backed 12-factor charm. Wires the workload to PostgreSQL, Redis,
+  Kubernetes-backed 12-factor charm. Wires the workload to PostgreSQL, Valkey,
   optional S3 object storage, and optional SMTP. Supports installing
   additional Indico plugins at deploy time via the `external_plugins`
   configuration option.
@@ -31,9 +31,16 @@ requires:
     interface: postgresql_client
     optional: false
     limit: 1
+  # Exactly one of `valkey` or `redis` must be integrated; the charm enforces
+  # this. `redis` is kept only so existing deployments can be refreshed in
+  # place and will be removed in a later revision.
+  valkey:
+    interface: valkey_client
+    optional: false
+    limit: 1
   redis:
     interface: redis
-    optional: false
+    optional: true
     limit: 1
   s3:
     interface: s3

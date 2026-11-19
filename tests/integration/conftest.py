@@ -90,7 +90,7 @@ def app_fixture(
 ):
     """Deploy the Indico charm and its mandatory relations.
 
-    Deploys postgresql-k8s and redis-k8s, the indico charm, integrates them,
+    Deploys postgresql-k8s and valkey, the indico charm, integrates them,
     and waits for all units to become active.
     """
     # Detect Juju major version to choose the right PostgreSQL channel
@@ -119,11 +119,10 @@ def app_fixture(
         force=is_force,
     )
 
-    # Deploy Redis
-    juju.deploy("redis-k8s", channel="latest/edge", trust=True)
+    juju.deploy("valkey", channel="9/stable", trust=True)
 
     juju.wait(
-        lambda status: jubilant.all_active(status, "postgresql-k8s", "redis-k8s"),
+        lambda status: jubilant.all_active(status, "postgresql-k8s", "valkey"),
         timeout=JUJU_WAIT_TIMEOUT,
     )
 
@@ -137,7 +136,7 @@ def app_fixture(
 
     # Integrate with the mandatory backing services
     juju.integrate(APP_NAME, "postgresql-k8s:database")
-    juju.integrate(APP_NAME, "redis-k8s")
+    juju.integrate(f"{APP_NAME}:valkey", "valkey:valkey-client")
     juju.wait(jubilant.all_active, timeout=JUJU_WAIT_TIMEOUT)
 
     # Indico builds its URL map from BASE_URL and returns HTTP 404 for every

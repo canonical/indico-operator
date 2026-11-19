@@ -25,7 +25,7 @@ _SMTP_DOMAIN = "test.example.com"
 def test_smtp_integration(app: str, juju: jubilant.Juju):
     """Check that smtp-integrator passes SMTP env vars to the workload correctly.
 
-    arrange: The charm is deployed and active with postgresql and redis.
+    arrange: The charm is deployed and active with postgresql and valkey.
     act: Deploy smtp-integrator, configure it, and integrate with indico.
     assert: The charm remains active and the pebble plan for the workload
         service contains the SMTP_HOST and SMTP_PORT env vars set by paas-charm
