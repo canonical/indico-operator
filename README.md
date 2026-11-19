@@ -49,5 +49,5 @@ This charm can be integrated with other Juju charms and services:
 * [Troubleshooting](https://matrix.to/#/#charmhub-charmdev:ubuntu.com) <!--(Optional) Link to a page or section about troubleshooting/FAQ-->
 ## Project and community
 * [Issues](https://github.com/canonical/indico-operator/issues) <!--Link to GitHub issues (if applicable)-->
-* [Contributing](https://charmhub.io/indico/docs/how-to-contribute) <!--Link to any contribution guides-->
+* [Contributing](./CONTRIBUTING.md) <!--Link to any contribution guides-->
 * [Matrix](https://matrix.to/#/#charmhub-charmdev:ubuntu.com) <!--Link to contact info (if applicable), e.g. Matrix channel-->
