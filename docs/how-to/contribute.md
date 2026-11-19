@@ -1,80 +1,57 @@
 # How to contribute
 
-This document explains the processes and practices recommended for contributing enhancements to the Indico operator.
-
-## Overview
-
-
-- Generally, before developing enhancements to this charm, you should consider [opening an issue
-  ](https://github.com/canonical/indico-operator/issues) explaining your use case.
-- If you would like to chat with us about your use-cases or proposed implementation, you can reach
-  us at [Canonical Matrix public channel](https://matrix.to/#/#charmhub-charmdev:ubuntu.com)
-  or [Discourse](https://discourse.charmhub.io/).
-- Familiarising yourself with the [Juju documentation](https://canonical.com/juju/docs/juju-cli/3.6/)
-  will help you a lot when working on new features or bug fixes.
-- All enhancements require review before being merged. Code review typically examines
-  - code quality
-  - test coverage
-  - user experience for Juju operators of this charm.
-- Please help us out in ensuring easy to review branches by rebasing your pull request branch onto the `main` branch. This also avoids merge commits and creates a linear Git commit history.
-
-## Developing
-
-The code for this charm can be downloaded as follows:
-
-```
-git clone https://github.com/canonical/indico-operator
+```{note}
+See [CONTRIBUTING.md](https://github.com/canonical/indico-operator/blob/main/CONTRIBUTING.md)
+for information on contributing to the source code, including how to set up
+a development environment, run the tests, and build and deploy the charm.
 ```
 
-You can use the environments created by `tox` for development:
+Our documentation is hosted on [Charmhub](https://charmhub.io/indico/docs)
+to enable collaboration. Please use the links on each documentation page to either
+directly change something you see that's wrong, ask a question, or make a suggestion
+about a potential change.
 
-```shell
-tox --notest -e unit
-source .tox/unit/bin/activate
-```
+Our documentation is also available alongside the
+[source code on GitHub](https://github.com/canonical/indico-operator/tree/main/docs).
+You may open a pull request with your documentation changes, or you can
+[file a bug](https://github.com/canonical/indico-operator/issues) to provide
+constructive feedback or suggestions.
 
-### Testing
+## AI usage
 
-Note that the [indico](https://github.com/canonical/indico-operator/blob/main/indico_rock/rockcraft.yaml) image needs to be built and pushed to MicroK8s for the tests to run. It should be tagged as `localhost:32000/indico:latest` so that Kubernetes knows how to pull it from the MicroK8s repository. Note that the MicroK8s registry needs to be enabled using `microk8s enable registry`. More details regarding the OCI images below. The following commands can then be used to run the tests:
+You are free to use any tools you want while preparing your contribution, including
+AI, provided that you do so lawfully and ethically.
 
-* `tox`: Runs all of the basic checks (`lint`, `unit`, `static`, and `coverage-report`).
-* `tox -e fmt`: Runs formatting using `black` and `isort`.
-* `tox -e lint`: Runs a range of static code analysis to check the code.
-* `tox -e static`: Runs other checks such as `bandit` for security issues.
-* `tox -e unit`: Runs the unit tests.
-* `tox -e integration`: Runs the integration tests.
+Avoid using AI to complete
+[Canonical Open Documentation Academy issues](https://github.com/canonical/open-documentation-academy/issues).
+The purpose of these issues is to provide newcomers with opportunities to
+contribute to our projects and gain documentation skills. Using AI to
+complete these tasks undermines their purpose.
 
-## Build charm
+If you use AI to help with your PRs, be mindful. Avoid submitting contributions
+with entirely AI-generated documentation. The human aspect of documentation is
+important to us, and that includes tone, syntax, perspectives, and the
+occasional typo.
 
-Build the charm in this git repository using:
+Some examples of valid AI assistance include:
 
-```shell
-charmcraft pack
-```
-For the integration tests (and also to deploy the charm locally), the indico
-and indico-nginx images are required in the microk8s registry. To enable it:
+* Checking for spelling or grammar errors
+* Drafting plans or outlines
+* Checking that your contribution aligns with the Canonical style guide
 
-    microk8s enable registry
+We have created instructions and tools that you can provide AI while preparing
+your contribution in [`copilot-collections`](https://github.com/canonical/copilot-collections).
 
-The following commands import the images in the Docker daemon and push them into the registry:
+While it isn't necessary to use `copilot-collections` while preparing your
+contribution, these files contain details about our documentation standards and
+practices that will help the AI avoid common pitfalls when interacting with our
+projects. By using these tools, you can avoid longer review times and nitpicks.
 
-    cd [project_dir]/indico_rock && rockcraft pack rockcraft.yaml
-    skopeo --insecure-policy copy oci-archive:indico_1.0_amd64.rock docker-daemon:localhost:32000/indico:latest
-    docker push localhost:32000/indico:latest
+If you choose to use AI, please disclose this information to us by indicating
+AI usage in the PR description (for instance, marking the checklist item about
+AI usage). You don't need to go into explicit details about how and where you used AI.
 
-### Deploy
-
-```bash
-# Create a model
-juju add-model indico-dev
-# Enable DEBUG logging
-juju model-config logging-config="<root>=INFO;unit=DEBUG"
-# Deploy the charm (assuming you're on amd64)
-juju deploy ./indico_ubuntu-20.04-amd64.charm \
-  --resource indico-image=localhost:32000/indico:latest \
-  --resource indico-nginx-image=localhost:32000/indico-nginx:latest
-```
-
-## Canonical contributor agreement
-
-Canonical welcomes contributions to the Indico Operator. Please check out our [contributor agreement](https://canonical.com/legal/contributors) if you're interested in contributing to the solution.
+Avoid submitting contributions that you don't fully understand.
+You are responsible for the entire contribution, including the AI-assisted portions.
+You must be willing to engage in discussion and respond to any questions, comments,
+or suggestions we may have.
