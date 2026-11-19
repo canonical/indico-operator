@@ -1,3 +1,4 @@
 Addon
 Configurator
+PRs
 rclone
