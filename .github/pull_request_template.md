@@ -29,5 +29,6 @@ Applicable spec: <link>
 - [ ] A [change artifact](https://github.com/canonical/indico-operator/blob/main/docs/release-notes/template/_change-artifact-template.yaml) was added for user-relevant changes in `docs/release-notes/artifacts`. If this PR does not require a change artifact, the PR has been tagged with `no-release-note`. 
 - [ ] The PR is tagged with appropriate label (`urgent`, `trivial`, `complex`)
 - [ ] The [changelog](../docs/changelog.md) is updated with user-relevant changes in the format of [keep a changelog v1.1.0](https://keepachangelog.com/en/1.1.0/)
+- [ ] I used AI to assist with preparing this PR
 
 <!-- Explanation for any unchecked items above -->

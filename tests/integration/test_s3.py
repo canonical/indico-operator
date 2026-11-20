@@ -11,7 +11,7 @@ import jubilant
 import pytest
 import requests
 
-from .conftest import JUJU_WAIT_TIMEOUT, generate_s3_config
+from .conftest import JUJU_WAIT_TIMEOUT
 
 logger = logging.getLogger(__name__)
 
@@ -29,22 +29,18 @@ def test_s3_storage(
     app: str,
     juju: jubilant.Juju,
     indico_address: str,
-    s3_address: str | None,
+    s3_config: dict[str, str],
 ):
     """Check that Indico stays healthy when S3 storage is configured.
 
     arrange: The charm is deployed and active. An S3-compatible endpoint
-        (e.g. MicroCeph radosgw / MinIO) is reachable at ``s3_address``.
+        (e.g. MicroCeph radosgw / MinIO) is configured by ``s3_config``.
     act: Deploy s3-integrator, configure it, sync credentials, and integrate
         with indico.
     assert: All applications become active and Indico keeps serving HTTP 200
         after the storage backend is switched to S3.
     """
-    if not s3_address:
-        pytest.skip("requires --s3-address argument or reachable host IP")
-        return
-
-    s3_conf = generate_s3_config(s3_address)
+    s3_conf = s3_config
 
     juju.deploy(
         "s3-integrator",

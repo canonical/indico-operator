@@ -3,3 +3,5 @@ Configurator
 rclone
 Matomo
 Piwik
+PRs
+Valkey

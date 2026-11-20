@@ -9,6 +9,7 @@ import typing
 
 import ops
 import paas_charm.flask
+from paas_charm.charm_state import CharmState
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +34,40 @@ class IndicoCharm(paas_charm.flask.Charm):
             self.on["refresh-external-resources"].action,
             self._refresh_external_resources_action,
         )
+
+    def _missing_required_integrations(self, charm_state: CharmState) -> typing.Generator:
+        """Get the missing required integrations, including the cache backend.
+
+        paas-charm does not enforce the `valkey` integration, and `redis` is optional
+        only to allow in-place refreshes, so one of them must be required here.
+
+        Args:
+            charm_state: the charm state.
+
+        Yields:
+            Names of the missing required integrations.
+        """
+        yield from super()._missing_required_integrations(charm_state)
+        if not charm_state.integrations.valkey and not charm_state.integrations.redis:
+            yield "valkey or redis"
+
+    def is_ready(self) -> bool:
+        """Check if the charm is ready to start the workload application.
+
+        Returns:
+            True if the charm is ready to start the workload application.
+        """
+        if not super().is_ready():
+            return False
+        integrations = self._create_charm_state().integrations
+        if integrations.valkey and integrations.redis:
+            # indico.conf prefers VALKEY_DB_* over REDIS_DB_*, so keep the workload
+            # running on Valkey instead of stopping it. This lets operators add
+            # valkey and then remove redis without downtime.
+            logger.warning(
+                "Both valkey and redis are integrated, using valkey; remove the redis integration"
+            )
+        return True
 
     def _add_admin_action(self, event: ops.ActionEvent) -> None:
         """Add a new admin user to Indico.
