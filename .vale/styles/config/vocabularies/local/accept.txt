@@ -1,7 +1,7 @@
 Addon
 Configurator
-rclone
 Matomo
 Piwik
 PRs
+rclone
 Valkey
