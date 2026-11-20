@@ -3,13 +3,13 @@
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_juju"></a> [juju](#requirement\_juju) | >= 1.1.0 |
+| <a name="requirement_juju"></a> [juju](#requirement\_juju) | >= 1.0, < 3.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_juju"></a> [juju](#provider\_juju) | >= 1.1.0 |
+| <a name="provider_juju"></a> [juju](#provider\_juju) | >= 1.0, < 3.0 |
 
 ## Modules
 
