@@ -1,0 +1,15 @@
+# --- Release notes artifact ----
+
+schema_version: 1
+changes:
+  - title: Fixed the Juju Terraform provider constraints in all Terraform modules
+    author: cardenasse
+    type: bugfix
+    description: "Set the Juju Terraform provider constraint to `>= 1.0, < 3.0` in the charm, product, test and dependency Terraform modules. The previous constraints still allowed 0.x providers, which can't run the modules' 1.x-only arguments such as `model_uuid`."
+    urls:
+      pr:
+        - https://github.com/canonical/indico-operator/pull/822
+      related_doc: https://github.com/canonical/indico-operator/blob/main/terraform/README.md
+      related_issue:
+    visibility: public
+    highlight: false

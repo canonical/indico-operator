@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 Each revision is versioned by the date of the revision.
 
+## 2026-11-20
+
+- Terraform modules now require the Juju Terraform provider `>= 1.0, < 3.0`.
+
 ## 2026-01-12
 
 - Plugin installations now only fixes Indico version, any other packages may change as long as they don't break Indico requirements.
