@@ -19,7 +19,7 @@ For Indico, this includes:
 
 * Integration with SAML-based SSO
 * Integration with S3 for uploaded files and static content
-* Integration with PostgreSQL, Redis, and ingress
+* Integration with PostgreSQL, Valkey, and ingress
 * Customization through plugins and themes
 
 The Indico charm can be deployed on many Kubernetes platforms, from `MicroK8s <https://canonical.com/microk8s>`_ to

@@ -2,3 +2,4 @@ Addon
 Configurator
 PRs
 rclone
+Valkey

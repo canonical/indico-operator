@@ -36,7 +36,7 @@ You can check out the [full list of actions here](https://charmhub.io/indico/act
 
 This charm can be integrated with other Juju charms and services:
 
-  - [Redis](https://charmhub.io/redis-k8s): Redis is an open source (BSD licensed), in-memory data structure store, used as a database, cache and message broker.
+  - [Valkey](https://charmhub.io/valkey): Valkey is an open source (BSD licensed), in-memory data structure store, used as a cache and message broker.
   - [S3](https://charmhub.io/s3-integrator): Amazon Simple Storage Service (Amazon S3) is an object storage service that provides secure, durable, highly available storage with massive scalability and low latency.
   - [PostgreSQL](https://charmhub.io/postgresql-k8s): PostgreSQL is a powerful, open source object-relational database system. It has more than 15 years of active development and a proven architecture that has earned it a strong reputation for reliability, data integrity, and correctness.
 

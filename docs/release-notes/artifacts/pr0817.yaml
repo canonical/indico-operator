@@ -1,0 +1,15 @@
+# --- Release notes artifact ----
+
+schema_version: 1
+changes:
+  - title: Documented the Valkey integration
+    author: DeeKay3
+    type: minor
+    description: "Updated the tutorial, integrations reference, charm architecture, README and changelog to use Valkey for caching and the Celery message broker, and described the legacy `redis` integration for existing deployments."
+    urls:
+      pr:
+        - https://github.com/canonical/indico-operator/pull/817
+      related_doc: https://github.com/canonical/indico-operator/blob/main/docs/tutorial.md
+      related_issue:
+    visibility: public
+    highlight: false

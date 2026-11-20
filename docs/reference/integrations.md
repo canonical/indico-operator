@@ -16,13 +16,29 @@ Example `db` integrate command:
 juju integrate indico postgresql-k8s:db
 ```
 
+### `valkey`
+
+_Interface_: valkey_client  
+_Supported charms_: [valkey](https://charmhub.io/valkey)
+
+Valkey integration supplies caching capabilities and a message broker to interface with Celery.
+A single Valkey application provides both functions. The Indico charm requires either the `valkey`
+or the `redis` integration. If both are integrated, the charm uses Valkey.
+
+Example `valkey` integrate command:
+```
+juju integrate indico:valkey valkey:valkey-client
+```
+
 ### `redis`
 
 _Interface_: redis  
 _Supported charms_: [redis-k8s](https://charmhub.io/redis-k8s)
 
-Redis integration is a required relation for the Indico charm to supply caching capabilities and
-a message broker to interface with Celery. A single Redis application provides both functions.
+Redis integration is the legacy alternative to the `valkey` integration and is kept so that
+existing deployments continue to work. It supplies the same caching capabilities and Celery
+message broker. Don't integrate with both `valkey` and `redis` at the same time; the charm
+enters a blocked state if both are present.
 
 Example `redis` integrate command:
 ```
