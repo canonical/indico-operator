@@ -1,0 +1,18 @@
+# Version of the artifact schema
+version_schema: 2
+# The key holding the change(s)
+changes:
+  - title: Added the list of shipped plugins to the Plugins reference page
+    author: DeeKay3
+    type: minor
+    description: |
+      The Plugins reference page now lists the plugins shipped with the
+      charm and notes that these plugins can't be customized or updated
+      without contributing to the charm.
+    urls:
+      pr:
+        - https://github.com/canonical/indico-operator/pull/821
+      related_doc: https://github.com/canonical/indico-operator/blob/main/docs/reference/plugins.md
+      related_issue:
+    visibility: hidden
+    highlight: false
