@@ -1,0 +1,15 @@
+# --- Release notes artifact ----
+
+schema_version: 1
+changes:
+  - title: Replaced redis-k8s with Charmed Valkey in the Terraform product module
+    author: DeeKay3
+    type: breaking
+    description: "The Terraform product module now deploys Charmed Valkey (`9/stable`, revision 166, base `ubuntu@26.04`, constraint `arch=amd64`) instead of redis-k8s, and integrates it with Indico through the `valkey` endpoint. The `redis` keys in `app_names`, `channels`, `revisions` and `enable` are replaced by `valkey`, so configurations that set `redis` keys must be updated. The module now requires Terraform `>= 1.11` and the Juju Terraform provider `>= 2.2.1, < 3.0`, and the default Indico charm revision is 361. Applying the change removes redis-k8s; cached data and sessions aren't migrated, so users have to log in again."
+    urls:
+      pr:
+        - https://github.com/canonical/indico-operator/pull/824
+      related_doc: https://github.com/canonical/indico-operator/blob/main/terraform/README.md
+      related_issue:
+    visibility: public
+    highlight: true
