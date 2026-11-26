@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 Each revision is versioned by the date of the revision.
 
+## 2026-11-24
+
+- The Terraform product module now deploys Charmed Valkey (`9/stable`) instead of redis-k8s and integrates it through the `valkey` endpoint. The `redis` keys in `app_names`, `channels`, `revisions` and `enable` are replaced by `valkey`, and the module requires Terraform `>= 1.11` and the Juju Terraform provider `>= 2.2.1, < 3.0`.
+
 ## 2026-11-20
 
 - Terraform modules now require the Juju Terraform provider `>= 1.0, < 3.0`.

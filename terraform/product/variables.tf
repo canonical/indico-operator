@@ -14,11 +14,11 @@ variable "app_names" {
         "nginx_ingress_integrator",
         "local_postgresql",
         "oauth_external_idp_integrator",
-        "redis"
+        "valkey"
       ])
     ) == 0
 
-    error_message = "The keys in var.app_names must be one or more of: indico, s3_integrator_media, local_postgresql, nginx_ingress_integrator, oauth_external_idp_integrator and redis."
+    error_message = "The keys in var.app_names must be one or more of: indico, s3_integrator_media, local_postgresql, nginx_ingress_integrator, oauth_external_idp_integrator and valkey."
   }
 }
 
@@ -114,6 +114,7 @@ variable "constraints" {
   type        = map(string)
   default = {
     indico = "arch=amd64"
+    valkey = "arch=amd64"
   }
 }
 
@@ -152,13 +153,13 @@ variable "enable" {
         "local_postgresql",
         "local_saml_integrator",
         "oauth_external_idp_integrator",
-        "redis",
         "s3_integrator_media",
-        "smtp_integrator"
+        "smtp_integrator",
+        "valkey"
       ])
     ) == 0
 
-    error_message = "The keys in var.enable must be one or more of: lego, nginx_ingress_integrator, local_postgresql, local_saml_integrator, oauth_external_idp_integrator, redis, s3_integrator_media, smtp_integrator."
+    error_message = "The keys in var.enable must be one or more of: lego, nginx_ingress_integrator, local_postgresql, local_saml_integrator, oauth_external_idp_integrator, s3_integrator_media, smtp_integrator, valkey."
   }
 }
 
@@ -248,7 +249,7 @@ variable "revisions" {
 }
 
 variable "units" {
-  description = "Partial overrides for unit counts. Only indico for now."
+  description = "Partial overrides for unit counts. Supported keys: indico, valkey."
   type        = map(number)
   default     = {}
 }

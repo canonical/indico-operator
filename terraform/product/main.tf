@@ -74,13 +74,17 @@ module "nginx_ingress_integrator" {
   config     = local.config_nginx_ingress_integrator
 }
 
-module "redis" {
-  count      = local.enable.redis ? 1 : 0
-  model_uuid = local.model_uuid
-  source     = "../modules/redis-k8s"
-  app_name   = local.app_names.redis
-  channel    = local.channels.redis
-  revision   = local.revisions.redis
+module "valkey" {
+  count       = local.enable.valkey ? 1 : 0
+  source      = "git::https://github.com/canonical/valkey-operator//terraform/charm?ref=v9/1.36.0"
+  model_uuid  = local.model_uuid
+  app_name    = local.app_names.valkey
+  base        = "ubuntu@26.04"
+  channel     = local.channels.valkey
+  revision    = local.revisions.valkey
+  constraints = lookup(var.constraints, "valkey", null)
+  units       = local.units.valkey
+  trust       = true
 }
 
 
@@ -272,18 +276,18 @@ resource "juju_integration" "indico_oauth_external_idp_integrator" {
   }
 }
 
-resource "juju_integration" "indico_redis" {
-  count      = local.enable.redis ? 1 : 0
+resource "juju_integration" "indico_valkey" {
+  count      = local.enable.valkey ? 1 : 0
   model_uuid = local.model_uuid
 
   application {
     name     = module.indico.app_name
-    endpoint = module.indico.endpoints.redis
+    endpoint = module.indico.endpoints.valkey
   }
 
   application {
-    name     = module.redis[0].app_name
-    endpoint = module.redis[0].endpoints.redis
+    name     = module.valkey[0].app_name
+    endpoint = module.valkey[0].provides.valkey_client.endpoint
   }
 }
 
