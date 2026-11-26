@@ -9,7 +9,7 @@ locals {
   app_names_defaults = {
     s3_integrator_media           = "media-s3-integrator"
     indico                        = "indico"
-    redis                         = "redis"
+    valkey                        = "valkey"
     nginx_ingress_integrator      = "nginx-ingress-integrator"
     local_postgresql              = "postgresql-k8s"
     oauth_external_idp_integrator = "oauth-external-idp-integrator"
@@ -19,7 +19,7 @@ locals {
   channels_defaults = {
     lego                          = "4/stable"
     nginx_ingress_integrator      = "latest/edge"
-    redis                         = "latest/edge"
+    valkey                        = "9/stable"
     s3_integrator_media           = "latest/edge"
     smtp_integrator               = "latest/edge"
     indico                        = "latest/edge"
@@ -80,7 +80,7 @@ locals {
     local_postgresql              = false
     nginx_ingress_integrator      = false
     oauth_external_idp_integrator = false
-    redis                         = true
+    valkey                        = true
     s3_integrator_media           = false
     smtp_integrator               = false
   }
@@ -107,14 +107,14 @@ locals {
     lego = 61
     # renovate: depName="nginx-ingress-integrator"
     nginx_ingress_integrator = 145
-    # renovate: depName="redis-k8s"
-    redis = 25
+    # Charmed Valkey 9/stable, amd64, ubuntu@26.04 (see ISD-7353).
+    valkey = 166
     # renovate: depName="s3-integrator"
     s3_integrator_media = 13
     # renovate: depName="smtp-integrator"
     smtp_integrator = 15
     # renovate: depName="indico"
-    indico = 620
+    indico = 361
     # renovate: depName="saml-integrator"
     local_saml_integrator = 102
     # renovate: depName="postgresql-k8s"
@@ -127,6 +127,7 @@ locals {
 
   units_defaults = {
     indico = 1
+    valkey = 1
   }
 
   units = merge(local.units_defaults, var.units)
