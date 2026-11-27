@@ -47,6 +47,8 @@ In this documentation
       - `Install plugins <how-to/install-plugins.md>`_ | `Customise the theme <how-to/customize-theme.md>`_ | `Plugins <reference/plugins.md>`_ | `Theme customization <reference/theme-customization.md>`_
     * - Design
       - `Reference <reference/index.md>`_ | `Charm architecture <reference/charm-architecture.md>`_
+    * - Security
+      - `Security <explanation/security.md>`_
     * - Integrations and external access
       - `Integrations <reference/integrations.md>`_ | `External access <reference/external-access.md>`_
     * - Development and releases
@@ -60,6 +62,7 @@ This documentation uses the `Diátaxis documentation structure <https://diataxis
 - The `Tutorial <tutorial.md>`_ takes you step-by-step through a basic deployment of the Indico charm.
 - `How-to guides <how-to/index.md>`_ assume you have basic familiarity with the Indico charm. They cover setup, configuration, customization, maintenance, and development tasks.
 - `Reference <reference/index.md>`_ provides information about actions, configurations, integrations, architecture, and other technical details.
+- `Explanation <explanation/index.md>`_ provides context and background on topics such as the security of an Indico deployment.
 - `Release notes <release-notes/landing-page.md>`_ hold the release history of the charm, including new features, fixes, and compatibility information.
 
 The table above maps this content by domain of concern. It provides a thematic view of the documentation without changing its Diátaxis classification.
@@ -111,4 +114,5 @@ Thinking about using the Indico Operator for your next project?
     Tutorial <tutorial.md>
     How-to guides <how-to/index.md>
     Reference <reference/index.md>
+    Explanation <explanation/index.md>
     Release notes <release-notes/landing-page.md>

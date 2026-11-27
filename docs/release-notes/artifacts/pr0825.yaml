@@ -1,0 +1,17 @@
+# Version of the artifact schema
+version_schema: 2
+# The key holding the change(s)
+changes:
+  - title: Added the Security explanation page
+    author: DeeKay3
+    type: minor
+    description: |
+      Added a Security explanation page that describes the main security
+      risks of the Indico charm and the best practices to avoid them.
+    urls:
+      pr:
+        - https://github.com/canonical/indico-operator/pull/825
+      related_doc: https://github.com/canonical/indico-operator/blob/main/docs/explanation/security.md
+      related_issue:
+    visibility: public
+    highlight: false
